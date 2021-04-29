@@ -1,4 +1,4 @@
-# **CL**ouds from **AV**h**R**r (and more) e**X**enteded (CLAVR-x)
+# **CL**ouds from **AV**h**R**r (and more) e**X**tended (CLAVR-x)
 
 ## Directory Structure
 
