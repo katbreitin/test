@@ -1,0 +1,21 @@
+fc=gfortran
+FC77=gfortran
+
+fflags = -O3  -ffast-math -funroll-loops -fno-range-check -ffree-line-length-200
+fflags_pfast = -O3  -ffast-math -funroll-loops -ffixed-form -fno-automatic
+fflags_sasrab_f77 = -O3  -ffast-math -funroll-loops -ffixed-form -fno-automatic
+fflags_sasrab_f90 = -O3  -ffast-math -funroll-loops -fno-automatic
+ldflags = -O3 -static
+cpp = -cpp
+cppflags = 
+beconv = -fconvert=big-endian
+hdflibs = -L$(HDF4_PATH)/lib/  -I$(HDF4_PATH)/include/ -lmfhdf -ldf -ljpeg -lz -ldl
+hdfincs = -I$(HDF4_PATH)/include/
+netcdflibs = -L${NETCDF_PATH}/lib/ -I${NETCDF_PATH}/include/ -lnetcdff -lnetcdf
+hdf5libs = -I$(HDF5_PATH)/include/ -L$(HDF5_PATH)/lib/
+hdf5links = -lhdf5_fortran -lhdf5_hl -lhdf5 -lz -ldl
+
+HOST=$(shell hostname)
+ifeq ($(HOST),orchid-submit.ssec.wisc.edu)
+hdflibs += -lsz -ltirpc
+endif

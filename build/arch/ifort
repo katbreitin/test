@@ -1,0 +1,33 @@
+fc = ifort
+FC77=ifort
+
+fflags =  -c -O2 -assume byterecl -warn interface
+fflags_pfast = -O2 -assume byterecl -fixed
+fflags_sasrab_f77 = -O2 -assume byterecl -fixed -save
+fflags_sasrab_f90 = -O2 -assume byterecl -save
+ldflags = -O2 -assume byterecl
+cpp = -cpp
+cppflags = 
+beconv = -convert big_endian
+hdflibs = -L$(HDF4_PATH)/lib/  -I$(HDF4_PATH)/include/ -lmfhdf -ldf -ljpeg -lz
+hdfincs = -I$(HDF4_PATH)/include/
+netcdflibs = -L${NETCDF_PATH}/lib/ -I${NETCDF_PATH}/include/ -lnetcdf -lnetcdff
+hdf5libs = -I$(HDF5_PATH)/include/ -L$(HDF5_PATH)/lib/
+hdf5links = -lhdf5_fortran -lhdf5 -lz
+
+HOST=$(shell hostname)
+ifeq ($(HOST),orchid-submit.ssec.wisc.edu)
+hdflibs += -lsz -ltirpc
+endif
+
+ifeq ($(HOST),vor.ssec.wisc.edu)
+hdflibs += -lsz -ltirpc
+endif
+
+ifeq ($(HOST),tiki.ssec.wisc.edu)
+hdflibs += -lsz -ltirpc
+endif
+
+ifeq ($(HOST),solar2.ssec.wisc.edu)
+hdflibs += -lsz -ltirpc
+endif

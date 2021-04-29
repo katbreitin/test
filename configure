@@ -1,0 +1,249 @@
+#!/usr/bin/perl -w
+# $Id:$
+
+use strict;
+use warnings;
+use Cwd qw(abs_path);
+use Getopt::Long;
+
+
+my @user = $ENV{'USER'};
+my @hostName = $ENV{'HOST'};
+my @fc = $ENV{'FC'};
+my @outfile = abs_path"build/Makefile.".$ENV{'HOST'};
+
+if (defined $ENV{'HOSTNAME'}){
+
+print "hostname is global\n";
+print $ENV{'HOSTNAME'};
+@outfile = abs_path"build/Makefile.".$ENV{'HOSTNAME'};
+
+@hostName = $ENV{'HOSTNAME'};
+}
+
+print "Make include file is @outfile\n";
+unlink @outfile;
+
+if (defined $ENV{'FC'}){
+
+print "Fortran compiler (FC) is set to @fc\n";
+ 
+} else {
+print "No Environmental Variable FC is set. Configuration for DCOMP is for ifort only\n";
+}
+#print cwd"build/Makefile.@hostName\n";
+#if ( -e cwd"build/Makefile.".@hostName ) { 
+#print "File for this machine is already there. Do you really want to re-config (n/y):\n";
+#my $input = <STDIN>;
+#chomp $input;
+
+#if ( $input eq "n" ) {
+#die "Stop configuration \n"
+#}
+#}
+
+print "Hostname is @hostName\n";
+
+
+
+my @rttov_path_default='/apollo/cloud/Ancil_Data//SOFTWARE/RTM/RTTOV123/';
+@rttov_path_default='/Users/awalther/SOFTWARE/RTM/RTTOV123/' if ("@hostName" eq "losna");
+
+
+
+if (-d "@rttov_path_default") {
+print "RTTOV Path exists: ";
+print  "@rttov_path_default\n\n";
+
+}
+else {
+
+@rttov_path_default=' ';
+print "not exist\n";
+print  "@rttov_path_default\n\n";
+}
+
+
+
+
+
+# Default values for command-line options.
+my %opt = (
+            hdf4_ifort => '${SSEC_HDF4_LIB}/../',
+            hdf5_ifort => '${SSEC_HDF5_LIB}/../',
+            netcdf_ifort => '${SSEC_NETCDF4_LIB}/../',
+            dncomp_ifort => '../cx_dncomp/Release_ifort/',
+            muri_ifort => '../muri/Release_ifort/',
+            cx_sds_io_ifort => '../cx_sds_io/Release_ifort/',
+            hdf4_gcc => '${SSEC_HDF4_LIB}/../',
+            hdf5_gcc => '${SSEC_HDF5_LIB}/../',
+            rttov_path => @rttov_path_default,
+            netcdf_gcc => '${SSEC_NETCDF4_LIB}/../',
+            dncomp_gcc => '../cx_dncomp/Release_gfortran/',
+            muri_gcc => '../muri/Release_gfortran/',
+            cx_sds_io_gcc => '../cx_sds_io/Release_gfortran/',
+            rttov => '../rttov/',
+           
+          );
+
+my @sargv = @ARGV;
+GetOptions(
+   \%opt,
+   'hdf4_ifort=s',
+   'hdf5_ifort=s',
+   'netcdf_ifort=s',
+   'dncomp_ifort=s',
+   'cx_sds_io_ifort=s',
+   'libhim_ifort=s',
+   'hdf4_gcc=s',
+   'hdf5_gcc=s',
+   'rttov_path=s',
+   'netcdf_gcc=s',
+   'dncomp_gcc=s',
+   'cx_sds_io_gcc=s',
+   'libhim_gcc=s',
+   'help'
+) or die "Error parsing command-line options!\n";
+
+
+#-d $opt{hdf4_ifort} or print "WARNING: Doesn't exist or not a directory for HDF4_ifort: $opt{hdf4_ifort}\n";
+#-d $opt{hdf5_ifort} or print "WARNING: Doesn't exist or not a directory for HDF5_ifort: $opt{hdf5_ifort}\n";
+#-d $opt{netcdf_ifort} or print "WARNING: Doesn't exist or not a directory for NETCDF_ifort: $opt{netcdf_ifort}\n";
+#-d $opt{dncomp_ifort} or print "WARNING  FOR IFORT USAGE: Doesn't exist or not a directory for DNCOMP_ifort: $opt{dncomp_ifort}\n";
+#-d $opt{cx_sds_io_ifort} or print "WARNING  FOR IFORT USAGE: Doesn't exist or not a directory for CX_SDS_IO_ifort: $opt{cx_sds_io_ifort}\n\n";
+
+#-d $opt{hdf4_gcc} or print "WARNING: Doesn't exist or not a directory for HDF4_gcc: $opt{hdf4_gcc}\n";
+#-d $opt{hdf5_gcc} or print "WARNING: Doesn't exist or not a directory for HDF5_gcc: $opt{hdf5_gcc}\n";
+#-d $opt{netcdf_gcc} or print "WARNING: Doesn't exist or not a directory for NETCDF_gcc: $opt{netcdf_gcc}\n";
+#-d $opt{dncomp_gcc} or print "WARNING FOR GCC USAGE: Is not a directory for DNCOMP_gcc: $opt{dncomp_gcc}\n";
+#-d $opt{cx_sds_io_gcc} or print "WARNING  FOR GCC USAGE: Is not a directory for CX_SDS_IO_gcc: $opt{cx_sds_io_gcc}\n\n";
+
+-d $opt{rttov_path} or print "WARNING  FOR RTTOV USAGE: Is not a directory for RTTOV: $opt{rttov_path}\n\n";
+-d $opt{rttov_path} or print "ADD --rttov_path='<rttov_path>'\n\n";
+
+
+
+#if (@fc eq 'gfortran'){ 
+chdir ('cx_sds_io/Release_gfortran');
+system "./configure --HDF4_PATH=$opt{hdf4_gcc} --HDF5_PATH=$opt{hdf5_gcc} --NETCDF_PATH=$opt{netcdf_gcc}";
+chdir ('../../cx_dncomp/Release_gfortran');
+
+system "./configure --HDF4_PATH=$opt{hdf4_gcc} --HDF5_PATH=$opt{hdf5_gcc} --NETCDF_PATH=$opt{netcdf_gcc}";
+chdir ('../../muri/Release_gfortran');
+system "./configure --HDF4_PATH=$opt{hdf4_gcc} --HDF5_PATH=$opt{hdf5_gcc} --NETCDF_PATH=$opt{netcdf_gcc}";
+chdir ('../../');
+
+#} else {
+chdir ('cx_sds_io/Release_ifort');
+system "./configure --HDF4_PATH=$opt{hdf4_ifort} --HDF5_PATH=$opt{hdf5_ifort} --NETCDF_PATH=$opt{netcdf_ifort}";
+chdir ('../../cx_dncomp/Release_ifort');
+system "./configure --HDF4_PATH=$opt{hdf4_ifort} --HDF5_PATH=$opt{hdf5_ifort} --NETCDF_PATH=$opt{netcdf_ifort}";
+chdir ('../../muri/Release_ifort');
+system "./configure --HDF4_PATH=$opt{hdf4_ifort} --HDF5_PATH=$opt{hdf5_ifort} --NETCDF_PATH=$opt{netcdf_ifort}";
+#}
+chdir (' ../../');
+
+# Help.
+usage() if $opt{help};
+
+
+
+open (CONFIG, '>> ',@outfile) or die "Could not open file '@outfile' $!)\n";
+   print CONFIG '# This file was generated on ' . localtime() . " by $ENV{USER}",
+   " with the following command-line arguments: @sargv.\n# System info: ",
+   `uname -a`;
+   print CONFIG "# Include all required macros on the following lines:\n\n";
+   
+   print CONFIG "ifeq (\$(ARCH),\$(filter \$(ARCH), gfortran gfortran-profile gfortran-strict gfortran-debug))\n";
+   print CONFIG "export CX_DATA_IO=$opt{cx_sds_io_gcc}\n";
+   print CONFIG "export DNCOMP=$opt{dncomp_gcc}\n";
+   print CONFIG "export MURI=$opt{muri_gcc}\n";
+   print CONFIG "export HDF4_PATH =$opt{hdf4_gcc}\n";
+   print CONFIG "export HDF5_PATH =$opt{hdf5_gcc}\n";
+   print CONFIG "export NETCDF_PATH = $opt{netcdf_gcc}\n";
+   print CONFIG "export LIBHIM_PATH = $opt{libhim_gcc}\n";
+   print CONFIG "export RTTOV_DIR = ../rttov/\n";
+   print CONFIG "export RTTOV_PATH = $opt{rttov_path}\n";
+   print CONFIG "else\n";
+   print CONFIG "export CX_DATA_IO=$opt{cx_sds_io_ifort}\n";
+   print CONFIG "export DNCOMP=$opt{dncomp_ifort}\n";
+   print CONFIG "export MURI=$opt{muri_ifort}\n";
+   print CONFIG "export HDF4_PATH =$opt{hdf4_ifort}\n";
+   print CONFIG "export HDF5_PATH =$opt{hdf5_ifort}\n";
+   print CONFIG "export NETCDF_PATH = $opt{netcdf_ifort}\n";
+   print CONFIG "export LIBHIM_PATH = $opt{libhim_ifort}\n";
+   print CONFIG "export RTTOV_DIR = ../rttov/\n";
+   print CONFIG "export RTTOV_PATH = $opt{rttov_path}\n";
+   print CONFIG "endif\n";
+   
+   
+#   print CONFIG "hdf5libs = -I$opt{hdf5_ifort}include/ -L$opt{hdf5_ifort}lib/\n";
+close CONFIG;
+print "The CLAVR-x source code is configured for build on this system.\n";
+
+exit;
+
+sub usage
+{
+   print <<HELP;
+CLAVR-x configure script. Run it in order to configure CLAVR-x build process.
+It should be executed in the CLAVR-x main directory.
+
+#HIMAWARI_UTILS_LIBS = -lc++ $(HIMAWARI_UTILS)/src/libHimawari.a
+Usage: configure [command line options...]
+
+Command line options:
+
+--hdf4_ifort=<directory>
+         Path to the directory where HDF library and include files are stored.
+         Default is the root path SSEC global variable of hdf4 library SSEC_HDF4_LIB / ../.
+         
+--hdf5_ifort=<directory>
+         Path to the directory where HDF library and include files are stored.
+         Default is the root path SSEC global variable of hdf4 library SSEC_HDF4_LIB / ../.
+
+--netcdf_ifort=<directory>
+         Path to the directory where HDF library and include files are stored.
+         Default is the root path SSEC global variable of hdf4 library SSEC_HDF4_LIB / ../.
+
+--dncomp_ifort=<directory>
+         Path to the directory where HDF library and include files are stored.
+         Default is the root path SSEC global variable of hdf4 library SSEC_HDF4_LIB / ../.
+
+
+--cx_sds_io_ifort=<directory>
+         Path to the directory where HDF library and include files are stored.
+         Default is the root path SSEC global variable of hdf4 library SSEC_HDF4_LIB / ../.
+
+--hdf4_gcc=<directory>
+         Path to the directory where HDF library and include files are stored.
+         Default is the root path SSEC global variable of hdf4 library SSEC_HDF4_LIB / ../.
+
+--hdf5_gcc=<directory>
+         Path to the directory where HDF library and include files are stored.
+         Default is the root path SSEC global variable of hdf4 library SSEC_HDF4_LIB / ../.
+
+
+--netcdf_gcc=<directory>
+         Path to the directory where HDF library and include files are stored.
+         Default is the root path SSEC global variable of hdf4 library SSEC_HDF4_LIB / ../.
+         
+--dncomp_gcc=<directory>
+         Path to the directory where HDF library and include files are stored.
+         Default is the root path SSEC global variable of hdf4 library SSEC_HDF4_LIB / ../.     
+         
+--cx_sds_io_gcc=<directory>
+         Path to the directory where HDF library and include files are stored.
+         Default is the root path SSEC global variable of hdf4 library SSEC_HDF4_LIB / ../.  
+
+--rttov_path=<directory>
+         Path to the directory where RTTOV library and include files are stored.
+         
+--libhim_ifort=<directory>
+         Path to the directory where Libhimawari library is located for ifort compiles
+--libhim_gcc=<directory>
+         Path to the directory where Libhimawari library is located for gcc compiles
+                    
+HELP
+   exit;
+}
