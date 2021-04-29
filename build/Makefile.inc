@@ -8,7 +8,7 @@ ARCH=gfortran
 #
 
 #MAKEFILE_LOCAL=$(TOPDIR)/build/Makefile.local
-MAKEFILE_LOCAL=$(TOPDIR)/build/Makefile.$(HOST)
+MAKEFILE_LOCAL=$(TOPDIR)/build/Makefile.$(HOSTNAME)
 include $(MAKEFILE_LOCAL)
 
 
