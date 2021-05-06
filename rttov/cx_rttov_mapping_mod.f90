@@ -20,6 +20,7 @@ contains
     character (len = 100) :: sensor_string
     character (len=1) :: rttov_version_string
     character (len = 1) :: metop_nr
+    integer :: avhrr_num
    
 #ifndef RTTOVPATH
     print*,'RTTOV PATH not set ..s top'
@@ -39,6 +40,7 @@ contains
     
     allocate(chn_list(45))
     chn_list = -1
+    
     
     
     ! metop 
@@ -137,12 +139,24 @@ contains
    
     case default
       if (index(sensor,'AVHRR')  .gt. 0) then
+        
         chn_list(1) = 1
         chn_list(2) = 2
-        chn_list(6) = 3
-        chn_list(20) = 4
-        chn_list(31) = 5
-        chn_list(32) = 6
+        select case(sensor(11:12))
+        case ('15','16','17','18','19','20','21')
+        
+          chn_list(6) = 3
+          chn_list(20) = 4
+          chn_list(31) = 5
+          chn_list(32) = 6
+        
+        case default
+        
+          chn_list(20) = 3
+          chn_list(31) = 4
+          chn_list(32) = 5
+        end select 
+        
         list = chn_list(chn)
         sensor_string = 'noaa_'//sensor(11:12)//'_avhrr'
        
@@ -189,9 +203,9 @@ contains
     
     coef_filename = trim(path)//'/rtcoef_rttov12/rttov'//rttov_version_string//'pred54L/rtcoef_'//trim(sensor_string)//'.dat' 
     cld_coef_filename = trim(path)//'cldaer_ir/sccldcoef_'//trim(sensor_string)//'.dat'
-   
+  
    if ( list .eq. 0) list = -1
-   ! print*,'Sensor rttov mapping: ',sensor,chn,list
+    !print*,'Sensor rttov mapping: ',sensor,chn,list
     deallocate(chn_list)
 
 end function channel_map 
