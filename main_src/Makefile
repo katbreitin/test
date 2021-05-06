@@ -581,7 +581,7 @@ avhrr_reposition_mod.o: avhrr_reposition_mod.f90 constants_mod.o cx_date_time_to
 seviri_mod.o: seviri_mod.f90 pixel_common_mod.o constants_mod.o numerical_routines_mod.o goes_mod.o viewing_geometry_mod.o
 oca_mod.o: oca_mod.f90 hdf.o constants_mod.o pixel_common_mod.o file_tools.o
 sfc_emiss.o: sfc_emiss.f90 constants_mod.o numerical_routines_mod.o
-	$(fc) -c $(fflags) $(cppflags) $(cpp) $(CLAVRX_ID_FLAG) $(hdflibs)  sfc_emiss.f90
+	$(fc) -c $(fflags) $(cppflags) $(cpp) $(CLAVRX_ID_FLAG) $(netcdflibs)  sfc_emiss.f90
 surface_properties_mod.o: surface_properties_mod.f90 pixel_common_mod.o constants_mod.o
 sort_module.o: sort_module.f90
 strings.o:strings.f90 

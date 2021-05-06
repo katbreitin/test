@@ -27,8 +27,7 @@
 !
 !--------------------------------------------------------------------------------------
 module SFC_EMISS
-   use HDF,only: DFACC_READ, FAIL
-   
+   use NETCDF
    use CONSTANTS_MOD, only: &
     real4, int1, int2, int4, sym, exe_prompt,  missing_value_real4  
    
@@ -39,7 +38,7 @@ module SFC_EMISS
    private
   
    !--- routine access declaration
-   private :: READ_INTEGRATED_SEEBOR_HDF 
+   private :: READ_INTEGRATED_SEEBOR_NC 
    public :: OPEN_SEEBOR_EMISS, CLOSE_SEEBOR_EMISS, READ_SEEBOR_EMISS
 
    !---------------------------------------------------------------------------------------
@@ -85,7 +84,7 @@ CONTAINS
   
   logical :: file_exists
   
-  INTEGER :: sfstart
+  INTEGER :: status
   
   year_str = "2005"
   
@@ -116,7 +115,7 @@ CONTAINS
     jday_str = "335"
   end select
   
-  filename = trim(data_dir)//"/global_emiss_intABI_"//trim(year_str)//trim(jday_str)//".hdf"
+  filename = trim(data_dir)//"/global_emiss_intABI_"//trim(year_str)//trim(jday_str)//".nc"
   
   inquire(file = filename, exist = file_exists)
   if (.not. file_exists) then
@@ -124,8 +123,9 @@ CONTAINS
     stop
   endif
   
-  init_status % file_id = sfstart(trim(filename), DFACC_READ)
-  if (init_status % file_id  == FAIL) then
+! init_status % file_id = sfstart(trim(filename), DFACC_READ)
+  status = nf90_open(trim(filename), mode = nf90_nowrite, ncid = init_status % file_id)
+  if (status /= NF90_NOERR) then
     print "(/,a,'Failed to open, ',a)",EXE_PROMPT,trim(filename)
     stop
   endif
@@ -149,11 +149,10 @@ subroutine close_seebor_Emiss(id)
   INTEGER(kind=int4), intent(in) :: id
   
   INTEGER(kind=int4) :: istatus
-  INTEGER :: sfend
   
-  istatus = sfend(id)
-  if (istatus /= 0) then
-    print "(/,a,'Error closing surface emissivity hdf file.')",EXE_PROMPT
+  istatus = nf90_close(id)
+  if (istatus /= NF90_NOERR) then
+    print "(/,a,'Error closing surface emissivity nc file.')",EXE_PROMPT
     stop
   endif
 
@@ -255,7 +254,7 @@ end subroutine close_seebor_emiss
          stride_2d = (/1, 1/)
          edge_2d = (/(ilon2-ilon1)+1, (ilat2-ilat1)+1/)
   
-         call READ_INTEGRATED_SEEBOR_HDF(init_status % file_id, trim(sds_name), start_2d, stride_2d, edge_2d, Emiss_Grid)
+         call read_integrated_seebor_nc(init_status % file_id, trim(sds_name), start_2d, stride_2d, edge_2d, Emiss_Grid)
   
          do j = 1, ny
             do i = 1, nx
@@ -327,13 +326,13 @@ end subroutine close_seebor_emiss
          stride_2d = (/1, 1/)
          edge_2d = (/(ilon2-ilon1)+1, (ilat2-ilat1)+1/)
 
-         call READ_INTEGRATED_SEEBOR_HDF(init_status % file_id, trim(sds_name), start_2d, stride_2d, edge_2d, Emiss_Grid)
+         call read_integrated_seebor_nc(init_status % file_id, trim(sds_name), start_2d, stride_2d, edge_2d, Emiss_Grid)
     
          start_2d_2 = (/ilon1_2, ilat1/)
          stride_2d_2 = (/1, 1/)
          edge_2d_2 = (/(ilon2_2-ilon1_2)+1, (ilat2-ilat1)+1/)
   
-         call READ_INTEGRATED_SEEBOR_HDF(init_status % file_id, trim(sds_name), start_2d_2, stride_2d_2, edge_2d_2, Emiss_Grid_2)
+         call read_integrated_seebor_nc(init_status % file_id, trim(sds_name), start_2d_2, stride_2d_2, edge_2d_2, Emiss_Grid_2)
     
          do j = 1, ny
             do i = 1, nx
@@ -384,67 +383,82 @@ end subroutine close_seebor_emiss
 !   number reads in the data from the HDF file.
 !====================================================================
   
-subroutine read_integrated_seebor_hdf(sd_id, sds_name, istart, istride, iedge, buffer)
-  INTEGER(kind=int4), intent(in) :: sd_id
-  CHARACTER(*), intent(in) :: sds_name
+subroutine read_integrated_seebor_nc(ncid, var_name, istart, istride, iedge, buffer)
+  INTEGER(kind=int4), intent(in) :: ncid
+  CHARACTER(*), intent(in) :: var_name
   INTEGER(kind=int4), dimension(2), intent(in) :: istart, istride
+  INTEGER(kind=int4), dimension(2) :: start
   INTEGER(kind=int4), dimension(2), intent(inout) :: iedge
   REAL(kind=real4), dimension(:,:), allocatable, intent(out) :: buffer
   INTEGER(kind=int2), dimension(:,:), allocatable :: int_buffer
-  INTEGER(kind=int4) :: astatus, istatus, sds_id, sds_rank, sds_type, sds_nattr, attr_index
-  INTEGER(kind=int4), dimension(2) :: sds_dims
+  INTEGER(kind=int4) :: status, varid
+  INTEGER(kind=int4), dimension(2) :: dims, dimids
   REAL(kind=real4), dimension(1) :: scale_fac, offset
     
-  integer :: sfselect, sfn2index, sfrdata, sfendacc, sfginfo, sffattr, sfrnatt
+  status = nf90_inq_varid(ncid, trim(var_name), varid)
+  if (status /= NF90_NOERR) then
+    print "(a,'Error reading ',a,' from ncid: ',i0)",EXE_PROMPT,trim(var_name),ncid
+    stop
+  endif
+  status = nf90_inquire_variable(ncid, varid, dimids=dimids)
+  if (status /= NF90_NOERR) then
+    print "(a,'Error reading ',a,' from ncid: ',i0)",EXE_PROMPT,trim(var_name),ncid
+    stop
+  endif
+
   
-  sds_id = sfselect(sd_id, sfn2index(sd_id,trim(sds_name)))
+  status = nf90_inquire_dimension(ncid, dimids(1), len=dims(1))
+  if (status /= NF90_NOERR) then
+    print "(a,'Error reading ',a,' from ncid: ',i0)",EXE_PROMPT,trim(var_name),ncid
+    stop
+  endif
+  
+  status = nf90_inquire_dimension(ncid, dimids(2), len=dims(2))
+  if (status /= NF90_NOERR) then
+    print "(a,'Error reading ',a,' from ncid: ',i0)",EXE_PROMPT,trim(var_name),ncid
+    stop
+  endif
+  
+  status = nf90_get_att(ncid, varid, "scale_factor", scale_fac)
+  if (status /= NF90_NOERR) THEN
+    print "(a,'Attribute (scale_factor) reading error ',a,' from ncid: ',i0)",EXE_PROMPT,trim(var_name),ncid
+    stop
+  endif
+  
+  status = nf90_get_att(ncid, varid, "add_offset", offset)
+  if (status /= NF90_NOERR) then
+    print "(a,'Attribute (add_offset) reading error ',a,' from ncid: ',i0)",EXE_PROMPT,trim(var_name),ncid
+    stop
+  endif
+  
+  if (iedge(1) < 0) iedge(1) = dims(1)
+  if (iedge(2) < 0) iedge(2) = dims(2)
+  
+  iedge(1) = min((dims(1) - istart(1)),iedge(1))
+  iedge(2) = min((dims(2) - istart(2)),iedge(2))
     
-  istatus = sfginfo(sds_id, sds_name, sds_rank, sds_dims, sds_type, sds_nattr)
-  if (istatus /= 0) then
-    print "(a,'Error reading ',a,' from sd_id: ',i0)",EXE_PROMPT,trim(sds_name),sd_id
-    stop
-  endif
-  
-  attr_index = sffattr(sds_id, "scale_factor")
-  istatus = sfrnatt(sds_id, attr_index, scale_fac)
-  if (istatus /= 0) then
-    print "(a,'Attribute (scale_factor) reading error ',a,' from sd_id: ',i0)",EXE_PROMPT,trim(sds_name),sd_id
-    stop
-  endif
-  
-  attr_index = sffattr(sds_id, "add_offset")
-  istatus = sfrnatt(sds_id, attr_index, offset)
-  if (istatus /= 0) then
-    print "(a,'Attribute (add_offset) reading error ',a,' from sd_id: ',i0)",EXE_PROMPT,trim(sds_name),sd_id
-    stop
-  endif
-  
-  if (iedge(1) < 0) iedge(1) = sds_dims(1)
-  if (iedge(2) < 0) iedge(2) = sds_dims(2)
-  
-  iedge(1) = min((sds_dims(1) - istart(1)),iedge(1))
-  iedge(2) = min((sds_dims(2) - istart(2)),iedge(2))
-    
-  allocate(buffer(iedge(1),iedge(2)),int_buffer(iedge(1),iedge(2)),stat=astatus)
-  if (astatus /= 0) then
+  allocate(buffer(iedge(1),iedge(2)),int_buffer(iedge(1),iedge(2)),stat=status)
+  if (status /= 0) then
     print "(a,'Not enough memory to allocate 2d buffer.')",EXE_PROMPT
     stop
   endif
     
-  istatus = sfrdata(sds_id, istart, istride, iedge, int_buffer)
-  if (istatus /= 0) then
-    print "(a,'Error reading ',a,' from sd_id: ',i0)",EXE_PROMPT,trim(sds_name),sd_id
+
+  ! istart is 0-based, but nf90_get_var uses 1-based indexing
+  start=istart + 1
+  status = nf90_get_var(ncid, varid, int_buffer, start=start, count=iedge, stride=istride)
+  if (status /= NF90_NOERR) then
+    print "(a,'Error reading ',a,' from sd_id: ',i0)",EXE_PROMPT,trim(var_name),ncid
     stop
   endif
-  istatus = sfendacc(sds_id)
   
   buffer = int_buffer*scale_fac(1) + offset(1)
   
-  deallocate(int_buffer, stat=astatus)
-  if (astatus /= 0) then
+  deallocate(int_buffer, stat=status)
+  if (status /= 0) then
     print "(a,'Error deallocating emissivity integer buffer.')",EXE_PROMPT
     stop
   endif
     
-end subroutine read_integrated_seebor_hdf
+end subroutine read_integrated_seebor_nc
 end module SFC_EMISS

@@ -457,10 +457,7 @@
     , set_file_dimensions, &
       SET_SENSOR_CHANNEL_MAPPING
    
-   use SFC_EMISS, only: &
-      close_seebor_emiss &
-      , open_seebor_emiss &
-      , read_seebor_emiss
+   use SFC_EMISS, only: close_seebor_emiss
 #ifdef LIBRTTOV    
     use CX_RTTOV_SFC_EMISS, only: &
         destroy_rttov_emiss
