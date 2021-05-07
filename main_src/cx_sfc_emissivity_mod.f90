@@ -66,7 +66,7 @@ contains
     case(ETsfc_emiss_use_option_RTTOV)
       if (first_run) print*,ETsfc_emiss_use_option_RTTOV,'SFC EMISS RTTOV'
 #ifdef LIBRTTOV   
-      rttov_path = STRINGIFY(RTTOVPATH)
+      rttov_path = trim(Ancil_Data_Dir) // "static/rttov/"
       call GET_RTTOV_EMISS(Nav%Lat, Nav%Lon, Geo%Space_Mask, rttov_path)  
 #endif
     case(ETsfc_emiss_use_option_SEEBOR)

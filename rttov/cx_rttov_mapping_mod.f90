@@ -1,4 +1,5 @@
 module cx_rttov_mapping_mod
+use PIXEL_COMMON_MOD, only: Ancil_Data_Dir
 contains
   !
   !
@@ -23,13 +24,13 @@ contains
     integer :: avhrr_num
    
 #ifndef RTTOVPATH
-    print*,'RTTOV PATH not set ..s top'
+    print*,'RTTOV PATH not set ..stop'
     print*,__TIMESTAMP__
 ! print*,RTTOVPATH
    stop
 #endif  
 
-    path = STRINGIFY(RTTOVPATH)
+    path = trim(Ancil_Data_Dir) // "static/rttov/"
     rttov_version_string = '9'
     ! -- 
     !  the mapping translates one channel infot
