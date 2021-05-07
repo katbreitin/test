@@ -6,9 +6,9 @@ ARCH=gfortran
 
 # define local flags in MAKEFILE_LOCAL
 #
-
+HOST_LOC=$(shell hostname)
 #MAKEFILE_LOCAL=$(TOPDIR)/build/Makefile.local
-MAKEFILE_LOCAL=$(TOPDIR)/build/Makefile.$(HOSTNAME)
+MAKEFILE_LOCAL=$(TOPDIR)/build/Makefile.$(HOST_LOC)
 include $(MAKEFILE_LOCAL)
 
 
