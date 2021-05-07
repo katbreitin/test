@@ -82,6 +82,9 @@ contains
                          ,  inp % Chan_Idx &
                          ,  Trans_Prof_Rtm  &
                          ,  Use_Modis_Channel_Equivalent = .true.  ) 
+#else
+    print*, 'RTTOV selected as RTM but not compiled with RTTOV'
+    stop
               
 #endif                         
     end if

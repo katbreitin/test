@@ -68,6 +68,9 @@ contains
 #ifdef LIBRTTOV   
       rttov_path = trim(Ancil_Data_Dir) // "static/rttov/"
       call GET_RTTOV_EMISS(Nav%Lat, Nav%Lon, Geo%Space_Mask, rttov_path)  
+#else
+      print*, 'RTTOV emissivity selected but not compiled with RTTOV'
+      stop
 #endif
     case(ETsfc_emiss_use_option_SEEBOR)
       if (first_run)  print*,ETsfc_emiss_use_option_SEEBOR, 'SFC EMISS SEEBOR'
