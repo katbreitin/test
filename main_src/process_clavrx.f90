@@ -1331,11 +1331,7 @@ stop
                !--- compute a surface temperature from the NWP
                call MODIFY_TSFC_NWP_PIX(1,Image%Number_Of_Elements,Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)
 
-               !--- compute pixel-level rtm parameters 
                Start_Time_Point_Hours_temp = COMPUTE_TIME_HOURS()
-               !call CALCULATE_TRANSMITTANCE_RTTOV(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)
-               !call CX_CALCULATE_RTM(NWP)
-               
                 !--- if an sst analysis is available, use that
                 ! TODO find a better place
                if   (Use_Sst_Anal == sym%YES) then
@@ -1348,6 +1344,7 @@ stop
                   end where 
                end if
                
+               !--- compute pixel-level rtm parameters 
                call GET_PIXEL_NWP_RTM(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)
                call COMPUTE_MEDIAN_METRICS_L2()
                if (ABI_Use_104um_Flag) then
