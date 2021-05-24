@@ -68,6 +68,7 @@ module HIRS_FUSION_MOD
    private
    
    public:: HIRS_AVHRR_FUSION_PREPERATION
+   public:: SET_REPLACED_AVHRR_TO_MISSING
    public:: READ_FUSION_HIRS_INSTR_CONSTANTS
    public:: READ_HIRS_DATA
    public:: REPLACE_AVHRR_WITH_HIRS
@@ -411,5 +412,21 @@ module HIRS_FUSION_MOD
          endwhere
       endif
    end subroutine REPLACE_AVHRR_WITH_HIRS
+
+   !--------------------------------------------------------------------------------
+   ! this routine will reset the ch(20)%Bt_Toa back to missing for those data
+   ! swapped in with hirs. this is done so the output field is not a mix of
+   ! avhrr and hirs data
+   !--------------------------------------------------------------------------------
+   subroutine SET_REPLACED_AVHRR_TO_MISSING()
+
+      !--- set replaced 3.75 micron bt back to missing
+      if (allocated(ch(20)%Bt_Toa) .and. allocated(Bt_375um_Sounder)) then
+         where(ch(20)%Source .eq. 1) 
+            ch(20)%Bt_Toa = MISSING_VALUE_REAL4
+         endwhere
+      endif
+   end subroutine SET_REPLACED_AVHRR_TO_MISSING
+
 
 end module HIRS_FUSION_MOD
