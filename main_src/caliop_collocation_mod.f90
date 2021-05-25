@@ -105,6 +105,11 @@ subroutine CALIOP_COLLOCATION(Seg_Idx)
   endif
 
   if (Num_Files == 0) then
+    File_Name_Search = '*A'//Year_String//Doy_String//'_'//Time_String//'*.calipso.hdf'
+    Files => FILE_SEARCH(trim(Caliop_Dir)//'/',trim(File_Name_Search),count=Num_Files)
+  endif
+
+  if (Num_Files == 0) then
     File_Name_Search = '*d'//Year_String//Month_String//Day_of_Month_String//'_t'//Time_String//'*.calipso.hdf'
     Files => FILE_SEARCH(trim(Caliop_Dir)//'/',trim(File_Name_Search),count=Num_Files)
   endif
