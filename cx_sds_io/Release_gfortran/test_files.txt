@@ -1,0 +1,4 @@
+/DATA/clavrx_ancil_data/static/luts/dcomp_lut/VIIRS_ch5_ref_lut_ice_cld.nc
+/Users/awalther/DATA/Ancil_Data/clavrx_ancil_data/static/luts/cld/VIIRS_ch10_ref_lut_wat_cld.hdf
+/Users/awalther/Desktop/GDNBO_npp_d20120829_t0833300_e0834541_b04341_c20120829163256460256_noaa_ops.h5
+/DATA/Satellite_Input/HIRS_AVHRR_FUSION/n14_2000/NSS.GHRR.NJ.D00021.S1129.E1302.B2607576.GC.fusion.nc
