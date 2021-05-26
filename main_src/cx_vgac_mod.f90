@@ -110,7 +110,7 @@ subroutine READ_VGAC_DATE_TIME(Start_Year,Start_Doy,Start_Time,&
    deallocate(Time)
 
    !--- convert to start time  
-   call Vgac_Start_Time % SET_DATE(year=2010,month=0,hour=0,minute=0,second=0)
+   call Vgac_Start_Time % SET_DATE(year=2010,month=1,hour=0,minute=0,second=0)
    call Vgac_Start_Time % ADD_DAYS(day = Proj_Time0) 
 
    !--- convert to end time  

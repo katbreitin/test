@@ -34,6 +34,7 @@ subroutine GET_PROB_MASK_PHASE (X,Y,Z,Satzen, Solzen, Lunzen, Solglintzen, Lungl
     real :: Obs_Prob_Thresh
     integer :: Ix, Iy, Iz
     integer :: Classifier_Rank
+    integer :: Coast_Mask_Max_Tmp
     
     Classifier_Rank = Lut(Class_Idx)%Rank
     
@@ -116,9 +117,19 @@ subroutine GET_PROB_MASK_PHASE (X,Y,Z,Satzen, Solzen, Lunzen, Solglintzen, Lungl
        (Snow_Class < Lut(Class_Idx)%Snow_Class_Min .OR. &
         Snow_Class > Lut(Class_Idx)%Snow_Class_Max)) return
 
+    ! --- coast mask special if sea-ice lake do not turn off classifiers
+    Coast_Mask_Max_Tmp = Lut(Class_Idx)%Coast_Mask_Max
+    if (Coast_Mask == 1 .and. &
+        Snow_Class == 3 .and. & 
+        Land_Class /= 0 .and. & 
+        Land_Class /= 5 .and. & 
+        Land_Class /= 6) &
+           Coast_Mask_Max_Tmp = 1
+
     if (Coast_Mask >= 0 .and. &
        (Coast_Mask < Lut(Class_Idx)%Coast_Mask_Min .OR. &
-        Coast_Mask > Lut(Class_Idx)%Coast_Mask_Max)) return
+        Coast_Mask > Coast_Mask_Max_Tmp)) return
+        !Coast_Mask > Lut(Class_Idx)%Coast_Mask_Max)) return
 
     !--- check for valid data
     if (X == Missing_Value_Real) return

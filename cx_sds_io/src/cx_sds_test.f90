@@ -14,7 +14,7 @@ program cx_sds_test
 
    implicit none
    
-   character(len=1024) :: file
+   character(len=1024) :: file_nc,file_h4,file_h5,file_hiirs
    include 'cx_sds_constants.inc'
 
 
@@ -32,28 +32,42 @@ program cx_sds_test
    real, allocatable :: tra_2d(:,:)
    real ,allocatable :: tra_5d(:,:,:,:,:)
    real , allocatable :: sat_zen ( :)
- real,allocatable :: Rad_Hirs(:,:)
+   real,allocatable :: Rad_Hirs(:,:)
  
   integer :: sds_start (2)
       integer :: Sds_Count (2)
-      
+      logical :: existence
+   character(len=300) :: file_list   
+   file_list='test_files.txt'
+   inquire ( FILE = file_list, EXIST = existence )
+   print*, existence
+   open (unit=24,file=file_list)
+   read ( 24,fmt="(a)") file_nc
+   read ( 24,fmt="(a)") file_h4
+   read ( 24,fmt="(a)") file_h5
+   read ( 24,fmt="(a)") file_hiirs
   
-   file = "/DATA/Ancil_Data/clavrx_ancil_data/luts/cld/VIIRS_ch5_ref_lut_wat_cld.nc"
+   
    print*,"NCDF FILE TEST"
-
-   status = cx_sds_finfo ( file , ftype, nsds, sds_name, natt, att_name )
+   print*,trim(file_nc)
+   inquire ( FILE = file_nc, EXIST = existence )
+   print*, existence
+   if ( .not. existence) stop
+   
+   
+   status = cx_sds_finfo ( file_nc , ftype, nsds, sds_name, natt, att_name )
 
    print*,'number of dataset: ',nsds
    do i=1,nsds
       print*,i,trim(sds_name(i))
    end do
 
-   test = cx_sds_read ( file, 'transmission', tra_3d)
+   test = cx_sds_read ( file_nc, 'transmission', tra_3d)
    print*,maxval(tra_3d)
-   test = cx_sds_read ( file, 'reflectance', tra_5d)
+   test = cx_sds_read ( file_nc, 'reflectance', tra_5d)
    print*,maxval(tra_5d)
 
-   test= cx_sds_read ( file, 'sensor_zenith_angle', sat_zen)
+   test= cx_sds_read ( file_nc, 'sensor_zenith_angle', sat_zen)
    print*,'satellite zenith:',sat_zen
 
    if ( allocated(tra_5d)) deallocate(tra_5d)
@@ -62,16 +76,16 @@ program cx_sds_test
    print*
    print*,'HDF4 FILE TEST'
   ! do j=1,1000
-   file = "/DATA/Ancil_Data/clavrx_ancil_data/luts/cld/VIIRS_ch10_ref_lut_wat_cld.hdf"
+   
 
-   test = cx_sds_read ( file, 'transmission', tra_3d)
+   test = cx_sds_read ( file_h4, 'transmission', tra_3d)
    print*,maxval(tra_3d)
-   test = cx_sds_read ( file, 'reflectance', tra_5d)
+   test = cx_sds_read ( file_h4, 'reflectance', tra_5d)
    print*,maxval(tra_5d)
-test = cx_sds_read ( file, 'albedo', tra_2d)
+    test = cx_sds_read ( file_h4, 'albedo', tra_2d)
    print*,maxval(tra_2d)
 
-   status = cx_sds_finfo ( file , ftype, nsds, sds_name, natt, att_name )
+   status = cx_sds_finfo ( file_h4 , ftype, nsds, sds_name, natt, att_name )
 
    print*,'number of dataset: ',nsds
    do i=1,nsds
@@ -79,7 +93,7 @@ test = cx_sds_read ( file, 'albedo', tra_2d)
 
    end do
 
-     test = cx_sds_read ( file, 'reflectance', tra_5d)
+     test = cx_sds_read ( file_h4, 'reflectance', tra_5d)
 
       print*,maxval(tra_5d)
 
@@ -87,48 +101,67 @@ test = cx_sds_read ( file, 'albedo', tra_2d)
   ! end do
    print*
    print*,'HDF5 FILE TEST'
-  ! file="/DATA/Satellite_Input/viirs/north_pacific/2013/001/"// &
-  !    "GDNBO_npp_d20130101_t2228498_e2230139_b06123_c20151015223012753908_noaa_ops.h5"
+  print*,'h5 hs to be finsihed soon'
+  
+  if ( 5 .eq. 6 ) then
+   print*,'start read Variable All_Data/VIIRS-DNB-GEO_All/Height '
+  
+      status = cx_sds_finfo ( file_h5 , ftype, nsds, sds_name, natt, att_name )
 
+      print*,'number of dataset: ',nsds
+      do i=1,nsds
+        print*,i,trim(sds_name(i))
+      end do
+      wait(120)
+ 
+      test = cx_sds_read ( file_h5, '/All_Data/VIIRS-DNB-GEO_All/Height', tra_2d)
 
-  !     file = "/Users/awalther/Desktop/GDNBO_npp_d20120829_t0833300_e0834541_b04341_c20120829163256460256_noaa_ops.h5"
- !  print*,'start read Variable All_Data/VIIRS-DNB-GEO_All/Height '
- !  test = cx_sds_read ( file, '/All_Data/VIIRS-DNB-GEO_All/Height', tra_2d)
+      print*,'exit h5 read'
+      print*,'tra_2d:', maxval(tra_2d)
 
- !  print*,'exit h5 read'
- !  print*,'tra_2d:', maxval(tra_2d)
-
-!   status = cx_sds_finfo ( file , ftype, nsds, sds_name, natt, att_name )
+      status = cx_sds_finfo ( file_h5 , ftype, nsds, sds_name, natt, att_name )
    
-   
+   end if
    
    !  example for hirs data
-   file = '/DATA/Satellite_Input/HIRS_AVHRR_FUSION/n14_2000/NSS.GHRR.NJ.D00011.S0812.E0959.B2593233.WI.fusion.nc'
-   file=  '/DATA/Satellite_Input/HIRS_AVHRR_FUSION/n14_2000/NSS.GHRR.NJ.D00021.S1129.E1302.B2607576.GC.fusion.nc'
-   do j=1,1000
-   do i=1, 43
+  print*,' TEST EXAMPLE HIIR DATA with count and stride'
+  
+  print*,'File is '//trim(file_hiirs)
+  
+   inquire ( FILE = file_hiirs, EXIST = existence )
+   print*, existence
+  
+  if ( existence) then 
+  
+   status = cx_sds_finfo ( file_hiirs , ftype, nsds, sds_name, natt, att_name )
+
+   print*,'number of dataset: ',nsds
+   do i=1,nsds
+      print*,i,trim(sds_name(i))
+   end do
+   wait(120)
+ 
+   do j=1,1000,100
+   do i=1, 43,20
     sds_start(1) = 1
       sds_start(2) =  (i-1) * 250 + 1
-      Sds_Count(1) = 409
+      Sds_Count(1) = 139
       Sds_Count(2) = 250
    print*,'segment ...',i
-   status = cx_sds_read(File,'HIRS08',Rad_Hirs, count =Sds_Count, start = sds_start)
-   print*,rad_hirs(200,1)
+   status = cx_sds_read(File_hiirs,'Latitude',Rad_Hirs, count =Sds_Count, start = sds_start)
+   print*,maxval(rad_hirs), shape(rad_hirs)
    print*
    deallocate(rad_hirs)
-   
+    status = cx_sds_read(File_hiirs,'Latitude',Rad_Hirs)
+   print*,maxval(rad_hirs), shape(rad_hirs)
+   print*
+   deallocate(rad_hirs)
   end do
   end do
   print*,'============ ='
- ! print*,'HIRS TEST..'
-!  do i = 300,200,-1
-!  sds_start(1) = 1
-!      sds_start(2) = 12501
-!      Sds_Count(1) = 409
-!      Sds_Count(2) = i
-!      status = cx_sds_read(File,'HIRS08',Rad_Hirs, count =Sds_Count, start = sds_start)
-!     print*,i ,rad_hirs(200,1)
-   !print*,shape(rad_hirs)
-!  end do    
+  end if
+  
+  print*,'END===='
+   
   
 end program cx_sds_test
