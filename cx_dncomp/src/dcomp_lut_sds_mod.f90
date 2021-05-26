@@ -12,16 +12,8 @@ module dcomp_lut_sds_mod
    
    use cx_sds_io_mod,only: &
       cx_sds_finfo &
-      , cx_sds_read &
-      , cx_sds_read_raw
+      , cx_sds_read 
    
-   use cx_sds_type_definitions_mod, only: &
-      cx_sds_type &
-      , cx_att_type &
-      , cx_sds_data_type &
-      , MAXNCNAM
-   
-
    implicit none
 
 contains
