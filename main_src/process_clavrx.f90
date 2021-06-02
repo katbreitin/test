@@ -221,7 +221,8 @@
       , POST_PROCESS_GOES_DARK_COMPOSITE
    
    use HIRS_FUSION_MOD, only: &
-      HIRS_AVHRR_FUSION_PREPERATION
+      SET_REPLACED_AVHRR_TO_MISSING &     
+    , HIRS_AVHRR_FUSION_PREPERATION
    
    use IR_CLOUD_TYPE_BAUM_MODULE, only: &
        IR_CLOUD_TYPE_BAUM &
@@ -328,6 +329,7 @@
     , SOLAR_CONTAMINATION_MASK &
     , Ref_Cal_1b &
     , Level2_File_Flag &
+    , AVHRR_Fusion_Flag &
     , Pc_Co2,Tc_Co2,Zc_Co2, Ec_Co2 &   
     , Pc_H2O,Tc_H2O,Zc_H2O, Ec_H2O &   
     , Nonconfident_Cloud_Mask_Count &
@@ -1837,6 +1839,13 @@ stop
             if (NWP_PIX%Nwp_Opt > 0 .and. Cld_Flag == sym%YES) then
                !--- assign clear sky quality flags
                call ASSIGN_CLEAR_SKY_QUALITY_FLAGS(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)
+            endif
+
+            !-----------------------------------------------------------------------------------
+            !--- for fusion files reset replaced 3.75 bt to missing so output isn't confusing
+            !-----------------------------------------------------------------------------------
+            if (AVHRR_Fusion_Flag) then
+               call SET_REPLACED_AVHRR_TO_MISSING()
             endif
 
             !*******************************************************************
