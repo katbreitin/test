@@ -111,6 +111,7 @@ module NBM_CLOUD_MASK_CLAVRX_BRIDGE
    private :: LHP_CHN_CHECK   !WCS3
    private :: BETA_11_12_OVERLAP_TEST
    private :: BETA_11_133_OVERLAP_TEST
+   private :: WATER_EDGE_FILTER
 
    !--- define these structure as module wide
    type(mask_input), private :: Input   
@@ -411,7 +412,13 @@ contains
             (j_LRC(i,j) > 0) .and. &
             (Cld_Phase_Uncertainty(i,j) .ger. CLD_PHASE_UNCER_LRC_THRESH)) then
 
-            Cld_Phase(i,j) = Cld_Phase(i_LRC(i,j),j_LRC(i,j)) 
+            !--- this test prevents clear pixels from replacing cloudy pixels             
+            if (Cld_Phase(i,j) > 0 .and. Cld_Phase(i_LRC(i,j),j_LRC(i,j)) > 0 .and. &
+                Cld_Phase(i,j)  /= Cld_Phase(i_LRC(i,j),j_LRC(i,j))) then
+
+                Cld_Phase(i,j) = Cld_Phase(i_LRC(i,j),j_LRC(i,j)) 
+
+            endif
 
             !-- this logic could extend supercooled to water erroneously
             if ((Cld_Phase(i,j) == sym%SUPERCOOLED_PHASE) .and. (Tc_Opaque_Cloud(i,j) .ger. 273.0)) then
@@ -423,51 +430,8 @@ contains
       end do elem_loop_lrc
    end do line_loop_lrc
 
-   !--- Turn uncertain pixels around certain ice into ice
-!  N_Box = 3
-
-!  line_loop_box: do i = 1, Image%Number_Of_Elements
-!     i1 = max(1,min(Image%Number_Of_Elements,i-N_Box))
-!     i2 = max(1,min(Image%Number_Of_Elements,i+N_Box))
-
-!     elem_loop_box: do  j = 1, Image%Number_Of_Lines_Read_This_Segment
-!        j1 = max(1,min(Image%Number_Of_Lines_Read_This_Segment,j-N_Box))
-!        j2 = max(1,min(Image%Number_Of_Lines_Read_This_Segment,j+N_Box))
-
-!        if ((maxval(CLDMASK%Posterior_Ice_Probability(i1:i2,j1:j2)) .gtr. 0.90) .and. &
-!            (count(Cld_Phase(i1:i2,j1:j2) /= sym%ICE_PHASE) > 0) .and. &
-!            (maxval(Cld_Phase_Uncertainty(i1:i2,j1:j2)) .gtr. CLD_PHASE_UNCER_LRC_THRESH)) then
-
-!        print *, "indices = ", i1, i2, j1, j2
-
-!            allocate(Phase_Temp, source = Cld_Phase(i1:i2,j1:j2))
-!            allocate(Uncer_Temp, source = Cld_Phase_Uncertainty(i1:i2,j1:j2))
-
-!            !allocate(Phase_Temp(i2-i1+1,j2-j1+1))
-!            !allocate(Uncer_Temp(i2-i1+1,j2-j1+1))
-
-!            Phase_Temp = Cld_Phase(i1:i2,j1:j2)
-!            Uncer_Temp = Cld_Phase_Uncertainty(i1:i2,j1:j2)
-!            print *, "Cld_Phase Before = ", Phase_Temp
-!            print *, "Uncer Before = ", Uncer_Temp
-
-!            where(Uncer_Temp .gtr. CLD_PHASE_UNCER_LRC_THRESH)
-!                 Phase_Temp = sym%ICE_PHASE 
-!            endwhere
-
-!            print *, "number of ice before, after = ", count(Cld_Phase(i1:i2,j1:j2) == sym%ICE_PHASE), count(Phase_Temp == sym%ICE_PHASE)
-
-!            Cld_Phase(i1:i2,j1:j2) = Phase_Temp
-
-!            deallocate(Phase_Temp, Uncer_Temp)
-
-!        endif
-
-!     end do elem_loop_box
-!  end do line_loop_box
-
-
-       
+   !--- try to remove water edges around cirrus that impacts AMVs
+   call WATER_EDGE_FILTER(Cld_Phase,2)
 
    !--- cloud type
    line_loop_type: do i = 1, Image%Number_Of_Elements
@@ -927,6 +891,114 @@ contains
       Diag_Pix_Array_3(i,j) = Diag%Array_3
    end subroutine SET_DIAG
 
+!==============================================================
+! Water Edge Filter
+!
+!  in an nxn box, if there are clear, water and ice, 
+!  rephase water as ice
+!
+! Input: Phase = cloud phase following clavrx numbering
+!        N = size of box  (N = 1 = 3x3 array)
+!
+! Output: Phase
+!==============================================================
+subroutine WATER_EDGE_FILTER(Phase,N)
+  integer(kind=int1), intent(inout), dimension(:,:):: Phase
+  integer:: N
+  integer, dimension(size(Phase,1),size(Phase,2)):: Phase_Temp
+  logical, dimension(2*N+1,2*N+1):: Mask
+  integer, dimension(2*N+1,2*N+1):: Phase_Sub
+  integer:: Nx, Ny
+  integer:: i,i1,i2,j,j1,j2
+  integer:: N_Ice, N_Clear
+  integer:: N_Ice_Thresh, N_Clear_Thresh
+
+  !--- set PHASE numbering
+  integer, parameter:: CLEAR_PHASE = 0
+  integer, parameter:: WATER_PHASE = 1
+  integer, parameter:: SUPERCOOLED_PHASE = 2
+  integer, parameter:: MIXED_PHASE = 3
+  integer, parameter:: ICE_PHASE = 4
+  integer, parameter:: UNKNOWN_PHASE = 5
+
+  integer:: N_Water_Before, N_Water_After
+
+  !--- determine segment size
+  Nx = size(Phase,1)
+  Ny = size(Phase,2)
+
+  !--- make a copy
+  Phase_Temp = Phase
+
+  !--- set thresholds of numbers of clear and ice pixels for filter
+  N_Clear_Thresh = 1
+  N_Ice_Thresh = 1
+
+  !--- loop over segment
+  do i =  1, Nx-N, 1
+
+   i1 = max(1, i - N)
+   i2 = min(Nx,i + N)
+
+   do j = 1, Ny-N, 1
+
+     j1 = max(1, j - N)
+     j2 = min(Ny,j + N)
+
+     !--- if in a corner, skip
+     if (i2 - i1 < 1 .and. j2 - j1 < 1) cycle
+
+     !--- initialize subarrays
+     Mask = .false.
+     Phase_Sub = UNKNOWN_PHASE
+     Phase_Sub(1:i2-i1+1,1:j2-j1+1) = Phase(i1:i2,j1:j2)
+
+     !--- determine number of clear in sub-array
+     Mask = .false.
+     where(Phase_Sub == CLEAR_PHASE)
+         Mask = .true.
+     endwhere
+     N_Clear = count(Mask)
+     if (N_Clear < N_Clear_Thresh) cycle    !skip if no clear
+
+     !--- determine number of ice in subarray
+     Mask = .false.
+     where(Phase_Sub == ICE_PHASE)
+         Mask = .true.
+     endwhere
+     N_Ice = count(Mask)
+     if (N_Ice < N_Ice_Thresh) cycle    !skip if no ice
+
+     Mask = .false.
+     where(Phase_Sub == WATER_PHASE .or. Phase_Sub == SUPERCOOLED_PHASE)
+         Mask = .true.
+     endwhere
+     N_Water_Before = count(Mask)
+
+     !--- apply filter
+     if (N_Clear >= N_Clear_Thresh .and. N_Ice >= N_Ice_Thresh) then
+       where(Phase_Sub == WATER_PHASE .or. Phase_Sub == MIXED_PHASE .or. &
+             Phase_Sub == SUPERCOOLED_PHASE)
+        Phase_Sub = ICE_PHASE
+       endwhere
+     endif
+
+     Mask = .false.
+     where(Phase_Sub == WATER_PHASE .or. Phase_Sub == SUPERCOOLED_PHASE)
+         Mask = .true.
+     endwhere
+     N_Water_After = count(Mask)
+
+     !--- copy sub-array back into full array
+     Phase_Temp(i1:i2,j1:j2) = Phase_Sub(1:i2-i1+1,1:j2-j1+1)
+
+    enddo
+  enddo
+
+  !--- copy back
+  Phase = Phase_Temp
+
+end subroutine WATER_EDGE_FILTER
 !==============================================================
 ! Median filter
 !

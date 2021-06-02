@@ -445,6 +445,7 @@ module PIXEL_COMMON_MOD
     real (kind=real4), dimension(:,:), allocatable:: Tc
     real (kind=real4), dimension(:,:), allocatable:: Ec
     real (kind=real4), dimension(:,:), allocatable:: Pc
+    real (kind=real4), dimension(:,:), allocatable:: Pc_Median
     real (kind=real4), dimension(:,:), allocatable:: Zc
     real (kind=real4), dimension(:,:), allocatable:: Zc_Base
     real (kind=real4), dimension(:,:), allocatable:: Pc_Base
@@ -2407,6 +2408,7 @@ subroutine CREATE_ACHA_ARRAYS(dim1,dim2)
     allocate(ACHA%Tc(dim1,dim2)) 
     allocate(ACHA%Ec(dim1,dim2)) 
     allocate(ACHA%Pc(dim1,dim2)) 
+    allocate(ACHA%Pc_Median(dim1,dim2)) 
     allocate(ACHA%Zc(dim1,dim2)) 
     allocate(ACHA%Pc_Eff(dim1,dim2)) 
     allocate(ACHA%Tc_Eff(dim1,dim2)) 
@@ -2487,6 +2489,7 @@ subroutine RESET_ACHA_ARRAYS()
     ACHA%Tc = Missing_Value_Real4
     ACHA%Ec = Missing_Value_Real4
     ACHA%Pc = Missing_Value_Real4
+    ACHA%Pc_Median = Missing_Value_Real4
     ACHA%Zc = Missing_Value_Real4
     ACHA%Pc_Eff = Missing_Value_Real4
     ACHA%Tc_Eff = Missing_Value_Real4
@@ -2562,6 +2565,7 @@ subroutine DESTROY_ACHA_ARRAYS()
     deallocate(ACHA%Tc) 
     deallocate(ACHA%Ec) 
     deallocate(ACHA%Pc) 
+    deallocate(ACHA%Pc_Median) 
     deallocate(ACHA%Zc) 
     deallocate(ACHA%Pc_Eff) 
     deallocate(ACHA%Tc_Eff) 
