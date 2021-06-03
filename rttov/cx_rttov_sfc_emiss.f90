@@ -164,7 +164,7 @@ CONTAINS
     atlas_type = atlas_type_ir ! IR atlas
 
 !  atlas_id
-   Use_Land_IR_emiss = 2
+   Use_Land_IR_emiss = 4
  
    if (Use_Land_IR_emiss == 2)  atlasid=1_jpim   ! UWHSREMIS
    if (Use_Land_IR_emiss == 3)  atlasid=2_jpim   ! CAMEL
