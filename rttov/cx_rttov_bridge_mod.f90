@@ -143,7 +143,7 @@ subroutine compute_transmission_rttov ( &
  
  
  
-   lll  = channel_map (sensor,kban_in , coef_filename,cld_coef_filename)
+   lll  = channel_map (sensor,ancil_data_path, kban_in , coef_filename,cld_coef_filename)
    
   
   nprof = size(temp(1,:))

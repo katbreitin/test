@@ -79,14 +79,6 @@ cx_rttov_bridge_mod.o \
 cx_rttov_test.o \
 cx_rttov_mapping_mod.o
 
-OBJS_RTTOV = cx_pfaast_coef_mod.o \
-cx_pfaast_rttov_test.o \
-cx_string_tools_mod.o \
-cx_pfaast_mod.o \
-cx_pfaast_tools_mod.o \
-cx_pfaast_constants_mod.o \
-cx_rttov_bridge_mod.o
-
 .PHONY: cx_rttov clean
   
 
@@ -122,6 +114,4 @@ cx_rttov_mapping_mod$(EXT_OBJ)::cx_rttov_mapping_mod.f90
 
 clean:
 	rm -f *.o *.mod
-	rm test_pfaast
-	rm test_rtm
-	rm test_rttov
+	rm -f test_rttov
