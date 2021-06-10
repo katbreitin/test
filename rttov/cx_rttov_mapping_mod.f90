@@ -1,15 +1,16 @@
 module cx_rttov_mapping_mod
-use PIXEL_COMMON_MOD, only: Ancil_Data_Dir
+
 contains
   !
   !
   !
-  function channel_map (sensor, chn,coef_filename,cld_coef_filename) result (list)
+  function channel_map (sensor,ancil_data_path, chn,coef_filename,cld_coef_filename) result (list)
 
 #define STRINGIFY(x) x
 
     implicit none
     character(len = *) :: sensor
+    character(len = * ) :: ancil_data_path  
     integer :: chn
     integer :: list
     integer, allocatable:: chn_list(:)
@@ -30,7 +31,7 @@ contains
    stop
 #endif  
 
-    path = trim(Ancil_Data_Dir) // "static/rttov/"
+    path = trim(ancil_data_path) // "static/rttov/"
     rttov_version_string = '9'
     ! -- 
     !  the mapping translates one channel infot
@@ -86,7 +87,7 @@ contains
       
       chn_list = [6,9,3,4,10,14,15,1,2,-1,-1,-1,-1,-1,7,-1,-1,-1,-1,17,-1,18,-1,-1,-1,12,-1,-1,19,-1,20,22]
       list = chn_list(chn)
-      sensor_string = 'jpss_noaa_20_viirs'
+      sensor_string = 'noaa_20_viirs'
       
     case ('AHI8')
       chn_list(20:38) = [7,-1,-1,-1,-1,-1,-1,9,10,11,12,14,15,16,-1,-1,-1,8,13]
@@ -208,6 +209,9 @@ contains
    if ( list .eq. 0) list = -1
     !print*,'Sensor rttov mapping: ',sensor,chn,list
     deallocate(chn_list)
+    
+    
+   
 
 end function channel_map 
 

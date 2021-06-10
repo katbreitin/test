@@ -782,6 +782,8 @@ dcomp_ifort:
 dcomp_ifort_clean:
 	$(MAKE) clean -C ../cx_sds_io/Release_ifort/
 	$(MAKE) clean -C ../cx_dncomp/Release_ifort/
+rttov_clean:
+	$(MAKE) clean -C ../rttov/
 muri_gfortran:
 	$(MAKE) all -C ../cx_sds_io/Release_gfortran/
 	$(MAKE) all -C ../muri/Release_gfortran/

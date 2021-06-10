@@ -321,6 +321,16 @@ subroutine dcomp_array_loop ( input, output , debug_mode_user)
          ! - apriori
          state_apriori (1) = 0.7 * ( 100. * obs_vec(1) ) ** (0.9)
          state_apriori(1) = log10 ( max ( 0.1 , state_apriori(1) ) ) 
+         
+         ! use acha as apriori if cirrus
+         if ( input % tau_acha(elem_idx, line_idx) .gt. 0.01 &
+              .and. input % tau_acha(elem_idx, line_idx) .lt. 8.01 &
+              .and. input % cloud_type(elem_idx, line_idx) .eq. 7  ) then
+              
+            state_apriori(1) = log10 ( max ( 0.001 , input % tau_acha(elem_idx, line_idx) ) )    
+           
+         end if
+         
          state_apriori (2) = 1.3
          if  (water_phase_array ( elem_idx, line_idx) ) state_apriori(2) = 1.0
          
