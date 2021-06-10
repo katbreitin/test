@@ -47,6 +47,7 @@ module ACHA_COMP
 !        generated here.
 !
 !      Output%Tau
+!      Output%Tau_Uncer
 !      Output%Ec  (modified from ACHA)
 !      Output%Reff
 !      Output%Beta (modified from ACHA)
@@ -110,6 +111,7 @@ module ACHA_COMP
         Input%Sensor_Zenith_Angle(Elem_Idx,Line_Idx) <= Sensor_Zenith_Threshold) then
         Output%Ec(Elem_Idx,Line_Idx) = 0.0
         Output%Tau(Elem_Idx,Line_Idx) = 0.0
+        Output%Tau_Uncertainty(Elem_Idx,Line_Idx) = MISSING_VALUE_REAL
         Output%Reff(Elem_Idx,Line_Idx) = MISSING_VALUE_REAL
         Output%Beta(Elem_Idx,Line_Idx) = MISSING_VALUE_REAL
        cycle
@@ -157,12 +159,15 @@ module ACHA_COMP
                               Cloud_Phase, &
                               Ec_Slant, &
                               Output%Ec(Elem_Idx,Line_Idx), &
+                              Output%Ec_Uncertainty(Elem_Idx,Line_Idx), &
                               Output%Tau(Elem_Idx,Line_Idx), &
+                              Output%Tau_Uncertainty(Elem_Idx,Line_Idx), &
                               Output%Reff(Elem_Idx,Line_Idx))
 
      else
 
        Output%Tau(Elem_Idx,Line_Idx) = 20.0
+       Output%Tau_Uncertainty(Elem_Idx,Line_Idx) = 20.0
        Output%Ec(Elem_Idx,Line_Idx) = 1.0
 
        if( Cloud_Phase == symbol%ICE_PHASE) then
@@ -184,14 +189,16 @@ end do Line_Loop
 end subroutine  ACHA_COMP_ALGORITHM
 
 !---------------------------------------------------------------------------
-!
+! routine to compute optical depth and eff radius from ec and beta
 !---------------------------------------------------------------------------
 subroutine COMPUTE_TAU_REFF_ACHA(Beta, &
                                  Cosine_Zenith_Angle, &
                                  Cloud_Phase, &
                                  Ec_Slant, & 
                                  Ec, &
+                                 Ec_Uncer, &
                                  Tau, &
+                                 Tau_Uncer, &
                                  Reff)
 
    real(kind=real4), intent(in):: Beta
@@ -199,7 +206,9 @@ subroutine COMPUTE_TAU_REFF_ACHA(Beta, &
    real(kind=real4), intent(in):: Ec_Slant
    integer(kind=int4), intent(in):: Cloud_Phase
    real(kind=real4), intent(out):: Ec
+   real(kind=real4), intent(in):: Ec_Uncer
    real(kind=real4), intent(out):: Tau
+   real(kind=real4), intent(out):: Tau_Uncer
    real(kind=real4), intent(out):: Reff
    real(kind=real4):: Qe_vis
    real(kind=real4):: Qe_110um
@@ -208,6 +217,7 @@ subroutine COMPUTE_TAU_REFF_ACHA(Beta, &
    real(kind=real4):: Tau_Abs_110um
    real(kind=real4):: Temp_R4
    real(kind=real4):: log10_Reff
+   real(kind=real4):: Factor
    real(kind=real4), parameter:: Reff_Min = 1.0
    real(kind=real4), parameter:: Reff_Max = 60.0
    real(kind=real4), parameter:: Tau_Max = 8.0
@@ -235,56 +245,65 @@ subroutine COMPUTE_TAU_REFF_ACHA(Beta, &
    else
      return
    endif
+   !--- determine optical depth and its uncertainty
+   if (Ec_Slant >= 0.0 .and. Ec_Slant < 1.0) then
 
-   if (Cloud_Phase == symbol%ICE_PHASE) then
+      !--- determine single scattering properties
+      if (Cloud_Phase == symbol%ICE_PHASE) then
 
-     Qe_Vis = Qe_006um_COEF_ICE(0) +  &
-              Qe_006um_COEF_ICE(1)*log10_Reff + &
-              Qe_006um_COEF_ICE(2)*log10_Reff**2
+        Qe_Vis = Qe_006um_COEF_ICE(0) +  &
+                 Qe_006um_COEF_ICE(1)*log10_Reff + &
+                 Qe_006um_COEF_ICE(2)*log10_Reff**2
 
-     Qe_110um = Qe_110um_COEF_ICE(0) +  &
-                Qe_110um_COEF_ICE(1)*log10_Reff + &
-                Qe_110um_COEF_ICE(2)*log10_Reff**2
+        Qe_110um = Qe_110um_COEF_ICE(0) +  &
+                   Qe_110um_COEF_ICE(1)*log10_Reff + &
+                   Qe_110um_COEF_ICE(2)*log10_Reff**2
 
-     wo_110um = wo_110um_COEF_ICE(0) +  &
-                wo_110um_COEF_ICE(1)*log10_Reff + &
-                wo_110um_COEF_ICE(2)*log10_Reff**2
+        wo_110um = wo_110um_COEF_ICE(0) +  &
+                   wo_110um_COEF_ICE(1)*log10_Reff + &
+                   wo_110um_COEF_ICE(2)*log10_Reff**2
 
-     g_110um = g_110um_COEF_ICE(0) +  &
-               g_110um_COEF_ICE(1)*log10_Reff + &
-               g_110um_COEF_ICE(2)*log10_Reff**2
+        g_110um = g_110um_COEF_ICE(0) +  &
+                  g_110um_COEF_ICE(1)*log10_Reff + &
+                  g_110um_COEF_ICE(2)*log10_Reff**2
 
-   else
+      else
 
-     Qe_Vis = Qe_006um_COEF_WATER(0) +  &
-              Qe_006um_COEF_WATER(1)*log10_Reff + &
-              Qe_006um_COEF_WATER(2)*log10_Reff**2
+        Qe_Vis = Qe_006um_COEF_WATER(0) +  &
+                 Qe_006um_COEF_WATER(1)*log10_Reff + &
+                 Qe_006um_COEF_WATER(2)*log10_Reff**2
 
-     Qe_110um = Qe_110um_COEF_WATER(0) +  &
-                Qe_110um_COEF_WATER(1)*log10_Reff + &
-                Qe_110um_COEF_WATER(2)*log10_Reff**2
+        Qe_110um = Qe_110um_COEF_WATER(0) +  &
+                   Qe_110um_COEF_WATER(1)*log10_Reff + &
+                   Qe_110um_COEF_WATER(2)*log10_Reff**2
 
-     wo_110um = wo_110um_COEF_WATER(0) +  &
-                wo_110um_COEF_WATER(1)*log10_Reff + &
-                wo_110um_COEF_WATER(2)*log10_Reff**2
+        wo_110um = wo_110um_COEF_WATER(0) +  &
+                   wo_110um_COEF_WATER(1)*log10_Reff + &
+                   wo_110um_COEF_WATER(2)*log10_Reff**2
 
-     g_110um =  g_110um_COEF_WATER(0) +  &
-                g_110um_COEF_WATER(1)*log10_Reff + &
-                g_110um_COEF_WATER(2)*log10_Reff**2
+        g_110um =  g_110um_COEF_WATER(0) +  &
+                   g_110um_COEF_WATER(1)*log10_Reff + &
+                   g_110um_COEF_WATER(2)*log10_Reff**2
 
-   endif
+      endif
 
-   Tau_Abs_110um = -Cosine_Zenith_Angle*alog(1.0 - Ec_Slant) 
+      Tau_Abs_110um = -Cosine_Zenith_Angle*alog(1.0 - Ec_Slant) 
 
-   Ec = 1.0 - exp(-Tau_Abs_110um)
+      Ec = 1.0 - exp(-Tau_Abs_110um)
    
-   Tau = min((Qe_vis / Qe_110um) * Tau_Abs_110um / (1.0 - wo_110um * &
-              g_110um),Tau_Max)
+      Factor = (Qe_vis / Qe_110um) / (1.0 - wo_110um * g_110um)
 
-   !--- set negative values to be missing 
-   if (Tau < 0) then
-      Tau = MISSING_VALUE_REAL
-      Reff= MISSING_VALUE_REAL
+      Tau = min(Factor * Tau_Abs_110um, Tau_Max)
+
+      Tau_Uncer = Ec_Uncer * Factor / (1.0-Ec)
+
+      !--- set negative values to be missing 
+      if (Tau < 0) then
+         Tau = MISSING_VALUE_REAL
+         Tau_Uncer = MISSING_VALUE_REAL
+         Reff= MISSING_VALUE_REAL
+      endif
+
    endif
 
 end subroutine COMPUTE_TAU_REFF_ACHA 

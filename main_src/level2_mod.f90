@@ -1779,6 +1779,11 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Actual_Range = [-0.2,8.0]
             Sds_Info(Var_Idx)%Units = "none"
             if (allocated(ACHA%Tau)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => ACHA%Tau
+         case("cld_opd_uncer_acha")
+            Sds_Info(Var_Idx)%Standard_Name = "uncertainty_of_cloud_optical_depth_from_acha"
+            Sds_Info(Var_Idx)%Actual_Range = [0.0,8.0]
+            Sds_Info(Var_Idx)%Units = "none"
+            if (allocated(ACHA%Tau_Uncer)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => ACHA%Tau_Uncer
          case("cld_reff_acha")
             Sds_Info(Var_Idx)%Standard_Name = "cloud_effective_radius_from_acha"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,160.0]

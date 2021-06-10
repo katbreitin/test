@@ -451,6 +451,7 @@ module PIXEL_COMMON_MOD
     real (kind=real4), dimension(:,:), allocatable:: Pc_Base
     real (kind=real4), dimension(:,:), allocatable:: Beta
     real (kind=real4), dimension(:,:), allocatable:: Tau
+    real (kind=real4), dimension(:,:), allocatable:: Tau_Uncer
     real (kind=real4), dimension(:,:), allocatable:: Reff
     real (kind=real4), dimension(:,:), allocatable:: Ice_Probability
     real (kind=real4), dimension(:,:), allocatable:: Tc_Uncertainty
@@ -2419,6 +2420,7 @@ subroutine CREATE_ACHA_ARRAYS(dim1,dim2)
     allocate(ACHA%Pc_Base(dim1,dim2)) 
     allocate(ACHA%Beta(dim1,dim2)) 
     allocate(ACHA%Tau(dim1,dim2)) 
+    allocate(ACHA%Tau_Uncer(dim1,dim2)) 
     allocate(ACHA%Reff(dim1,dim2)) 
     allocate(ACHA%Ice_Probability(dim1,dim2)) 
     allocate(ACHA%Tc_Uncertainty(dim1,dim2)) 
@@ -2500,6 +2502,7 @@ subroutine RESET_ACHA_ARRAYS()
     ACHA%Pc_Base  = Missing_Value_Real4
     ACHA%Beta = Missing_Value_Real4
     ACHA%Tau = Missing_Value_Real4
+    ACHA%Tau_Uncer = Missing_Value_Real4
     ACHA%Reff = Missing_Value_Real4
     ACHA%Ice_Probability = Missing_Value_Real4
     ACHA%Tc_Uncertainty = Missing_Value_Real4
@@ -2576,6 +2579,7 @@ subroutine DESTROY_ACHA_ARRAYS()
     deallocate(ACHA%Pc_Base) 
     deallocate(ACHA%Beta) 
     deallocate(ACHA%Tau) 
+    deallocate(ACHA%Tau_Uncer) 
     deallocate(ACHA%Reff) 
     deallocate(ACHA%Ice_Probability) 
     deallocate(ACHA%Tc_Uncertainty) 
