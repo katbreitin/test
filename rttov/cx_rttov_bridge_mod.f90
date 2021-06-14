@@ -268,7 +268,7 @@ subroutine compute_transmission_rttov ( &
    profiles(iprof) % s2m % v = 0.
    profiles(iprof) % s2m % wfetc = 1000000.
    profiles(iprof) % skin % t = temp(96,iprof) + 5.
-   profiles(iprof) % zenangle = theta(iprof)
+   profiles(iprof) % zenangle = min(theta(iprof),85.29)
    profiles(iprof) % azangle = 0.
    profiles(iprof) % latitude = 45.
    profiles(iprof) % longitude = 19.
@@ -277,8 +277,8 @@ subroutine compute_transmission_rttov ( &
   
   ENDDO
   CLOSE(iup)
+ 
   
-
   ! --------------------------------------------------------------------------
   ! 6. Specify surface emissivity and reflectance
   ! --------------------------------------------------------------------------
