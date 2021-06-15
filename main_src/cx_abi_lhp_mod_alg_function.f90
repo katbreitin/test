@@ -106,6 +106,7 @@ contains
     if (ios0 /= 0) then
       erstat = 19
       print *, EXE_PROMPT, "Error opening threshold constants file, ios0 = ", ios0
+      print *, "filename is "//trim(Algo_LHP_file)
       stop 19
     end if
    read(unit=Instr_Const_lun,fmt=*) header
