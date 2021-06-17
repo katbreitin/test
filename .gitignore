@@ -10,3 +10,5 @@ cx_dncomp/Release_gfortran/cx_dncomp
 cx_sds_io/Release_gfortran/cx_sds_io
 main_src/version.inc
 muri/Release_gfortran/MURI
+file_list_*
+!file_list_example
