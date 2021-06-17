@@ -313,10 +313,15 @@ CONTAINS
     !-----------------------------------------------------------------------------------
     
     ! check if we first have to initialize
+   
     
     if ((.not. init_status % is_set) &
           .or. (init_status % is_set .and. month .ne. init_status % month)) then
+          
+       if  (init_status % is_set)  call  DESTROY_RTTOV_EMISS()
+          
       call INIT_RTTOV_EMISS(trim(rttov_path))
+      init_status % is_set = .true.
     end if
 
     do_angcorr = .FALSE.   ! initialise without angular correction
@@ -506,6 +511,9 @@ CONTAINS
     deallocate(emissivity_viirs)
     deallocate(emissivity_abi)
     deallocate(profiles)
+    
+   
+    
   end subroutine get_rttov_emiss
 
 
