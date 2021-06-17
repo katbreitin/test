@@ -1,15 +1,13 @@
-RTTOVDIR=/Users/awalther/SOFTWARE/RTM/RTTOV123/ 
-fc = gfortran -I$(RTTOVDIR)/mod -I$(RTTOVDIR)/include -fPIC -O3 -fopenmp -ffree-line-length-none -cpp 
-pfaast_dir = ../
-
-
 
 
 
 .SUFFIXES: .f90 .F .o
 
-RTTOVDIR=/Users/awalther/SOFTWARE/RTM/RTTOV123/
+TOPDIR=..
+include $(TOPDIR)/build/Makefile.inc
+RTTOVDIR=$(RTTOV_PATH)
 
+fc = gfortran -I$(RTTOVDIR)/mod -I$(RTTOVDIR)/include -fPIC -O3 -fopenmp -ffree-line-length-none -cpp 
 FC=gfortran
 FFLAGS= -I$(RTTOVDIR)/mod -I$(RTTOVDIR)/include -fPIC -O3 -fopenmp -ffree-line-length-none -cpp -DRTTOVPATH=\"$(RTTOVDIR)\"
 LDFLAGS_ARCH=-fopenmp
@@ -22,6 +20,7 @@ EXT_OBJ=.o
 EXT_LIB=.a
 OBJDIR=$(RTTOVDIR)/obj
 BINDIR=$(RTTOVDIR)/bin
+
 
 
 #### Do not edit beyond this line ####
