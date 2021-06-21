@@ -169,7 +169,7 @@ error_check: do while (Status_Flag == 0 .and. Iend == 0)
       Status_Flag = sfrdata(Sds_Id, Sds_Start, Sds_Stride, Sds_Edges, R4_Buffer) + Status_Flag
 
       !--- reset missing values to clavr-x standard
-      where (R4_Buffer .ge. 2000)
+      where (R4_Buffer .gt. 2000)
          R4_Buffer = Missing
       endwhere
 
@@ -283,6 +283,16 @@ error_check: do while (Status_Flag == 0 .and. Iend == 0)
       !111 single layer water -> 1 - WATER_PHASE
       !112 single layer ice -> 4 - ICE_PHASE
       !113 two-layer (ice over ?) -> 4 - ICE_PHASE
+
+      ! As of 06/21/2021
+      !Phase" Range 111 to 113
+      !111 single layer water -> 1 - WATER_PHASE
+      !112 single layer ice -> 4 - ICE_PHASE
+      !113 two-layer (ice over ?) -> 4 - ICE_PHASE
+      ! 24 (probably ice) -> 4 ICE_PHASE
+      !
+      ! STW is trying to get an answer from EUMETSAT on the 24 value.
+      ! It isn't in the documentation.
       where (R4_Buffer .eq. 110.)
          R4_Buffer = 0
       endwhere
@@ -290,6 +300,9 @@ error_check: do while (Status_Flag == 0 .and. Iend == 0)
          R4_Buffer = 1
       endwhere
       where (R4_Buffer .eq. 112. .or. R4_Buffer .eq. 113.)
+         R4_Buffer = 4
+      endwhere
+      where (R4_Buffer .eq. 24)
          R4_Buffer = 4
       endwhere
 

@@ -1625,6 +1625,18 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Long_Name = "Cloud Top Pressure Uncertainty from ACHA"
             Sds_Info(Var_Idx)%Units = "hPa"
             if (allocated(ACHA%Pc_Uncertainty)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => ACHA%Pc_Uncertainty
+         case("cld_press_uncer1_aux")
+            Sds_Info(Var_Idx)%Standard_Name = "cld_press_uncer1_aux"
+            Sds_Info(Var_Idx)%Actual_Range = [0.0,1000.0]
+            Sds_Info(Var_Idx)%Long_Name = "Cloud Top Pressure Uncertainty from AUX"
+            Sds_Info(Var_Idx)%Units = "hPa"
+            if (allocated(Pc_Uncertainty1_Aux)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Pc_Uncertainty1_Aux
+         case("cld_press_uncer2_aux")
+            Sds_Info(Var_Idx)%Standard_Name = "cld_press_uncer2_aux"
+            Sds_Info(Var_Idx)%Actual_Range = [0.0,1000.0]
+            Sds_Info(Var_Idx)%Long_Name = "Cloud Top Pressure Uncertainty from layer 2 AUX"
+            Sds_Info(Var_Idx)%Units = "hPa"
+            if (allocated(Pc_Uncertainty2_Aux)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Pc_Uncertainty2_Aux
          case("cld_height_acha")
             Sds_Info(Var_Idx)%Standard_Name = "height_at_cloud_top"
             Sds_Info(Var_Idx)%Actual_Range = [75.0,20000.0]
@@ -1729,6 +1741,11 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Actual_Range = [0.0,100.0]
             Sds_Info(Var_Idx)%Units = "none"
             if (allocated(ACHA%Cost)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => ACHA%Cost
+         case("cost_aux")
+            Sds_Info(Var_Idx)%Standard_Name = "oe_cost_aux"
+            Sds_Info(Var_Idx)%Actual_Range = [0.0,2000.0]
+            Sds_Info(Var_Idx)%Units = "none"
+            if (allocated(Cost_Aux)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Cost_Aux
          case("goodness_acha")
             Sds_Info(Var_Idx)%Standard_Name = "oe_goodness_acha"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,100.0]
@@ -1765,6 +1782,11 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Actual_Range = [0.0,1100.0]
             Sds_Info(Var_Idx)%Units = "hPa"
             if (allocated(Pc_Top1_Aux)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Pc_Top1_Aux
+         case("cld_press_l2_aux")
+            Sds_Info(Var_Idx)%Standard_Name = "air_pressure_at_layer2_cloud_top_aux"
+            Sds_Info(Var_Idx)%Actual_Range = [0.0,1100.0]
+            Sds_Info(Var_Idx)%Units = "hPa"
+            if (allocated(Pc_Top2_Aux)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Pc_Top2_Aux
          case("acha_inversion_flag")
             Sds_Info(Var_Idx)%Standard_Name = "acha_inversion_flag"
             Sds_Info(Var_Idx)%Scaling_Type =  0_int1
