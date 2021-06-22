@@ -209,7 +209,8 @@ contains
     integer(kind=int4):: First_Line_In_Segment
     character(len=2):: Chan_Idx_MSG_String
     integer :: Num_Elements_This_Image
-    integer :: Num_Scans_This_Image
+    integer, save :: Num_Scans_This_Image
+    integer :: Lines_From_Image_Start
 
     real:: Time_Since_Launch
     real:: Ch1_Slope
@@ -411,8 +412,15 @@ contains
 
     !--- compute scantime and scan angles
     do Line_Idx = Line_Idx_Min_Segment, Line_Idx_Min_Segment + Image%Number_Of_Lines_Read_This_Segment - 1
+
+    Lines_From_Image_Start = First_Line_In_Segment + Line_Idx
+    if (AREAstr%north_bound == 1) then
+      Lines_From_Image_Start = Num_Scans_This_Image - Lines_From_Image_Start + 1
+    endif
+
       Image%Scan_Number(Line_Idx) = First_Line_In_Segment + Line_Idx
-      Image%Scan_Time_Ms(Line_Idx) = Image_Time_Ms + (Image%Scan_number(Line_Idx)-1) * Scan_Rate
+      Image%Scan_Time_Ms(Line_Idx) = Image_Time_Ms + (Lines_From_Image_Start) * Scan_Rate
+
     end do
 
     !--- Ascending node
@@ -495,10 +503,11 @@ contains
     SUB_LON_MSG = NAVstr%sublon
 
     do j=1, ysize
-      line = (ystart - 1) + j
+      !line = (ystart - 1) + j
+      line = ystart + j
 
-      ! convert to eumetsat coordinate space if necessary
-      if (AREAstr%north_bound == 1) line = AREAstr%Num_Line - line 
+      ! convert from eumetsat coordinate space if necessary 
+      if (AREAstr%north_bound == 1) line = AREAstr%Num_Line - line + 1
       
       do i=1, xsize
         elem = (i - 1)*(xstride) + xstart

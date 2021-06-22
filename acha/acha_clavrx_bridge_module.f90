@@ -291,6 +291,7 @@ module ACHA_CLAVRX_BRIDGE
      Output%Tc_Eff =>  null()
      Output%Zc_Eff =>  null()
      Output%Tau =>  null()
+     Output%Tau_Uncertainty =>  null()
      Output%Reff =>  null()
      Output%Ice_Probability =>  null()
      Output%Tc_Uncertainty =>  null()
@@ -405,6 +406,7 @@ module ACHA_CLAVRX_BRIDGE
    Output%Zc_Eff => ACHA%Zc_Eff
    Output%Zc_Base => ACHA%Zc_Base
    Output%Tau => ACHA%Tau
+   Output%Tau_Uncertainty => ACHA%Tau_Uncer
    Output%Reff => ACHA%Reff
    Output%Ice_Probability => ACHA%Ice_Probability
    Output%Ice_Probability_Uncertainty => ACHA%Ice_Probability_Uncertainty

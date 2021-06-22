@@ -276,6 +276,7 @@ end type acha_rtm_nwp_struct
    real, dimension(:,:), pointer:: Zc
    real, dimension(:,:), pointer:: Zc_Base
    real, dimension(:,:), pointer:: Tau
+   real, dimension(:,:), pointer:: Tau_Uncertainty
    real, dimension(:,:), pointer:: Reff
    real, dimension(:,:), pointer:: Pc_Eff
    real, dimension(:,:), pointer:: Tc_Eff
