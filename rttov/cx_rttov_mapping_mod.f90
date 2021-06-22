@@ -110,19 +110,23 @@ contains
       sensor_string = 'goes_17_abi'
       
     case ( 'SEVIRI-MSG08')
-      chn_list(20:33) = [1,-1,-1,-1,-1,-1,-1,2,3,4,5,6,7,8] 
+      !---stw chn_list(20:33) = [1,-1,-1,-1,-1,-1,-1,2,3,4,5,6,7,8] 
+      chn_list(20:33) = [4,-1,-1,-1,-1,-1,-1,5,6,7,8,9,10,11]
       list = chn_list(chn)
       sensor_string = 'msg_1_seviri'
     case ( 'SEVIRI-MSG09')
-      chn_list(20:33) = [1,-1,-1,-1,-1,-1,-1,2,3,4,5,6,7,8]
+      !---stw chn_list(20:33) = [1,-1,-1,-1,-1,-1,-1,2,3,4,5,6,7,8]
+      chn_list(20:33) = [4,-1,-1,-1,-1,-1,-1,5,6,7,8,9,10,11]
       list = chn_list(chn)
       sensor_string = 'msg_2_seviri'  
     case ( 'SEVIRI-MSG10')
-      chn_list(20:33) = [1,-1,-1,-1,-1,-1,-1,2,3,4,5,6,7,8]
+      !---stw chn_list(20:33) = [1,-1,-1,-1,-1,-1,-1,2,3,4,5,6,7,8]
+      chn_list(20:33) = [4,-1,-1,-1,-1,-1,-1,5,6,7,8,9,10,11]
       list = chn_list(chn)
       sensor_string = 'msg_3_seviri'  
     case ( 'SEVIRI-MSG11')
-      chn_list(20:33) = [1,-1,-1,-1,-1,-1,-1,2,3,4,5,6,7,8]
+      !---stw chn_list(20:33) = [1,-1,-1,-1,-1,-1,-1,2,3,4,5,6,7,8]
+      chn_list(20:33) = [4,-1,-1,-1,-1,-1,-1,5,6,7,8,9,10,11]
       list = chn_list(chn)
       sensor_string = 'msg_4_seviri'  
       
