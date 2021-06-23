@@ -357,60 +357,88 @@ Solar_Rtm%Tau_CH4(20) =   0.0000e+00
 
 case(3) 
 
-!SRF = tigr_tpw_trans_ch1_resp_m01.dat
-Solar_Rtm%Tau_H2O_Coef(1,:) = (/  6.8910e-05,  4.0202e-03, -1.1878e-04/)
-Solar_Rtm%Tau_Ray(1) =   6.1059e-02
-Solar_Rtm%Tau_O3(1) =   5.1576e-05
-Solar_Rtm%Tau_CO2(1) =   0.0000e+00
-Solar_Rtm%Tau_CH4(1) =   0.0000e+00
+!SRF = tigr_tpw_trans_rtcoef_metop_1_avhrr_srf_ch01.txt
+Solar_Rtm%Tau_H2O_Coef(1,:) = (/  1.1737e-04,  3.9540e-03, -1.0305e-04/)
+Solar_Rtm%Tau_Ray(1) =  6.1163e-02
+Solar_Rtm%Tau_O3(1) =  5.1951e-05
+Solar_Rtm%Tau_CO2(1) =  0.0000e+00
+Solar_Rtm%Tau_CH4(1) =  0.0000e+00
 
-!SRF = tigr_tpw_trans_ch2_resp_m01.dat
-Solar_Rtm%Tau_H2O_Coef(2,:) = (/  2.4574e-02,  4.7191e-02, -3.3684e-03/)
-Solar_Rtm%Tau_Ray(2) =   2.0314e-02
-Solar_Rtm%Tau_O3(2) =   0.0000e+00
-Solar_Rtm%Tau_CO2(2) =   0.0000e+00
-Solar_Rtm%Tau_CH4(2) =   0.0000e+00
+!SRF = tigr_tpw_trans_rtcoef_metop_1_avhrr_srf_ch02.txt
+Solar_Rtm%Tau_H2O_Coef(2,:) = (/  2.3618e-02,  4.8148e-02, -3.5671e-03/)
+Solar_Rtm%Tau_Ray(2) =  2.0358e-02
+Solar_Rtm%Tau_O3(2) =  0.0000e+00
+Solar_Rtm%Tau_CO2(2) =  0.0000e+00
+Solar_Rtm%Tau_CH4(2) =  0.0000e+00
 
-!SRF = tigr_tpw_trans_ch3a_resp_m01.dat
-Solar_Rtm%Tau_H2O_Coef(6,:) = (/ -2.1931e-05,  1.0463e-03, -8.6794e-06/)
-Solar_Rtm%Tau_Ray(6) =   1.4027e-03
-Solar_Rtm%Tau_O3(6) =   0.0000e+00
-Solar_Rtm%Tau_CO2(6) =   2.0502e-02
-Solar_Rtm%Tau_CH4(6) =   0.0000e+00
+!SRF = tigr_tpw_trans_rtcoef_metop_1_avhrr_srf_ch03.txt
+Solar_Rtm%Tau_H2O_Coef(6,:) = (/ -3.5010e-05,  1.0658e-03, -1.2007e-05/)
+Solar_Rtm%Tau_Ray(6) =  1.3939e-03
+Solar_Rtm%Tau_O3(6) =  0.0000e+00
+Solar_Rtm%Tau_CO2(6) =  2.0432e-02
+Solar_Rtm%Tau_CH4(6) =  0.0000e+00
 
-!SRF = tigr_tpw_trans_ch3b_resp_m01.dat
-Solar_Rtm%Tau_H2O_Coef(20,:) = (/  6.9466e-03,  5.5148e-02, -3.0318e-03/)
-Solar_Rtm%Tau_Ray(20) =   4.5853e-05
-Solar_Rtm%Tau_O3(20) =   0.0000e+00
-Solar_Rtm%Tau_CO2(20) =   1.3065e-03
-Solar_Rtm%Tau_CH4(20) =   0.0000e+00
+!SRF = tigr_tpw_trans_rtcoef_metop_1_avhrr_srf_ch04.txt
+Solar_Rtm%Tau_H2O_Coef(20,:) = (/  7.1410e-03,  5.4959e-02, -3.0015e-03/)
+Solar_Rtm%Tau_Ray(20) =  4.7063e-05
+Solar_Rtm%Tau_O3(20) =  0.0000e+00
+Solar_Rtm%Tau_CO2(20) =  1.3137e-03
+Solar_Rtm%Tau_CH4(20) =  0.0000e+00
 
 case(4) 
 
-!SRF = tigr_tpw_trans_ch1_resp_m02.dat
-Solar_Rtm%Tau_H2O_Coef(1,:) = (/  1.2708e-04,  3.8426e-03, -9.9852e-05/)
-Solar_Rtm%Tau_Ray(1) =   6.1031e-02
-Solar_Rtm%Tau_O3(1) =   5.2921e-05
-Solar_Rtm%Tau_CO2(1) =   0.0000e+00
-Solar_Rtm%Tau_CH4(1) =   0.0000e+00
+!SRF = tigr_tpw_trans_rtcoef_metop_2_avhrr_srf_ch01.txt
+Solar_Rtm%Tau_H2O_Coef(1,:) = (/  1.3007e-04,  3.8614e-03, -1.1091e-04/)
+Solar_Rtm%Tau_Ray(1) =  6.1064e-02
+Solar_Rtm%Tau_O3(1) =  5.2096e-05
+Solar_Rtm%Tau_CO2(1) =  0.0000e+00
+Solar_Rtm%Tau_CH4(1) =  0.0000e+00
 
-!SRF = tigr_tpw_trans_ch2_resp_m02.dat
-Solar_Rtm%Tau_H2O_Coef(2,:) = (/  2.2867e-02,  4.6713e-02, -3.4843e-03/)
-Solar_Rtm%Tau_Ray(2) =   2.0234e-02
-Solar_Rtm%Tau_O3(2) =   0.0000e+00
-Solar_Rtm%Tau_CO2(2) =   0.0000e+00
-Solar_Rtm%Tau_CH4(2) =   0.0000e+00
+Solar_Rtm%Tau_H2O_Coef(2,:) = (/  2.3199e-02,  4.6504e-02, -3.4555e-03/)
+Solar_Rtm%Tau_Ray(2) =  2.0073e-02
+Solar_Rtm%Tau_O3(2) =  0.0000e+00
+Solar_Rtm%Tau_CO2(2) =  0.0000e+00
+Solar_Rtm%Tau_CH4(2) =  0.0000e+00
 
-!SRF = tigr_tpw_trans_ch3a_resp_m02.dat
-Solar_Rtm%Tau_H2O_Coef(6,:) = (/ -8.6815e-06,  1.0333e-03, -6.6562e-06/)
-Solar_Rtm%Tau_Ray(6) =   1.4166e-03
-Solar_Rtm%Tau_O3(6) =   0.0000e+00
-Solar_Rtm%Tau_CO2(6) =   2.2625e-02
-Solar_Rtm%Tau_CH4(6) =   0.0000e+00
+!SRF = tigr_tpw_trans_rtcoef_metop_2_avhrr_srf_ch03.txt
+Solar_Rtm%Tau_H2O_Coef( 6,:) = (/ -2.8531e-05,  1.0649e-03, -1.1987e-05/)
+Solar_Rtm%Tau_Ray(6) =  1.4000e-03
+Solar_Rtm%Tau_O3(6) =  0.0000e+00
+Solar_Rtm%Tau_CO2(6) =  2.1386e-02
+Solar_Rtm%Tau_CH4(6) =  0.0000e+00
 
-!SRF = tigr_tpw_trans_ch3b_resp_m02.dat
-Solar_Rtm%Tau_H2O_Coef(20,:) = (/  6.6034e-03,  5.9757e-02, -3.3016e-03/)
-Solar_Rtm%Tau_Ray(20) =   5.1957e-05
-Solar_Rtm%Tau_O3(20) =   0.0000e+00
-Solar_Rtm%Tau_CO2(20) =   1.1162e-03
-Solar_Rtm%Tau_CH4(20) =   0.0000e+00
+!SRF = tigr_tpw_trans_rtcoef_metop_2_avhrr_srf_ch04.txt
+Solar_Rtm%Tau_H2O_Coef(20,:) = (/  6.7029e-03,  5.9177e-02, -3.1782e-03/)
+Solar_Rtm%Tau_Ray(20) =  5.1951e-05
+Solar_Rtm%Tau_O3(20) =  0.0000e+00
+Solar_Rtm%Tau_CO2(20) =  1.1862e-03
+Solar_Rtm%Tau_CH4(20) =  0.0000e+00
+
+case(5)
+
+!SRF = tigr_tpw_trans_rtcoef_metop_3_avhrr_srf_ch01.txt
+Solar_Rtm%Tau_H2O_Coef(1,:) = (/  9.0751e-05,  3.9376e-03, -1.0720e-04/)
+Solar_Rtm%Tau_Ray(1) =  6.1785e-02
+Solar_Rtm%Tau_O3(1) =  5.3298e-05
+Solar_Rtm%Tau_CO2(1) =  0.0000e+00
+Solar_Rtm%Tau_CH4(1) =  0.0000e+00
+
+Solar_Rtm%Tau_H2O_Coef(2,:) = (/  2.2711e-02,  4.3294e-02, -3.0307e-03/)
+Solar_Rtm%Tau_Ray(2) =  2.0470e-02
+Solar_Rtm%Tau_O3(2) =  0.0000e+00
+Solar_Rtm%Tau_CO2(2) =  0.0000e+00
+Solar_Rtm%Tau_CH4(2) =  0.0000e+00
+
+!SRF = tigr_tpw_trans_rtcoef_metop_3_avhrr_srf_ch03.txt
+Solar_Rtm%Tau_H2O_Coef(6,:) = (/ -2.7990e-05,  1.0701e-03, -1.0282e-05/)
+Solar_Rtm%Tau_Ray(6) =  1.3968e-03
+Solar_Rtm%Tau_O3(6) =  0.0000e+00
+Solar_Rtm%Tau_CO2(6) =  2.0362e-02
+Solar_Rtm%Tau_CH4(6) =  0.0000e+00
+
+!SRF = tigr_tpw_trans_rtcoef_metop_3_avhrr_srf_ch04.txt
+Solar_Rtm%Tau_H2O_Coef(20,:) = (/  6.7806e-03,  5.8181e-02, -3.2644e-03/)
+Solar_Rtm%Tau_Ray(20) =  4.7443e-05
+Solar_Rtm%Tau_O3(20) =  0.0000e+00
+Solar_Rtm%Tau_CO2(20) =  1.2359e-03
+Solar_Rtm%Tau_CH4(20) =  0.0000e+00
