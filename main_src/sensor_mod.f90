@@ -183,7 +183,12 @@ module SENSOR_MOD
        , READ_NUMBER_OF_SCANS_VIIRS_NASA &
        , CHECK_IF_FUSION &
        , READ_FUSION_INSTR_CONSTANTS
-
+  
+  
+   use VIIRS_NASA_HRES_READ_MOD, only : &
+      READ_VIIRS_NASA_HRES_DATA
+       
+  
    use FY3D_READ_MODULE, only : &
        READ_FY3D_DATA &
        , READ_FY3D_DATE_TIME &
@@ -2278,6 +2283,7 @@ module SENSOR_MOD
           print*,'read routine has to be written '
           print*, 'File: ',__FILE__,' Line: ',__LINE__
           print*,' +++++++++++++++++++++++++++++++++++'
+          call READ_VIIRS_NASA_HRES_DATA
         stop
         
 
