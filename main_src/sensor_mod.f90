@@ -351,7 +351,26 @@ module SENSOR_MOD
          stop
 #endif
       end if 
+      
+      if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA-HRES') then
+          print*
+          print*,'  +++++++++++++++++++++++++++++++++++  +++++++++++++++++++++++++++++++++++++='
+          print*,'read date time has to be written is fake... READ_VIIRS_NASA_DATE_TIME..  File: ', __FILE__,' Line: ',__LINE__
+         Image%Start_Year = 2020
+         Image%End_Year = 2020
+         Image%Start_Doy = 118
+         Image%End_Doy = 118
+         Image%Orbit_Number = 7889887
 
+         Image%Start_Time = 0.5
+         Image%End_Time = 0.9
+          print*,'  +++++++++++++++++++++++++++++++++++  ++++++++++++++++++++++++++++++++++++++++='
+          
+          
+         
+      end if 
+       
+        
       !----------------------------------------------
       ! read VIIRS-NASA time from VGEOM
       !----------------------------------------------
@@ -1493,7 +1512,22 @@ module SENSOR_MOD
          Sensor%Instr_Const_File = 'viirs_npp_instr.dat'
          exit test_loop
       endif
-
+      
+      
+            !---  VIIRS-NASA SNPP HIGH RES
+      if (index(Image%Level1b_Name, 'VNP02MOD') > 0 .or. &
+          index(Image%Level1b_Name, 'highres') > 0) then
+         Sensor%Sensor_Name = 'VIIRS-NASA-HRES'
+         Sensor%Spatial_Resolution_Meters = 375
+         Sensor%Platform_Name = 'SNPP'
+         Sensor%WMO_Id = 224
+         ! - check if it is FUSION
+         Sensor%Fusion_Flag = .false.
+        
+         Sensor%Instr_Const_File = 'viirs_npp_instr.dat'
+         exit test_loop
+      endif
+           
       !---  VIIRS NOAA-20 (JPSS-1)
       if (index(Image%Level1b_Name, 'GMTCO_j01') > 0) then
          Sensor%Sensor_Name = 'VIIRS'
@@ -1975,19 +2009,26 @@ module SENSOR_MOD
          end if
 
       end if
+      
+      if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA-HRES') then
+       
+          Image%Number_Of_Elements = 6400
+          Image%Number_Of_Lines    = 6464
+      end if
 
       if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA') then
-         Image%Number_Of_Elements = 3200
-         Dir_File = trim(Image%Level1b_Path) // trim(Image%Level1b_Name)
+       
+          Image%Number_Of_Elements = 3200
+          Dir_File = trim(Image%Level1b_Path) // trim(Image%Level1b_Name)
 
-         call READ_NUMBER_OF_SCANS_VIIRS_NASA (trim(Dir_File),Image%Number_Of_Lines,Ierror_Nscans)
+          call READ_NUMBER_OF_SCANS_VIIRS_NASA (trim(Dir_File),Image%Number_Of_Lines,Ierror_Nscans)
 
-         ! If error reading, then go to next file
-         if (Ierror_Nscans /= 0) then
+          ! If error reading, then go to next file
+          if (Ierror_Nscans /= 0) then
             Ierror = sym%YES
             return      ! skips file
-         endif
-
+          endif
+        
       endif
 
       if (trim(Sensor%Sensor_Name) == 'VGAC') then
@@ -2231,7 +2272,14 @@ module SENSOR_MOD
            call DETERMINE_SAPF_NAME(Segment_Number)
            call READ_SAPF_DATA(Segment_Number)
          endif
-
+        
+        
+      case('VIIRS-NASA-HRES')
+          print*,'read routine has to be written '
+          print*, 'File: ',__FILE__,' Line: ',__LINE__
+          print*,' +++++++++++++++++++++++++++++++++++'
+        stop
+        
 
        case('VIIRS-NASA')
 

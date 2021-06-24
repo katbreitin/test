@@ -946,6 +946,7 @@ end subroutine READ_VIIRS_NASA_DATA
 
 !--------------------------------------------------------------------
 ! read viirs nasa time
+!  called in sensor_mod
 !--------------------------------------------------------------------
 subroutine READ_VIIRS_NASA_DATE_TIME (Path, Infile, Year , Doy , Start_Time &
                 , End_Time , Orbit , End_Year, End_Doy )
@@ -1011,6 +1012,7 @@ end subroutine READ_VIIRS_NASA_DATE_TIME
 
 !--------------------------------------------------------------------
 ! read viirs nasa number of scans
+!  called in sensor_mod.f90
 !--------------------------------------------------------------------
 subroutine READ_NUMBER_OF_SCANS_VIIRS_NASA (Infile, Number_Of_Viirs_Lines, &
                  Error_Out)

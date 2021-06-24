@@ -156,7 +156,12 @@
     cloud_type_bridge &
     , set_cloud_type_version
 
-   use CX_SPATIAL_METRICS_MOD
+   use CX_SPATIAL_METRICS_MOD, only: &
+        COMPUTE_MEDIAN_METRICS_L1B &
+      , COMPUTE_MEDIAN_METRICS_L2 &
+      , COMPUTE_MIN_MAX_MEAN_STD_METRICS &
+      , COMPUTE_SPATIAL_CORRELATION_ARRAYS &
+      , COMPUTE_RADIATIVE_CENTER_ARRAYS
 
    use CONSTANTS_MOD !, only: &
       !  int4, real4 &
@@ -181,11 +186,14 @@
 
    use CX_REAL_BOOLEAN_MOD
 
-   use CX_DUST_MOD
+   use CX_DUST_MOD, only: &
+        FORGET_ABI_DUST &
+      , GET_SEGMENT_ABI_DUST_PROB &
+      , READ_ABI_DUST_LUT
 
    use CX_NUCAPS_MOD, only: &
-     VIIRS_NUCAPS &
-     , CONVERT_SMOOTH_NUCAPS_TEMP
+        VIIRS_NUCAPS &
+      , CONVERT_SMOOTH_NUCAPS_TEMP
    
    use DCOMP_DERIVED_PRODUCTS_MOD,only: &
         ADJUST_DCOMP_LWP &
@@ -209,7 +217,7 @@
    use GFS_HDF_MOD, only: READ_GFS_DATA
    
    use GLOBSNOW_READ_ROUTINES,only: &
-     GET_GLOBSNOW_FILENAME &
+      GET_GLOBSNOW_FILENAME &
    , GET_PIXEL_GLOBSNOW_ANALYSIS &
    , READ_GLOBSNOW_ANALYSIS_MAP
    
@@ -513,7 +521,7 @@
    use CX_ABI_LHP_MOD, only: &
        SET_ABI_USE_104um_FLAG
 
-   use CX_VGAC_MOD
+   use CX_VGAC_MOD, only:
    
    implicit none 
   

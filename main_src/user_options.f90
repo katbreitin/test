@@ -1016,7 +1016,7 @@ contains
          DEFAULT_ACHA_MODE  =  ACHA_Mode_Default_FY2 
       case ('AGRI') ! - FY4A
          DEFAULT_ACHA_MODE  =  ACHA_Mode_Default_FY4A_AGRI
-      case ('VIIRS','VIIRS-NASA','VIIRS-IFF')
+      case ('VIIRS','VIIRS-NASA','VIIRS-IFF','VIIRS-NASA-HRES')
          DEFAULT_ACHA_MODE  =  ACHA_Mode_Default_VIIRS 
       case ('AQUA-IFF')
           DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Modis
@@ -1097,7 +1097,7 @@ contains
          filename  = 'fy2_default_nb_cloud_mask_lut.nc' 
       case ('AGRI') !FY4A
          filename  = 'ahi_default_nb_cloud_mask_lut.nc'
-      case ('VIIRS','VIIRS-NASA','VIIRS-IFF','VGAC')
+      case ('VIIRS','VIIRS-NASA','VIIRS-NASA-HRES','VIIRS-IFF','VGAC')
          filename  = 'viirs_default_nb_cloud_mask_lut_fw_10312018.nc' 
       case ('AQUA-IFF')
           filename  = 'modis_default_nb_cloud_mask_lut.nc'
@@ -1141,7 +1141,7 @@ contains
          filename  = 'ecm2_lut_abhi_default.nc'
       case ('MODIS','METIMAGE')
          filename  = 'ecm2_lut_modis_default.nc' 
-      case ('VIIRS','VIIRS-NASA','VIIRS-IFF','VGAC')
+      case ('VIIRS','VIIRS-NASA','VIIRS-NASA-HRES','VIIRS-IFF','VGAC')
          filename  = 'ecm2_lut_viirs_default.nc' 
       case ('AHI')
           filename  = 'ecm2_lut_abhi_default.nc'
