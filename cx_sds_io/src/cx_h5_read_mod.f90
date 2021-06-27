@@ -3,7 +3,9 @@
 module cx_h5_read_mod
 
 
-   use hdf5
+   use hdf5,only:H5F_ACC_RDONLY_F,H5F_OBJ_FILE_F,H5F_OBJ_DATASET_F &
+    ,H5F_OBJ_GROUP_F,H5F_OBJ_DATATYPE_F,h5fget_obj_count_f,h5fopen_f
+   USE h5fortran_types
    USE cx_sds_type_definitions_mod, only: &
       cx_sds_type &
       , cx_att_type &
@@ -29,8 +31,9 @@ contains
       integer( SIZE_T) :: obj_count
       integer :: hdferr
 
-      obj_type = H5F_OBJ_DATASET_F
-
+      obj_type = 1
+      print*,obj_type, H5F_OBJ_DATASET_F
+      
       h5_get_finfo = 1
       print*,' hdf5 finfo not yet installed stopping'
       print*,' will be installed by end of April 2018'
@@ -39,18 +42,25 @@ contains
       allocate(sds_name(0))
        allocate(att_name(0))
       
-      stop
+      print*,'AA1'
      
-      
-
+      print*,H5F_OBJ_FILE_F,H5F_OBJ_DATASET_F,H5F_OBJ_GROUP_F,H5F_OBJ_DATATYPE_F
+       
+       
+       
       call h5fopen_f(h5_file,H5F_ACC_RDONLY_F, file_id,hdferr)
+       print*,'AA2',hdferr
+       do obj_type=1,50
       call h5fget_obj_count_f(file_id, obj_type, obj_count, hdferr)
-
+       print*,'AA3',hdferr,obj_type,obj_count
+     end do
       obj_type = H5F_OBJ_GROUP_F
       call h5fget_obj_count_f(file_id, obj_type, obj_count, hdferr)
+       print*,'AA4',hdferr
 
       obj_type = H5F_OBJ_DATASET_F
       call h5fget_obj_count_f(file_id, obj_type, obj_count, hdferr)
+       print*,'AA5',hdferr
 
    end function h5_get_finfo
 
@@ -70,11 +80,14 @@ contains
       real, pointer  :: dataset_2d(:,:)
       real, pointer  :: dataset_1d(:)
 
+print*,'statrttttt'
+print*,h5_file
+print*,sds_name(1)
 
       call H5_DATASET_DIMENSIONS( h5_file,sds_name(1),dims)
 
       ndims = size(dims)
-
+   print*,'ndims===> ',ndims
 
       select case (ndims)
          

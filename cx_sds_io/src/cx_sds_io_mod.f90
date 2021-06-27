@@ -82,8 +82,8 @@ contains
         file_type = 2
         ! 2020/09/25: AW masked this.
         !  there might be a good reason to have it...
-        !call H5Fis_hdf5_f(file,status,hdferr)
-        !if (status) file_type = 3
+        call H5Fis_hdf5_f(file,status,hdferr)
+        if (status) file_type = 3
       end if
       if ( postfix .eq. '.h5') file_type = 3
 
