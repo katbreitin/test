@@ -601,7 +601,7 @@ viirs_read_mod.o: viirs_read_mod.f90 file_tools.o readh5dataset.o
 viirs_nasa_read_module.o: viirs_nasa_read_module.f90 file_tools.o pixel_common_mod.o constants_mod.o readh5dataset.o
 	$(fc) -c $(fflags) $(cppflags) $(cpp) $(hdf5libs)  viirs_nasa_read_module.f90
 viirs_nasa_hres_read_mod.o: viirs_nasa_hres_read_mod.f90
-	$(fc) -c $(fflags) $(cppflags) $(cpp) $(hdf5libs)  viirs_nasa_hres_read_mod.f90 
+	$(fc) -c $(fflags) $(cppflags) $(cpp) $(hdf5libs) -I$(CX_DATA_IO) viirs_nasa_hres_read_mod.f90 
 fy3d_read_module.o: fy3d_read_module.f90 constants_mod.o pixel_common_mod.o readh5dataset.o file_tools.o
 sensor_mod.o: sensor_mod.f90 constants_mod.o pixel_common_mod.o avhrr_mod.o goes_mod.f90 modis_mod.o fy2_mod.o fy3d_read_module.o fy4_mod.o viirs_clavrx_bridge.o viirs_nasa_read_module.o seviri_mod.o coms_mod.o iff_clavrx_bridge.o algorithm_constants_mod.o ahi_clavrx_bridge.o abi_mod.o mvcm_read_mod.o sapf_read_mod.o hirs_fusion_mod.o ahi_mod.o clavrx_static_nav_module.o class_time_date.o cx_vgac_mod.o cx_eps_sg_mod.o viirs_nasa_hres_read_mod.o
 	$(fc) -c $(fflags) $(fflags_clavr) ${hdf5libs} $(cpp) $(LIB_HIM_FLAG) sensor_mod.f90 
