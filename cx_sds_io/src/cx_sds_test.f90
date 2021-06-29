@@ -47,7 +47,7 @@ program cx_sds_test
    read ( 24,fmt="(a)") file_h5
    read ( 24,fmt="(a)") file_hiirs
   
-   
+   if (8 .eq. 9 ) then
    print*,"NCDF FILE TEST"
    print*,trim(file_nc)
    inquire ( FILE = file_nc, EXIST = existence )
@@ -99,22 +99,25 @@ program cx_sds_test
 
      print*,tra_5d(3,1:3,1,1,1)
   ! end do
+ end if 
    print*
    print*,'HDF5 FILE TEST'
-  print*,'h5 hs to be finsihed soon'
+  print*,'h5 has to be finished soon'
   
-  if ( 5 .eq. 6 ) then
+  if ( 6 .eq. 6 ) then
    print*,'start read Variable All_Data/VIIRS-DNB-GEO_All/Height '
-  
+      print*,'File H5: ', trim(file_h5)
+     ! call h5fget_filesize_f(file_id, size, hdferr)
+     ! print*,
       status = cx_sds_finfo ( file_h5 , ftype, nsds, sds_name, natt, att_name )
 
-      print*,'number of dataset: ',nsds
-      do i=1,nsds
-        print*,i,trim(sds_name(i))
-      end do
-      wait(120)
+     ! print*,'number of dataset: ',nsds
+     ! do i=1,nsds
+     !   print*,i,trim(sds_name(i))
+     ! end do
+     ! wait(120)
  
-      test = cx_sds_read ( file_h5, '/All_Data/VIIRS-DNB-GEO_All/Height', tra_2d)
+      test = cx_sds_read ( file_h5, '/All_Data/VIIRS-M16-SDR_All/Radiance', tra_2d)
 
       print*,'exit h5 read'
       print*,'tra_2d:', maxval(tra_2d)
@@ -122,7 +125,7 @@ program cx_sds_test
       status = cx_sds_finfo ( file_h5 , ftype, nsds, sds_name, natt, att_name )
    
    end if
-   
+   stop
    !  example for hirs data
   print*,' TEST EXAMPLE HIIR DATA with count and stride'
   

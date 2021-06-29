@@ -140,6 +140,7 @@ contains
 
       if ( ftype .eq. 3) then
          cx_sds_finfo = h5_get_finfo(file, nsds, sds_name, natt, att_name)
+         print*,'success'
       end if
          
    
@@ -334,6 +335,7 @@ contains
       if ( ftype .eq. 3 ) then
           print*,'=====erfewfew=>'
          cx_sds_read_raw = h5_get_file_sds(file, nsds,sds,1, (/sds_name/) )
+         print*,'HDF5: success'
         ! sds % nattr = 5
         
       end if
