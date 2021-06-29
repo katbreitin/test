@@ -28,10 +28,50 @@
 module VIIRS_NASA_HRES_READ_MOD
   implicit none
   
+  type viirs_nasa_hres_config_type
+    logical::channel_on_modis(50)
+    logical::channel_on_viirs(50)
+    character(len=200) :: filename
+    character (len=1000) :: path
+  end type viirs_nasa_hres_config_type
+  
 contains
 
-subroutine read_viirs_nasa_hres_data
+!   this routine is supposed to read all reflectance and radiance data
+!   input is filename
+!   and options what to read in
+!
+!
+!
+!
+!
+subroutine read_viirs_nasa_hres_data (in_config)
+  use cx_sds_io_mod, only: &
+           cx_sds_finfo &
+         , cx_sds_varinfo &
+         , cx_sds_read &
+         , MAXNCNAM
+  
+  type ( viirs_nasa_hres_config_type) :: in_config
+  integer :: status
+  integer :: ftype      
+  integer :: nsds
+  integer :: Natt
+  character ( len = MAXNCNAM), allocatable :: Sds_Name(:)
+  character ( len = MAXNCNAM), allocatable :: Att_Name(:)
+  character(len=1020) :: File_Local
+  real,  allocatable :: out(:,:)
+  
   print*,'hallo nasa viirs hres'
+  print*, in_config % filename
+  file_local = trim(in_config%Path)//trim(in_config%filename)
+  status = cx_sds_finfo (File_Local, ftype,nsds,Sds_Name,Natt,Att_Name)
+  print*,status
+  print*,att_name
+  print*,sds_name
+  stop
+  status=cx_sds_read(file_local,'geolocation_data/sensor_azimuth',out)
+  
   stop
 
 end subroutine read_viirs_nasa_hres_data

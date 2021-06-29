@@ -186,7 +186,8 @@ module SENSOR_MOD
   
   
    use VIIRS_NASA_HRES_READ_MOD, only : &
-      READ_VIIRS_NASA_HRES_DATA
+      READ_VIIRS_NASA_HRES_DATA &
+      , viirs_nasa_hres_config_type
        
   
    use FY3D_READ_MODULE, only : &
@@ -2171,6 +2172,7 @@ module SENSOR_MOD
       TYPE (GVAR_NAV), intent(in)    :: NAVstr
       real, intent(in):: Time_Since_Launch
       integer, intent(out):: Ierror_Level1b
+      TYPE(viirs_nasa_hres_config_type) :: nasa_hres_config
 
       Ierror_Level1b = 0
       Cloud_Mask_Aux_Read_Flag = sym%NO
@@ -2283,7 +2285,13 @@ module SENSOR_MOD
           print*,'read routine has to be written '
           print*, 'File: ',__FILE__,' Line: ',__LINE__
           print*,' +++++++++++++++++++++++++++++++++++'
-          call READ_VIIRS_NASA_HRES_DATA
+          
+          nasa_hres_config % channel_on_modis = .true.
+          nasa_hres_config % filename = trim(Image%Level1b_Name)
+          nasa_hres_config % path = trim(Image%Level1b_Path)
+          
+          
+          call READ_VIIRS_NASA_HRES_DATA(nasa_hres_config)
         stop
         
 
