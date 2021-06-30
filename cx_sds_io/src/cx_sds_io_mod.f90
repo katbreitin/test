@@ -333,10 +333,9 @@ contains
       end if
 
       if ( ftype .eq. 3 ) then
-          print*,'=====erfewfew=>'
+          
          cx_sds_read_raw = h5_get_file_sds(file, nsds,sds,1, (/sds_name/) )
-         print*,'HDF5: success'
-        ! sds % nattr = 5
+        
         
       end if
 		
@@ -436,12 +435,17 @@ contains
    
     pd=>sds(1) % data
     ps=>sds(1)
-      
+    
     add_offset = ps %get_att('add_offset')
+    
+   
+    
     slope = ps%get_att('scale_factor')
+    
     scaled = ps%get_att('SCALED')
     missing = ps%get_att('missing',exist = att_exist)
-    
+   
+   
     if ( .not. att_exist) missing = ps%get_att('_FillValue',exist = att_exist)
       
     if ( add_offset(1) .NE. -999.) scaled(1) = 1
@@ -454,18 +458,19 @@ contains
     dim1 = pd%dimsize(1)
     dim2 = pd%dimsize(2)
     allocate(out(dim1,dim2))
- 
+   
     if ( allocated ( pd % r4values ) &
       .or. allocated ( pd % r8values ) &
       .or. allocated(pd % i4values) &
       .or. allocated(pd % i2values) &
       .or. allocated(pd % i1values) ) then
-       
-      allocate(temp_1d(pd%nval))
-     
-      call pd%transform_to_real(temp_1d)
-      out = reshape (temp_1d,(/dim1,dim2/))
       
+      allocate(temp_1d(pd%nval))
+    
+      call pd%transform_to_real(temp_1d)
+     
+      out = reshape (temp_1d,(/dim1,dim2/))
+     
       if (scaled(1) .EQ. 1) then
         out = out * slope(1) + add_offset(1)
       end if

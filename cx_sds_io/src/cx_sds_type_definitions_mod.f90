@@ -155,8 +155,8 @@ contains
    subroutine transform_to_real (self, data_real)
       class(cx_sds_data_type), intent(in) :: self
       real, intent(out) :: data_real(:)
-      
-      
+       
+     
       select case ( self%type)
          case (DFNT_CHAR8)
         
@@ -172,13 +172,15 @@ contains
          case (DFNT_UINT32, DFNT_INT32)
             data_real = real (self % i4values)
          case (DFNT_FLOAT32 )
+            
             data_real = real (self % r4values)
+            
          case (DFNT_FLOAT64)
             data_real = real (self % r8values)
          case default
             print*,'Missing datra type in  transform_to_real in cx_sds_type_definitions_mod.f90'  
       end select
-    
+   
    
    end subroutine transform_to_real
 
@@ -190,7 +192,7 @@ contains
    subroutine transform_to_real_2d (self, data_real)
       class(cx_sds_data_type), intent(in) :: self
       real, intent(inout) :: data_real(:,:)
-
+ 
       select case ( self%type)
          case (DFNT_CHAR8)
         
@@ -267,6 +269,7 @@ contains
       if ( present(exist)) exist = .false.
       
       do i =1, self % nattr
+         
          if (self % attr(i) % name .EQ. trim(att_name)) then
             pd=>self % attr(i) % data
             
