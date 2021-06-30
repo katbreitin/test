@@ -63,15 +63,16 @@ subroutine read_viirs_nasa_hres_data (in_config)
   real,  allocatable :: out(:,:)
   
   print*,'hallo nasa viirs hres'
-  print*, in_config % filename
+  print*, trim(in_config % filename)
   file_local = trim(in_config%Path)//trim(in_config%filename)
-  status = cx_sds_finfo (File_Local, ftype,nsds,Sds_Name,Natt,Att_Name)
-  print*,status
-  print*,att_name
-  print*,sds_name
-  stop
-  status=cx_sds_read(file_local,'geolocation_data/sensor_azimuth',out)
+  !status = cx_sds_finfo (File_Local, ftype,nsds,Sds_Name,Natt,Att_Name)
+  !print*,status
+  !print*,att_name
+  !print*,sds_name
   
+  status=cx_sds_read(file_local,'observation_data/M07_highres',out)
+  print*,out(100:120,200)
+  print*,maxval(out)
   stop
 
 end subroutine read_viirs_nasa_hres_data
