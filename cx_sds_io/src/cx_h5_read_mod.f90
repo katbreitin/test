@@ -18,6 +18,8 @@ module cx_h5_read_mod
    implicit none
    integer, parameter :: MAXNCDIM = 32
    integer, parameter :: MAXNCNAM = 128
+   
+   include 'cx_sds_constants.inc'
 contains
   
     
@@ -49,15 +51,15 @@ contains
       character ( len = MAXNCNAM), intent(out), allocatable :: sds_name(:)
       character ( len = MAXNCNAM), intent(out), allocatable :: att_name(:)
       integer (HID_T) :: file_id, root_id
-      integer :: obj_type
+      integer :: obj_type, obj_type1
       integer( SIZE_T) :: obj_count
       integer :: hdferr
       INTEGER :: ErrorFlag
       integer :: s_type,nlinks,max_corder
-      integer :: nmem
+      integer :: nmem,nmem1
       character(len = 100) :: name
-      character(len = 100) :: obj_name
-      integer :: i
+      character(len = 100) :: obj_name, obj_name1
+      integer :: i, ii
       
       
       obj_type = 1
@@ -67,8 +69,7 @@ contains
       print*,obj_type, H5F_OBJ_DATASET_F
       
       h5_get_finfo = 1
-      print*,' hdf5 finfo not yet installed stopping'
-      print*,' will be installed by end of April 2018'
+      
       nsds = 0
       natt = 0
       allocate(sds_name(0))
@@ -83,13 +84,20 @@ contains
       
       
       call H5GN_MEMBERS_F ( root_id,'/',nmem,hdferr)
-      print*,nmem
+      print*,'Number of elements root: ',nmem
       
       do i=0,nmem-1
       call H5GGET_OBJ_INFO_IDX_F(root_id, '/', i, & 
                                  obj_name, obj_type, hdferr)           
-        print*,i,obj_name,obj_type
-        print*,'===='
+        print*,i,' ',trim(obj_name),obj_type
+        if ( obj_type .eq. 0 ) then
+            call H5GN_MEMBERS_F ( root_id,'/'//trim(obj_name),nmem1,hdferr)
+            do ii=0,nmem1-1
+              call H5GGET_OBJ_INFO_IDX_F(root_id, '/'//trim(obj_name), ii, & 
+                                 obj_name1, obj_type1, hdferr)
+                  print*,'     ',ii,' ',trim(obj_name1),obj_type1              
+            end do                     
+        end if
       end do
       
      
@@ -112,7 +120,9 @@ contains
    end function h5_get_finfo
 
 
-
+  !
+  !
+  !
    function h5_get_file_sds(h5_file, nsds, sdata, nsdsn, sds_name)
 
       integer :: h5_get_file_sds
@@ -125,10 +135,11 @@ contains
       integer , pointer :: dims(:)
       integer :: ndims
       real, pointer  :: dataset_2d(:,:)
+      integer, pointer :: dataset_2d_i(:,:)
       real, pointer  :: dataset_1d(:)
+      real :: att1
 
-
-    print*,h5_file
+    print*,trim(h5_file)
     print*,sds_name(1)
 
       call H5_DATASET_DIMENSIONS( h5_file,sds_name(1),dims)
@@ -140,23 +151,34 @@ contains
          
          case(2)
         
-            call H5ReadDataset ( h5_file, sds_name(1), dataset_2d )
-         
+            !call H5ReadDataset ( h5_file, sds_name(1), dataset_2d )
+            call H5ReadDataset ( h5_file, sds_name(1), dataset_2d_i )
             allocate (sdata(1))
-            allocate ( sdata(1) % data % r4values_2d(dims(1),dims(2)))
+            !allocate ( sdata(1) % data % r4values_2d(dims(1),dims(2)))
         
-            sdata(1) % data % r4values_2d = dataset_2d
+            !sdata(1) % data % r4values_2d = dataset_2d
          
-            sdata(1) % data % nval = size(dataset_2d)
+            !sdata(1) % data % nval = size(dataset_2d)
+  
+            !deallocate(dataset_2d)
+            !sdata(1) % data % dimsize(1) = dims(1)
+            !sdata(1) % data % dimsize(2) = dims(2)
+        
+            !sdata(1) % data % type = 5
+            !sdata(1) % data % rank = 2
+           
+            allocate ( sdata(1) % data % i4values(dims(1)*dims(2)))
+        
+            sdata(1) % data % i4values = reshape(dataset_2d_i, (/dims(1)*dims(2)/) )
+         
+            sdata(1) % data % nval = size(dataset_2d_i)
   
             !deallocate(dataset_2d)
             sdata(1) % data % dimsize(1) = dims(1)
             sdata(1) % data % dimsize(2) = dims(2)
         
-            sdata(1) % data % type = 5
+            sdata(1) % data % type = 24
             sdata(1) % data % rank = 2
-           
-
 
          case(1)
 
@@ -174,7 +196,43 @@ contains
 
       nsds = 1
       h5_get_file_sds = 1
-       print*,'a5' 
+     
+      allocate  (sdata(1) % attr(4))
+      
+      call H5ReadAttribute( h5_file,trim(sds_name(1))//'/add_offset',att1)
+      sdata(1) % nattr = 4
+      sdata(1) % attr(1) % name = 'add_offset'
+     
+      allocate ( sdata(1) % attr(1) % data % r4values(1))
+      sdata(1) % attr(1) % data % r4values = att1
+      sdata(1) % attr(1) % data % type = DFNT_FLOAT32
+      
+      
+      call H5ReadAttribute( h5_file,trim(sds_name(1))//'/scale_factor',att1)
+     
+       sdata(1) % attr(2) % name = 'scale_factor'
+     
+       allocate ( sdata(1) % attr(2) % data % r4values(1))
+      sdata(1) % attr(2) % data % r4values = att1
+    sdata(1) % attr(2) % data % type = DFNT_FLOAT32
+      
+      
+      call H5ReadAttribute( h5_file,trim(sds_name(1))//'/_FillValue',att1)
+     
+       sdata(1) % attr(3) % name = '_FillValue'
+     
+       allocate ( sdata(1) % attr(3) % data % r4values(1))
+      sdata(1) % attr(3) % data % r4values = att1
+    sdata(1) % attr(3) % data % type = DFNT_FLOAT32
+      
+     
+       sdata(1) % attr(4) % name = 'SCALED'
+     
+       allocate ( sdata(1) % attr(4) % data % i1values(1))
+      sdata(1) % attr(4) % data % i4values = 1
+    sdata(1) % attr(4) % data % type = DFNT_INT8
+     
+      
    end function h5_get_file_sds
 
 
