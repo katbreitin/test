@@ -334,7 +334,8 @@ contains
 
       if ( ftype .eq. 3 ) then
           
-         cx_sds_read_raw = h5_get_file_sds(file, nsds,sds,1, (/sds_name/) )
+         cx_sds_read_raw = h5_get_file_sds(file, nsds,sds,1, (/sds_name/)  &
+         ,start_inp=start,stride_inp = stride,count_inp =count) 
         
         
       end if

@@ -123,7 +123,8 @@ contains
   !
   !
   !
-   function h5_get_file_sds(h5_file, nsds, sdata, nsdsn, sds_name)
+   function h5_get_file_sds(h5_file, nsds, sdata, nsdsn, sds_name, start_inp, stride_inp &
+      , count_inp)
 
       integer :: h5_get_file_sds
 
@@ -132,27 +133,49 @@ contains
       type(cx_sds_type), intent(out),  allocatable, target :: sdata(:)
       integer, optional, intent( in) :: nsdsn
       character (len=*), intent( in), optional :: sds_name(:)
+      integer, optional, intent(in) :: start_inp(:)
+      integer, optional, intent(in) :: stride_inp(:)
+      integer, optional, intent(in) :: count_inp(:)
       integer , pointer :: dims(:)
       integer :: ndims
       real, pointer  :: dataset_2d(:,:)
       integer, pointer :: dataset_2d_i(:,:)
       real, pointer  :: dataset_1d(:)
       real :: att1
-
-    print*,trim(h5_file)
-    print*,sds_name(1)
+      integer, dimension(2) :: count,start
+       
+      
 
       call H5_DATASET_DIMENSIONS( h5_file,sds_name(1),dims)
 
       ndims = size(dims)
-      print*,'ndims===> ',ndims
+     
+      
+      ! count = count_inp(1:2)
+      !1 start = start_inp(1:2)
+      
 
       select case (ndims)
          
          case(2)
         
             !call H5ReadDataset ( h5_file, sds_name(1), dataset_2d )
-            call H5ReadDataset ( h5_file, sds_name(1), dataset_2d_i )
+            
+           ! print*,'lll> ',present (start_inp)
+            
+           ! if ( .not. present (start_inp)) then
+              call H5ReadDataset ( h5_file, sds_name(1), dataset_2d_i )
+           ! else
+            !  call H5ReadDataset ( h5_file, sds_name(1), offset_in = start, count_in = count, dataset = dataset_2d_i )
+             
+           ! end if  
+           if (  present (start_inp)) then
+              dataset_2d_i => dataset_2d_i (:,start_inp(2):start_inp(2)+count_inp(2))
+              dims(2) = count_inp(2)
+              
+           
+           end if 
+           
             allocate (sdata(1))
             !allocate ( sdata(1) % data % r4values_2d(dims(1),dims(2)))
         
@@ -196,18 +219,18 @@ contains
 
       nsds = 1
       h5_get_file_sds = 1
-     
+    
       allocate  (sdata(1) % attr(4))
-      
+     
       call H5ReadAttribute( h5_file,trim(sds_name(1))//'/add_offset',att1)
       sdata(1) % nattr = 4
       sdata(1) % attr(1) % name = 'add_offset'
-     
+    
       allocate ( sdata(1) % attr(1) % data % r4values(1))
       sdata(1) % attr(1) % data % r4values = att1
       sdata(1) % attr(1) % data % type = DFNT_FLOAT32
       
-      
+     
       call H5ReadAttribute( h5_file,trim(sds_name(1))//'/scale_factor',att1)
      
        sdata(1) % attr(2) % name = 'scale_factor'
@@ -215,7 +238,7 @@ contains
        allocate ( sdata(1) % attr(2) % data % r4values(1))
       sdata(1) % attr(2) % data % r4values = att1
     sdata(1) % attr(2) % data % type = DFNT_FLOAT32
-      
+     
       
       call H5ReadAttribute( h5_file,trim(sds_name(1))//'/_FillValue',att1)
      
@@ -227,12 +250,12 @@ contains
       
      
        sdata(1) % attr(4) % name = 'SCALED'
-     
+    
        allocate ( sdata(1) % attr(4) % data % i1values(1))
-      sdata(1) % attr(4) % data % i4values = 1
+      sdata(1) % attr(4) % data % i1values = 1
     sdata(1) % attr(4) % data % type = DFNT_INT8
      
-      
+     
    end function h5_get_file_sds
 
 
