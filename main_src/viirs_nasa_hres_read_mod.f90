@@ -78,13 +78,8 @@ subroutine read_viirs_nasa_hres_data (in_config)
   
   
   
-  type ( viirs_nasa_hres_config_type) :: in_config
+  type ( viirs_nasa_hres_config_type), intent (in) :: in_config
   integer :: status
-  integer :: ftype      
-  integer :: nsds
-  integer :: Natt
-  character ( len = MAXNCNAM), allocatable :: Sds_Name(:)
-  character ( len = MAXNCNAM), allocatable :: Att_Name(:)
   character(len=1020) :: File_Local
   real,  allocatable :: out(:,:)
   integer , dimension(2) :: start,count
