@@ -1398,7 +1398,8 @@ contains
          Valid_Channels (1:22) = [1,2,3,4,5,6,7,8,9,15,20,22,26,29,31,32,39,40,41,42,43,44]
       case ('VGAC')
          Valid_Channels (1:16) = [1,2,3,4,5,6,7,8,9,15,20,22,26,29,31,32]
-      case ('VIIRS-NASA')
+         
+      case ('VIIRS-NASA','VIIRS-NASA-HRES')
          if (.not. Sensor%Fusion_Flag) then
            Valid_Channels (1:22) = [1,2,3,4,5,6,7,8,9,15,20,22,26,29,31,32,39,40,41,42,43,44]
          else

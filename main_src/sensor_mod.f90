@@ -2282,16 +2282,20 @@ module SENSOR_MOD
         
         
       case('VIIRS-NASA-HRES')
-          print*,'read routine has to be written '
+          print*,'read routine has to be finished '
           print*, 'File: ',__FILE__,' Line: ',__LINE__
           print*,' +++++++++++++++++++++++++++++++++++'
           
-          nasa_hres_config % channel_on_modis = .true.
+          nasa_hres_config % channel_on_modis(1:45) = Sensor%Chan_On_Flag_Default(1:45)  == sym%YES
+          
+          
           nasa_hres_config % filename = trim(Image%Level1b_Name)
           nasa_hres_config % path = trim(Image%Level1b_Path)
-          
-          
+          nasa_hres_config % ny_start = (Segment_Number - 1) * Image%Number_Of_Lines_Per_Segment + 1
+          nasa_hres_config % ny_end = min(Image%Number_Of_Lines, nasa_hres_config % ny_start + Image%Number_of_Lines_Per_Segment - 1)
           call READ_VIIRS_NASA_HRES_DATA(nasa_hres_config)
+          
+          print*,'read ready..'
         stop
         
 
