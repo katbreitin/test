@@ -459,7 +459,7 @@ contains
     dim1 = pd%dimsize(1)
     dim2 = pd%dimsize(2)
     allocate(out(dim1,dim2))
-   
+    
     if ( allocated ( pd % r4values ) &
       .or. allocated ( pd % r8values ) &
       .or. allocated(pd % i4values) &
@@ -467,19 +467,19 @@ contains
       .or. allocated(pd % i1values) ) then
       
       allocate(temp_1d(pd%nval))
-    
+   
       call pd%transform_to_real(temp_1d)
      
       out = reshape (temp_1d,(/dim1,dim2/))
-     
+    
       if (scaled(1) .EQ. 1) then
         out = out * slope(1) + add_offset(1)
       end if
-       
+      
       where (reshape (temp_1d,(/dim1,dim2/)) .EQ. missing(1))
         out = -999.
       end where
-     
+    
     else if ( allocated ( pd % r4values_2d )) then
       out = pd % r4values_2d
     end if

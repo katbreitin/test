@@ -192,13 +192,14 @@ CONTAINS
         ( &
         h5filename &
         , datasetname &
-        , dims )
+        , dims &
+        , bits_per_pixel )
       implicit none
       
       character ( len = *) :: h5filename
       character ( len = *) :: datasetname
       integer, pointer :: dims(:)
-      
+      integer :: bits_per_pixel
       INTEGER   :: ltype
       
       
@@ -206,8 +207,11 @@ CONTAINS
       INTEGER                                              :: ndims
       INTEGER(hsize_t), DIMENSION(maxdims) , target        :: datadims
       INTEGER(hsize_t), DIMENSION(maxdims)                 :: maxdatadims
+      integer (hsize_t) :: size
+      INTEGER(hsize_t)   :: dsize
       
-     
+      
+      
       CALL H5Read_init ( H5filename, datasetname )
       IF (ErrorFlag.lt.0) return
       
@@ -219,6 +223,9 @@ CONTAINS
          CALL h5aget_space_f(d_id,dspace,ErrorFlag)
       ENDIF
       
+        call H5Dget_storage_size_f(dspace,size,ErrorFlag)
+      print*,size 
+      stop
       
       CALL h5sget_simple_extent_ndims_f(dspace,ndims,ErrorFlag)
      
@@ -242,7 +249,16 @@ CONTAINS
     ENDIF
       
       
+    
+      
       dims = int(datadims(1:ndims))
+      
+        call h5dget_storage_size_f (d_id,dsize,ErrorFlag)
+     
+      if ( ndims .eq. 1) bits_per_pixel = dsize/dims(1)
+      if ( ndims .eq. 2) bits_per_pixel = dsize/(dims(1)*dims(2))
+      
+      
       CALL H5Read_close
       
    
