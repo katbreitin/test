@@ -32,6 +32,7 @@ module VIIRS_NASA_HRES_READ_MOD
     logical::channel_on_modis(50)
     logical::channel_on_viirs(16)
     character(len=200) :: filename
+    character (len =200) :: iband_geo_filename
     character (len=1000) :: path
     integer :: ny_start
     integer :: ny_end
@@ -74,7 +75,7 @@ subroutine read_viirs_nasa_hres_data (in_config)
          , cx_sds_read &
          , MAXNCNAM
   
-  use Pixel_Common_Mod, only : ch, image
+  use Pixel_Common_Mod, only : ch, image , nav
   
   
   
@@ -86,8 +87,8 @@ subroutine read_viirs_nasa_hres_data (in_config)
   character(2) :: ch_str
   integer i_ch
   
-  print*,'START:  READ nasa viirs hres'
-  print*, trim(in_config % filename)
+  print*,'START:  READ nasa viirs hres ',trim(in_config % filename)
+  
   call in_config % map_modis_to_viirs ()
   file_local = trim(in_config%Path)//trim(in_config%filename)
 
@@ -107,15 +108,22 @@ subroutine read_viirs_nasa_hres_data (in_config)
   do i_ch =12,16
       if (in_config % channel_on_viirs (i_ch)) then
         write ( ch_str, '(i2.2)' ) i_ch 
-        
         status=cx_sds_read(file_local,'observation_data/M'//ch_str//'_highres',out,start = start,count = count)
-       
         ch(in_config % modis_chn_list(i_ch)) % rad_toa = out
         
     end if
   end do
   
+  !- TODO : BOWTIE
   
+   status=cx_sds_read(trim(in_config % path)//'VJ103IMG.A2020118.0000.002.2020118170319.nc','geolocation_data/longitude',out,start = start,count = count)
+  
+   Nav % Lon_1b = out
+
+   status=cx_sds_read(trim(in_config % path)//'VJ103IMG.A2020118.0000.002.2020118170319.nc','geolocation_data/latitude',out,start = start,count = count)
+   Nav % Lat_1b = out
+  print*,out(100,100:110)
+ 
   
 end subroutine read_viirs_nasa_hres_data
 
