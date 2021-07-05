@@ -8,6 +8,7 @@ module cx_h5_read_mod
     , H5Open_F, H5GOPEN_F, H5GGET_INFO_F, H5GN_MEMBERS_F,H5GGET_OBJ_INFO_IDX_F
     
    USE h5fortran_types
+   
    USE cx_sds_type_definitions_mod, only: &
       cx_sds_type &
       , cx_att_type &
@@ -143,12 +144,18 @@ contains
       real, pointer  :: dataset_1d(:)
       real :: att1
       integer, dimension(2) :: count,start
+      integer :: bits_per_pixel
        
+    
+
+      call H5_DATASET_DIMENSIONS( h5_file,sds_name(1),dims,bits_per_pixel)
       
-
-      call H5_DATASET_DIMENSIONS( h5_file,sds_name(1),dims)
-
+     
+      
+  
       ndims = size(dims)
+      
+      ! check which data type is this data set
      
       
       ! count = count_inp(1:2)
@@ -158,49 +165,54 @@ contains
       select case (ndims)
          
          case(2)
-        
-            !call H5ReadDataset ( h5_file, sds_name(1), dataset_2d )
-            
-           ! print*,'lll> ',present (start_inp)
-            
-           ! if ( .not. present (start_inp)) then
-              call H5ReadDataset ( h5_file, sds_name(1), dataset_2d_i )
-           ! else
-            !  call H5ReadDataset ( h5_file, sds_name(1), offset_in = start, count_in = count, dataset = dataset_2d_i )
-             
-           ! end if  
-           if (  present (start_inp)) then
-              dataset_2d_i => dataset_2d_i (:,start_inp(2):start_inp(2)+count_inp(2))
-              dims(2) = count_inp(2)
-              
-           
-           end if 
-           
             allocate (sdata(1))
-            !allocate ( sdata(1) % data % r4values_2d(dims(1),dims(2)))
-        
-            !sdata(1) % data % r4values_2d = dataset_2d
-         
-            !sdata(1) % data % nval = size(dataset_2d)
-  
-            !deallocate(dataset_2d)
-            !sdata(1) % data % dimsize(1) = dims(1)
-            !sdata(1) % data % dimsize(2) = dims(2)
-        
-            !sdata(1) % data % type = 5
-            !sdata(1) % data % rank = 2
+            
+            
+            
+            select case (bits_per_pixel)
+              
+              
+              case(1)
+              
+                call H5ReadDataset ( h5_file, sds_name(1), dataset_2d )
+               
+                allocate ( sdata(1) % data % r4values(dims(1)*dims(2)))
+               
+                sdata(1) % data % r4values = reshape(dataset_2d, (/dims(1)*dims(2)/) )
+                sdata(1) % data % nval = size(dataset_2d)
+                
+                sdata(1) % data % type = DFNT_FLOAT32
+               
+              
+              
+              case(2)
+            
+                call H5ReadDataset ( h5_file, sds_name(1), dataset_2d_i )
+              
+                if (  present (start_inp)) then
+                    dataset_2d_i => dataset_2d_i (:,start_inp(2):start_inp(2)+count_inp(2))
+                    dims(2) = count_inp(2)
+                end if 
+                
+                allocate ( sdata(1) % data % i4values(dims(1)*dims(2)))
+                sdata(1) % data % i4values = reshape(dataset_2d_i, (/dims(1)*dims(2)/) )
+                sdata(1) % data % nval = size(dataset_2d_i)
+                
+                sdata(1) % data % type = 24
            
-            allocate ( sdata(1) % data % i4values(dims(1)*dims(2)))
+            end select
+           
+            
         
-            sdata(1) % data % i4values = reshape(dataset_2d_i, (/dims(1)*dims(2)/) )
+            
          
-            sdata(1) % data % nval = size(dataset_2d_i)
+            
   
             !deallocate(dataset_2d)
             sdata(1) % data % dimsize(1) = dims(1)
             sdata(1) % data % dimsize(2) = dims(2)
         
-            sdata(1) % data % type = 24
+            
             sdata(1) % data % rank = 2
 
          case(1)
@@ -221,39 +233,42 @@ contains
       h5_get_file_sds = 1
     
       allocate  (sdata(1) % attr(4))
-     
-      call H5ReadAttribute( h5_file,trim(sds_name(1))//'/add_offset',att1)
+      
       sdata(1) % nattr = 4
       sdata(1) % attr(1) % name = 'add_offset'
-    
-      allocate ( sdata(1) % attr(1) % data % r4values(1))
-      sdata(1) % attr(1) % data % r4values = att1
+      sdata(1) % attr(2) % name = 'scale_factor'
+      sdata(1) % attr(3) % name = '_FillValue'
+      sdata(1) % attr(4) % name = 'SCALED'
+      
       sdata(1) % attr(1) % data % type = DFNT_FLOAT32
+      sdata(1) % attr(2) % data % type = DFNT_FLOAT32
+      sdata(1) % attr(3) % data % type = DFNT_FLOAT32
+      sdata(1) % attr(4) % data % type = DFNT_INT8
+     
+      allocate ( sdata(1) % attr(1) % data % r4values(1))
+      allocate ( sdata(1) % attr(2) % data % r4values(1))
+      allocate ( sdata(1) % attr(3) % data % r4values(1))
+      allocate ( sdata(1) % attr(4) % data % i1values(1))
       
-     
-      call H5ReadAttribute( h5_file,trim(sds_name(1))//'/scale_factor',att1)
-     
-       sdata(1) % attr(2) % name = 'scale_factor'
-     
-       allocate ( sdata(1) % attr(2) % data % r4values(1))
-      sdata(1) % attr(2) % data % r4values = att1
-    sdata(1) % attr(2) % data % type = DFNT_FLOAT32
-     
+      !- init
+      sdata(1) % attr(1) % data % r4values = 0.00
+      sdata(1) % attr(2) % data % r4values = 1.00
+      sdata(1) % attr(3) % data % r4values = -999.
+      sdata(1) % attr(4) % data % i1values = 0
       
-      call H5ReadAttribute( h5_file,trim(sds_name(1))//'/_FillValue',att1)
-     
-       sdata(1) % attr(3) % name = '_FillValue'
-     
-       allocate ( sdata(1) % attr(3) % data % r4values(1))
-      sdata(1) % attr(3) % data % r4values = att1
-    sdata(1) % attr(3) % data % type = DFNT_FLOAT32
       
-     
-       sdata(1) % attr(4) % name = 'SCALED'
+      if ( bits_per_pixel .eq. 2 ) then
+          call H5ReadAttribute( h5_file,trim(sds_name(1))//'/add_offset',att1)
+          sdata(1) % attr(1) % data % r4values = att1
+      
+          call H5ReadAttribute( h5_file,trim(sds_name(1))//'/scale_factor',att1)
+          sdata(1) % attr(2) % data % r4values = att1
+   
+          call H5ReadAttribute( h5_file,trim(sds_name(1))//'/_FillValue',att1)
+          sdata(1) % attr(3) % data % r4values = att1
     
-       allocate ( sdata(1) % attr(4) % data % i1values(1))
-      sdata(1) % attr(4) % data % i1values = 1
-    sdata(1) % attr(4) % data % type = DFNT_INT8
+          sdata(1) % attr(4) % data % i1values = 1
+      end if
      
      
    end function h5_get_file_sds
