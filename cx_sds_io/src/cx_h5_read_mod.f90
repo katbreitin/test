@@ -145,11 +145,13 @@ contains
       real :: att1
       integer, dimension(2) :: count,start
       integer :: bits_per_pixel
+      integer ::dclass
        
     
 
-      call H5_DATASET_DIMENSIONS( h5_file,sds_name(1),dims,bits_per_pixel)
+      call H5_DATASET_DIMENSIONS( h5_file,sds_name(1),dims,dclass)
       
+      ! print*,sds_name(1),' dlass: ',dclass
      
       
   
@@ -169,13 +171,19 @@ contains
             
             
             
-            select case (bits_per_pixel)
+            select case (dclass)
               
               
               case(1)
               
                 call H5ReadDataset ( h5_file, sds_name(1), dataset_2d )
-               
+                
+                if (  present (start_inp)) then
+                    dataset_2d => dataset_2d (:,start_inp(2):start_inp(2)+count_inp(2)-1)
+                    
+                    dims(2) = count_inp(2)
+                end if 
+                
                 allocate ( sdata(1) % data % r4values(dims(1)*dims(2)))
                
                 sdata(1) % data % r4values = reshape(dataset_2d, (/dims(1)*dims(2)/) )
@@ -185,15 +193,16 @@ contains
                
               
               
-              case(2)
-            
+              case(0)
+                
                 call H5ReadDataset ( h5_file, sds_name(1), dataset_2d_i )
-              
+             
                 if (  present (start_inp)) then
-                    dataset_2d_i => dataset_2d_i (:,start_inp(2):start_inp(2)+count_inp(2))
+                    dataset_2d_i => dataset_2d_i (:,start_inp(2):start_inp(2)+count_inp(2)-1)
+                    
                     dims(2) = count_inp(2)
                 end if 
-                
+               
                 allocate ( sdata(1) % data % i4values(dims(1)*dims(2)))
                 sdata(1) % data % i4values = reshape(dataset_2d_i, (/dims(1)*dims(2)/) )
                 sdata(1) % data % nval = size(dataset_2d_i)
@@ -256,17 +265,17 @@ contains
       sdata(1) % attr(3) % data % r4values = -999.
       sdata(1) % attr(4) % data % i1values = 0
       
-      
-      if ( bits_per_pixel .eq. 2 ) then
+    
+      if ( dclass .eq. 0 ) then
           call H5ReadAttribute( h5_file,trim(sds_name(1))//'/add_offset',att1)
           sdata(1) % attr(1) % data % r4values = att1
-      
+          
           call H5ReadAttribute( h5_file,trim(sds_name(1))//'/scale_factor',att1)
           sdata(1) % attr(2) % data % r4values = att1
-   
+ 
           call H5ReadAttribute( h5_file,trim(sds_name(1))//'/_FillValue',att1)
           sdata(1) % attr(3) % data % r4values = att1
-    
+  
           sdata(1) % attr(4) % data % i1values = 1
       end if
      

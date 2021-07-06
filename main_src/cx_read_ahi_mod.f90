@@ -406,12 +406,13 @@ contains
          H5_DATASET_DIMENSIONS
       type ( ahi_config_type ) :: config
       integer, intent(in) :: chn
+      integer :: dclass
      
       integer,pointer::dims(:)
      
        if (.not. config % filenames_set) call set_filenames(config)
       
-      call H5_DATASET_DIMENSIONS (trim(config % filename ( chn )),trim(config % varname ( chn )),dims)
+      call H5_DATASET_DIMENSIONS (trim(config % filename ( chn )),trim(config % varname ( chn )),dims,dclass)
        
       
    end subroutine get_var_dimension

@@ -769,7 +769,7 @@ module SENSOR_MOD
               call READ_AHI_INSTR_CONSTANTS(trim(Sensor%Instr_Const_File))
 !        case('AHI9')
 !             call READ_AHI_INSTR_CONSTANTS(trim(Sensor%Instr_Const_File))
-         case('VIIRS','VIIRS-NASA','VGAC')
+         case('VIIRS','VIIRS-NASA','VGAC','VIIRS-NASA-HRES')
               if (.not. Sensor%Fusion_Flag) then
                 call READ_VIIRS_INSTR_CONSTANTS(trim(Sensor%Instr_Const_File))
               else
@@ -2173,7 +2173,9 @@ module SENSOR_MOD
       real, intent(in):: Time_Since_Launch
       integer, intent(out):: Ierror_Level1b
       TYPE(viirs_nasa_hres_config_type) :: nasa_hres_config
-
+      integer :: i_line
+      
+      
       Ierror_Level1b = 0
       Cloud_Mask_Aux_Read_Flag = sym%NO
 
@@ -2288,7 +2290,7 @@ module SENSOR_MOD
           
           nasa_hres_config % channel_on_modis(1:45) = Sensor%Chan_On_Flag_Default(1:45)  == sym%YES
           
-          
+          nasa_hres_config % sensor = 'npp'
           nasa_hres_config % filename = trim(Image%Level1b_Name)
           nasa_hres_config % path = trim(Image%Level1b_Path)
           nasa_hres_config % ny_start = (Segment_Number - 1) * Image%Number_Of_Lines_Per_Segment + 1
@@ -2296,9 +2298,11 @@ module SENSOR_MOD
           call READ_VIIRS_NASA_HRES_DATA(nasa_hres_config)
           
           print*,'read ready..'
-        stop
         
-
+           Image%Number_Of_Lines_Read_This_Segment = nasa_hres_config % ny_end - nasa_hres_config % ny_start + 1
+           do i_line = 1, Image%Number_Of_Lines_Per_Segment
+              Image%Scan_Number(i_line) =nasa_hres_config % ny_start + i_line - 1
+           end do
        case('VIIRS-NASA')
 
          call READ_VIIRS_NASA_DATA (Segment_Number, trim(Image%Level1b_Name), Ierror_Level1b)

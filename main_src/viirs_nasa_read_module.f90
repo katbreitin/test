@@ -97,8 +97,10 @@ subroutine READ_VIIRS_NASA_DATA (Segment_Number, VGEOM_File, Error_Out)
       , Ch &
       , Bt_11um_Sounder &
       , Bt_12um_Sounder 
-
-   use PLANCK_MOD
+ 
+   use PLANCK_MOD, only: &
+    compute_bt_array &
+    , compute_rad_array
 
    use VIEWING_GEOMETRY_MOD, only: &
         GLINT_ANGLE &

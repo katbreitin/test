@@ -336,7 +336,7 @@ contains
           
          cx_sds_read_raw = h5_get_file_sds(file, nsds,sds,1, (/sds_name/)  &
          ,start_inp=start,stride_inp = stride,count_inp =count) 
-        
+             
         
       end if
 		
@@ -469,7 +469,7 @@ contains
       allocate(temp_1d(pd%nval))
    
       call pd%transform_to_real(temp_1d)
-     
+    
       out = reshape (temp_1d,(/dim1,dim2/))
     
       if (scaled(1) .EQ. 1) then

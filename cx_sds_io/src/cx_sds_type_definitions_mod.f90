@@ -170,7 +170,9 @@ contains
             if (allocated(self % i2values)) data_real = real (self % i2values)
             if (allocated(self % i4values)) data_real = real (self % i4values)
          case (DFNT_UINT32, DFNT_INT32)
+           
             data_real = real (self % i4values)
+           
          case (DFNT_FLOAT32 )
             
             data_real = real (self % r4values)
