@@ -157,6 +157,7 @@ subroutine read_viirs_nasa_hres_data (in_config)
   integer i_ch
   integer :: modis_ch
   real :: noaa_nasa_correct
+  character(len=1024) :: file_v03img
   
   print*,'START:  READ nasa viirs hres ',trim(in_config % filename)
   
@@ -182,12 +183,13 @@ subroutine read_viirs_nasa_hres_data (in_config)
         modis_ch = in_config % modis_chn_list(i_ch)
         status=cx_sds_read(file_local,'observation_data/M'//ch_str//'_highres',out,start = start,count = count)
         ch(modis_ch) % rad_toa = out
+        
         ! - convert to radiance to NOAA unit.. 
         noaa_nasa_correct = ((10000.0 / coef % planck_nu(modis_ch) ** 2)/10. )
         ch(modis_ch) % rad_toa =  ch(modis_ch) % rad_toa * noaa_nasa_correct
         
         ! -  compute BT
-        call compute_bt_array (ch ( modis_ch ) % bt_toa , ch ( modis_ch ) % rad_toa , modis_ch, -999.)
+        call COMPUTE_BT_ARRAY (ch ( modis_ch ) % bt_toa , ch ( modis_ch ) % rad_toa , modis_ch, -999.)
         
     end if
   end do
@@ -195,24 +197,29 @@ subroutine read_viirs_nasa_hres_data (in_config)
   !- TODO : BOWTIE
   
   print*,'++++++++++++++  TO-DO make correct VJ! file ',__FILE__,' ' ,__LINE__
+  
+  file_v03img = trim(in_config % path)//'VJ103IMG.A2020118.0000.002.2020118170319.nc'
    
-   status=cx_sds_read(trim(in_config % path)//'VJ103IMG.A2020118.0000.002.2020118170319.nc','geolocation_data/longitude',out,start = start,count = count)
+   status=cx_sds_read(trim(file_v03img),'geolocation_data/longitude',out,start = start,count = count)
     Nav % Lon_1b = out
    
-   status=cx_sds_read(trim(in_config % path)//'VJ103IMG.A2020118.0000.002.2020118170319.nc','geolocation_data/latitude',out,start = start,count = count)
+   status=cx_sds_read(trim(file_v03img),'geolocation_data/latitude',out,start = start,count = count)
    Nav % Lat_1b = out
  
-   status=cx_sds_read(trim(in_config % path)//'VJ103IMG.A2020118.0000.002.2020118170319.nc','geolocation_data/sensor_azimuth',out,start = start,count = count)
+   status=cx_sds_read(trim(file_v03img),'geolocation_data/sensor_azimuth',out,start = start,count = count)
    geo % sataz = out
    
-   status=cx_sds_read(trim(in_config % path)//'VJ103IMG.A2020118.0000.002.2020118170319.nc','geolocation_data/sensor_zenith',out,start = start,count = count)
+   status=cx_sds_read(trim(file_v03img),'geolocation_data/sensor_zenith',out,start = start,count = count)
    geo % satzen = out
    
-   status=cx_sds_read(trim(in_config % path)//'VJ103IMG.A2020118.0000.002.2020118170319.nc','geolocation_data/solar_azimuth',out,start = start,count = count)
+   status=cx_sds_read(trim(file_v03img),'geolocation_data/solar_azimuth',out,start = start,count = count)
    geo % solaz = out
   
-   status=cx_sds_read(trim(in_config % path)//'VJ103IMG.A2020118.0000.002.2020118170319.nc','geolocation_data/solar_zenith',out,start = start,count = count)
+   status=cx_sds_read(trim(file_v03img),'geolocation_data/solar_zenith',out,start = start,count = count)
    geo % solzen = out
+   
+   status=cx_sds_read(trim(in_config % path)//'VNP02IMG.A2020118.0000.001.2020118052345.uwssec.nc','scan_line_attributes/scan_start_time',out)
+   !  set scan time according nasa viirs
   
    print*,'++++++++++++++  TO-DO make correct VJ! file ',__FILE__,' ' ,__LINE__
    
