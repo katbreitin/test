@@ -226,7 +226,7 @@ contains
 
          case(1)
 
-            call H5ReadDataset ( h5_file, sds_name(1), dataset_2d )
+            call H5ReadDataset ( h5_file, sds_name(1), dataset_1d )
             allocate (sdata(1))
             allocate ( sdata(1) % data % r4values(dims(1)))
             sdata(1) % data % r4values = dataset_1d
@@ -234,7 +234,7 @@ contains
             deallocate(dataset_1d)
             sdata(1) % data % dimsize(1) = dims(1)
 
-
+            sdata(1) % data % type = 24
 
       end select
 

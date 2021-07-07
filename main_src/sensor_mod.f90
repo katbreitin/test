@@ -359,8 +359,8 @@ module SENSOR_MOD
       end if 
       
       if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA-HRES') then
-          print*
-          print*,'  +++++++++++++++++++++++++++++++++++  +++++++++++++++++++++++++++++++++++++='
+         ! print*
+         ! print*,'  +++++++++++++++++++++++++++++++++++  +++++++++++++++++++++++++++++++++++++='
           print*,'read date time has to be written is fake... READ_VIIRS_NASA_DATE_TIME..  File: ', __FILE__,' Line: ',__LINE__
          Image%Start_Year = 2020
          Image%End_Year = 2020
@@ -368,9 +368,9 @@ module SENSOR_MOD
          Image%End_Doy = 118
          Image%Orbit_Number = 7889887
 
-         Image%Start_Time = 0.5
-         Image%End_Time = 0.9
-          print*,'  +++++++++++++++++++++++++++++++++++  ++++++++++++++++++++++++++++++++++++++++='
+         Image%Start_Time = 0.00
+         Image%End_Time = 0.01
+         ! print*,'  +++++++++++++++++++++++++++++++++++  ++++++++++++++++++++++++++++++++++++++++='
           
           
          
@@ -2284,9 +2284,9 @@ module SENSOR_MOD
         
         
       case('VIIRS-NASA-HRES')
-          print*,'read routine has to be finished '
-          print*, 'File: ',__FILE__,' Line: ',__LINE__
-          print*,' +++++++++++++++++++++++++++++++++++'
+         ! print*,'read routine has to be finished '
+          !print*, 'File: ',__FILE__,' Line: ',__LINE__
+         ! print*,' +++++++++++++++++++++++++++++++++++'
           
           nasa_hres_config % channel_on_modis(1:45) = Sensor%Chan_On_Flag_Default(1:45)  == sym%YES
           
@@ -2297,7 +2297,7 @@ module SENSOR_MOD
           nasa_hres_config % ny_end = min(Image%Number_Of_Lines, nasa_hres_config % ny_start + Image%Number_of_Lines_Per_Segment - 1)
           call READ_VIIRS_NASA_HRES_DATA(nasa_hres_config)
           
-          print*,'read ready..'
+         ! print*,'read ready..'
         
            Image%Number_Of_Lines_Read_This_Segment = nasa_hres_config % ny_end - nasa_hres_config % ny_start + 1
            do i_line = 1, Image%Number_Of_Lines_Per_Segment

@@ -33,6 +33,7 @@ module VIIRS_NASA_HRES_READ_MOD
     logical::channel_on_viirs(16)
     character(len=50) :: sensor
     character(len=200) :: filename
+    character(len=20) :: time_identifier
     character (len =200) :: iband_geo_filename
     character (len=1000) :: path
     integer :: ny_start
@@ -64,7 +65,7 @@ module VIIRS_NASA_HRES_READ_MOD
   
   type(viirs_coef_type) :: coef
   
-  
+  logical :: first_run = .true.
   
 contains
 
@@ -123,6 +124,11 @@ subroutine map_modis_to_viirs(self)
 
 end subroutine map_modis_to_viirs
 
+subroutine viirs_hres_date
+
+
+end subroutine viirs_hres_date
+
 
 !   this routine is supposed to read all reflectance and radiance data
 !   input is filename
@@ -152,6 +158,7 @@ subroutine read_viirs_nasa_hres_data (in_config)
   integer :: status
   character(len=1020) :: File_Local
   real,  allocatable :: out(:,:)
+  real,  allocatable :: out1d(:)
   integer , dimension(2) :: start,count
   character(2) :: ch_str
   integer i_ch
@@ -159,7 +166,7 @@ subroutine read_viirs_nasa_hres_data (in_config)
   real :: noaa_nasa_correct
   character(len=1024) :: file_v03img
   
-  print*,'START:  READ nasa viirs hres ',trim(in_config % filename)
+  if ( first_run) print*,'START:  READ nasa viirs hres ',trim(in_config % filename)
   
   call in_config % map_modis_to_viirs ()
   file_local = trim(in_config%Path)//trim(in_config%filename)
@@ -196,13 +203,13 @@ subroutine read_viirs_nasa_hres_data (in_config)
   
   !- TODO : BOWTIE
   
-  print*,'++++++++++++++  TO-DO make correct VJ! file ',__FILE__,' ' ,__LINE__
+ ! print*,'++++++++++++++  TO-DO make correct VJ! file ',__FILE__,' ' ,__LINE__
   
-  file_v03img = trim(in_config % path)//'VJ103IMG.A2020118.0000.002.2020118170319.nc'
+  file_v03img = trim(in_config % path)//'VNP03IMG.A2020118.0000.001.2020118201804.nc'
    
    status=cx_sds_read(trim(file_v03img),'geolocation_data/longitude',out,start = start,count = count)
     Nav % Lon_1b = out
-   
+  
    status=cx_sds_read(trim(file_v03img),'geolocation_data/latitude',out,start = start,count = count)
    Nav % Lat_1b = out
  
@@ -211,29 +218,28 @@ subroutine read_viirs_nasa_hres_data (in_config)
    
    status=cx_sds_read(trim(file_v03img),'geolocation_data/sensor_zenith',out,start = start,count = count)
    geo % satzen = out
-   
+  
    status=cx_sds_read(trim(file_v03img),'geolocation_data/solar_azimuth',out,start = start,count = count)
    geo % solaz = out
   
    status=cx_sds_read(trim(file_v03img),'geolocation_data/solar_zenith',out,start = start,count = count)
    geo % solzen = out
    
-   status=cx_sds_read(trim(in_config % path)//'VNP02IMG.A2020118.0000.001.2020118052345.uwssec.nc','scan_line_attributes/scan_start_time',out)
+   !status=cx_sds_read(trim(in_config % path)//'VNP02IMG.A2020118.0000.001.2020118052345.uwssec.nc','scan_line_attributes/scan_start_time',out1d)
    !  set scan time according nasa viirs
+   
+  ! print*,'++++++++++++++  TO-DO make correct VJ! file ',__FILE__,' ' ,__LINE__
+   
+  ! print*,'put several things outside nasa hres read routine in future: ',__FILE__,' Line: ',__LINE__
   
-   print*,'++++++++++++++  TO-DO make correct VJ! file ',__FILE__,' ' ,__LINE__
-   
-   print*,'put several things outside nasa hres read routine in future: ',__FILE__,' Line: ',__LINE__
-   
    geo % relaz = RELATIVE_AZIMUTH (Geo%Solaz, Geo%Sataz)
    Geo % Scatangle = SCATTERING_ANGLE (Geo%Solzen, Geo%Satzen, Geo%Relaz)
    
+   if ( allocated(out)) deallocate(out)
    
-  
+   first_run = .false.
    
-   
-   
-  
+
 end subroutine read_viirs_nasa_hres_data
 
 end module VIIRS_NASA_HRES_READ_MOD
