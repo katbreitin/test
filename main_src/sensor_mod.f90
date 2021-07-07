@@ -2297,12 +2297,14 @@ module SENSOR_MOD
           nasa_hres_config % ny_end = min(Image%Number_Of_Lines, nasa_hres_config % ny_start + Image%Number_of_Lines_Per_Segment - 1)
           call READ_VIIRS_NASA_HRES_DATA(nasa_hres_config)
           
-          '
+          
         
            Image%Number_Of_Lines_Read_This_Segment = nasa_hres_config % ny_end - nasa_hres_config % ny_start + 1
+           print*,Image%Number_Of_Lines_Read_This_Segment
            do i_line = 1, Image%Number_Of_Lines_Per_Segment
               Image%Scan_Number(i_line) =nasa_hres_config % ny_start + i_line - 1
            end do
+           
        case('VIIRS-NASA')
 
          call READ_VIIRS_NASA_DATA (Segment_Number, trim(Image%Level1b_Name), Ierror_Level1b)
@@ -2372,7 +2374,7 @@ module SENSOR_MOD
          ! If error reading, then go to next file
          if (Ierror_Level1b /= 0) return
       endif
-      
+       
    end subroutine READ_LEVEL1B_DATA
 
    !-------------------------------------------------------------------

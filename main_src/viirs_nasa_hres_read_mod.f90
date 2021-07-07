@@ -180,16 +180,16 @@ subroutine read_viirs_nasa_hres_data (in_config)
   file_local = trim(in_config%Path)//trim(in_config%filename)
    call coef % read_file(in_config % sensor)
   
-  start = (/1,in_config % ny_start /)
+  start = (/1,in_config % ny_start - 1 /)
   count = (/6400,in_config % ny_end- in_config % ny_start + 1 /)
   
   do i_ch =1,11
    
     if (in_config % channel_on_viirs (i_ch)) then
       write ( ch_str, '(i2.2)' ) i_ch 
-   !   status=cx_sds_read(file_local,'observation_data/M'//ch_str//'_highres',out,start = start,count = count)
-   !   ch(in_config % modis_chn_list(i_ch)) % ref_toa = out
-      if (allocated(out)) deallocate(out)
+      status=cx_sds_read(file_local,'observation_data/M'//ch_str//'_highres',out,start = start,count = count)
+      ch(in_config % modis_chn_list(i_ch)) % ref_toa = out
+     
     end if
   end do
 
@@ -199,9 +199,9 @@ subroutine read_viirs_nasa_hres_data (in_config)
       if (in_config % channel_on_viirs (i_ch)) then
         write ( ch_str, '(i2.2)' ) i_ch 
         modis_ch = in_config % modis_chn_list(i_ch)
-       ! status=cx_sds_read(file_local,'observation_data/M'//ch_str//'_highres',out,start = start,count = count)
-       ! ch(modis_ch) % rad_toa = out
-        if (allocated(out)) deallocate(out)
+        status=cx_sds_read(file_local,'observation_data/M'//ch_str//'_highres',out,start = start,count = count)
+        ch(modis_ch) % rad_toa = out
+        
         ! - convert to radiance to NOAA unit.. 
         noaa_nasa_correct = ((10000.0 / coef % planck_nu(modis_ch) ** 2)/10. )
         ch(modis_ch) % rad_toa =  ch(modis_ch) % rad_toa * noaa_nasa_correct
@@ -222,7 +222,7 @@ subroutine read_viirs_nasa_hres_data (in_config)
     print*,'Missing VNP03IMG file'
   end if
   
-  print*,trim(file_v03img(1))
+  if ( first_run) print*,trim(file_v03img(1))
    
    status=cx_sds_read(trim(file_v03img(1)),'geolocation_data/longitude',out,start = start,count = count)
     Nav % Lon_1b = out

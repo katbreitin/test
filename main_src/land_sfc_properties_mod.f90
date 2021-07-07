@@ -231,8 +231,8 @@ module LAND_SFC_PROPERTIES_MOD
       return
     end if
   
-    nx = size(land,1)
-    ny = size(land,2)
+    nx = size(lat,1)
+    ny = size(lat,2)
   
     call find_bounds(lat,lon,wlon,elon,slat,nlat,dateline_flg)
 
@@ -390,8 +390,8 @@ module LAND_SFC_PROPERTIES_MOD
       return
     end if
  
-    nx = size(land,1)
-    ny = size(land,2)
+    nx = size(lat,1)
+    ny = size(lat,2)
 
     call find_bounds(lat,lon,wlon,elon,slat,nlat,dateline_flg)
 

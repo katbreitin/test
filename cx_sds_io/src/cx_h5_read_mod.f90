@@ -183,6 +183,7 @@ contains
                 if (  present (start_inp)) then
                     offs = (/0,start_inp(2)/)
                    counts = (/dims(1),count_inp(2)/)
+                   
                    call H5ReadDataset ( h5_file, sds_name(1),offs,counts, dataset_2d )
                     dims(2) = count_inp(2)
                   
