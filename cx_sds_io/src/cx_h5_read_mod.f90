@@ -139,15 +139,17 @@ contains
       integer, optional, intent(in) :: count_inp(:)
       integer , pointer :: dims(:)
       integer :: ndims
-      real, pointer  :: dataset_2d(:,:)
-      integer, pointer :: dataset_2d_i(:,:)
+      real, pointer  :: dataset_2d(:,:)=> null()
+      integer(kind=4), pointer :: dataset_2d_i(:,:) => null()
       real, pointer  :: dataset_1d(:)
       real :: att1
       integer, dimension(2) :: count,start
       integer :: bits_per_pixel
       integer ::dclass
-       
-    
+      
+      integer :: offs(2),counts(2)
+       integer :: i
+     
 
       call H5_DATASET_DIMENSIONS( h5_file,sds_name(1),dims,dclass)
       
@@ -176,39 +178,58 @@ contains
               
               case(1)
               
-                call H5ReadDataset ( h5_file, sds_name(1), dataset_2d )
+                
                 
                 if (  present (start_inp)) then
-                    dataset_2d => dataset_2d (:,start_inp(2):start_inp(2)+count_inp(2)-1)
-                    
+                    offs = (/0,start_inp(2)/)
+                   counts = (/dims(1),count_inp(2)/)
+                   call H5ReadDataset ( h5_file, sds_name(1),offs,counts, dataset_2d )
                     dims(2) = count_inp(2)
+                  
+                else   
+                   
+                   call H5ReadDataset ( h5_file, sds_name(1), dataset_2d )
                 end if 
                 
-                allocate ( sdata(1) % data % r4values(dims(1)*dims(2)))
                
+                allocate ( sdata(1) % data % r4values(dims(1)*dims(2)))
+              
                 sdata(1) % data % r4values = reshape(dataset_2d, (/dims(1)*dims(2)/) )
+                
                 sdata(1) % data % nval = size(dataset_2d)
                 
                 sdata(1) % data % type = DFNT_FLOAT32
+                
+                dataset_2d=> null()
                
-              
               
               case(0)
-                
-                call H5ReadDataset ( h5_file, sds_name(1), dataset_2d_i )
-             
+                  
+                  
+                  
                 if (  present (start_inp)) then
-                    dataset_2d_i => dataset_2d_i (:,start_inp(2):start_inp(2)+count_inp(2)-1)
+                     offs = (/0,start_inp(2)/)
+                   counts = (/dims(1),count_inp(2)/)
+                    call H5ReadDataset ( h5_file, sds_name(1),offs,counts, dataset_2d_i )
                     
                     dims(2) = count_inp(2)
+                else
+                      call H5ReadDataset ( h5_file, sds_name(1) , dataset_2d_i )
                 end if 
-               
+            
                 allocate ( sdata(1) % data % i4values(dims(1)*dims(2)))
+               
+                
+               
+                
                 sdata(1) % data % i4values = reshape(dataset_2d_i, (/dims(1)*dims(2)/) )
+               
                 sdata(1) % data % nval = size(dataset_2d_i)
                 
                 sdata(1) % data % type = 24
-           
+               
+                dataset_2d_i=> null()
+               
             end select
            
             
@@ -225,7 +246,7 @@ contains
             sdata(1) % data % rank = 2
 
          case(1)
-
+          print*,'one dim'
             call H5ReadDataset ( h5_file, sds_name(1), dataset_1d )
             allocate (sdata(1))
             allocate ( sdata(1) % data % r4values(dims(1)))

@@ -75,10 +75,17 @@ Module cx_sds_type_definitions_mod
    contains
       procedure :: info=>cx_sds_type__info
       procedure :: get_att => cx_sds_type__get_att
+      procedure :: deallocate =>cx_sds_type__deallocate
    end type cx_sds_type
    
    
 contains
+    subroutine cx_sds_type__deallocate (self)
+    class ( cx_sds_type) :: self
+    
+      if ( allocated(self % attr)) deallocate (self % attr)
+    
+    end subroutine cx_sds_type__deallocate 
 
     subroutine type_ncdf_to_hdf (self)
       class(cx_sds_data_type) :: self
@@ -291,11 +298,13 @@ contains
       if ( allocated( self%i1values)) deallocate( self%i1values)
       if ( allocated( self%i2values)) deallocate( self%i2values)
       if ( allocated( self%i4values)) deallocate( self%i4values)
+       if ( allocated( self%i8values)) deallocate( self%i8values)
       if ( allocated( self%r4values)) deallocate( self%r4values)
       if ( allocated(self% r8values)) deallocate( self%r8values)
       if ( allocated( self%i1values_2d)) deallocate( self%i1values_2d)
       if ( allocated( self%i2values_2d)) deallocate( self%i2values_2d)
       if ( allocated( self%i4values_2d)) deallocate( self%i4values_2d)
+      if ( allocated( self%i8values_2d)) deallocate( self%i8values_2d)
       if ( allocated( self%r4values_2d)) deallocate( self%r4values_2d)
       if ( allocated( self%r8values_2d)) deallocate( self%r8values_2d)
       if ( allocated( self%i1values_3d)) deallocate( self%i1values_3d)

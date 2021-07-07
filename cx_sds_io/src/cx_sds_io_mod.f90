@@ -433,7 +433,7 @@ contains
     ! -  executable
        
     if (  cx_sds_read_raw ( file, sds_name, sds, start=start, stride=stride, count=count) < 0 ) goto 9999
-   
+    
     pd=>sds(1) % data
     ps=>sds(1)
     
@@ -491,8 +491,10 @@ contains
      if ( allocated(temp_1d)) deallocate ( temp_1d)
     call pd % deallocate
     pd=>null()
+    call ps % deallocate()
     ps=>null()
     if (allocated(sds)) deallocate(sds)
+    
    
   end function cx_sds_read_2d_real
   !
