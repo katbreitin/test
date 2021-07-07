@@ -30,7 +30,7 @@
 
 module VIIRS_NASA_READ_MODULE 
 
-  use READH5DATASET, only: &
+  use CX_READH5DATASET, only: &
    h5readattribute &
    , h5readdataset
   

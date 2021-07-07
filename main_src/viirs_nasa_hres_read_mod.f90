@@ -154,6 +154,8 @@ subroutine read_viirs_nasa_hres_data (in_config)
   
   use Planck_mod
   
+  use file_tools
+  
   type ( viirs_nasa_hres_config_type), intent (in) :: in_config
   integer :: status
   character(len=1020) :: File_Local
@@ -164,9 +166,15 @@ subroutine read_viirs_nasa_hres_data (in_config)
   integer i_ch
   integer :: modis_ch
   real :: noaa_nasa_correct
-  character(len=1024) :: file_v03img
+  character(len=1024), dimension(1) :: file_v03img, file_02img
+  character(len=15) :: time_identifier
+  integer :: cc
+  logical :: rel_path = .TRUE.
   
   if ( first_run) print*,'START:  READ nasa viirs hres ',trim(in_config % filename)
+ 
+  ! time identifier
+  time_identifier =  in_config%filename(9:23)
   
   call in_config % map_modis_to_viirs ()
   file_local = trim(in_config%Path)//trim(in_config%filename)
@@ -176,21 +184,24 @@ subroutine read_viirs_nasa_hres_data (in_config)
   count = (/6400,in_config % ny_end- in_config % ny_start + 1 /)
   
   do i_ch =1,11
+   
     if (in_config % channel_on_viirs (i_ch)) then
       write ( ch_str, '(i2.2)' ) i_ch 
-      status=cx_sds_read(file_local,'observation_data/M'//ch_str//'_highres',out,start = start,count = count)
-      ch(in_config % modis_chn_list(i_ch)) % ref_toa = out
+   !   status=cx_sds_read(file_local,'observation_data/M'//ch_str//'_highres',out,start = start,count = count)
+   !   ch(in_config % modis_chn_list(i_ch)) % ref_toa = out
+      if (allocated(out)) deallocate(out)
     end if
   end do
 
   
   do i_ch =12,16
+     
       if (in_config % channel_on_viirs (i_ch)) then
         write ( ch_str, '(i2.2)' ) i_ch 
         modis_ch = in_config % modis_chn_list(i_ch)
-        status=cx_sds_read(file_local,'observation_data/M'//ch_str//'_highres',out,start = start,count = count)
-        ch(modis_ch) % rad_toa = out
-        
+       ! status=cx_sds_read(file_local,'observation_data/M'//ch_str//'_highres',out,start = start,count = count)
+       ! ch(modis_ch) % rad_toa = out
+        if (allocated(out)) deallocate(out)
         ! - convert to radiance to NOAA unit.. 
         noaa_nasa_correct = ((10000.0 / coef % planck_nu(modis_ch) ** 2)/10. )
         ch(modis_ch) % rad_toa =  ch(modis_ch) % rad_toa * noaa_nasa_correct
@@ -205,26 +216,34 @@ subroutine read_viirs_nasa_hres_data (in_config)
   
  ! print*,'++++++++++++++  TO-DO make correct VJ! file ',__FILE__,' ' ,__LINE__
   
-  file_v03img = trim(in_config % path)//'VNP03IMG.A2020118.0000.001.2020118201804.nc'
+  file_v03img = file_search(trim(in_config % path),'VNP03IMG'//trim(time_identifier)//'*.nc',cc,rel_path)
+  
+  if (cc .ne. 1 ) then
+    print*,'Missing VNP03IMG file'
+  end if
+  
+  print*,trim(file_v03img(1))
    
-   status=cx_sds_read(trim(file_v03img),'geolocation_data/longitude',out,start = start,count = count)
+   status=cx_sds_read(trim(file_v03img(1)),'geolocation_data/longitude',out,start = start,count = count)
     Nav % Lon_1b = out
   
-   status=cx_sds_read(trim(file_v03img),'geolocation_data/latitude',out,start = start,count = count)
+   status=cx_sds_read(trim(file_v03img(1)),'geolocation_data/latitude',out,start = start,count = count)
    Nav % Lat_1b = out
  
-   status=cx_sds_read(trim(file_v03img),'geolocation_data/sensor_azimuth',out,start = start,count = count)
+   status=cx_sds_read(trim(file_v03img(1)),'geolocation_data/sensor_azimuth',out,start = start,count = count)
    geo % sataz = out
-   
-   status=cx_sds_read(trim(file_v03img),'geolocation_data/sensor_zenith',out,start = start,count = count)
+ 
+   status=cx_sds_read(trim(file_v03img(1)),'geolocation_data/sensor_zenith',out,start = start,count = count)
    geo % satzen = out
   
-   status=cx_sds_read(trim(file_v03img),'geolocation_data/solar_azimuth',out,start = start,count = count)
+   status=cx_sds_read(trim(file_v03img(1)),'geolocation_data/solar_azimuth',out,start = start,count = count)
    geo % solaz = out
   
-   status=cx_sds_read(trim(file_v03img),'geolocation_data/solar_zenith',out,start = start,count = count)
+   status=cx_sds_read(trim(file_v03img(1)),'geolocation_data/solar_zenith',out,start = start,count = count)
+  
    geo % solzen = out
-   
+  
+   file_02img = file_search(trim(in_config % path),'VNP02IMG'//trim(time_identifier)//'*.nc',cc,rel_path)
    !status=cx_sds_read(trim(in_config % path)//'VNP02IMG.A2020118.0000.001.2020118052345.uwssec.nc','scan_line_attributes/scan_start_time',out1d)
    !  set scan time according nasa viirs
    
@@ -234,11 +253,11 @@ subroutine read_viirs_nasa_hres_data (in_config)
   
    geo % relaz = RELATIVE_AZIMUTH (Geo%Solaz, Geo%Sataz)
    Geo % Scatangle = SCATTERING_ANGLE (Geo%Solzen, Geo%Satzen, Geo%Relaz)
-   
+    
    if ( allocated(out)) deallocate(out)
    
    first_run = .false.
-   
+    
 
 end subroutine read_viirs_nasa_hres_data
 

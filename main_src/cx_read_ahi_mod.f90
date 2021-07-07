@@ -402,7 +402,7 @@ contains
    !--------------------------------------------------------------------------------------
    
    subroutine get_var_dimension ( config, chn, dims )
-      use readh5dataset, only: &
+      use cx_readh5dataset, only: &
          H5_DATASET_DIMENSIONS
       type ( ahi_config_type ) :: config
       integer, intent(in) :: chn
@@ -441,7 +441,7 @@ contains
          , glint_angle &
          , scattering_angle
          
-      use readh5dataset, only: &
+      use cx_readh5dataset, only: &
          h5readattribute 
       
 !using one CGMS routine (geos_transform_pix.c for all sensors)
@@ -594,7 +594,7 @@ contains
    ! --------------------------------------------------------------------------------------
    subroutine read_ahi_level1b ( config, ahi )
    
-      use readh5dataset !, only: &
+      use cx_readh5dataset !, only: &
         ! h5readattribute  &
         ! , h5readdataset
       

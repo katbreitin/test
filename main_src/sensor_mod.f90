@@ -2297,7 +2297,7 @@ module SENSOR_MOD
           nasa_hres_config % ny_end = min(Image%Number_Of_Lines, nasa_hres_config % ny_start + Image%Number_of_Lines_Per_Segment - 1)
           call READ_VIIRS_NASA_HRES_DATA(nasa_hres_config)
           
-         ! print*,'read ready..'
+          '
         
            Image%Number_Of_Lines_Read_This_Segment = nasa_hres_config % ny_end - nasa_hres_config % ny_start + 1
            do i_line = 1, Image%Number_Of_Lines_Per_Segment

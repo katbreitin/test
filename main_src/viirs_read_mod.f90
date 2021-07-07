@@ -33,7 +33,7 @@
 !--------------------------------------------------------------------------------------
 module viirs_read_mod
 
-   use readh5dataset,only: &
+   use cx_readh5dataset,only: &
       h5readattribute &
       , h5readdataset
    use clavrx_message_mod,only: &
