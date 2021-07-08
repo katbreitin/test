@@ -1193,7 +1193,7 @@ contains
          Possible_DCOMP_Modes(1:1)  =  [3]
       case ('AGRI')
          Possible_DCOMP_Modes(1)    =  3
-      case ('VIIRS','VIIRS-NASA')
+      case ('VIIRS','VIIRS-NASA','VIIRS-NASA-HRES')
          NLCOMP_Mode_User_Set       =  1  
          Possible_DCOMP_Modes(1:4)  =  [1, 2, 3, 9]
       case ('VIIRS-IFF')      
