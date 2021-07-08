@@ -188,7 +188,7 @@ subroutine read_viirs_nasa_hres_data (in_config)
     if (in_config % channel_on_viirs (i_ch)) then
       write ( ch_str, '(i2.2)' ) i_ch 
       status=cx_sds_read(file_local,'observation_data/M'//ch_str//'_highres',out,start = start,count = count)
-      ch(in_config % modis_chn_list(i_ch)) % ref_toa = out
+      ch(in_config % modis_chn_list(i_ch)) % ref_toa(:,1:count(2)) = out
      
     end if
   end do
@@ -200,7 +200,7 @@ subroutine read_viirs_nasa_hres_data (in_config)
         write ( ch_str, '(i2.2)' ) i_ch 
         modis_ch = in_config % modis_chn_list(i_ch)
         status=cx_sds_read(file_local,'observation_data/M'//ch_str//'_highres',out,start = start,count = count)
-        ch(modis_ch) % rad_toa = out
+        ch(modis_ch) % rad_toa(:,1:count(2)) = out
         
         ! - convert to radiance to NOAA unit.. 
         noaa_nasa_correct = ((10000.0 / coef % planck_nu(modis_ch) ** 2)/10. )
@@ -225,23 +225,23 @@ subroutine read_viirs_nasa_hres_data (in_config)
   if ( first_run) print*,trim(file_v03img(1))
    
    status=cx_sds_read(trim(file_v03img(1)),'geolocation_data/longitude',out,start = start,count = count)
-    Nav % Lon_1b = out
+    Nav % Lon_1b(:,1:count(2)) = out
   
    status=cx_sds_read(trim(file_v03img(1)),'geolocation_data/latitude',out,start = start,count = count)
-   Nav % Lat_1b = out
+   Nav % Lat_1b(:,1:count(2)) = out
  
    status=cx_sds_read(trim(file_v03img(1)),'geolocation_data/sensor_azimuth',out,start = start,count = count)
-   geo % sataz = out
+   geo % sataz(:,1:count(2)) = out
  
    status=cx_sds_read(trim(file_v03img(1)),'geolocation_data/sensor_zenith',out,start = start,count = count)
-   geo % satzen = out
+   geo % satzen(:,1:count(2)) = out
   
    status=cx_sds_read(trim(file_v03img(1)),'geolocation_data/solar_azimuth',out,start = start,count = count)
-   geo % solaz = out
+   geo % solaz(:,1:count(2)) = out
   
    status=cx_sds_read(trim(file_v03img(1)),'geolocation_data/solar_zenith',out,start = start,count = count)
   
-   geo % solzen = out
+   geo % solzen(:,1:count(2)) = out
   
    file_02img = file_search(trim(in_config % path),'VNP02IMG'//trim(time_identifier)//'*.nc',cc,rel_path)
    !status=cx_sds_read(trim(in_config % path)//'VNP02IMG.A2020118.0000.001.2020118052345.uwssec.nc','scan_line_attributes/scan_start_time',out1d)

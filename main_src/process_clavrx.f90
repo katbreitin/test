@@ -1091,8 +1091,7 @@
       Segment_Time_Point_Seconds_temp = 0.0
     
       Segment_loop: do Segment_Number = 1,Image%Number_Of_Segments
-          if ( segment_number .ge. Image%Number_Of_Segments ) cycle
-         print*,'WARNING WARNING WARNING.. LAST SEGMENT IS Switched off'
+        
          !--- save the segment number in a global structure
          Image%Segment_Number  = Segment_Number
 

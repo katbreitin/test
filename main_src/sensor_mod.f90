@@ -319,7 +319,10 @@ module SENSOR_MOD
       integer(kind=int4):: End_Min_Tmp
       integer(kind=int4):: End_Sec_Tmp
       integer(kind=int4):: End_Msec_Tmp
-
+      
+      type(date_type) :: time_obj_nasa_hres(2)
+      character(len=15) :: time_identifier
+      integer :: yyyy,doy1,hour1,minu
       !----------------------------------------------
       ! for AVHRR, this is read in with level-1b data
       !----------------------------------------------
@@ -359,17 +362,29 @@ module SENSOR_MOD
       end if 
       
       if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA-HRES') then
-         ! print*
-         ! print*,'  +++++++++++++++++++++++++++++++++++  +++++++++++++++++++++++++++++++++++++='
-          print*,'read date time has to be written is fake... READ_VIIRS_NASA_DATE_TIME..  File: ', __FILE__,' Line: ',__LINE__
-         Image%Start_Year = 2020
-         Image%End_Year = 2020
-         Image%Start_Doy = 118
-         Image%End_Doy = 118
+         
+         
+         time_identifier = Image%Level1b_Name(9:23)
+         
+         read(time_identifier(3:6),'(i4)') yyyy
+         read(time_identifier(7:9),'(i3)') doy1
+         read(time_identifier(11:12),'(i2)') hour1
+         read(time_identifier(13:14),'(i2)') minu
+           
+         call time_obj_nasa_hres(1) % set_date_with_doy(yyyy,doy1,hour1,minu)
+         time_obj_nasa_hres(2) = time_obj_nasa_hres(1)
+         call time_obj_nasa_hres(2) % add_time(minute=6)
+           
+         Image%Start_Year = time_obj_nasa_hres(1) % year
+         Image%End_Year = time_obj_nasa_hres(2) % year
+         Image%Start_Doy = time_obj_nasa_hres(1) % dayOfYear
+         Image%End_Doy = time_obj_nasa_hres(2) % dayOfYear
          Image%Orbit_Number = 7889887
 
-         Image%Start_Time = 0.00
-         Image%End_Time = 0.01
+         Image%Start_Time = time_obj_nasa_hres(1) % msec_of_day
+         Image%End_Time =  time_obj_nasa_hres(2) % msec_of_day
+         
+        
          ! print*,'  +++++++++++++++++++++++++++++++++++  ++++++++++++++++++++++++++++++++++++++++='
           
           
@@ -2284,9 +2299,7 @@ module SENSOR_MOD
         
         
       case('VIIRS-NASA-HRES')
-         ! print*,'read routine has to be finished '
-          !print*, 'File: ',__FILE__,' Line: ',__LINE__
-         ! print*,' +++++++++++++++++++++++++++++++++++'
+        
           
           nasa_hres_config % channel_on_modis(1:45) = Sensor%Chan_On_Flag_Default(1:45)  == sym%YES
           
@@ -2300,7 +2313,7 @@ module SENSOR_MOD
           
         
            Image%Number_Of_Lines_Read_This_Segment = nasa_hres_config % ny_end - nasa_hres_config % ny_start + 1
-           print*,Image%Number_Of_Lines_Read_This_Segment
+           
            do i_line = 1, Image%Number_Of_Lines_Per_Segment
               Image%Scan_Number(i_line) =nasa_hres_config % ny_start + i_line - 1
            end do
