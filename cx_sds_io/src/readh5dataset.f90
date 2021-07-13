@@ -1277,7 +1277,7 @@ print*,dataset(10,10),' <===4==='
     INTEGER(hsize_t), DIMENSION(maxdims)                 :: datadims
     INTEGER(hsize_t), DIMENSION(maxdims)                 :: maxdatadims
     INTEGER(hsize_t), DIMENSION(:), ALLOCATABLE          :: dims
-    INTEGER(kind = 2), DIMENSION(:,:), ALLOCATABLE, TARGET         :: H5dataset
+    INTEGER, DIMENSION(:,:), ALLOCATABLE, TARGET         :: H5dataset
     INTEGER                                              :: ltype
 
     !<<<<<<<<<<<<<<<<<<<<<<< Start of routine code >>>>>>>>>>>>>>>>>>
@@ -1358,7 +1358,7 @@ print*,dataset(10,10),' <===4==='
        return
     ENDIF
 
-    dataset => H5dataset
+    dataset = int(H5dataset,2)
   
     DEALLOCATE(H5dataset)
     IF ( AllocStat.ne.0 ) THEN
