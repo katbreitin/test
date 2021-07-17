@@ -459,7 +459,7 @@ contains
           end if
         end do
       end do
-      print*,'Number of needed RTTOV/PFAAST Clear-Sky Transmission calculations: ',n_val_pixels
+      ! print*,'Number of needed RTTOV/PFAAST Clear-Sky Transmission calculations: ',n_val_pixels
       
       
       allocate (rtm_inp % p_std( 101,n_val_pixels))
