@@ -182,6 +182,7 @@ contains
 
       if(out % file_exists % gdnbo_file_exists) then 
         geo % moon_phase_angle = out % geo % Moon_Phase_Angle
+        geo % Moon_Illum_Frac = out % geo % moon_illum_frac
         geo % lunfrac = out % geo % moon_illum_frac
       endif
 

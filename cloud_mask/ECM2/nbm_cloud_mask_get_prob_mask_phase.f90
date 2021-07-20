@@ -81,10 +81,11 @@ subroutine GET_PROB_MASK_PHASE (X,Y,Z,Satzen, Solzen, Lunzen, Solglintzen, Lungl
        (Lunglint_Mask < Lut(Class_Idx)%Lunglint_Mask_Min .OR. &
         Lunglint_Mask > Lut(Class_Idx)%Lunglint_Mask_Max)) return
 
-
+!!!!! TODO: ATTENTION, this is temporoary (hard-coded max limit), delete after re-run VIIRS training. Denis B. 2021-07-19 !!!!
     if (Moon_Illum_Frac /= Missing_Value_Real .and. &
        (Moon_Illum_Frac < Lut(Class_Idx)%Moon_Illum_Frac_Min .or. &
-        Moon_Illum_Frac > Lut(Class_Idx)%Moon_Illum_Frac_Max)) return
+        Moon_Illum_Frac > 100.)) return
+        !Moon_Illum_Frac > Lut(Class_Idx)%Moon_Illum_Frac_Max)) return
 
     if (City_Mask /= Missing_Value_Int .and. &
        (City_Mask < Lut(Class_Idx)%City_Mask_Min .or. &

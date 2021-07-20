@@ -875,9 +875,6 @@ subroutine READ_VIIRS_NASA_DATA (Segment_Number, VGEOM_File, Error_Out)
          ! - unscale and save mean value
          N_Valid = count (I2d_Buffer .ne. Fill_Value)
          Geo % Moon_Illum_Frac = sum((I2d_Buffer * Scale_Factor) + Add_Offset,MASK=I2d_Buffer /= Fill_Value) / N_Valid
-         ! --- unlike NOAA in NASA files Moon_Illum_Frac in percent format
-         ! --- converting to fraction (0-1) Denis B. 2021-07-15
-         Geo % Moon_Illum_Frac = Geo % Moon_Illum_Frac / 100.
          deallocate ( I2d_Buffer )
          Geo % LunFrac = Geo % Moon_Illum_Frac
 
