@@ -7,7 +7,11 @@ module CX_VGAC_MOD
 !--- use statements
 use PIXEL_COMMON_MOD, only: Ch, Geo, Image, Nav, Sensor,  &
                             Temp_Pix_Array_1, Gap_Pixel_Mask
-use CX_NETCDF4_MOD,only: OPEN_NETCDF, &
+
+use NETCDF,only: nf90_inquire_dimension, nf90_inq_dimid, &
+    nf90_noerr,nf90_inq_varid,nf90_get_var
+
+Use CX_NETCDF4_MOD,only: OPEN_NETCDF, &
                          CLOSE_NETCDF, &
                          READ_NETCDF_DIMENSION_1D, &
                          READ_NETCDF_DIMENSION_4D, &
@@ -47,7 +51,8 @@ contains
 subroutine READ_NUMBER_OF_SCANS_VGAC(File_Name,Nscn,Npix,Ierror)
    character(len=*), intent(in):: File_Name
    integer, intent(out):: Nscn,Npix,Ierror
-   integer, dimension(1):: Dim_1d
+   integer :: status, dim_id
+   character(len=100):: dim_name_dummy
 
    Ierror = 0
 
@@ -58,11 +63,31 @@ subroutine READ_NUMBER_OF_SCANS_VGAC(File_Name,Nscn,Npix,Ierror)
      return
    endif
 
-   call READ_NETCDF_DIMENSION_1D(Ncid_Vgac,'nscn', Dim_1d) 
-   Nscn = Dim_1d(1)
+   status = nf90_inq_dimid(Ncid_Vgac, 'nscn', dim_id)
+   if (status /= nf90_noerr) then
+       print *, 'ERROR: nf90_inq_dimid(Ncid_Vgac, nscn, dim_id)'
+       Ierror = 1
+       return
+   endif
+   status = nf90_inquire_dimension(Ncid_Vgac,dim_id,dim_name_dummy,len=Nscn)
+   if (status /= nf90_noerr) then
+       print *, 'ERROR: nf90_inquire_dimension(...,len=Nscn)'
+       Ierror = 1
+       return
+   endif
 
-   call READ_NETCDF_DIMENSION_1D(Ncid_Vgac,'npix', Dim_1d) 
-   Npix = Dim_1d(1)
+   status = nf90_inq_dimid(Ncid_Vgac, 'npix', dim_id)
+   if (status /= nf90_noerr) then
+       print *, 'ERROR: nf90_inq_dimid(Ncid_Vgac, npix, dim_id)'
+       Ierror = 1
+       return
+   endif
+   status = nf90_inquire_dimension(Ncid_Vgac,dim_id,dim_name_dummy,len=Npix)
+   if (status /= nf90_noerr) then
+       print *, 'ERROR: nf90_inquire_dimension(...,len=Npix)'
+       Ierror = 1
+       return
+   endif
 
 end subroutine READ_NUMBER_OF_SCANS_VGAC
 
@@ -142,6 +167,8 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
   real, dimension(:,:), allocatable:: Sds_Data_2d
   integer:: Nx_Start, Nx_End, Ny_Start, Ny_End
   integer:: Chan_Idx, CLAVRx_Chan_Idx, Line_Idx, Elem_Idx
+  real(kind=8) :: proj_time0
+  integer:: varid, status
 
   !--- determine location of segement data in the file
   Nx_Start = 1
@@ -156,6 +183,17 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
   !--- allocate a temporary array to hold 1d and 2d data
   allocate(Sds_Data_1d(Sds_Count(2)))
   allocate(Sds_Data_2d(Sds_Count(1),Sds_Count(2)))
+
+  status = nf90_inq_varid(ncid_vgac, 'proj_time0', varid)
+  if (status /= nf90_noerr) then
+        print *, "Error: Unable to get variable id for ", 'proj_time0'
+        return
+  endif
+  status = nf90_get_var(ncid_vgac, varid, proj_time0)
+  if (status /= nf90_noerr) then
+        print *, "Error: Unable to read proj_time0"
+        return
+  endif
 
   !--- read geolocation
   call READ_AND_UNSCALE_NETCDF_2D(Ncid_Vgac, Sds_Start, Sds_Stride, Sds_Count, "lat", Sds_Data_2d)
@@ -261,11 +299,11 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
   enddo
 
   !--- read scanline time
-  call READ_NETCDF(Ncid_Vgac, [Sds_Start(1)], [Sds_Stride(1)], [Sds_Count(2)], "time", Sds_Data_1d)
+  call READ_NETCDF(Ncid_Vgac, [Sds_Start(2)], [Sds_Stride(2)], [Sds_Count(2)], "time", Sds_Data_1d)
   where(Sds_Data_1d > 0.0)
        Sds_Data_1d = 1000.0*60.0*60.0*Sds_Data_1d   !now in milliseconds
   endwhere
-  Sds_Data_1d = Sds_Data_1d + Sds_Data_1d + Vgac_Start_Time % Msec_Of_Day  !now in ms since start of day
+  Sds_Data_1d = Sds_Data_1d + ((proj_time0-floor(proj_time0))*24*60*60*1000)  !now in ms since start of day
   where(Sds_Data_1d > MSEC_PER_DAY)
     Sds_Data_1d = Sds_Data_1d - MSEC_PER_DAY
   endwhere
