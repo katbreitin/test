@@ -523,6 +523,7 @@ cx_pfaast_constants_mod.o:$(PFAAST)/cx_pfaast_constants_mod.f90
 cx_sea_ir_emiss_mod.o: cx_sea_ir_emiss_mod.f90 pixel_common_mod.o clavrx_message_mod.o cx_netcdf4_mod.o file_tools.o
 cx_dust_mod.o: cx_dust_mod.f90 pixel_common_mod.o clavrx_message_mod.o cx_netcdf4_mod.o 
 cx_vgac_mod.o: cx_vgac_mod.f90 pixel_common_mod.o clavrx_message_mod.o cx_netcdf4_mod.o viewing_geometry_mod.o planck_mod.o constants_mod.o calibration_constants_mod.o cx_real_boolean_mod.o class_time_date.o
+	$(fc) -c $(fflags) $(cppflags) $(cpp) $(netcdflibs) cx_vgac_mod.f90
 cx_eps_sg_mod.o: cx_eps_sg_mod.f90 pixel_common_mod.o cx_date_time_tools_mod.o clavrx_message_mod.o cx_netcdf4_mod.o viewing_geometry_mod.o planck_mod.o constants_mod.o calibration_constants_mod.o cx_real_boolean_mod.o class_time_date.o
 cx_string_tools_mod.o:cx_string_tools_mod.f90 
 cx_abi_lhp_mod.o:cx_abi_lhp_mod.f90
