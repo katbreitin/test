@@ -227,7 +227,7 @@ contains
       Cloud_Mask_Bayesian_Flag = 1
       Cloud_Mask_Mode = 'ecm2'
       Dcomp_Mode_User_Set = 3
-      Acha_Mode_User_Set = '11'
+      Acha_Mode_User_Set = 'default'
       CCL%Mode = 1
       CCL%Type = 0
       ASOS%Mode = 0_int1
@@ -1016,7 +1016,7 @@ contains
          DEFAULT_ACHA_MODE  =  ACHA_Mode_Default_FY2 
       case ('AGRI') ! - FY4A
          DEFAULT_ACHA_MODE  =  ACHA_Mode_Default_FY4A_AGRI
-      case ('VIIRS','VIIRS-NASA','VIIRS-IFF','VIIRS-NASA-HRES')
+      case ('VIIRS','VIIRS-NASA','VIIRS-IFF','VIIRS-NASA-HRES','VGAC')
          DEFAULT_ACHA_MODE  =  ACHA_Mode_Default_VIIRS 
       case ('AQUA-IFF')
           DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Modis
@@ -1043,7 +1043,7 @@ contains
       case ('METIMAGE')
           DEFAULT_ACHA_MODE = ACHA_Mode_Default_Modis
       case default 
-          call MESG("sensor "//SensorName//" is not set in user_options.f90: check channels settings Inform andi.walther@ssec.wisc.edu")
+          call MESG("sensor "//trim(SensorName)//" is not set in user_options.f90: check channels settings Inform andi.walther@ssec.wisc.edu")
       end select
 
    end function DEFAULT_ACHA_MODE
