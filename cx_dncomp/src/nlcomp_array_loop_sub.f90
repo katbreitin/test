@@ -310,7 +310,6 @@ subroutine nlcomp_array_loop_sub ( input , output, debug_mode_user )
             , output % rain_probability % d ( elem_idx, line_idx) &
             , output % rain_rate % d ( elem_idx, line_idx) )
 
-
      
       end do elem_loop
    end do   line_loop 
@@ -343,6 +342,15 @@ subroutine nlcomp_array_loop_sub ( input , output, debug_mode_user )
    ! -NLCOMP_INFO_THIN_CLOUD
    where ( output % cod % d < 4 .and. output % cod % d > 0 )
       info_flag = ibset ( info_flag, 7)
+   end where
+   
+   where ( is_obs .and. .not. is_cloud )
+      output % cld_trn_sol % d   =  1.0 
+      output % cld_trn_obs % d   =  1.0  
+      output % cld_alb % d       =  0.0
+      output % cld_sph_alb % d   =  0.0  
+      output % cod % d           =  0.0
+      output % cps % d           =  -999.0
    end where
    
    output % quality % d = quality_flag

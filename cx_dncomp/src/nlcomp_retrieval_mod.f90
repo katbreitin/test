@@ -42,8 +42,9 @@ contains
          findinv , debug_mode
          
       use nlcomp_forward_mod, only : &
-         nlcomp_forward_computation &
-         , pixel_vec
+           nlcomp_forward_computation &
+         , pixel_vec &
+         , thick_cloud_cps
    
       implicit none 
       
@@ -85,7 +86,7 @@ contains
       type ( pixel_vec ) :: pxl
       real :: max_step_size
       integer , dimension(2) :: channels
-
+       real :: conv_test_criteria
       ! -executable
       pxl % sol_zen = sol_zen
       pxl % sat_zen = sat_zen
@@ -135,6 +136,7 @@ contains
 
       iteration_idx = 0
       debug_mode = 0
+      conv_test_criteria = 0.2
 
       IF (debug_mode > 4 ) THEN
          PRINT *, "<--- Begin New Retrieval for pixel = "
@@ -147,11 +149,24 @@ contains
          PRINT *, "x_ap = ",state_apr
          PRINT *, "Sa = ",S_a
       END IF
-	   
+	    
       Retrieval_Loop : do
          ! -- Update iteration counter
          iteration_Idx = iteration_Idx + 1
-	   	
+	   	    
+         if ( iteration_idx .gt. 10 ) conv_test_criteria = 0.5 
+         if ( iteration_idx .gt. 15 ) then
+          conv_test_criteria = 1.5
+          ! - observation error cov
+          obs_crl = 0.7  
+          S_m = 0.
+           obs_u(2) = 100.
+          S_m (1,1) = ( max ( obs_u(1) * obs_vec(1) , 0.01 ) ) ** 2
+          S_m (2,2) = ( max ( obs_u(2) * obs_vec(2) , 0.01 ) ) ** 2
+          S_m (1,2) =  ( obs_u(2) * obs_vec(2) ) * (obs_u(1) * obs_vec(1) ) * obs_crl
+          S_m (2,1) =  ( obs_u(2) * obs_vec(2) ) * (obs_u(1) * obs_vec(1) ) * obs_crl
+
+         end if 
          sensor ='VIIRS'
          channels = [1, 20   ]
          ! Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
@@ -227,7 +242,7 @@ contains
          
          state_Vec = state_Vec + delta_x
          
-         if ( conv_test < 0.2 ) then
+         if ( conv_test <  conv_test_criteria  ) then
 	
             cod = 10 ** state_vec(1)
             cps = 10 ** state_vec(2)
@@ -249,9 +264,32 @@ contains
             end if
             exit retrieval_loop
          end if
+         
+         
+           if ( state_vec(1) > 1.6 .and. iteration_idx > 6 ) then
+                !state_vec(2) = thick_cloud_cps ( obs_vec(2) , channels(2), pxl, 3 )
+                !state_vec(2) = min(state_vec(2),2.2)
+                state_vec(2) = 1.
+                nlcomp_out % statusOK = .true.
+                
+                nlcomp_out % codu = 1.0
+                nlcomp_out % cps = 10 ** state_vec(2)
+               
+                nlcomp_out % cpsu = 1.0
+                
+                cod = 10**2.2
+                cps = 10 ** state_vec(2)
+                
+                exit retrieval_loop
+            end if
+         
+         
+         
          if ( iteration_idx > 20 ) then
             cod = -999.
             cps = -999.
+            
+           
             exit retrieval_loop
          end if
 
