@@ -698,9 +698,9 @@ process_clavrx.o: process_clavrx.f90 $(sub_routine)
 
 
 ######### .o files that depend on .inc files ########
-acha_module.o: $(ACHA)/acha_parameters.inc
-acha_full_retrieval_mod.o: $(ACHA)/acha_parameters.inc
-acha_rtm_mod.o: $(ACHA)/acha_parameters.inc
+acha_module.o: $(ACHA)/include/acha_parameters.inc
+acha_full_retrieval_mod.o: $(ACHA)/include/acha_parameters.inc
+acha_rtm_mod.o: $(ACHA)/include/acha_parameters.inc
 baseline_cloud_mask.o: $(BASELINEMASK)/baseline_cloud_mask_thresholds.inc
 baseline_cloud_height.o: $(BASELINEHEIGHT)/baseline_cloud_height.inc
 
