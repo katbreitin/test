@@ -101,28 +101,28 @@ contains
    select case(WMO_Id)
 
      case(3:5,200:209,223,706:708)  ! AVHRR
-        include 'acha_ice_cloud_microphysical_model_avhrr_104um.inc'
-        include 'acha_ice_cloud_microphysical_model_avhrr_110um.inc'
+        include 'include/acha_ice_cloud_microphysical_model_avhrr_104um.inc'
+        include 'include/acha_ice_cloud_microphysical_model_avhrr_110um.inc'
 
      case(173:174)  ! AHI
-        include 'acha_ice_cloud_microphysical_model_ahi_104um.inc'
-        include 'acha_ice_cloud_microphysical_model_ahi_110um.inc'
+        include 'include/acha_ice_cloud_microphysical_model_ahi_104um.inc'
+        include 'include/acha_ice_cloud_microphysical_model_ahi_110um.inc'
 
      case(270:271)  !  ABI
-        include 'acha_ice_cloud_microphysical_model_abi_104um.inc'
-        include 'acha_ice_cloud_microphysical_model_abi_110um.inc'
+        include 'include/acha_ice_cloud_microphysical_model_abi_104um.inc'
+        include 'include/acha_ice_cloud_microphysical_model_abi_110um.inc'
 
      case(224,225) ! VIIRS 
-        include 'acha_ice_cloud_microphysical_model_viirs_104um.inc'
-        include 'acha_ice_cloud_microphysical_model_viirs_110um.inc'
+        include 'include/acha_ice_cloud_microphysical_model_viirs_104um.inc'
+        include 'include/acha_ice_cloud_microphysical_model_viirs_110um.inc'
 
      case(252:259) ! GOES
-        include 'acha_ice_cloud_microphysical_model_goes_104um.inc'
-        include 'acha_ice_cloud_microphysical_model_goes_110um.inc'
+        include 'include/acha_ice_cloud_microphysical_model_goes_104um.inc'
+        include 'include/acha_ice_cloud_microphysical_model_goes_110um.inc'
 
      case default  ! MODIS
-        include 'acha_ice_cloud_microphysical_model_modis_104um.inc'
-        include 'acha_ice_cloud_microphysical_model_modis_110um.inc'
+        include 'include/acha_ice_cloud_microphysical_model_modis_104um.inc'
+        include 'include/acha_ice_cloud_microphysical_model_modis_110um.inc'
 
    end select
 

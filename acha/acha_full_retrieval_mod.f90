@@ -19,7 +19,7 @@ module ACHA_FULL_RETRIEVAL_MOD
   private:: COMPUTE_FORWARD_MODEL_AND_KERNEL
 
   !--- include the non-system specific variables
-  include 'acha_parameters.inc'
+  include 'include/acha_parameters.inc'
 
   real, private, PARAMETER:: MISSING_VALUE_REAL4 = -999.0
   integer(kind=int1), private, PARAMETER:: MISSING_VALUE_integer1 = -128_int1

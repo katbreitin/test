@@ -26,7 +26,7 @@ module ACHA_NUM_MOD
   public:: KD_TREE_INTERP_3pred
 
   !--- include the non-system specific variables
-  include 'acha_parameters.inc'
+  include 'include/acha_parameters.inc'
 
   type(ACHA_SYMBOL_STRUCT), private :: Symbol
 

@@ -24,7 +24,7 @@ module ACHA_COMP
   private:: COMPUTE_TAU_REFF_ACHA 
 
   !--- include the non-system specific variables
-  include 'acha_parameters.inc'
+  include 'include/acha_parameters.inc'
 
   real, private, parameter:: MISSING_VALUE_REAL = -999.0
   integer, private, parameter:: MISSING_VALUE_INTEGER = -999

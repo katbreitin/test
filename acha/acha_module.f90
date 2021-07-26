@@ -132,7 +132,7 @@ module AWG_CLOUD_HEIGHT
   private:: DETERMINE_ACHA_CLOUD_TYPE
 
   !--- include the non-system specific variables
-  include 'acha_parameters.inc'
+  include 'include/acha_parameters.inc'
 
   real, private:: Bt_110um_Bt_110um_Covar
 

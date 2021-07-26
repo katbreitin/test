@@ -35,7 +35,7 @@ module ACHA_RTM_MOD
   public:: DETERMINE_ACHA_ICE_EXTINCTION
 
   !--- include the non-system specific variables
-  include 'acha_parameters.inc'
+  include 'include/acha_parameters.inc'
 
   real, dimension(20:38), public, save:: Bt_Covar           !
   real, dimension(20:38,20:38), public, save:: Btd_Covar   !

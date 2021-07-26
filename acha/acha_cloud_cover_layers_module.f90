@@ -39,7 +39,7 @@ module ACHA_CLOUD_COVER_LAYERS
 
  type(acha_symbol_struct), private :: symbol
 
- include 'ccl_parameters.inc'
+ include 'include/ccl_parameters.inc'
 
  contains
 

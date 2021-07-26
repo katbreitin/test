@@ -18,9 +18,6 @@ module ACHA_LHP_MOD
   public:: SETUP_REFERENCE_CHANNEL
   public:: SETUP_REFERENCE_CHANNEL_PROFILES
 
-  !--- include the non-system specific variables
-! include 'acha_parameters.inc'
-
   contains 
 !---------------------------------------------------------------------------
 ! Determine ACHA Mode based on available channels.  These may have been
