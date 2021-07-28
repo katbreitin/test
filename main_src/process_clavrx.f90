@@ -1167,7 +1167,7 @@
 !                                     Dnb_Coef(3)*Ch(44)%Ref_Lunar_Toa**2
 !             endwhere
 !          endif
-!        endif
+        endif
 
          End_Time_Point_Hours = COMPUTE_TIME_HOURS()
 
