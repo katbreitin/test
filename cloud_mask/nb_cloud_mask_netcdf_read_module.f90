@@ -266,12 +266,7 @@ MODULE NB_CLOUD_MASK_NETCDF_READ_MODULE
   status = nf90_get_att(ncid, nf90_global, attr_name, attr_value)
 
   if (status /= nf90_noerr) then
-      ! -- temperary to delete print to screen, just these attributes
-      ! -- remove this after all ecm2 luts will have these attrbutes (Denis B. 2020-07-22)
-      if (trim(attr_name) /= 'surface_elevation_stddev_minimum' .and. &
-          trim(attr_name) /= 'surface_elevation_stddev_maximum') then
-         print *, EXE_PROMPT_NAV , 'ERROR: Reading NETCDF Attribute: ',trim(attr_name)
-      endif
+      print *, EXE_PROMPT_NAV , 'ERROR: Reading NETCDF Attribute: ',trim(attr_name)
       attr_value = Missing_Value_Netcdf
      return
   endif
@@ -291,6 +286,7 @@ MODULE NB_CLOUD_MASK_NETCDF_READ_MODULE
 
    if (status /= nf90_noerr) then
       print *, EXE_PROMPT_NAV , 'ERROR: Reading NETCDF Attribute: ',trim(attr_name)
+      attr_value = ""
       return
    endif
 
