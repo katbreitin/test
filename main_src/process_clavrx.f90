@@ -1204,8 +1204,6 @@
                if ((Nav%Timerr_Seconds .ner. Missing_Value_Real4) .and. &
                    (Nav%Timerr_Seconds .ner. 0.0)) then 
 
-print *, "CALLING REPOSX"
-stop
                   call REPOSITION_FOR_CLOCK_ERROR(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment, &
                                                   Nav%Timerr_Seconds,Err_Reposnx_Flag)
                else
