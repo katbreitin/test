@@ -1,7 +1,6 @@
 !-------------------------------------------------------------------------------
-! Get the probabilitz for nb Classifiers
+! Get the probabilitz for ecm classifiers
 !-------------------------------------------------------------------------------
-
 module NBM_CLOUD_MASK_GET_PROB_MASK_PHASE
 
  use NB_CLOUD_MASK_SERVICES
@@ -50,72 +49,85 @@ subroutine GET_PROB_MASK_PHASE (X,Y,Z,Satzen, Solzen, Lunzen, Solglintzen, Lungl
 
     if (Lut(Class_Idx)%Zen_Min /= Missing_Value_Real .and. Lut(Class_Idx)%Zen_Max /= Missing_Value_Real) then 
        if ( Satzen /= Missing_Value_Real .and. &
-           (Satzen < Lut(Class_Idx)%Zen_Min .OR.Satzen > Lut(Class_Idx)%Zen_Max)) return
+           (Satzen < Lut(Class_Idx)%Zen_Min .or.Satzen > Lut(Class_Idx)%Zen_Max)) return
     endif
 
     if (Lut(Class_Idx)%Solzen_Min /= Missing_Value_Real .and. Lut(Class_Idx)%Solzen_Max /= Missing_Value_Real) then 
        if (Solzen /= Missing_Value_Real .and. &
-           (Solzen < Lut(Class_Idx)%Solzen_Min .OR. Solzen > Lut(Class_Idx)%Solzen_Max)) return
+           (Solzen < Lut(Class_Idx)%Solzen_Min .or. Solzen > Lut(Class_Idx)%Solzen_Max)) return
     endif
 
     if (Lut(Class_Idx)%Solglintzen_Min /= Missing_Value_Real .and. Lut(Class_Idx)%Solglintzen_Max /= Missing_Value_Real) then 
        if (Solglintzen /= Missing_Value_Real .and. &
            Land_Class >= 5 .and. &
            Snow_Class == 1 .and. &  
-           (Solglintzen < Lut(Class_Idx)%Solglintzen_Min .OR. Solglintzen > Lut(Class_Idx)%Solglintzen_Max)) return
+           (Solglintzen < Lut(Class_Idx)%Solglintzen_Min .or. Solglintzen > Lut(Class_Idx)%Solglintzen_Max)) return
     endif
 
     if (Lut(Class_Idx)%Lunglintzen_Min /= Missing_Value_Real .and. Lut(Class_Idx)%Lunglintzen_Max /= Missing_Value_Real) then 
        if (Lunglintzen /= Missing_Value_Real .and. &
            Land_Class >= 5 .and. &
            Snow_Class == 1 .and. &  
-           (Lunglintzen < Lut(Class_Idx)%Lunglintzen_Min .OR. &
+           (Lunglintzen < Lut(Class_Idx)%Lunglintzen_Min .or. &
             Lunglintzen > Lut(Class_Idx)%Lunglintzen_Max)) return
     endif
 
-    if (Solglint_Mask >= 0 .and. Land_Class >= 5 .and. Snow_Class == 1 .and. &
-       (Solglint_Mask < Lut(Class_Idx)%Solglint_Mask_Min .OR. &
+    if (Solglint_Mask >= 0 .and.  &
+        Land_Class >= 5 .and.  &
+        Snow_Class == 1 .and. &
+        Lut(Class_Idx)%Solglint_Mask_Min /= Missing_Value_Real .and. & 
+        Lut(Class_Idx)%Solglint_Mask_Max /= Missing_Value_Real .and. & 
+       (Solglint_Mask < Lut(Class_Idx)%Solglint_Mask_Min .or. &
         Solglint_Mask > Lut(Class_Idx)%Solglint_Mask_Max)) return
 
-    if (Lunglint_Mask >= 0 .and. Land_Class >= 5 .and. Snow_Class == 1 .and. &
-       (Lunglint_Mask < Lut(Class_Idx)%Lunglint_Mask_Min .OR. &
+    if (Lunglint_Mask >= 0 .and. &
+        Land_Class >= 5 .and. &
+        Snow_Class == 1 .and. &
+        Lut(Class_Idx)%Lunglint_Mask_Min /= Missing_Value_Real .and. & 
+        Lut(Class_Idx)%Lunglint_Mask_Max /= Missing_Value_Real .and. & 
+       (Lunglint_Mask < Lut(Class_Idx)%Lunglint_Mask_Min .or. &
         Lunglint_Mask > Lut(Class_Idx)%Lunglint_Mask_Max)) return
 
-!!!!! TODO: ATTENTION, this is temporoary (hard-coded max limit), delete after re-run VIIRS training. Denis B. 2021-07-19 !!!!
     if (Moon_Illum_Frac /= Missing_Value_Real .and. &
+        Lut(Class_Idx)%Moon_Illum_Frac_Min /= Missing_Value_Real .and. &
+        Lut(Class_Idx)%Moon_Illum_Frac_Max /= Missing_Value_Real .and. &
        (Moon_Illum_Frac < Lut(Class_Idx)%Moon_Illum_Frac_Min .or. &
-        Moon_Illum_Frac > 100.)) return
-        !Moon_Illum_Frac > Lut(Class_Idx)%Moon_Illum_Frac_Max)) return
+        Moon_Illum_Frac > Lut(Class_Idx)%Moon_Illum_Frac_Max)) return
 
     if (City_Mask /= Missing_Value_Int .and. &
+        Lut(Class_Idx)%City_Mask_Min /= Missing_Value_Real .and. &
+        Lut(Class_Idx)%City_Mask_Max /= Missing_Value_Real .and. &
        (City_Mask < Lut(Class_Idx)%City_Mask_Min .or. &
         City_Mask > Lut(Class_Idx)%City_Mask_Max)) return
 
-    if (Lut(Class_Idx)%Solscatang_Min /= Missing_Value_Real .and. Lut(Class_Idx)%Solscatang_Max /= Missing_Value_Real) then 
+    if (Lut(Class_Idx)%Solscatang_Min /= Missing_Value_Real .and.  &
+        Lut(Class_Idx)%Solscatang_Max /= Missing_Value_Real) then 
        if (Solscatang /= Missing_Value_Real .and. &
-          (Solscatang < Lut(Class_Idx)%Solscatang_Min .OR. Solscatang > Lut(Class_Idx)%Solscatang_Max)) return
+          (Solscatang < Lut(Class_Idx)%Solscatang_Min .or. Solscatang > Lut(Class_Idx)%Solscatang_Max)) return
     endif
 
     if (Lut(Class_Idx)%Tpw_Min /= Missing_Value_Real .and. Lut(Class_Idx)%Tpw_Max /= Missing_Value_Real) then 
        if (Tpw /= Missing_Value_Real .and. &
-          (Tpw < Lut(Class_Idx)%Tpw_Min .OR. Tpw > Lut(Class_Idx)%Tpw_Max)) return
+          (Tpw < Lut(Class_Idx)%Tpw_Min .or. Tpw > Lut(Class_Idx)%Tpw_Max)) return
     endif
 
     if (Lut(Class_Idx)%Tsfc_Min /= Missing_Value_Real .and. Lut(Class_Idx)%Tsfc_Max /= Missing_Value_Real) then 
        if (Tsfc /= Missing_Value_Real .and. &
-          (Tsfc < Lut(Class_Idx)%Tsfc_Min .OR. Tsfc > Lut(Class_Idx)%Tsfc_Max)) return
+          (Tsfc < Lut(Class_Idx)%Tsfc_Min .or. Tsfc > Lut(Class_Idx)%Tsfc_Max)) return
     endif
 
     if (Lut(Class_Idx)%Zsfc_Min /= Missing_Value_Real .and. Lut(Class_Idx)%Zsfc_Max /= Missing_Value_Real) then 
-       if (Zsfc < Lut(Class_Idx)%Zsfc_Min .OR. Zsfc > Lut(Class_Idx)%Zsfc_Max) return
+       if (Zsfc < Lut(Class_Idx)%Zsfc_Min .or. Zsfc > Lut(Class_Idx)%Zsfc_Max) return
     endif
 
     if (Lut(Class_Idx)%Zsfc_Std_Min /= Missing_Value_Real .and. Lut(Class_Idx)%Zsfc_Std_Max /= Missing_Value_Real) then 
-       if (Zsfc_Std < Lut(Class_Idx)%Zsfc_Std_Min .OR. Zsfc_Std > Lut(Class_Idx)%Zsfc_Std_Max) return
+       if (Zsfc_Std < Lut(Class_Idx)%Zsfc_Std_Min .or. Zsfc_Std > Lut(Class_Idx)%Zsfc_Std_Max) return
     endif
 
     if (Snow_Class >= 1 .and. &
-       (Snow_Class < Lut(Class_Idx)%Snow_Class_Min .OR. &
+        Lut(Class_Idx)%Snow_Class_Min  /= Missing_Value_Real .and. &
+        Lut(Class_Idx)%Snow_Class_Max  /= Missing_Value_Real .and. &
+       (Snow_Class < Lut(Class_Idx)%Snow_Class_Min .or. &
         Snow_Class > Lut(Class_Idx)%Snow_Class_Max)) return
 
     ! --- coast mask special if sea-ice lake do not turn off classifiers
@@ -128,9 +140,10 @@ subroutine GET_PROB_MASK_PHASE (X,Y,Z,Satzen, Solzen, Lunzen, Solglintzen, Lungl
            Coast_Mask_Max_Tmp = 1
 
     if (Coast_Mask >= 0 .and. &
-       (Coast_Mask < Lut(Class_Idx)%Coast_Mask_Min .OR. &
+        Lut(Class_Idx)%Coast_Mask_Min /= Missing_Value_Real .and. &
+        Lut(Class_Idx)%Coast_Mask_Max /= Missing_Value_Real .and. &
+       (Coast_Mask < Lut(Class_Idx)%Coast_Mask_Min .or. &
         Coast_Mask > Coast_Mask_Max_Tmp)) return
-        !Coast_Mask > Lut(Class_Idx)%Coast_Mask_Max)) return
 
     !--- check for valid data
     if (X == Missing_Value_Real) return

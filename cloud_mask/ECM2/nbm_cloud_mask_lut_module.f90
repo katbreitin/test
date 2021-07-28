@@ -228,6 +228,20 @@ do Class_Idx = 1, N_Classifier
    Lut(Class_Idx)%Tsfc_Max = MISSING
    Lut(Class_Idx)%Tpw_Min = MISSING
    Lut(Class_Idx)%Tpw_Max = MISSING
+   Lut(Class_Idx)%Snow_Class_Min = MISSING
+   Lut(Class_Idx)%Snow_Class_Max = MISSING
+   Lut(Class_Idx)%Lunzen_Min = MISSING
+   Lut(Class_Idx)%Lunzen_Max = MISSING
+   Lut(Class_Idx)%Lunglint_Mask_Min = MISSING
+   Lut(Class_Idx)%Lunglint_Mask_Max = MISSING
+   Lut(Class_Idx)%Solscatang_Min = MISSING
+   Lut(Class_Idx)%Solscatang_Max = MISSING
+   Lut(Class_Idx)%Coast_Mask_Min = MISSING
+   Lut(Class_Idx)%Coast_Mask_Max = MISSING
+   Lut(Class_Idx)%City_Mask_Min = MISSING
+   Lut(Class_Idx)%City_Mask_Max = MISSING
+   Lut(Class_Idx)%Moon_Illum_Frac_Min = MISSING
+   Lut(Class_Idx)%Moon_Illum_Frac_Max = MISSING
    Lut(Class_Idx)%Rut_Solzen_Thresh = MISSING
 
    ! --- read in group attributes
@@ -274,18 +288,15 @@ do Class_Idx = 1, N_Classifier
    call READ_NETCDF_GLOBAL_ATTRIBUTE_R4(Group_Id, 'solar_scattering_angle_maximum', Lut(Class_Idx)%Solscatang_Max)
    call READ_NETCDF_GLOBAL_ATTRIBUTE_R4(Group_Id, 'coast_mask_minimum', Lut(Class_Idx)%Coast_Mask_Min)
    call READ_NETCDF_GLOBAL_ATTRIBUTE_R4(Group_Id, 'coast_mask_maximum', Lut(Class_Idx)%Coast_Mask_Max)
-
-   ! --- temporary set before all LUTs will have these!!! Denis B. 2021-01-13
-   !call READ_NETCDF_GLOBAL_ATTRIBUTE_R4(Group_Id, 'city_mask_minimum', Lut(Class_Idx)%City_Mask_Min)
-   !call READ_NETCDF_GLOBAL_ATTRIBUTE_R4(Group_Id, 'city_mask_maximum', Lut(Class_Idx)%City_Mask_Max)
-   Lut(Class_Idx)%City_Mask_Min = 0
-   Lut(Class_Idx)%City_Mask_Max = 1
-   !call READ_NETCDF_GLOBAL_ATTRIBUTE_R4(Group_Id, 'moon_illum_frac_minimum', Lut(Class_Idx)%Moon_Illum_Frac_Min)
-   !call READ_NETCDF_GLOBAL_ATTRIBUTE_R4(Group_Id, 'moon_illum_frac_maximum', Lut(Class_Idx)%Moon_Illum_Frac_Max)
-   Lut(Class_Idx)%Moon_Illum_Frac_Min = 0.
-   Lut(Class_Idx)%Moon_Illum_Frac_Max = 1.
-
+   call READ_NETCDF_GLOBAL_ATTRIBUTE_R4(Group_Id, 'city_mask_minimum', Lut(Class_Idx)%City_Mask_Min)
+   call READ_NETCDF_GLOBAL_ATTRIBUTE_R4(Group_Id, 'city_mask_maximum', Lut(Class_Idx)%City_Mask_Max)
+   call READ_NETCDF_GLOBAL_ATTRIBUTE_R4(Group_Id, 'moon_illum_frac_minimum', Lut(Class_Idx)%Moon_Illum_Frac_Min)
+   call READ_NETCDF_GLOBAL_ATTRIBUTE_R4(Group_Id, 'moon_illum_frac_maximum', Lut(Class_Idx)%Moon_Illum_Frac_Max)
    call READ_NETCDF_GLOBAL_ATTRIBUTE_R4(Group_Id, 'rut_solzen_thresh', Lut(Class_Idx)%Rut_Solzen_Thresh) 
+
+   !--- handle missing attributes - set values
+   if (Lut(Class_Idx)%Moon_Illum_Frac_Min == Missing_Value_Real4) Lut(Class_Idx)%Moon_Illum_Frac_Min = 0.0
+   if (Lut(Class_Idx)%Moon_Illum_Frac_Max == Missing_Value_Real4) Lut(Class_Idx)%Moon_Illum_Frac_Max = 100.0
 
    ! --- read wave length
    allocate(Lut(Class_Idx)%Wvl(Lut(Class_Idx)%Nchan_Used))
