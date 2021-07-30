@@ -237,17 +237,22 @@ MODULE NB_CLOUD_MASK_NETCDF_READ_MODULE
 
  !------------------------------------------------------------------------------
  ! read global/group attribute INTEGER
+ !
+ ! if print_warning_flag = 1, an error will be printed if an error is found
+ ! for ecm, pass the class_idx so these errors are printed only on the first
+ ! classifier read.  all classifiers should have same attributes
  !------------------------------------------------------------------------------
- SUBROUTINE READ_NETCDF_GLOBAL_ATTRIBUTE_I4(ncid, attr_name, attr_value)
+ SUBROUTINE READ_NETCDF_GLOBAL_ATTRIBUTE_I4(ncid, attr_name, attr_value, print_warning_flag)
   INTEGER(kind=4), INTENT(in):: ncid
   CHARACTER(len=*), INTENT(in):: attr_name
   INTEGER(kind=4), INTENT(out):: attr_value
+  INTEGER(kind=4), INTENT(in), OPTIONAL:: print_warning_flag
   INTEGER:: status
 
   status = nf90_get_att(ncid, nf90_global, attr_name, attr_value)
 
   if (status /= nf90_noerr) then
-     print *, EXE_PROMPT_NAV , 'ERROR: Reading NETCDF Attribute: ',trim(attr_name)
+     if (print_warning_flag == 1) print *, EXE_PROMPT_NAV , 'ERROR: Reading NETCDF Attribute: ',trim(attr_name)
      attr_value = int(Missing_Value_Netcdf)
      return
   endif
@@ -256,17 +261,20 @@ MODULE NB_CLOUD_MASK_NETCDF_READ_MODULE
 
  !------------------------------------------------------------------------------
  ! read global/group attribute REAL
+ !
+ ! if print_warning_flag = 1, an error will be printed if an error is found
  !------------------------------------------------------------------------------
- SUBROUTINE READ_NETCDF_GLOBAL_ATTRIBUTE_R4(ncid, attr_name, attr_value)
+ SUBROUTINE READ_NETCDF_GLOBAL_ATTRIBUTE_R4(ncid, attr_name, attr_value, print_warning_flag)
   INTEGER(kind=4), INTENT(in):: ncid
   CHARACTER(len=*), INTENT(in):: attr_name
   REAL(kind=4), INTENT(out):: attr_value
+  INTEGER(kind=4), INTENT(in), OPTIONAL:: print_warning_flag
   INTEGER:: status
 
   status = nf90_get_att(ncid, nf90_global, attr_name, attr_value)
 
   if (status /= nf90_noerr) then
-      print *, EXE_PROMPT_NAV , 'ERROR: Reading NETCDF Attribute: ',trim(attr_name)
+      if (print_warning_flag == 1) print *, EXE_PROMPT_NAV , 'ERROR: Reading NETCDF Attribute: ',trim(attr_name)
       attr_value = Missing_Value_Netcdf
      return
   endif
@@ -275,17 +283,20 @@ MODULE NB_CLOUD_MASK_NETCDF_READ_MODULE
 
  !------------------------------------------------------------------------------
  ! read global/group attribute CHARACTER
+ !
+ ! if print_warning_flag = 1, an error will be printed if an error is found
  !------------------------------------------------------------------------------
- SUBROUTINE READ_NETCDF_GLOBAL_ATTRIBUTE_CHAR(ncid, attr_name, attr_value)
+ SUBROUTINE READ_NETCDF_GLOBAL_ATTRIBUTE_CHAR(ncid, attr_name, attr_value, print_warning_flag)
   INTEGER(kind=4), INTENT(in):: ncid
   CHARACTER(len=*), INTENT(in):: attr_name
   CHARACTER(len=DEFAULT_NAME_LENGTH), INTENT(out):: attr_value
+  INTEGER(kind=4), INTENT(in), OPTIONAL:: print_warning_flag
   INTEGER:: status
 
    status = nf90_get_att(ncid, nf90_global, attr_name, attr_value)
 
    if (status /= nf90_noerr) then
-      print *, EXE_PROMPT_NAV , 'ERROR: Reading NETCDF Attribute: ',trim(attr_name)
+      if (print_warning_flag == 1) print *, EXE_PROMPT_NAV , 'ERROR: Reading NETCDF Attribute: ',trim(attr_name)
       attr_value = ""
       return
    endif
