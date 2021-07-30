@@ -359,7 +359,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             if (allocated(Geo%Glintzen_Lunar)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Geo%Glintzen_Lunar
          case("moon_illum_frac")
             Sds_Info(Var_Idx)%Standard_Name = "moon_illum_frac"
-            Sds_Info(Var_Idx)%Actual_Range = [0.0,1.0]
+            Sds_Info(Var_Idx)%Actual_Range = [0.0,100.0]
             if (allocated(Geo%LunFrac)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Geo%LunFrac
          case("scattering_angle")
             Sds_Info(Var_Idx)%Standard_Name = "scattering_angle"
