@@ -942,15 +942,6 @@ subroutine READ_VIIRS_NASA_DATA (Segment_Number, VGEOM_File, Error_Out)
                       Sun_Earth_Distance, Missing_Value_Real4, Ch(44)%Ref_Toa)
 
 
-         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-         !!!!!!!!!!! ATTENTION, DNB NASA IS HIGHER THAN NOAA !!!!!!!!!!!!
-         !!!!!!!!!!! TO BRING NASA REFLECTANCE TO NOAA       !!!!!!!!!!!!
-         !!!!!!!!!!! WE USED QUADRATIC REGRETION A+BX+CX^2   !!!!!!!!!!!!
-         !!!!!!!!!!! Denis B. July 2021                      !!!!!!!!!!!!
-         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-         Ch(44)%Ref_Toa = -0.373685 + 0.977945 * Ch(44)%Ref_Toa + (-0.000261637) * Ch(44)%Ref_Toa ** 2 
-
-
       enddo ! one time loop
 
       endif ! dnb on
