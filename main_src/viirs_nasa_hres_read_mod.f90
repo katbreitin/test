@@ -212,7 +212,7 @@ subroutine read_viirs_nasa_hres_data (in_config)
       status=cx_sds_read(file_local,'observation_data/M'//ch_str//'_highres',out,start = start,count = count)
       
       ch(in_config % modis_chn_list(i_ch)) % ref_toa(:,1:count(2)) = out
-      if (i_ch .eq. 2 ) call update_bowtie(in_config % ny_start, ch(in_config % modis_chn_list(i_ch)) % ref_toa(:,1:count(2)))
+      call update_bowtie(in_config % ny_start, ch(in_config % modis_chn_list(i_ch)) % ref_toa(:,1:count(2)))
      
     end if
   end do
@@ -225,7 +225,7 @@ subroutine read_viirs_nasa_hres_data (in_config)
         modis_ch = in_config % modis_chn_list(i_ch)
         status=cx_sds_read(file_local,'observation_data/M'//ch_str//'_highres',out,start = start,count = count)
         ch(modis_ch) % rad_toa(:,1:count(2)) = out
-       ! call update_bowtie(in_config % ny_start, ch(modis_ch) % rad_toa(:,1:count(2)))
+        call update_bowtie(in_config % ny_start, ch(modis_ch) % rad_toa(:,1:count(2)))
         ! - convert to radiance to NOAA unit.. 
         noaa_nasa_correct = ((10000.0 / coef % planck_nu(modis_ch) ** 2)/10. )
         ch(modis_ch) % rad_toa =  ch(modis_ch) % rad_toa * noaa_nasa_correct
