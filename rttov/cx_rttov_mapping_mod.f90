@@ -145,11 +145,12 @@ contains
    
     case default
       if (index(sensor,'AVHRR')  .gt. 0) then
-        
+       
         chn_list(1) = 1
         chn_list(2) = 2
         select case(sensor(11:12))
-        case ('15','16','17','18','19','20','21')
+        ! -- sensor name can be AVHRR-NOAA??
+        case ('15','16','17','18','19')
         
           chn_list(6) = 3
           chn_list(20) = 4
@@ -162,6 +163,13 @@ contains
           chn_list(31) = 4
           chn_list(32) = 5
         end select 
+        
+        if (index(sensor,'AVHRR-METOP')  .gt. 0) then
+          chn_list(6) = 3
+          chn_list(20) = 4
+          chn_list(31) = 5
+          chn_list(32) = 6
+        end if
         
         list = chn_list(chn)
         sensor_string = 'noaa_'//sensor(11:12)//'_avhrr'
