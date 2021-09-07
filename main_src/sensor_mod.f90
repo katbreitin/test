@@ -117,6 +117,7 @@ module SENSOR_MOD
    
    use MODIS_MOD, only : &
        DETERMINE_MODIS_CLOUD_MASK_FILE &
+     , DETERMINE_MODIS_CLOUD_PRODUCT_FILE &
      , READ_MODIS_INSTR_CONSTANTS &
      , READ_MODIS &
      , READ_MODIS_SIZE_ATTR &
@@ -1830,6 +1831,8 @@ module SENSOR_MOD
                   Cloud_Mask_Bayesian_Flag == sym%NO) then
             Ierror = sym%YES
          endif
+
+         call DETERMINE_MODIS_CLOUD_PRODUCT_FILE(Image%Level1b_Name,Image%Level1b_Path,Image%Auxiliary_Cloud_Product_File_Name )
 
       endif
 

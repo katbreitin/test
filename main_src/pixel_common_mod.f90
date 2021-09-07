@@ -374,6 +374,7 @@ module PIXEL_COMMON_MOD
     real(kind=real4):: End_Time_Hours
     real(kind=real4):: Mean_Time_Hours
     character(len=1020) :: Auxiliary_Cloud_Mask_File_Name
+    character(len=1020) :: Auxiliary_Cloud_Product_File_Name
     character(len=1020) :: Auxiliary_Cloud_Type_File_Name
     character(len=1020) :: Auxiliary_Cloud_Height_File_Name
     character(len=1020) :: Auxiliary_Geolocation_File_Name
@@ -890,6 +891,7 @@ module PIXEL_COMMON_MOD
   integer (kind=int1),dimension(:,:),allocatable, public, save, target:: Cld_Type_Aux
   integer (kind=int1),dimension(:,:),allocatable, public, save, target:: Cld_Phase_Aux
   real (kind=real4), dimension(:,:), allocatable, public, save, target:: Zc_Aux
+  real (kind=real4), dimension(:,:), allocatable, public, save, target:: Ec_Aux
   real (kind=real4), dimension(:,:), allocatable, public, save, target:: Pc_Top1_Aux
   real (kind=real4), dimension(:,:), allocatable, public, save, target:: Pc_Top2_Aux
   real (kind=real4), dimension(:,:), allocatable, public, save, target:: Pc_Uncertainty1_Aux
@@ -3138,6 +3140,7 @@ subroutine CREATE_CLOUD_TYPE_ARRAYS(dim1,dim2)
      allocate(Cld_Type_IR(dim1,dim2))
      allocate(Ctp_Multilayer_Flag(dim1,dim2))
      allocate(Zc_Aux(dim1,dim2))
+     allocate(Ec_Aux(dim1,dim2))
   endif
 end subroutine CREATE_CLOUD_TYPE_ARRAYS
 subroutine RESET_CLOUD_TYPE_ARRAYS()
@@ -3152,6 +3155,7 @@ subroutine RESET_CLOUD_TYPE_ARRAYS()
       Cld_Type_Aux = Missing_Value_Int1
       Ctp_Multilayer_Flag = Missing_Value_Int1
       Zc_Aux = Missing_Value_Real4
+      Ec_Aux = Missing_Value_Real4
   endif
 end subroutine RESET_CLOUD_TYPE_ARRAYS
 subroutine DESTROY_CLOUD_TYPE_ARRAYS
@@ -3166,6 +3170,7 @@ subroutine DESTROY_CLOUD_TYPE_ARRAYS
      deallocate(Cld_Type_IR)
      deallocate(Ctp_Multilayer_Flag)
      deallocate(Zc_Aux)
+     deallocate(Ec_Aux)
   endif
 end subroutine DESTROY_CLOUD_TYPE_ARRAYS
 !-----------------------------------------------------------

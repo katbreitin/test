@@ -1777,6 +1777,11 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Actual_Range = [0.0,20000.0]
             Sds_Info(Var_Idx)%Units = "m"
             if (allocated(Zc_Aux)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Zc_Aux
+         case("cld_emiss_aux")
+            Sds_Info(Var_Idx)%Standard_Name = "cloud_emissivity_aux"
+            Sds_Info(Var_Idx)%Actual_Range = [-0.2,1.2]
+            Sds_Info(Var_Idx)%Units = "none"
+            if (allocated(Ec_Aux)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Ec_Aux
          case("cld_press_aux")
             Sds_Info(Var_Idx)%Standard_Name = "air_pressure_at_cloud_top_aux"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,1100.0]

@@ -61,6 +61,8 @@ module MODIS_MOD
                 , Metadata_Aux &
                 , Tau_Aux &
                 , Reff_Aux &
+                , Ec_Aux &
+                , Temp_Pix_Array_1 &
                 , Line_Idx_Min_segment
 
         use PIXEL_ROUTINES_MOD,only: qc_modis
@@ -92,6 +94,7 @@ module MODIS_MOD
 
         public:: DETERMINE_MODIS_GEOLOCATION_FILE
         public:: DETERMINE_MODIS_CLOUD_MASK_FILE
+        public:: DETERMINE_MODIS_CLOUD_PRODUCT_FILE
         public:: READ_MODIS
         public:: READ_MODIS_INSTR_CONSTANTS
         public:: READ_MODIS_TIME_ATTR
@@ -211,7 +214,7 @@ subroutine DETERMINE_MODIS_GEOLOCATION_FILE(Modis_1b_Name &
 end subroutine DETERMINE_MODIS_GEOLOCATION_FILE
 
 !----------------------------------------------------------------------
-!
+! Determine the name of the MODIS Cloud Mask file
 !----------------------------------------------------------------------
 subroutine DETERMINE_MODIS_CLOUD_MASK_FILE(Modis_1b_Name, Dir_Modis_Cloud_Mask, Auxiliary_Cloud_Mask_File_Name)
     character(len=*), intent(in):: Modis_1b_Name
@@ -252,22 +255,67 @@ subroutine DETERMINE_MODIS_CLOUD_MASK_FILE(Modis_1b_Name, Dir_Modis_Cloud_Mask, 
     if (Num_Files > 1) then
        print *, EXE_PROMPT, MODULE_PROMPT, "Multiple MODIS Cloud Mask Files Found"
        Auxiliary_Cloud_Mask_File_Name = "no_file"
+       return
     endif
 
-    Auxiliary_Cloud_Mask_File_Name = Files(1)
-
+    Auxiliary_Cloud_Mask_File_Name = adjustl(Files(1))
     Files => null()
-   
-    ilen = len_trim(Auxiliary_Cloud_Mask_File_Name)
-    if (trim(Sensor%Sensor_Name) == 'MODIS-MAC') then
-      Auxiliary_Cloud_Mask_File_Name = Auxiliary_Cloud_Mask_File_Name(ilen-45:ilen)
-    else  
-      Auxiliary_Cloud_Mask_File_Name = Auxiliary_Cloud_Mask_File_Name(ilen-43:ilen)
-    endif
-
+  
     print *, EXE_PROMPT, MODULE_PROMPT, "Aux MODIS Cloud Mask Found, ",trim(Auxiliary_Cloud_Mask_File_Name)
 
 end subroutine DETERMINE_MODIS_CLOUD_MASK_FILE
+!----------------------------------------------------------------------
+! Determine the name of the MODIS Cloud Product File
+!----------------------------------------------------------------------
+subroutine DETERMINE_MODIS_CLOUD_PRODUCT_FILE(Modis_1b_Name, Dir_Modis_Cloud_Mask, Auxiliary_Cloud_Product_File_Name)
+    character(len=*), intent(in):: Modis_1b_Name
+    character(len=*), intent(in):: Dir_Modis_Cloud_Mask
+    character(len=*), intent(out):: Auxiliary_Cloud_Product_File_Name
+    integer, parameter:: nc = 25
+    character(len=nc):: Search_String
+    integer:: ilen
+    integer(kind=int4):: Num_Files
+    character(len=1020), dimension(:), pointer:: Files
+
+    Search_String = trim(Modis_1b_Name(1:nc-1))
+
+    if (Sensor%Spatial_Resolution_Meters == 1000) then
+      if (trim(Sensor%Platform_Name)  == 'AQUA') then
+         Search_String = "MYD06_L2"//trim(Search_String(9:nc))//"*"
+       else if (trim(Sensor%Sensor_Name) == 'MODIS-MAC') then
+         Search_String = "MAC06S0"//trim(Search_String(9:nc))//"*"
+      else
+         Search_String = "MOD06_L2"//trim(Search_String(9:nc))//"*"
+      endif
+    else
+      if (trim(Sensor%Platform_Name)  == 'AQUA') then
+         Search_String = "MYDATML2"//trim(Search_String(9:nc))//"*"
+      else
+         Search_String = "MODATML2"//trim(Search_String(9:nc))//"*"
+      endif
+    endif
+
+    Files => FILE_SEARCH(trim(Dir_Modis_Cloud_Mask),trim(Search_String),count=Num_Files)
+
+    if (Num_Files == 0) then 
+       print *, EXE_PROMPT, MODULE_PROMPT, "No MODIS Cloud Product File Found"
+       Auxiliary_Cloud_Product_File_Name = "no_file"
+       return
+    endif
+
+    if (Num_Files > 1) then
+       print *, EXE_PROMPT, MODULE_PROMPT, "Multiple MODIS Cloud Product Files Found"
+       Auxiliary_Cloud_Product_File_Name = "no_file"
+       return
+    endif
+
+    Auxiliary_Cloud_Product_File_Name = adjustl(Files(1))
+
+    Files => null()
+   
+    print *, EXE_PROMPT, MODULE_PROMPT, "Aux MODIS Cloud Product Found, ",trim(Auxiliary_Cloud_Product_File_Name)
+
+end subroutine DETERMINE_MODIS_CLOUD_PRODUCT_FILE
 
 !----------------------------------------------------------------------
 ! Read MODIS data. 
@@ -794,12 +842,6 @@ end subroutine READ_MODIS_LEVEL1B_GEOLOCATION
 !----------------------------------------------------------------------
 subroutine READ_MODIS_LEVEL1B_CLOUD_MASK(path,file_name,  &
                               Cloud_Mask_Out,  &
-                              Cloud_Phase_Out,  &
-                              Cloud_Type_Out,  &
-                              Cloud_Height_Out,  &
-                              Cloud_Height_Method_Out,  &
-                              Cloud_Opd_Out, &
-                              Cloud_Reff_Out, &
                               nx,ny,Seg_Idx,ny_total,ny_local_temp, &
                               Error_Status) 
 
@@ -812,22 +854,161 @@ subroutine READ_MODIS_LEVEL1B_CLOUD_MASK(path,file_name,  &
       integer(kind=int4), intent(out):: ny_local_temp
       integer(kind=int4), intent(out):: Error_Status
       integer(kind=int1), dimension(:,:), intent(out):: Cloud_Mask_Out
-      integer(kind=int1), dimension(:,:), intent(out):: Cloud_Phase_Out
-      integer(kind=int1), dimension(:,:), intent(out):: Cloud_Type_Out
-      real(kind=real4), dimension(:,:), intent(out):: Cloud_Height_Out
-      integer(kind=int1), dimension(:,:), intent(out):: Cloud_Height_Method_Out
-      real(kind=real4), dimension(:,:), intent(out):: Cloud_Opd_Out
-      real(kind=real4), dimension(:,:), intent(out):: Cloud_Reff_Out
 
-      integer(kind=int1), dimension(:,:), allocatable:: Cloud_Phase_Temp
       integer(kind=int1), allocatable, dimension(:,:,:):: i1_buffer
-      integer(kind=int2), allocatable, dimension(:,:):: i2_buffer
-      real(kind=real4), allocatable, dimension(:,:):: r4_buffer
       character(len=120):: sds_name
       integer(kind=int4), dimension(3):: sds_dims
       integer(kind=int4), dimension(3):: sds_start
       integer(kind=int4), dimension(3):: sds_stride
       integer(kind=int4), dimension(3):: sds_edges
+      integer(kind=int4):: nx_local
+      integer(kind=int4):: ny_local
+      integer(kind=int4):: ny_start
+      integer(kind=int4):: ny_end
+      integer:: nx_min
+      integer:: ny_min
+      integer:: Status_Flag
+      integer(kind=int4):: Sd_Id
+      integer(kind=int4):: Sds_Id
+      integer(kind=int4):: num_attrs, sds_data_type, sds_rank
+
+      integer(kind=int4):: sfend, sfstart, sfselect, sfrdata, sfendacc, &
+                           sfginfo, sfn2index
+      integer(kind=int4):: Iend
+      logical:: Atml2_File
+
+      Status_Flag = 0
+      Error_Status = 0
+      Iend = 0
+
+error_check: do while (Status_Flag == 0 .and. Iend == 0)
+
+      !---- open file
+      Sd_Id = sfstart(trim(path)//trim(file_name), DFACC_read)
+
+      !-- if file is unreadable, exist this loop
+      if (Sd_Id <= 0) then
+         Status_Flag = 1
+         exit
+      endif
+ 
+      !--- Open cloud mask and extract data sizes
+      Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('Cloud_Mask')))
+      if (Sds_Id <=0) Status_Flag = Status_Flag + 1
+      Status_Flag = sfginfo(Sds_Id, sds_name, sds_rank, sds_dims, sds_data_type, num_attrs) + Status_Flag
+      Status_Flag = sfendacc(Sds_Id) + Status_Flag
+      nx_local = sds_dims(1)
+      ny_local = sds_dims(2)
+      sds_stride = (/1, 1, 1/)
+
+      !--- compute number of lines to read for this segment
+      ny_start = (Seg_Idx-1)*ny + 1
+      ny_end = min(ny_start+ny-1,ny_total)
+      ny_local_temp = ny_end - ny_start + 1
+
+      nx_min = min(nx,nx_local)
+      ny_min = min(ny,ny_local_temp)
+
+      !--- allocate space for data to be read in
+      if (Sensor%Spatial_Resolution_Meters == 1000) then
+        allocate(i1_buffer(nx_local,ny_local_temp,6))
+        sds_start = (/0, ny_start-1, 0/)
+        sds_edges = (/nx_local, ny_local_temp,6/)
+      else
+        allocate(i1_buffer(nx_local,ny_local_temp,1))
+        sds_start = (/0, ny_start-1, 0/)
+        sds_edges = (/nx_local, ny_local_temp,1/)
+      endif
+
+      !--- Read Cloud Mask Bytes (packed)
+      Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('Cloud_Mask')))
+      Status_Flag = sfrdata(Sds_Id, sds_start, sds_stride, sds_edges, i1_buffer) + Status_Flag
+      Cloud_Mask_Out(1:nx_min,1:ny_min) = i1_buffer(1:nx_min,1:ny_min,1)
+      Status_Flag = sfendacc(Sds_Id) + Status_Flag
+
+      !--- close file
+      Status_Flag = sfend(Sd_Id) + Status_Flag
+
+      Iend = 1
+
+      enddo  error_check ! end of while loop
+
+      !--- unpacked needed information for 4-level cloud mask
+      Cloud_Mask_Out = ishft(ishft(Cloud_Mask_Out,5),-6)
+
+      !--- switch CLAVR-x convection for mask
+      Cloud_Mask_Out = 3_int1 - Cloud_Mask_Out
+
+      !--- deallocate memory
+      !--- clean up memory
+      if (allocated(i1_buffer)) deallocate(i1_buffer)
+
+      if (Status_Flag /= 0) then
+
+              !--- set output error status
+              Error_Status = 1
+
+              print *, EXE_PROMPT, "Reading of MODIS Cloud Mask failed, skipping this file"
+
+              !--- close hdf file, if loop exiting after opening it
+              if (Sd_Id > 0)  then
+                      Status_Flag = sfend(Sd_Id)
+              endif
+
+      endif
+
+end subroutine READ_MODIS_LEVEL1B_CLOUD_MASK
+
+!----------------------------------------------------------------------
+! Read the cloud products
+!
+! nx = number of elements (x-dir)
+! ny = numer of lines (y-dir)
+! Seg_Idx = the segment number (starts with 1)
+! ny_total = total number of lines in file
+! nx_local = actual number of elements in this file
+! ny_local = actual number of lines in this file
+! ny_local_temp = actual number of lines from this file for this segment
+! scan_number = number of line within this file
+!----------------------------------------------------------------------
+subroutine READ_MODIS_LEVEL1B_CLOUD_PRODUCTS(path,file_name,  &
+                              Cloud_Phase_Out,  &
+                              Cloud_Type_Out,  &
+                              Cloud_Height_Out,  &
+                              Cloud_Pressure_Out,  &
+                              Cloud_Height_Method_Out,  &
+                              Cloud_Opd_Out, &
+                              Cloud_Reff_Out, &
+                              Cloud_Emiss_Out,  &
+                              nx,ny,Seg_Idx,ny_total,ny_local_temp, &
+                              Error_Status) 
+
+      character(len=*), intent(in):: path
+      character(len=*), intent(in):: file_name
+      integer(kind=int4), intent(in):: nx
+      integer(kind=int4), intent(in):: ny
+      integer(kind=int4), intent(in):: Seg_Idx
+      integer(kind=int4), intent(in):: ny_total
+      integer(kind=int4), intent(out):: ny_local_temp
+      integer(kind=int4), intent(out):: Error_Status
+      integer(kind=int1), dimension(:,:), intent(out):: Cloud_Phase_Out
+      integer(kind=int1), dimension(:,:), intent(out):: Cloud_Type_Out
+      real(kind=real4), dimension(:,:), intent(out):: Cloud_Height_Out
+      real(kind=real4), dimension(:,:), intent(out):: Cloud_Pressure_Out
+      integer(kind=int1), dimension(:,:), intent(out):: Cloud_Height_Method_Out
+      real(kind=real4), dimension(:,:), intent(out):: Cloud_Opd_Out
+      real(kind=real4), dimension(:,:), intent(out):: Cloud_Reff_Out
+      real(kind=real4), dimension(:,:), intent(out):: Cloud_Emiss_Out
+
+      integer(kind=int1), dimension(:,:), allocatable:: Cloud_Phase_Temp
+      integer(kind=int1), allocatable, dimension(:,:):: i1_buffer
+      integer(kind=int2), allocatable, dimension(:,:):: i2_buffer
+      real(kind=real4), allocatable, dimension(:,:):: r4_buffer
+      character(len=120):: sds_name
+      integer(kind=int4), dimension(2):: sds_dims
+      integer(kind=int4), dimension(2):: sds_start
+      integer(kind=int4), dimension(2):: sds_stride
+      integer(kind=int4), dimension(2):: sds_edges
       integer(kind=int4):: nx_local
       integer(kind=int4):: ny_local
       integer(kind=int4):: ny_start
@@ -863,13 +1044,13 @@ error_check: do while (Status_Flag == 0 .and. Iend == 0)
       endif
  
       !--- Open cloud mask and extract data sizes
-      Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('Cloud_Mask')))
+      Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('Cloud_Phase_Infrared_1km')))
       if (Sds_Id <=0) Status_Flag = Status_Flag + 1
       Status_Flag = sfginfo(Sds_Id, sds_name, sds_rank, sds_dims, sds_data_type, num_attrs) + Status_Flag
       Status_Flag = sfendacc(Sds_Id) + Status_Flag
       nx_local = sds_dims(1)
       ny_local = sds_dims(2)
-      sds_stride = (/1, 1, 1/)
+      sds_stride = (/1, 1/)
 
       !--- compute number of lines to read for this segment
       ny_start = (Seg_Idx-1)*ny + 1
@@ -880,147 +1061,176 @@ error_check: do while (Status_Flag == 0 .and. Iend == 0)
       ny_min = min(ny,ny_local_temp)
 
       !--- allocate space for data to be read in
-      if (Sensor%Spatial_Resolution_Meters == 1000) then
-        allocate(i1_buffer(nx_local,ny_local_temp,6))
-        allocate(i2_buffer(nx_local,ny_local_temp))
-        allocate(r4_buffer(nx_local,ny_local_temp))
-        sds_start = (/0, ny_start-1, 0/)
-        sds_edges = (/nx_local, ny_local_temp,6/)
-      else
-        allocate(i1_buffer(nx_local,ny_local_temp,1))
-        allocate(i2_buffer(nx_local,ny_local_temp))
-        allocate(r4_buffer(nx_local,ny_local_temp))
-        sds_start = (/0, ny_start-1, 0/)
-        sds_edges = (/nx_local, ny_local_temp,1/)
-      endif
+      allocate(i1_buffer(nx_local,ny_local_temp))
+      allocate(i2_buffer(nx_local,ny_local_temp))
+      allocate(r4_buffer(nx_local,ny_local_temp))
+      sds_start = (/0, ny_start-1/)
+      sds_edges = (/nx_local, ny_local_temp/)
 
-      !--- Read Cloud Mask Bytes (packed)
-      Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('Cloud_Mask')))
+      !--- Read IR Cloud Phase
+      !--- 0 = cloud free, 1 = water, 2 = ice, 3 = mixed, 6 = unknown)
+      Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('Cloud_Phase_Infrared_1km')))
       Status_Flag = sfrdata(Sds_Id, sds_start, sds_stride, sds_edges, i1_buffer) + Status_Flag
-      Cloud_Mask_Out(1:nx_min,1:ny_min) = i1_buffer(1:nx_min,1:ny_min,1)
+
+      allocate(Cloud_Phase_Temp(size(Cloud_Phase_Out,1),size(Cloud_Phase_Out,2)))
+      Cloud_Phase_Temp = Missing_Value_Int1
+      Cloud_Phase_Temp(1:nx_min,1:ny_min) = i1_buffer(1:nx_min,1:ny_min)
       Status_Flag = sfendacc(Sds_Id) + Status_Flag
 
-      if (Atml2_File) then
-       !--- Read IR Cloud Phase
-       !--- 0 = cloud free, 1 = water, 2 = ice, 3 = mixed, 6 = unknown)
-       Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('Cloud_Phase_Infrared_1km')))
-       Status_Flag = sfrdata(Sds_Id, sds_start, sds_stride, sds_edges, i1_buffer) + Status_Flag
-       allocate(Cloud_Phase_Temp(size(Cloud_Phase_Out,1),size(Cloud_Phase_Out,2)))
-       Cloud_Phase_Temp = Missing_Value_Int1
-       Cloud_Phase_Temp(1:nx_min,1:ny_min) = i1_buffer(1:nx_min,1:ny_min,1)
-       Status_Flag = sfendacc(Sds_Id) + Status_Flag
+      !--- Read Cloud Top Height (i2, scale = 1, add_offset = 0, fill=-999)
+      Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('cloud_top_height_1km')))
+      Status_Flag = sfrdata(Sds_Id, sds_start, sds_stride, sds_edges, i2_buffer) + Status_Flag
+      r4_buffer = 1.0*real(i2_buffer) + 0.0
+      where(i2_buffer == -999)
+         r4_buffer = Missing_Value_Real4
+      endwhere
+      Cloud_Height_Out = Missing_Value_Real4
+      Cloud_Height_Out(1:nx_min,1:ny_min) = r4_buffer(1:nx_min,1:ny_min)
+      Status_Flag = sfendacc(Sds_Id) + Status_Flag
 
-       !--- Read Cloud Top Height (i2, scale = 1, add_offset = 0, fill=-999)
-       Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('Cloud_Top_Height_1km')))
-       Status_Flag = sfrdata(Sds_Id, sds_start, sds_stride, sds_edges, i2_buffer) + Status_Flag
-       r4_buffer = real(i2_buffer)
-       where(i2_buffer == -999)
+      !--- Cloud Emissivity (not in ATML2)
+      Cloud_Emiss_Out = Missing_Value_Real4
+      if (.not. Atml2_File) then
+        Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('cloud_emissivity_1km')))
+        !Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('cloud_emiss11_1km')))
+        Status_Flag = sfrdata(Sds_Id, sds_start, sds_stride, sds_edges, i1_buffer) + Status_Flag
+        r4_buffer = 0.01*real(i1_buffer) + 0.0
+        !r4_buffer = 0.0001*real(i2_buffer) + 0.0
+        where(i1_buffer == 127)
+        !where(i2_buffer == -999)
           r4_buffer = Missing_Value_Real4
-       endwhere
-       Cloud_Height_Out = Missing_Value_Real4
-       Cloud_Height_Out(1:nx_min,1:ny_min) = r4_buffer(1:nx_min,1:ny_min)
-       Status_Flag = sfendacc(Sds_Id) + Status_Flag
-
-       !--- Read Cloud Top Height Method
-       Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('Cloud_Height_Method')))
-       Status_Flag = sfrdata(Sds_Id, sds_start, sds_stride, sds_edges, i1_buffer) + Status_Flag
-       Cloud_Height_Method_Out(1:nx_min,1:ny_min) = i1_buffer(1:nx_min,1:ny_min,1)
-       where(Cloud_Height_Method_Out == 127_int1)  !fill value is 127
-          Cloud_Height_Method_Out = Missing_Value_Int1
-       endwhere
-       Status_Flag = sfendacc(Sds_Id) + Status_Flag
-
-       !--- Read Cloud Optical Depth (i2, scale = 0.01, add_offset = 0, fill=-9999)
-       Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('Cloud_Optical_Thickness')))
-       Status_Flag = sfrdata(Sds_Id, sds_start, sds_stride, sds_edges, i2_buffer) + Status_Flag
-       r4_buffer = 0.0 + 0.01*real(i2_buffer)
-       where(i2_buffer == -9999)
-          r4_buffer = Missing_Value_Real4
-       endwhere
-       Cloud_Opd_Out = Missing_Value_Real4
-       Cloud_Opd_Out(1:nx_min,1:ny_min) = r4_buffer(1:nx_min,1:ny_min)
-       Status_Flag = sfendacc(Sds_Id) + Status_Flag
-
-       !--- Read Cloud Particle Size( i2, scale = 0.01, add_offset = 0, fill=-9999)
-       Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('Cloud_Effective_Radius')))
-       Status_Flag = sfrdata(Sds_Id, sds_start, sds_stride, sds_edges, i2_buffer) + Status_Flag
-       r4_buffer = 0.0 + 0.01*real(i2_buffer)
-       where(i2_buffer == -9999)
-          r4_buffer = Missing_Value_Real4
-       endwhere
-       Cloud_Reff_Out = Missing_Value_Real4
-       Cloud_Reff_Out(1:nx_min,1:ny_min) = r4_buffer(1:nx_min,1:ny_min)
-       Status_Flag = sfendacc(Sds_Id) + Status_Flag
-
+        endwhere
+        Cloud_Emiss_Out(1:nx_min,1:ny_min) = r4_buffer(1:nx_min,1:ny_min)
+        Status_Flag = sfendacc(Sds_Id) + Status_Flag
       endif
 
-      !--- close file
-      Status_Flag = sfend(Sd_Id) + Status_Flag
-
-      Iend = 1
-
-      enddo  error_check ! end of while loop
-
-      !--- unpacked needed information for 4-level cloud mask
-      Cloud_Mask_Out = ishft(ishft(Cloud_Mask_Out,5),-6)
-
-      !--- switch CLAVR-x convection for mask
-      Cloud_Mask_Out = 3_int1 - Cloud_Mask_Out
-
-      where(Cloud_Mask_Out == 0)
-        Cloud_Phase_Out = sym%CLEAR_PHASE
+      !--- Read Cloud Top Pressure (i2, scale = 0.1, add_offset = 0, fill=-999)
+      Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('cloud_top_pressure_1km')))
+      Status_Flag = sfrdata(Sds_Id, sds_start, sds_stride, sds_edges, i2_buffer) + Status_Flag
+      r4_buffer = 0.1*real(i2_buffer) + 0.0
+      where(i2_buffer == -999)
+         r4_buffer = Missing_Value_Real4
       endwhere
-      where(Cloud_Mask_Out == 1)
-        Cloud_Phase_Out = sym%CLEAR_PHASE
+      Cloud_Pressure_Out = Missing_Value_Real4
+      Cloud_Pressure_Out(1:nx_min,1:ny_min) = r4_buffer(1:nx_min,1:ny_min)
+
+
+      !--- Read Cloud Top Height Method
+      Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('cloud_top_method_1km')))
+      Status_Flag = sfrdata(Sds_Id, sds_start, sds_stride, sds_edges, i1_buffer) + Status_Flag
+      Cloud_Height_Method_Out(1:nx_min,1:ny_min) = i1_buffer(1:nx_min,1:ny_min)
+      where(Cloud_Height_Method_Out == 127_int1)  !fill value is 127
+         Cloud_Height_Method_Out = Missing_Value_Int1
       endwhere
-      if (Atml2_File) then
-        where(Cloud_Phase_Temp == 1)
-          Cloud_Phase_Out = sym%WATER_PHASE
-        endwhere
-        where(Cloud_Phase_Temp == 2)
-          Cloud_Phase_Out = sym%ICE_PHASE
-        endwhere
-        where(Cloud_Phase_Temp == 3)
-          Cloud_Phase_Out = sym%MIXED_PHASE
-        endwhere
-        where(Cloud_Phase_Temp == 6)
-          Cloud_Phase_Out = sym%UNKNOWN_PHASE
-        endwhere
+      Status_Flag = sfendacc(Sds_Id) + Status_Flag
+
+     !--- Read Cloud Optical Depth (i2, scale = 0.01, add_offset = 0, fill=-9999)
+     Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('Cloud_Optical_Thickness_16')))
+     Status_Flag = sfrdata(Sds_Id, sds_start, sds_stride, sds_edges, i2_buffer) + Status_Flag
+     r4_buffer = 0.0 + 0.01*real(i2_buffer)
+     where(i2_buffer == -9999)
+        r4_buffer = Missing_Value_Real4
+     endwhere
+     Cloud_Opd_Out = Missing_Value_Real4
+     Cloud_Opd_Out(1:nx_min,1:ny_min) = r4_buffer(1:nx_min,1:ny_min)
+     Status_Flag = sfendacc(Sds_Id) + Status_Flag
+
+     !--- Read PCL Cloud Optical Depth (i2, scale = 0.01, add_offset = 0, fill=-9999)
+     Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('Cloud_Optical_Thickness_16_PCL')))
+     Status_Flag = sfrdata(Sds_Id, sds_start, sds_stride, sds_edges, i2_buffer) + Status_Flag
+     r4_buffer = 0.0 + 0.01*real(i2_buffer)
+     where(i2_buffer == -9999)
+        r4_buffer = Missing_Value_Real4
+     endwhere
+     Temp_Pix_Array_1 = Missing_Value_Real4
+     Temp_Pix_Array_1(1:nx_min,1:ny_min) = r4_buffer(1:nx_min,1:ny_min)
+     Status_Flag = sfendacc(Sds_Id) + Status_Flag
+
+     !--- add in PCL to output
+     where(Temp_Pix_Array_1 /= Missing_Value_Real4 .and. Cloud_Opd_Out == Missing_Value_Real4)
+        Cloud_Opd_Out = Temp_Pix_Array_1
+     endwhere
+
+     !--- Read Cloud Particle Size( i2, scale = 0.01, add_offset = 0, fill=-9999)
+     Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('Cloud_Effective_Radius_16')))
+     Status_Flag = sfrdata(Sds_Id, sds_start, sds_stride, sds_edges, i2_buffer) + Status_Flag
+     r4_buffer = 0.0 + 0.01*real(i2_buffer)
+     where(i2_buffer == -9999)
+        r4_buffer = Missing_Value_Real4
+     endwhere
+     Cloud_Reff_Out = Missing_Value_Real4
+     Cloud_Reff_Out(1:nx_min,1:ny_min) = r4_buffer(1:nx_min,1:ny_min)
+     Status_Flag = sfendacc(Sds_Id) + Status_Flag
+
+     !--- Read PCL Cloud Particle Size( i2, scale = 0.01, add_offset = 0, fill=-9999)
+     Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('Cloud_Effective_Radius_16_PCL')))
+     Status_Flag = sfrdata(Sds_Id, sds_start, sds_stride, sds_edges, i2_buffer) + Status_Flag
+     r4_buffer = 0.0 + 0.01*real(i2_buffer)
+     where(i2_buffer == -9999)
+        r4_buffer = Missing_Value_Real4
+     endwhere
+     Temp_Pix_Array_1 = Missing_Value_Real4
+     Temp_Pix_Array_1(1:nx_min,1:ny_min) = r4_buffer(1:nx_min,1:ny_min)
+     Status_Flag = sfendacc(Sds_Id) + Status_Flag
+
+     !--- add in PCL to output
+     where(Temp_Pix_Array_1 /= Missing_Value_Real4 .and. Cloud_Opd_Out == Missing_Value_Real4)
+         Cloud_Opd_Out = Temp_Pix_Array_1
+     endwhere
+
+     !--- close file
+     Status_Flag = sfend(Sd_Id) + Status_Flag
+
+     Iend = 1
+
+     enddo  error_check ! end of while loop
+
+     where(Cloud_Phase_Temp == 1)
+        Cloud_Phase_Out = sym%WATER_PHASE
+     endwhere
+     where(Cloud_Phase_Temp == 2)
+        Cloud_Phase_Out = sym%ICE_PHASE
+     endwhere
+     where(Cloud_Phase_Temp == 3)
+        Cloud_Phase_Out = sym%MIXED_PHASE
+     endwhere
+     where(Cloud_Phase_Temp == 6)
+        Cloud_Phase_Out = sym%UNKNOWN_PHASE
+     endwhere
       
-        !--- switch CLAVR-x convection for phase
-        where(Cloud_Mask_Out == sym%CLEAR)
-          Cloud_Type_Out = sym%CLEAR_TYPE
-        endwhere
-        where(Cloud_Mask_Out == sym%PROB_CLEAR)
-          Cloud_Type_Out = sym%PROB_CLEAR_TYPE
-        endwhere
-        where(Cloud_Phase_Out == sym%WATER_PHASE)
+     !--- switch CLAVR-x convection for phase
+     where(Cloud_Phase_Out == sym%CLEAR)
+        Cloud_Type_Out = sym%CLEAR_TYPE
+     endwhere
+!    where(Cloud_Mask_Out == sym%PROB_CLEAR)
+!         Cloud_Type_Out = sym%PROB_CLEAR_TYPE
+!    endwhere
+     where(Cloud_Phase_Out == sym%WATER_PHASE)
           Cloud_Type_Out = sym%WATER_TYPE
-        endwhere
-        where(Cloud_Phase_Out == sym%ICE_PHASE)
+    endwhere
+    where(Cloud_Phase_Out == sym%ICE_PHASE)
           Cloud_Type_Out = sym%OPAQUE_ICE_TYPE
-        endwhere
-        where(Cloud_Phase_Out == sym%MIXED_PHASE)
+    endwhere
+    where(Cloud_Phase_Out == sym%MIXED_PHASE)
           Cloud_Type_Out = sym%MIXED_TYPE
-        endwhere
-        where(Cloud_Phase_Out == sym%UNKNOWN_PHASE)
+    endwhere
+    where(Cloud_Phase_Out == sym%UNKNOWN_PHASE)
           Cloud_Type_Out = sym%UNKNOWN_TYPE
-        endwhere
-      endif
+    endwhere
 
-      !--- deallocate memory
-      !--- clean up memory
-      if (allocated(Cloud_Phase_Temp)) deallocate(Cloud_Phase_Temp)
-      if (allocated(i1_buffer)) deallocate(i1_buffer)
-      if (allocated(i2_buffer)) deallocate(i2_buffer)
-      if (allocated(r4_buffer)) deallocate(r4_buffer)
+    !--- deallocate memory
+    !--- clean up memory
+    if (allocated(Cloud_Phase_Temp)) deallocate(Cloud_Phase_Temp)
+    if (allocated(i1_buffer)) deallocate(i1_buffer)
+    if (allocated(i2_buffer)) deallocate(i2_buffer)
+    if (allocated(r4_buffer)) deallocate(r4_buffer)
 
-      if (Status_Flag /= 0) then
+    if (Status_Flag /= 0) then
 
               !--- set output error status
               Error_Status = 1
 
-              print *, EXE_PROMPT, "Reading of MODIS Cloud Mask failed, skipping this file"
+              print *, EXE_PROMPT, "Reading of MODIS Cloud Products failed, skipping this file"
 
               !--- close hdf file, if loop exiting after opening it
               if (Sd_Id > 0)  then
@@ -1029,8 +1239,7 @@ error_check: do while (Status_Flag == 0 .and. Iend == 0)
 
       endif
 
-end subroutine READ_MODIS_LEVEL1B_CLOUD_MASK
-
+end subroutine READ_MODIS_LEVEL1B_CLOUD_PRODUCTS
 
 !======================================================================
 !
@@ -1040,12 +1249,17 @@ subroutine READ_MODIS(Seg_Idx,Error_Status)
     integer, intent(in):: Seg_Idx
     integer, intent(out):: Error_Status
 
+    integer:: Error_Status_Geo, Error_Status_L1b, Error_Status_Mask, Error_Status_Products
     integer:: End_Flag
     integer:: Chan_Idx
     real, dimension(20:36):: Eff_Wavenumber
     character (len=1020) :: File_Name_Tmp
 
     Error_Status = 0
+    Error_Status_Geo = 0
+    Error_Status_L1b = 0
+    Error_Status_Mask = 0
+    Error_Status_Products = 0
     End_Flag = 0
 
     Eff_Wavenumber = (/Planck_Nu(20), Planck_Nu(21), Planck_Nu(22), Planck_Nu(23),  &
@@ -1072,10 +1286,12 @@ error_check: do while (Error_Status == 0 .and. End_Flag == 0)
                                            Image%Number_Of_Elements,Image%Number_Of_Lines_Per_Segment, &
                                            Seg_Idx,Image%Number_Of_Lines,Image%Number_Of_Lines_Read_This_Segment, &
                                            Image%start_Time,Image%End_Time,Image%Scan_Time_Ms, &
-                                           Image%Scan_Number,Nav%Ascend,Error_Status)
+                                           Image%Scan_Number,Nav%Ascend,Error_Status_Geo)
 
 
-       if (Error_Status /= 0) exit
+       Error_Status = Error_Status_Geo
+
+       if (Error_Status_L1b /= 0) exit
 
        !--- read cloud mask - assume path is same as level-1b
        Cloud_Mask_Aux_Read_Flag = sym%NO
@@ -1086,15 +1302,29 @@ error_check: do while (Error_Status == 0 .and. End_Flag == 0)
           call READ_MODIS_LEVEL1B_CLOUD_MASK(trim(Image%Level1b_Path),  &
                                              trim(Image%Auxiliary_Cloud_Mask_File_Name), &
                                              CLDMASK%Cld_Mask_Aux, & 
+                                             Image%Number_Of_Elements,Image%Number_Of_Lines_Per_Segment, &
+                                             Seg_Idx,Image%Number_Of_Lines,Image%Number_Of_Lines_Read_This_Segment, &
+                                             Error_Status_Mask)
+
+
+          Error_Status = Error_Status_L1b + Error_Status_Mask
+
+          call READ_MODIS_LEVEL1B_CLOUD_PRODUCTS(trim(Image%Level1b_Path),  &
+                                             trim(Image%Auxiliary_Cloud_Product_File_Name), &
                                              Cld_Phase_Aux, & 
                                              Cld_Type_Aux, & 
                                              Zc_Aux, & 
+                                             Pc_Top1_Aux, &
                                              Metadata_Aux, &
                                              Tau_Aux, &
                                              Reff_Aux, &
+                                             Ec_Aux, &
                                              Image%Number_Of_Elements,Image%Number_Of_Lines_Per_Segment, &
                                              Seg_Idx,Image%Number_Of_Lines,Image%Number_Of_Lines_Read_This_Segment, &
-                                             Error_Status)
+                                             Error_Status_Products)
+
+          
+          Error_Status = Error_Status_L1b + Error_Status_Mask + Error_Status_Products
 
 
           if (Error_Status == 0) then
