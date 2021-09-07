@@ -782,7 +782,15 @@ subroutine READ_VIIRS_NASA_DATA (Segment_Number, VGEOM_File, Error_Out)
          endif
 
          ! - mapping file (maps from dnb to M-bands resolution)
-         File_Dnb_Idx = trim(Ancil_Data_Dir)//'static/viirs/dnb2m_indx.txt'
+         ! - added J01 aka NOAA-20 2021-08-10 Denis B. (it was wrong since Feb
+         ! -                     2018 when AW added this to NOAA files reader)
+         select case (Sensor%Platform_Name)
+         case ('NOAA-20')
+            File_Dnb_Idx = trim(Ancil_Data_Dir)//'static/viirs/dnb2m_index_viirs_noaa20.txt'
+         case ('SNPP')
+            File_Dnb_Idx = trim(Ancil_Data_Dir)//'static/viirs/dnb2m_indx.txt'
+         end select
+
          Lun = GETLUN()
          Dim_Dnb_Seg(1) = 4064
          Dim_Dnb_Seg(2) = Dim_Seg(2)
@@ -932,6 +940,7 @@ subroutine READ_VIIRS_NASA_DATA (Segment_Number, VGEOM_File, Error_Out)
          ! - convert radiance to reflectance
          call CONVERT_RAD_2_SOL_REF_DNB (Ch (44) % Rad_Toa, Geo % Solzen, &
                       Sun_Earth_Distance, Missing_Value_Real4, Ch(44)%Ref_Toa)
+
 
       enddo ! one time loop
 

@@ -619,7 +619,8 @@
    integer :: narg,cptArg
    character(len=30) :: arg_name
 
-   real, parameter, dimension(3):: Dnb_Coef = [-0.373685,0.977945,-0.000261637]
+   !real, parameter, dimension(3):: Dnb_Coef = [-0.373685,0.977945,-0.000261637]
+   real, parameter, dimension(3):: Dnb_Coef = [-0.118767,0.962452,-0.000144502]
 
 
    !***********************************************************************
@@ -1160,15 +1161,15 @@
 
 
            !TEST - EMPIRICAL FIT TO NASA Reflectances to match NOAA - AKH
-!          if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA') then 
-!            where(Ch(44)%Ref_Toa /= Missing_Value_Real4)
-!              Ch(44)%Ref_Lunar_Toa = Dnb_Coef(1) + &
-!                                     Dnb_Coef(2)*Ch(44)%Ref_Lunar_Toa + &
-!                                     Dnb_Coef(3)*Ch(44)%Ref_Lunar_Toa**2
-!             endwhere
-!          endif
+          if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA') then 
+            where(Ch(44)%Ref_Toa /= Missing_Value_Real4)
+              Ch(44)%Ref_Lunar_Toa = Dnb_Coef(1) + &
+                                     Dnb_Coef(2)*Ch(44)%Ref_Lunar_Toa + &
+                                     Dnb_Coef(3)*Ch(44)%Ref_Lunar_Toa**2
+             endwhere
+          endif
 
-         endif
+         end if
 
          End_Time_Point_Hours = COMPUTE_TIME_HOURS()
 

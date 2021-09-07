@@ -67,6 +67,23 @@ module VIIRS_NASA_HRES_READ_MOD
   
   logical :: first_run = .true.
   
+  
+  type viirs_iband_bowtie_type
+    logical :: is_set
+    integer :: nx_pattern = 6400
+    integer :: ny_pattern = 32 
+    integer :: mask (6400,32)
+    integer :: idx (6400,32)
+    
+    integer :: n_lines_gap_short = 1280
+    integer :: n_lines_gap_long = 2016
+    contains
+    procedure :: set => viirs_iband_bowtie_type__set
+  end type
+  
+  type ( viirs_iband_bowtie_type ) :: bowtie_coef
+  
+  
 contains
 
 subroutine viirs_coef_type__read_file ( self, sensor)
@@ -145,7 +162,7 @@ subroutine read_viirs_nasa_hres_data (in_config)
          , cx_sds_read &
          , MAXNCNAM
   
-  use Pixel_Common_Mod, only : ch, image , nav, geo
+  use Pixel_Common_Mod, only : ch, image , nav, geo 
   
   use VIEWING_GEOMETRY_MOD, only: &
         GLINT_ANGLE &
@@ -171,8 +188,13 @@ subroutine read_viirs_nasa_hres_data (in_config)
   integer :: cc
   logical :: rel_path = .TRUE.
   
-  if ( first_run) print*,'START:  READ nasa viirs hres ',trim(in_config % filename)
- 
+  if ( first_run) then
+    print*,'START:  READ nasa viirs hres ',trim(in_config % filename)
+    
+    ! make bow tie pattern mask
+    call bowtie_coef % set
+    
+  end if
   ! time identifier
   time_identifier =  in_config%filename(9:23)
   
@@ -188,7 +210,9 @@ subroutine read_viirs_nasa_hres_data (in_config)
     if (in_config % channel_on_viirs (i_ch)) then
       write ( ch_str, '(i2.2)' ) i_ch 
       status=cx_sds_read(file_local,'observation_data/M'//ch_str//'_highres',out,start = start,count = count)
+      
       ch(in_config % modis_chn_list(i_ch)) % ref_toa(:,1:count(2)) = out
+      call update_bowtie(in_config % ny_start, ch(in_config % modis_chn_list(i_ch)) % ref_toa(:,1:count(2)))
      
     end if
   end do
@@ -201,7 +225,7 @@ subroutine read_viirs_nasa_hres_data (in_config)
         modis_ch = in_config % modis_chn_list(i_ch)
         status=cx_sds_read(file_local,'observation_data/M'//ch_str//'_highres',out,start = start,count = count)
         ch(modis_ch) % rad_toa(:,1:count(2)) = out
-        
+        call update_bowtie(in_config % ny_start, ch(modis_ch) % rad_toa(:,1:count(2)))
         ! - convert to radiance to NOAA unit.. 
         noaa_nasa_correct = ((10000.0 / coef % planck_nu(modis_ch) ** 2)/10. )
         ch(modis_ch) % rad_toa =  ch(modis_ch) % rad_toa * noaa_nasa_correct
@@ -252,7 +276,7 @@ subroutine read_viirs_nasa_hres_data (in_config)
   ! print*,'put several things outside nasa hres read routine in future: ',__FILE__,' Line: ',__LINE__
   
    geo % relaz = RELATIVE_AZIMUTH (Geo%Solaz, Geo%Sataz)
-   Geo % Scatangle = SCATTERING_ANGLE (Geo%Solzen, Geo%Satzen, Geo%Relaz)
+   geo % Scatangle = SCATTERING_ANGLE (Geo%Solzen, Geo%Satzen, Geo%Relaz)
     
    if ( allocated(out)) deallocate(out)
    
@@ -260,5 +284,118 @@ subroutine read_viirs_nasa_hres_data (in_config)
     
 
 end subroutine read_viirs_nasa_hres_data
+
+
+subroutine viirs_iband_bowtie_type__set ( this)
+  class(viirs_iband_bowtie_type) :: this
+  integer :: i0,i1,i2,i3
+  
+  ! this makes gap pattern
+  
+  this % mask = 0
+  this % idx = -999
+  
+  this % mask(1:this % n_lines_gap_long,1:2) = 1
+  this % idx(1:this % n_lines_gap_short,1:2) = 5
+  this % idx(this % n_lines_gap_short+1:this % n_lines_gap_long,1:2) = 3
+  
+  this % mask(1:this % n_lines_gap_short,3:4) = 1
+  this % idx(1:this % n_lines_gap_short,3:4) = 5
+  
+  this % mask(1:this % n_lines_gap_long,31:32) = 1
+  this % idx(1:this % n_lines_gap_short,31:32) = 28
+  this % idx(this % n_lines_gap_short+1:this % n_lines_gap_long,31:32) = 30
+  
+  this % mask(1:this % n_lines_gap_short,29:30) = 1
+  this % idx(1:this % n_lines_gap_short,29:30) = 28
+  
+  i0 = this % nx_pattern - this % n_lines_gap_long 
+  i1 = this % nx_pattern - this % n_lines_gap_short - 1
+  i2 = this % nx_pattern - this % n_lines_gap_short
+  i3 = this % nx_pattern
+  
+  this % mask(i0:i3,1:2) = 1
+  this % idx(i2:i3,1:2) = 5
+  this % idx(i0:i1,1:2) = 3
+  
+  this % mask(i2:i3,3:4) = 1
+  this % idx(i2:i3,3:4) = 5
+  
+  
+
+  
+  this % mask(i0:i3,31:32) = 1
+  this % idx(i2:i3,31:32) = 28
+  this % idx(i0:i1,31:32) = 30
+  
+  this % mask(i2:i3,29:30) = 1
+  this % idx(i2:i3,29:30) = 28
+  
+  this % is_set = .true.
+
+end subroutine viirs_iband_bowtie_type__set
+
+
+subroutine update_bowtie (line0_full, variable )
+  
+  use Pixel_Common_Mod, only :  gap_pixel_mask
+  
+  integer :: line0_full
+  real , intent(inout) :: variable(:,:)
+  
+  integer :: number_of_lines
+  integer :: sh_var (2)
+  integer :: line_in_seg
+  integer :: line_in_pattern
+  integer :: x_idx
+  integer :: line_offset
+  integer :: gap_line_idx(6400)
+  integer :: line_idx
+  
+  
+  sh_var = shape(variable)
+  number_of_lines = sh_var(2)
+  
+  
+
+  do line_in_seg = 1, number_of_lines
+    
+    line_in_pattern = mod ( line0_full - 1 + line_in_seg , bowtie_coef % ny_pattern)
+    if (line_in_pattern == 0) line_in_pattern =  bowtie_coef % ny_pattern
+    
+    ! check if line needs modifications/ has bowtie pixels
+    if ( bowtie_coef % idx (1, line_in_pattern) .EQ. -999 ) cycle  
+    
+    line_offset = line_in_seg - line_in_pattern
+    gap_line_idx = bowtie_coef % idx(:,line_in_pattern) + line_offset
+   
+    where ( gap_line_idx .LE. 0 )
+       gap_line_idx = 1
+    end where
+    
+    where ( gap_line_idx .GT. number_of_lines )
+       gap_line_idx = number_of_lines
+    end where 
+    
+    gap_pixel_mask (:,line_in_seg) = bowtie_coef % mask (:,line_in_pattern)
+    
+    do x_idx = 1, bowtie_coef % nx_pattern
+     
+      if ( bowtie_coef % mask (x_idx,line_in_pattern) == 1 ) then
+        
+        
+        line_idx =   gap_line_idx(x_idx)
+       
+        variable (x_idx,line_in_seg) = variable ( x_idx,line_idx) 
+       
+      end if
+    end do
+  
+  end do 
+  
+ 
+
+end subroutine update_bowtie
+
 
 end module VIIRS_NASA_HRES_READ_MOD
