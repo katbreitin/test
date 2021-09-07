@@ -12,5 +12,6 @@ main_src/version.inc
 muri/Release_gfortran/MURI
 file_list*
 level2_list
+clavrxorb
 !level2_list_example
 !file_list_example
