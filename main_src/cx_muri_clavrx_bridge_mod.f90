@@ -76,7 +76,7 @@ contains
        integer, parameter :: abi_map_modis(6) = [3,1,2,26,6,7] 
      
       ! it is more efficient to allocate only for first segment
-      if ( count ( geo % solzen .lt. 60. .and. geo % solzen .gt. 0.  ) .LT. 100 ) return
+      ! if ( count ( geo % solzen .lt. 60. .and. geo % solzen .gt. 0.  ) .LT. 100 ) return
       
       ! - this checks if allocation is needed 
       call input % allocate ( dim1,dim2)
