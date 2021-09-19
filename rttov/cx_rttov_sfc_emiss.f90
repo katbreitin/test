@@ -180,7 +180,7 @@ CONTAINS
     nprof=dim1*dim2 
     
     !write(*,*) 'init dimesions: ',Image%Number_Of_Elements, Image%Number_Of_Lines_Per_Segment , nprof
-    print*,atlas_type_ir
+    print*,'ATLAS TYPE IR For emis RTTOV: ',atlas_type_ir
     
 
     call rttov_setup_emis_atlas(   &
@@ -356,17 +356,18 @@ CONTAINS
       do Line_Idx = 1, Image%Number_Of_Lines_Per_Segment
         k=k+1
         !if (Bad_Pixel_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle 
-
+         
         profiles(k)%latitude=dble(lats(Elem_Idx,Line_Idx))
+        
         profiles(k)%longitude=dble(lons(Elem_Idx,Line_Idx))
 	      profiles(k)%skin%surftype =0  ! land
         profiles(k)%skin%snow_fraction = 0.         
 	 
-	      if (Sfc%Land(Elem_Idx,Line_Idx) /= sym%Land ) profiles(k)%skin%surftype =1
+	     ! if (Sfc%Land(Elem_Idx,Line_Idx) /= sym%Land ) profiles(k)%skin%surftype =1
 	      if (Sfc%Snow(Elem_Idx,Line_Idx) == sym%SNOW) profiles(k)%skin%snow_fraction = 1.	 
 	
 	      if (Sfc%Sfc_Type(Elem_Idx,Line_Idx) == 0 ) then
-            profiles(k)%skin%surftype =1	 ! sea
+            !profiles(k)%skin%surftype =1	 ! sea
             
         end if
 	    end do
@@ -374,6 +375,15 @@ CONTAINS
               
    ! initialize output matrix
     emiss1=0.
+    
+    
+    !k = 3100
+    
+    !print*, profiles(k)%latitude
+    !print*, profiles(k)%longitude
+    !print*,profiles(k)%skin%surftype
+    !print*,profiles(k)%skin%snow_fraction
+    
     !    
     !----------------------------
     ! Retrieve values from atlas for MODIS
@@ -388,6 +398,9 @@ CONTAINS
                   emissivity_modis(:))
                   !emis_std = emis_std_modis)
                   !emis_flag_modis)
+    
+ 
+    
     if (err /= errorstatus_success) then
               write(*,*) 'error reading modis emissivity atlas'
               call rttov_exit(err)
@@ -451,12 +464,21 @@ CONTAINS
       !enddo
        
 ! creating claverx emissivity 
-!--------------------------------     
+!--------------------------------    
+
+
+    ! print* 
     k=0
     do Elem_Idx = 1, Image%Number_Of_Elements 
       do Line_Idx = 1, Image%Number_Of_Lines_Per_Segment
+        !print*
+        !print*,'===================   ======='
         k=k+1
-        
+         ! print*, profiles(k)%latitude
+   ! print*, profiles(k)%longitude
+   ! print*,profiles(k)%skin%surftype
+   ! print*,profiles(k)%skin%snow_fraction
+    
         do Chan_Idx = 1, 6
           lo = (k-1)*nchan_modis
 	        !write(*,*) Elem_Idx,Line_Idx,k, Chan_Idx, lo
@@ -481,7 +503,9 @@ CONTAINS
              !emiss(k,1,Chan_Idx+41)=emissivity_viirs(lo+Chan_Idx)
              emiss1(Elem_Idx,Line_Idx,Chan_Idx+41)=emissivity_viirs(lo+Chan_Idx)
         end do
-
+        ! print*,k
+        !  print*,emiss1(Elem_Idx,Line_Idx,:)
+ 
       end do
     end do
   
