@@ -9,6 +9,9 @@ module muri_lut_mod
       ! cx_sds_finfo &
       ! , cx_sds_read !, cx_sds_read_6d_real
       
+      use lib_array, only: interp1d
+      use aw_lib_array, only: interp4d 
+      
    implicit none 
    
    integer, parameter :: N_BANDS = 6
@@ -30,19 +33,20 @@ module muri_lut_mod
       real, allocatable :: ws(:)
       
       real, allocatable  :: aot_550nm (:)
-      real, allocatable :: app_refl(:,:,:,:,:,:)
-      !real, allocatable :: aot_aer(:,:,:,:,:,:,:) 
-      
-      real, allocatable :: aot_aer_fine(:,:,:)
-      real, allocatable :: aot_aer_coarse(:,:,:)
-      real, allocatable :: refl_fine(:,:,:)
-      real, allocatable :: refl_coarse(:,:,:)
+      real, allocatable :: app_refl(:,:,:,:,:,:,:)
       
       
-      !real :: aot_aer_fine (8,6,4)
-      !real :: aot_aer_coarse (8,6,5)
-      !real :: refl_fine (N_BANDS,N_OPT,N_FINE)
-      !real :: refl_coarse (N_BANDS,N_OPT,N_COARSE)
+      !real, allocatable :: aot_aer_fine(:,:,:)
+      !real, allocatable :: aot_aer_coarse(:,:,:)
+      !real, allocatable :: refl_fine(:,:,:)
+      !real, allocatable :: refl_coarse(:,:,:)
+      
+  
+      
+       real :: refl_fine (6,8,4) ! (6,6,4) for v213
+       real :: refl_coarse (6,8,5)
+       real :: OPT_ocean_Bands(8,9,2) ! optical depth of 9 models in 2 bands (0.51,0.86)
+       real :: opt_ocean_x (8,2,9) ! 8 opt x
       
       contains
       procedure ::read_lut => muri_lut_type__read_lut 
@@ -86,53 +90,55 @@ contains
       integer :: band
       character :: band_string
       integer ::  shp_6d(6)
-      integer :: i_ws(1)
+      integer :: i_ws,i_ws_a(1)
+      integer :: i_opt,i_mode
       
       if ( present(path)) then
         path_local = trim(path)
 		  
-		 ! print*, path_local
        else
-       path_local = trim('/apollo/cloud/Ancil_Data/clavrx_ancil_data/static/luts/muri/')
+       
+        path_local = trim('/home/mino/iris-home/MURI/MURI_aerosol_LUT/')
       end if 
       
     
       if ( this % is_read)  return
       
-      lut_file =  trim(path_local)//trim('/AHI_Ocean_Aerosol_LUT_RB1_v04.hdf')
-        
-       !print*,lut_file
+      
+       lut_file =  trim(path_local)//trim('/AHI_Ocean_Aerosol_LUT_RB2_v212A.hdf')
+       
+       ! the following geo parameters are the same for all bands.
+       ! (ABI band 1 is not using in over ocean retrieval) 
+        print*,lut_file
           
      
         istatus = cx_sds_read ( trim(lut_file),'Solar_Zenith_Angles', temp_2d_real)
         allocate ( this %sol(size(temp_2d_real(:,1)) ), source = temp_2d_real(:,1))
-		  
-		  
-		 
-         
+	print*,this%sol
         istatus = cx_sds_read ( trim(lut_file),'View_Zenith_Angles',temp_2d_real )
         allocate ( this %sat(size(temp_2d_real(:,1))), source = temp_2d_real(:,1))
-          
+         print*,this%sat 
         istatus = cx_sds_read ( trim(lut_file),'Relative_Azimuth_Angles', temp_2d_real)
         allocate ( this %azi(size(temp_2d_real(:,1))), source = temp_2d_real(:,1))
-       
+         print*,this%azi   
         istatus = cx_sds_read ( trim(lut_file),'Wind_Speed', temp_2d_real)
-       
        
         allocate ( this %ws(size(temp_2d_real(:,1))), source = temp_2d_real(:,1))
         
         istatus = cx_sds_read ( trim(lut_file),'AOT_at_550nm',temp_2d_real)
         ! - add scale factor  Jan 2019 AW
-        allocate ( this %aot_550nm(size(temp_2d_real(:,1))), source = temp_2d_real(:,1))
-        this % aot_550nm(:) = temp_2d_real (:,1) /100.  ! -- new scale factor with v03
-        
+        !allocate ( this %aot_550nm(size(temp_2d_real(:,1))), source = temp_2d_real(:,1))
+	
+	allocate ( this %aot_550nm(size(temp_2d_real(1,:))), source = temp_2d_real(1,:))
+        this % aot_550nm(:) = temp_2d_real (1,:) /100.  ! -- new scale factor with v03
+        print*,'aot',this%aot_550nm
         
       
           
         do band = 1,N_BANDS 
           write ( band_string, "(i1)") band
          
-          lut_file = trim(path_local)//trim('/AHI_Ocean_Aerosol_LUT_RB'//band_string//'_v04.hdf')
+          lut_file = trim(path_local)//trim('/AHI_Ocean_Aerosol_LUT_RB'//band_string//'_v212A.hdf')
   
           INQUIRE(file = lut_file,EXIST=file_exists)
           if ( .not. file_exists) then 
@@ -156,24 +162,63 @@ contains
             this % n_opt = n_opt
             n_ws = shp_6d(5)  
             n_mode = shp_6d(6) 
-            allocate ( this%app_refl(n_sol,n_sat,n_azi,N_bands,N_opt,N_mode))
+           ! allocate ( this%app_refl(n_sol,n_sat,n_azi,N_bands,N_opt,N_mode))
+	    allocate ( this%app_refl(n_sol,n_sat,n_azi,n_ws,N_bands,N_opt,N_mode))
           end if  
           this%app_refl = -999.  
         end if
-       
+        !print*,'size this%app_refl',shape(this%app_refl)
        
        !-  closest wind speed
        ! - 16 Juy 2019 AW
+       !i_ws = minloc ( abs( ws - this % ws))
+       !this%app_refl(:,:,:,band,:,:) =  0.0001 * temp_6d_real(:,:,:,:,i_ws(1),:)
        
-      
-        i_ws = minloc ( abs( ws - this % ws))
+       ! in this new version, we will interpolate 
        
-      
-       this%app_refl(:,:,:,band,:,:) =  0.0001 * temp_6d_real(:,:,:,:,i_ws(1),:)
-      
-      
-      end do
+       
+        do i_opt=1,n_opt
+	   do i_mode=1,n_mode
+	   do i_ws=1,n_ws
+       
+        this%app_refl(:,:,:,i_ws,band,i_opt,i_mode) =  0.0001 * temp_6d_real(:,:,:,i_opt,i_ws,i_mode)
+	end do
+	end do
+	end do
+        
      
+     
+           
+     ! AOT_at_B2, AOT_at_B4, AOT_at_B6
+     
+          
+	   
+	   
+           if(band .eq. 2) then
+           istatus = cx_sds_read ( trim(lut_file), 'AOT_at_B2' , temp_2d_real)
+           this% opt_ocean_x(:,1,:) =  0.001 * temp_2d_real(:,:) 
+	   end if 
+	    
+	   
+	   if(band .eq. 4) then
+           istatus = cx_sds_read ( trim(lut_file), 'AOT_at_B4' , temp_2d_real)
+           this % opt_ocean_x(:,2,:) =  0.001 * temp_2d_real(:,:) 
+	   end if  
+	   
+	   !!if(band .eq. 6) then
+           !!istatus = cx_sds_read ( trim(lut_file), 'AOT_at_B6' , temp_2d_real)
+           !!this%OPT_ocean_Bands(:,3,:) =  0.001 * temp_2d_real(:,:) 
+	   !!end if     
+       
+           
+     
+      
+       end do
+      
+       print*,'B2 refl check',this%app_refl(5,5,5,2,2,:,1)
+       print*,'B4 refl',this%app_refl(5,5,5,2,4,:,1)
+       print*,'rayleigh refl',this%app_refl(5,5,5,2,4,1,1)
+       !print*,'this % opt_ocean_x',this % opt_ocean_x
        this % is_read = .true.
       
       
@@ -203,18 +248,87 @@ contains
       
       
       
-      
-      call dcomp_interpolation_weight(size( this % sol) , sol , this % sol &
-         &, near_index =  pos_sol  )
+            do i_band=1,6
+       
+           do i_opt=1,8 ! 8
+	      do i_mode=1,4
 
-      call dcomp_interpolation_weight(size( this % sat) , sat , this % sat &
-         &, near_index =  pos_sat  )
-
-      call dcomp_interpolation_weight(size( this % azi) , azi , this % azi &
-         &, near_index = pos_azi  )    
+             
+	      
+              this % refl_fine(i_band,i_opt,i_mode)=interp4d(this%sol,this%sat &
+	                                                      ,this%azi, this%ws &
+							      ,this%app_refl(:,:,:,:,i_band,i_opt,i_mode) &
+							       ,sol,sat,azi,ws &
+							       , bounds_error = .false., FILL_VALUE = -999.)  
+							       
+		
+       
+	       end do
+	   end do
+	 end do
+	 
+          
+	  
+	  
+	    ! do i_mode=1,4
+	  
+            !if (this % refl_fine(4,1,i_mode).LT.0) then
+		
+		!print*,'sol,sat,azi,ws, why why',sol,sat,azi,ws
+		!print*,'this%ws',this%ws
+		!print*,'app refl',this%app_refl(7:8,12:13,12:13,1:2,4,1,i_mode)
+		!print*,'this % refl_fine(4,1,i_mode)',this % refl_fine(4,1,i_mode)
+	
+		!end if
+		
+	    !end do					       
+			
       
-      this % refl_fine  = this % app_refl(pos_sol,pos_sat,pos_azi,:,:,1:4) 
-      this % refl_coarse  = this % app_refl(pos_sol,pos_sat,pos_azi,:,:,5:9)
+      
+      
+      
+      
+	 
+       do i_band=1,6
+       
+           do i_opt=1,8 ! 8
+	      do i_mode=1,5
+				 
+ 	      this % refl_coarse(i_band,i_opt,i_mode)=interp4d(this%sol,this%sat &
+	                                                      ,this%azi, this%ws &
+							      ,this%app_refl(:,:,:,:,i_band,i_opt,i_mode+4) &
+							       ,sol,sat,azi,ws &
+							       , bounds_error = .false., FILL_VALUE = -999.)  	          
+	           	          
+	           
+       
+	       end do
+	   end do
+	 end do  
+	 
+	 
+	! do i_band=1,2
+	! 	do i_opt=1,8
+	!	      do i_mode=1,9
+	!	
+	! this % opt_ocean_x(i_opt,i_band,i_mode)= this%OPT_ocean_Bands(i_opt,i_mode,i_band)
+	!		end do				       
+	! 	end do
+	!end do	
+	 
+	     
+      
+!      call dcomp_interpolation_weight(size( this % sol) , sol , this % sol &
+!         &, near_index =  pos_sol  )
+
+!     call dcomp_interpolation_weight(size( this % sat) , sat , this % sat &
+!         &, near_index =  pos_sat  )
+
+!      call dcomp_interpolation_weight(size( this % azi) , azi , this % azi &
+!         &, near_index = pos_azi  )    
+      
+!      this % refl_fine  = this % app_refl(pos_sol,pos_sat,pos_azi,:,:,1:4) 
+!      this % refl_coarse  = this % app_refl(pos_sol,pos_sat,pos_azi,:,:,5:9)
 
    end subroutine muri_lut_type__sub_table
    

@@ -6,10 +6,12 @@ module muri_interface_mod
    type muri_in_array_type
       logical :: is_allocated = .false.
       integer :: dim(2)
+      integer :: dim12(2)
       real, allocatable :: sol(:,:)
       real, allocatable :: sat(:,:)
       real, allocatable :: azi(:,:)
       real, allocatable :: ref(:,:,:)
+!      real, allocatable :: ref_tmp(:,:,:)
       real, allocatable :: windspeed(:,:)
       real, allocatable :: scat_angle(:,:)
       real, allocatable :: surf_elev(:,:)
@@ -17,7 +19,9 @@ module muri_interface_mod
       real, allocatable :: longitude(:,:)
       real, allocatable :: ozone(:,:)
       real, allocatable :: h2o_conc(:,:)
+      real, allocatable :: debra_dc(:,:)
       integer, allocatable :: land_class(:,:)
+      integer, allocatable :: muri_cm(:,:)
       logical, allocatable :: do_it(:,:)
       character(len=1020) :: path
       integer :: month
@@ -34,8 +38,9 @@ module muri_interface_mod
    type muri_out_array_type
       logical :: is_allocated = .false.
       integer :: dim(2)
+      integer :: dim12(2)
       real, allocatable :: aot(:,:)
-      real, allocatable :: aot_channel(:,:,:)
+      real, allocatable :: Angstrom_Exponent(:,:)
       real, allocatable :: fmf(:,:)
       integer, allocatable :: fm_mode(:,:)
       integer, allocatable :: cm_mode(:,:)
@@ -44,6 +49,8 @@ module muri_interface_mod
       
       real, allocatable :: trans_re_default(:,:)
       real, allocatable :: trans_re(:,:)
+      real, allocatable :: err_n(:,:)
+      
       
       contains
       procedure :: allocate=>muri_out_array_type__allocate
@@ -77,8 +84,10 @@ contains
       allocate ( this % longitude(dim1,dim2))
       allocate ( this % ozone( dim1,dim2))
       allocate ( this % h2o_conc( dim1,dim2))
+      allocate ( this % debra_dc( dim1,dim2))
       allocate ( this % do_it(dim1,dim2))
       allocate ( this % land_class(dim1,dim2))
+      allocate ( this % muri_cm(dim1,dim2))
 
      
       allocate ( this % ref( 6,dim1,dim2))
@@ -91,6 +100,7 @@ contains
    subroutine muri_in_array_type__deallocate(this)
       class(muri_in_array_type) :: this
       this % dim = [0,0]
+      this % dim12=[0,0]
      
       if (allocated (this % sol) ) deallocate ( this % sol)
       if (allocated (this % sat) ) deallocate ( this % sat)
@@ -102,10 +112,12 @@ contains
       if (allocated (this % longitude) ) deallocate ( this % longitude)
       if (allocated (this % ozone) ) deallocate ( this % ozone)
       if (allocated (this % h2o_conc) ) deallocate ( this % h2o_conc)
+      if (allocated (this % debra_dc) ) deallocate ( this % debra_dc)
       if (allocated (this % do_it) ) deallocate ( this % do_it)
       
       if (allocated (this % ref) ) deallocate ( this % ref)
       if (allocated (this % land_class) ) deallocate ( this % land_class)
+      if (allocated (this % muri_cm ) ) deallocate (this % muri_cm)
     	
 		
        this % is_allocated = .false.
@@ -143,7 +155,7 @@ contains
       
       allocate ( this % aot( dim1,dim2),stat = err_all)
      
-      allocate ( this % aot_channel(6, dim1,dim2))
+      allocate ( this % Angstrom_Exponent(dim1,dim2))
       allocate ( this % fmf( dim1,dim2))
       allocate ( this % fm_mode( dim1,dim2))
       allocate ( this % cm_mode( dim1,dim2))
@@ -151,16 +163,19 @@ contains
       allocate ( this % aerosol_QA( dim1,dim2))
       allocate ( this % trans_re_default( dim1,dim2))
       allocate ( this % trans_re( dim1,dim2))
+      allocate ( this % err_n ( dim1,dim2))
       
       
       
       this % aot = -999.
+      this % Angstrom_Exponent=-999.
       this % fmf = -999.
       this % fm_mode = 0
       this % cm_mode = 0
       this % is_allocated = .true.
-      this % sediment_class = -9
-      this % aerosol_QA = -9
+      this % sediment_class = -1
+      this % aerosol_QA = -1
+      this % err_n=-99.
 
    
    end  subroutine muri_out_array_type__allocate
@@ -173,13 +188,14 @@ contains
       integer :: test
       
       this % dim = [0,0]
+      this % dim12= [0,0]
       
       
       
       if (allocated (this% aot) ) deallocate ( this % aot, STAT =  test)
      
      
-      if (allocated (this% aot_channel) ) deallocate ( this % aot_channel)
+      if (allocated (this% Angstrom_Exponent) ) deallocate ( this % Angstrom_Exponent)
       
       if (allocated (this% fmf) ) deallocate ( this % fmf)
       
@@ -191,6 +207,7 @@ contains
 
       if (allocated (this% trans_re_default) ) deallocate ( this % trans_re_default)
       if (allocated (this% trans_re) ) deallocate ( this % trans_re)
+      if (allocated (this% err_n) ) deallocate ( this % err_n)
 		
       this % is_allocated = .false.
 
@@ -200,13 +217,15 @@ contains
    subroutine muri_out_array_type__reset ( this )
       class(muri_out_array_type) :: this
       this % aot = -999.
+      this % Angstrom_Exponent=-999
       this % fmf = -999.
       this % fm_mode = 0
       this % cm_mode = 0
-      this % sediment_class = -9
-      this % aerosol_QA = -9
-      this % trans_re_default = -9
-      this % trans_re = -9		
+      this % sediment_class = -1
+      this % aerosol_QA = -1
+      this % trans_re_default = -1
+      this % trans_re = -1
+      this % err_n = -99.		
    
    
    end subroutine muri_out_array_type__reset

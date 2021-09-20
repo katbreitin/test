@@ -112,7 +112,7 @@ function muri_transmission ( sol, sat, ozone, h2o_conc)
     T_H2O(i_band)=exp(exp(H2O_K0(i_band)+B1+B2 ))
     if ( h2o_conc .le. 0 ) t_h2o(i_band) = 1.
     !print*,exp(H2O_K0(i_band)+B1+B2 )
-    t_dry ( i_band) = exp(-1.* amass(3)*TauDry(i_band))
+    t_dry ( i_band) = exp(amass(3)*TauDry(i_band))
   
   
   end do
