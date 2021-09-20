@@ -92,6 +92,7 @@ contains
       integer ::  shp_6d(6)
       integer :: i_ws,i_ws_a(1)
       integer :: i_opt,i_mode
+      logical :: file_exist
       
       if ( present(path)) then
         path_local = trim(path)
@@ -110,7 +111,13 @@ contains
        ! the following geo parameters are the same for all bands.
        ! (ABI band 1 is not using in over ocean retrieval) 
         print*,lut_file
-          
+        INQUIRE ( file = lut_file, EXIST=file_exist)  
+        
+        if ( .not. file_exist) then
+        
+          print*,'LUT file does not exist .. stopping'
+          stop
+        end if
      
         istatus = cx_sds_read ( trim(lut_file),'Solar_Zenith_Angles', temp_2d_real)
         allocate ( this %sol(size(temp_2d_real(:,1)) ), source = temp_2d_real(:,1))
