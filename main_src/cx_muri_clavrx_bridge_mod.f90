@@ -70,6 +70,7 @@ contains
       type(muri_in_array_type),save :: input
       type(muri_out_array_type),save :: output
       integer :: i 
+      logical :: first_call = .true.
       ! - AHI channels 1-6 mean in CLAVR-x/MODIS convention
        integer, parameter :: ahi_map_modis(6) = [3,4,1,2,6,7] 
       
@@ -77,21 +78,22 @@ contains
      
       ! it is more efficient to allocate only for first segment
       ! if ( count ( geo % solzen .lt. 60. .and. geo % solzen .gt. 0.  ) .LT. 100 ) return
-      
+      if (first_call ) print*,'MURI Start'
+      first_call = .false.
       ! - this checks if allocation is needed 
       call input % allocate ( dim1,dim2)
  
-      input % sol = geo % solzen
-      input % sat = geo % satzen
-      input % azi = geo % relaz
-      input % ozone = NWP_PIX%Ozone
-      input % h2o_conc = NWP_PIX%tpw
-      input % windspeed = NWP_pix%Wnd_Spd_10m
+      input % sol = geo % solzen(1:dim1,1:dim2)
+      input % sat = geo % satzen(1:dim1,1:dim2)
+      input % azi = geo % relaz(1:dim1,1:dim2)
+      input % ozone = NWP_PIX%Ozone(1:dim1,1:dim2)
+      input % h2o_conc = NWP_PIX%tpw(1:dim1,1:dim2)
+      input % windspeed = NWP_pix%Wnd_Spd_10m(1:dim1,1:dim2)
       input % month = month
       !input % sensor = Sensor%Platform_Name 
 
-      input % land_class = Sfc % Land
-      input % surf_elev = sfc % zsfc
+      input % land_class = Sfc % Land(1:dim1,1:dim2)
+      input % surf_elev = sfc % zsfc(1:dim1,1:dim2)
 
       input % path = trim(ancil_data_dir)//'static/luts/muri/'
      
@@ -105,7 +107,7 @@ contains
       
       ! - this checks if allocation is needed 
       call output % allocate(dim1,dim2)
-      print*, 'MURI MURI'
+      
       call  muri_array_loop (input, output )
       
      
