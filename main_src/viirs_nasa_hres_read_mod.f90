@@ -94,7 +94,7 @@ subroutine viirs_coef_type__read_file ( self, sensor)
    integer :: lun_id
    
   if ( self % is_set .and. trim(self % sensor) .eq. trim(sensor)) return
-  self % file = '/DATA/Ancil_Data/clavrx_ancil_data/static/clavrx_constant_files/viirs_npp_instr.dat'
+  self % file = '/apollo/cloud/Ancil_Data/clavrx_ancil_data/static/clavrx_constant_files/viirs_npp_instr.dat'
   print*,'reads it ', trim(self % file)
   lun_id = 12
   open(unit=lun_id,file=trim( self % file),status="old",position="rewind",action="read",iostat=ios0)
@@ -219,7 +219,7 @@ subroutine read_viirs_nasa_hres_data (in_config)
 
   
   do i_ch =12,16
-     
+     print*,i_ch
       if (in_config % channel_on_viirs (i_ch)) then
         write ( ch_str, '(i2.2)' ) i_ch 
         modis_ch = in_config % modis_chn_list(i_ch)
