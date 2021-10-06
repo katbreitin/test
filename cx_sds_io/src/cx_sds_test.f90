@@ -111,18 +111,20 @@ program cx_sds_test
      ! print*,
       status = cx_sds_finfo ( file_h5 , ftype, nsds, sds_name, natt, att_name )
 
-     ! print*,'number of dataset: ',nsds
-     ! do i=1,nsds
-     !   print*,i,trim(sds_name(i))
+    !  print*,'number of dataset: ',nsds
+    !  do i=1,nsds
+    !    print*,i,trim(sds_name(i))
      ! end do
      ! wait(120)
- 
-      test = cx_sds_read ( file_h5, '/All_Data/VIIRS-M16-SDR_All/Radiance', tra_2d)
+     
+      test = cx_sds_read ( file_h5, '/observation_data/M05_highres', tra_2d , start=(/100,100/),count=(/100,50/))
+      
+      !test = cx_sds_read ( file_h5, '/All_Data/VIIRS-M16-SDR_All/Radiance', tra_2d)
 
       print*,'exit h5 read'
       print*,'tra_2d:', maxval(tra_2d)
 
-      status = cx_sds_finfo ( file_h5 , ftype, nsds, sds_name, natt, att_name )
+     ! status = cx_sds_finfo ( file_h5 , ftype, nsds, sds_name, natt, att_name )
    
    end if
    stop
