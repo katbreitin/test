@@ -219,7 +219,6 @@ subroutine read_viirs_nasa_hres_data (in_config)
 
   
   do i_ch =12,16
-     print*,i_ch
       if (in_config % channel_on_viirs (i_ch)) then
         write ( ch_str, '(i2.2)' ) i_ch 
         modis_ch = in_config % modis_chn_list(i_ch)
@@ -243,7 +242,8 @@ subroutine read_viirs_nasa_hres_data (in_config)
   file_v03img = file_search(trim(in_config % path),'VNP03IMG'//trim(time_identifier)//'*.nc',cc,rel_path)
   
   if (cc .ne. 1 ) then
-    print*,'Missing VNP03IMG file'
+    print*,'Missing VNP03IMG file stopping....'
+    stop
   end if
   
   if ( first_run) print*,trim(file_v03img(1))
