@@ -96,7 +96,9 @@ contains
             do ii=0,nmem1-1
               call H5GGET_OBJ_INFO_IDX_F(root_id, '/'//trim(obj_name), ii, & 
                                  obj_name1, obj_type1, hdferr)
-                  print*,'     ',ii,' ',trim(obj_name1),obj_type1              
+                  print*,'     ',ii,' ',trim(obj_name1),obj_type1   
+                  nsds = nsds + 1
+                    
             end do                     
         end if
       end do
