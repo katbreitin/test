@@ -173,6 +173,8 @@ subroutine read_viirs_nasa_hres_data (in_config)
   
   use file_tools
   
+  use CX_READH5DATASET
+  
   type ( viirs_nasa_hres_config_type), intent (in) :: in_config
   integer :: status
   character(len=1020) :: File_Local
@@ -187,6 +189,8 @@ subroutine read_viirs_nasa_hres_data (in_config)
   character(len=15) :: time_identifier
   integer :: cc
   logical :: rel_path = .TRUE.
+  character(len=5) :: daynight
+  integer :: mband_start
   
   if ( first_run) then
     print*,'START:  READ nasa viirs hres ',trim(in_config % filename)
@@ -198,6 +202,15 @@ subroutine read_viirs_nasa_hres_data (in_config)
   ! time identifier
   time_identifier =  in_config%filename(9:23)
   
+  file_v03img = file_search(trim(in_config % path),'VNP03IMG'//trim(time_identifier)//'*.nc',cc,rel_path)
+  
+ ! status = cx_sds_read(file_v03img,'DayNightFlag',daynight)
+  
+  call H5READDATASET (trim(file_v03img(1)), &
+                                       'DayNightFlag', daynight)
+  
+ 
+ 
   call in_config % map_modis_to_viirs ()
   file_local = trim(in_config%Path)//trim(in_config%filename)
    call coef % read_file(in_config % sensor)
@@ -205,8 +218,11 @@ subroutine read_viirs_nasa_hres_data (in_config)
   start = (/1,in_config % ny_start - 1 /)
   count = (/6400,in_config % ny_end- in_config % ny_start + 1 /)
   
-  do i_ch =1,11
-   
+  Mband_start =1 
+  if (trim(daynight) .eq. 'Night') Mband_Start = 7
+  
+  do i_ch =mband_start,11
+    if (trim(daynight) .eq. 'Night' .and. (i_ch .eq. 9) .or. (i_ch .eq. 11)) cycle 
     if (in_config % channel_on_viirs (i_ch)) then
       write ( ch_str, '(i2.2)' ) i_ch 
       status=cx_sds_read(file_local,'observation_data/M'//ch_str//'_highres',out,start = start,count = count)
@@ -239,7 +255,7 @@ subroutine read_viirs_nasa_hres_data (in_config)
   
  ! print*,'++++++++++++++  TO-DO make correct VJ! file ',__FILE__,' ' ,__LINE__
   
-  file_v03img = file_search(trim(in_config % path),'VNP03IMG'//trim(time_identifier)//'*.nc',cc,rel_path)
+  
   
   if (cc .ne. 1 ) then
     print*,'Missing VNP03IMG file stopping....'
