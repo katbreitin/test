@@ -47,6 +47,7 @@ module PIXEL_ROUTINES_MOD
  use SURFACE_PROPERTIES_MOD
  use CALIBRATION_CONSTANTS_MOD
  use NBM_CLOUD_MASK_CLAVRX_BRIDGE, only: COMPUTE_TYPE_FROM_PHASE
+ use file_tools
 !use RT_UTILITIES_MOD, only: COMPUTE_CLEAR_SKY_SCATTER
 
  implicit none
@@ -695,7 +696,10 @@ end subroutine CONVERT_TIME
 ! July 2009 - made AVHRR/1 compliant
 !
 ! Author: Andrew Heidinger
-! 
+!
+! Sept 2021 Eva Borbas:  NOAA dual channel Enterprise Algorithm is added 
+!                        for Himawari-AHI and SNPP-VIIRS
+!             
 !------------------------------------------------------------------
  subroutine COMPUTE_TSFC(jmin,jmax,ABI_Use_104um_Flag)
 
@@ -705,21 +709,54 @@ end subroutine CONVERT_TIME
 
   integer:: Line_Idx
   integer:: Elem_Idx
+  integer:: Coef_Idx,RegCoef_Idx
   integer:: xnwp
   integer:: ynwp
-
+  integer:: tpwcls,angcls,dnflag 
+  integer(kind=int4):: Coef_Lun  
+  integer:: ios, ERR
+  
+  INTEGER, PARAMETER :: ncoef=6
+  INTEGER, PARAMETER :: nbtpwcls=3
+  INTEGER, PARAMETER :: nbangcls=4
+  INTEGER, PARAMETER :: nbdn=2
+  INTEGER, PARAMETER :: leng=ncoef*nbtpwcls*nbangcls*nbdn
+      
+  REAL :: Coef(ncoef)
+  REAL :: Regcoef(leng)
+                  
+  CHARACTER(LEN=200) :: Coef_Fn
+  
   real:: Rad11
   real:: Rad11_Atm
   real:: Trans11_Atm
   real:: Rad11_Atm_Dwn_Sfc
-  real:: Emiss_Sfc11
+  real:: Emiss_Sfc11, Emiss_Sfc12, Emiss_mean, Emiss_Diff
   real:: Rad11_Sfc
-  real:: B11_Sfc
+  real:: B11_Sfc, B12_Sfc, Bdiff
+  real:: Sec_Sat_Zen, Sat_Zen
+  real:: Sol_Zen
+  real:: TPW
+    
+  logical :: tsfc_onechannel = .true.
+  logical :: first_segment = .true.
 
   !------------------------------------------------------------------
   ! Loop over pixels and derive surface temp
   !------------------------------------------------------------------
 
+  
+  if (Sensor%Platform_Name == 'SNPP' .and. trim(Sensor%Sensor_Name) == 'VIIRS' ) then
+            coef_fn=trim(Ancil_Data_Dir)//'/static/sfc_data/cx_lstrc_jpss_0_viirs.bin'
+            tsfc_onechannel = .false.
+  end if
+   
+  if (Sensor%Platform_Name == 'HIM8' .and. trim(Sensor%Sensor_Name) == 'AHI ') then
+            coef_fn=trim(Ancil_Data_Dir)//'/static/sfc_data/cx_lstrc_himawari_8_ahi.bin'
+            tsfc_onechannel = .false.
+  end if
+    
+  if ( first_segment) write(*,*) 'tsfc_onechannel = ',  tsfc_onechannel
   !--- initialize
   Tsfc_Retrieved = Missing_Value_Real4
   Trad_Retrieved = Missing_Value_Real4
@@ -729,13 +766,29 @@ end subroutine CONVERT_TIME
     !--- if no ch38, abort
     if (Sensor%Chan_On_Flag_Default(38) == sym%NO) then
       return 
-    endif
-  else
+    end if
+    
+  else if (tsfc_onechannel) then
+    print*, "LST Retrieval with single channel method "
     !--- if no ch31, abort
     if (Sensor%Chan_On_Flag_Default(31) == sym%NO) then
       return 
-    endif
-  endif
+    end if
+  else
+   !--- read LST regcoefs from binary file
+    Coef_Lun=GETLUN()
+    OPEN(unit=Coef_Lun, file=TRIM(Coef_Fn),recl=leng*4, form ='unformatted', access = 'direct',status='old',action = 'read', iostat=ios)
+    IF (ios /= 0) THEN
+         
+	  write(*,*) 'ERROR: Opening LST Coef binary file', TRIM(Coef_Fn)
+          stop
+    ENDIF
+            
+    READ(unit=Coef_Lun,rec=1, iostat=ERR) Regcoef       
+    close(Coef_Lun)
+    print*, "LST Retrieval with dual channel method -EB "
+    write(*,*) 'LST Coef binary file read in', TRIM(Coef_Fn)
+  end if
 
   line_loop: do Line_Idx=jmin, jmax - jmin + 1
     element_loop: do Elem_Idx= 1, Image%Number_Of_Elements
@@ -769,7 +822,7 @@ end subroutine CONVERT_TIME
         !--- compute to a temperature
         Tsfc_Retrieved(Elem_Idx,Line_Idx) = PLANCK_TEMP_FAST(38,B11_Sfc)
 
-      else
+      elseif (tsfc_onechannel) then
 
         !--- aliases for visual convenience
         Rad11 = ch(31)%Rad_Toa(Elem_Idx,Line_Idx)
@@ -792,7 +845,54 @@ end subroutine CONVERT_TIME
 
         !--- compute to a temperature
         Tsfc_Retrieved(Elem_Idx,Line_Idx) = PLANCK_TEMP_FAST(31,B11_Sfc)
+      
+      else
+      
+        !--- aliases for visual convenience
+        !Sec_Sat_Zen=Geo%Seczen(Elem_Idx,Line_Idx)	
+        Sat_Zen=Geo%Satzen(Elem_Idx,Line_Idx)	
+        Sol_Zen=Geo%Solzen(Elem_Idx,Line_Idx)	
+	      TPW = NWP_PIX%Tpw(Elem_Idx,Line_Idx)      
+        Emiss_Sfc11 = ch(31)%Sfc_Emiss(Elem_Idx,Line_Idx)       !11 micron surface emissivity
+        Emiss_Sfc12 = ch(32)%Sfc_Emiss(Elem_Idx,Line_Idx)       !12 micron surface emissivity
+           
 
+	      ! day/night TPW and viewing angle classification -to set index 	
+	      dnflag=0
+	      if (Sol_Zen <=  85.) dnflag=1
+	
+	      if (TPW <= 1.5) tpwcls=1
+	      if (TPW > 1.5 .and. TPW <= 3.0) tpwcls=2
+	      if (TPW > 3.0) tpwcls=3
+	
+	      if ( Sat_Zen <= 25.) angcls=1
+	      if ( Sat_Zen > 25. .and. Sat_Zen <= 45.) angcls=2
+	      if ( Sat_Zen > 45. .and. Sat_Zen <= 55.) angcls=3
+	      if ( Sat_Zen > 55.) angcls=4
+
+        do Coef_Idx = 1,ncoef
+	        RegCoef_Idx = dnflag*nbtpwcls*nbangcls*ncoef + &
+                             (tpwcls-1)*nbangcls*ncoef + (angcls - 1) * ncoef + Coef_Idx
+          Coef(Coef_Idx) = Regcoef(RegCoef_Idx)
+        end do
+		
+        !--- compute emiss mean
+	      Emiss_Mean=(Emiss_Sfc11+Emiss_Sfc12)/2.
+	      Emiss_Diff=Emiss_Sfc11-Emiss_Sfc12
+	 	
+         !--- adjust for surface emissivity - this is now the black body emission at Tsfc
+ 	      B11_Sfc = ch(31)%BT_toa(Elem_Idx,Line_Idx)
+	      B12_Sfc = ch(32)%BT_toa(Elem_Idx,Line_Idx)
+	      Bdiff=B11_Sfc - B12_Sfc
+	 
+        !--- compute to a temperature
+        Tsfc_Retrieved(Elem_Idx,Line_Idx) =   Coef(1) * B11_Sfc &
+                                            + Coef(2) * Bdiff &
+                                            + Coef(3) * Emiss_Mean &
+	                                          + Coef(4) * Emiss_Mean*Bdiff &
+                                            + Coef(5) * Emiss_Diff &
+                                            + Coef(6)
+      
       endif
 
     end do element_loop
