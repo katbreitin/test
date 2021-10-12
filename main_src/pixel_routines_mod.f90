@@ -36,18 +36,68 @@
 !
 !--------------------------------------------------------------------------------------
 module PIXEL_ROUTINES_MOD
- use CONSTANTS_MOD
+ use CONSTANTS_MOD, only: &
+  missing_value_real4 &
+    , sym , int1, int2, exe_prompt  &
+    , real4, missing_value_int1, int4, mixed_obs_type, NChan_Clavrx, SOLAR_OBS_TYPE &
+    , THERMAL_OBS_TYPE, PI, terminator_reflectance_sol_zen_thresh, DTOR
+ 
  use ALGORITHM_CONSTANTS_MOD,only: glint_zen_thresh, Ref_Sfc_White_Sky_Water
- use PIXEL_COMMON_MOD
- use NUMERICAL_ROUTINES_MOD
- use NWP_COMMON_MOD
- use PLANCK_MOD
- use LAND_SFC_PROPERTIES_MOD
- use FILE_TOOLS,only:
- use SURFACE_PROPERTIES_MOD
- use CALIBRATION_CONSTANTS_MOD
+ 
+ use PIXEL_COMMON_MOD, only: &
+    sensor , image, ch, nwp_pix &
+    , cldmask, geo, sfc, nav, acha, solar_rtm &
+    , ch1_counts &
+    , ch3a_on_avhrr &
+    , bad_scan_flag, bad_pixel_mask &
+    , pixel_local_time_hours &
+    , ref_ch1_dark_composite &
+    , Aot_Qf &
+    , dcomp_mode &
+    , caliop_flag &
+    , therm_cal_1b &
+    , use_aux_flag &
+    , gap_pixel_mask &
+    , segment_valid_fraction &
+    , btd_ch20_ch38, btd_ch20_ch32, btd_ch20_ch31 &
+    , tsfc_retrieved, tsfc_qf, trad_retrieved &
+    , abi_use_104um_flag, ancil_data_dir &
+    , rsr_qf, ndvi_qf, aerosol_mode &
+    , temp_pix_array_1, cld_phase_aux &
+    , cld_phase_uncertainty &
+    , zc_opaque_cloud, tc_opaque_cloud &
+    , beta_104um_12um_tropo_rtm, beta_11um_12um_tropo_rtm, beta_11um_133um_tropo_rtm &
+    , beta_104um_133um_tropo_rtm &
+    , rsr &
+    , cld_type_aux &
+    , number_of_temporary_files &
+    , temporary_file_name, temporary_data_dir &
+    , dcomp_success_fraction , dcomp_quality_flag &
+    , Btd_Ch31_Ch32, Btd_Ch38_Ch32 &
+    , ndsi_sfc, nddi_toa, ndsi_toa, Ndvi_Sfc, Ndvi_Sfc_White_Sky,Ndvi_Toa &
+    , nonconfident_cloud_mask_fraction
+ 
+ use NUMERICAL_ROUTINES_MOD,only:
+ 
+ use NWP_COMMON_MOD,only: &
+  nwp
+ 
+ use PLANCK_MOD, only: &
+  planck_temp_fast &
+  , planck_rad_fast
+ 
+ use LAND_SFC_PROPERTIES_MOD, only: &
+  Land_grid_description &
+  , read_land_sfc_hdf
+  
+ use FILE_TOOLS,only: getlun
+ 
+ use SURFACE_PROPERTIES_MOD, only:
+ 
+ use CALIBRATION_CONSTANTS_MOD,only:
+ 
  use NBM_CLOUD_MASK_CLAVRX_BRIDGE, only: COMPUTE_TYPE_FROM_PHASE
- use file_tools
+ 
 !use RT_UTILITIES_MOD, only: COMPUTE_CLEAR_SKY_SCATTER
 
  implicit none
@@ -757,6 +807,7 @@ end subroutine CONVERT_TIME
   end if
     
   if ( first_segment) write(*,*) 'tsfc_onechannel = ',  tsfc_onechannel
+  
   !--- initialize
   Tsfc_Retrieved = Missing_Value_Real4
   Trad_Retrieved = Missing_Value_Real4
@@ -769,7 +820,7 @@ end subroutine CONVERT_TIME
     end if
     
   else if (tsfc_onechannel) then
-    print*, "LST Retrieval with single channel method "
+    if ( first_segment)  print*, 'LST Retrieval with single channel method '
     !--- if no ch31, abort
     if (Sensor%Chan_On_Flag_Default(31) == sym%NO) then
       return 
@@ -786,8 +837,10 @@ end subroutine CONVERT_TIME
             
     READ(unit=Coef_Lun,rec=1, iostat=ERR) Regcoef       
     close(Coef_Lun)
-    print*, "LST Retrieval with dual channel method -EB "
-    write(*,*) 'LST Coef binary file read in', TRIM(Coef_Fn)
+    if ( first_segment) then
+      print*, "LST Retrieval with dual channel method -EB "
+      write(*,*) 'LST Coef binary file read in', TRIM(Coef_Fn)
+    end if
   end if
 
   line_loop: do Line_Idx=jmin, jmax - jmin + 1
@@ -897,6 +950,8 @@ end subroutine CONVERT_TIME
 
     end do element_loop
   end do line_loop
+  
+  first_segment = .false.
 
 end subroutine COMPUTE_TSFC
 
@@ -1395,7 +1450,8 @@ subroutine READ_MODIS_WHITE_SKY_ALBEDO(modis_alb_id,modis_alb_str,Ref_Sfc_White_
     integer(kind=4), intent(in):: modis_alb_id
     TYPE(Land_grid_description), intent(in) :: modis_alb_str
     real(kind=real4), dimension(:,:), intent(out):: Ref_Sfc_White_Sky
-
+    integer(kind=int2), dimension(:,:),allocatable :: Two_Byte_Temp
+    
     CALL READ_LAND_SFC_HDF(modis_alb_id, modis_alb_str, Nav%Lat, &
                           Nav%Lon, Geo%Space_Mask, Two_Byte_Temp)
     Ref_Sfc_White_Sky = 0.1*Two_Byte_Temp
