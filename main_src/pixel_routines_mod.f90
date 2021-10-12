@@ -114,7 +114,6 @@ module PIXEL_ROUTINES_MOD
           QUALITY_CONTROL_ANCILLARY_DATA,   &
           READ_MODIS_WHITE_SKY_ALBEDO,      &
           COMPUTE_GLINT,                    &
-          QC_MODIS,                         &
           SET_CHAN_ON_FLAG,                 &
           DETERMINE_LEVEL1B_COMPRESSION, &
           TERM_REFL_NORM, &
@@ -208,26 +207,7 @@ module PIXEL_ROUTINES_MOD
       
    end subroutine SET_CHAN_ON_FLAG
 
-!----------------------------------------------------------------------
-! rudimentary quality check of modis
-!----------------------------------------------------------------------
-subroutine QC_MODIS(jmin,nj)
 
-  integer, intent(in):: jmin,nj
-  integer:: Line_Idx
-
-  Bad_Pixel_Mask = sym%NO
-
-  line_loop: do Line_Idx= jmin, nj- jmin + 1
-     if (maxval(ch(31)%Rad_Toa(:,Line_Idx)) < 0.0) then
-        Bad_Pixel_Mask(:,Line_Idx) = sym%YES
-     endif
-     if (maxval(Nav%Lat_1b(:,Line_Idx)) < -100.0) then
-        Bad_Pixel_Mask(:,Line_Idx) = sym%YES
-     endif
-  enddo line_loop
-
-end subroutine QC_MODIS
 
 !======================================================================
 ! Modify the space mask based the limits on lat, lon, satzen and solzen 
