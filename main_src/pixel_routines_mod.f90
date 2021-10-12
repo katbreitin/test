@@ -1430,15 +1430,20 @@ subroutine READ_MODIS_WHITE_SKY_ALBEDO(modis_alb_id,modis_alb_str,Ref_Sfc_White_
     integer(kind=4), intent(in):: modis_alb_id
     TYPE(Land_grid_description), intent(in) :: modis_alb_str
     real(kind=real4), dimension(:,:), intent(out):: Ref_Sfc_White_Sky
-    integer(kind=int2), dimension(:,:),allocatable :: Two_Byte_Temp
+    integer(kind=int2), dimension(:,:),allocatable :: raw
+    integer :: dim_arr(2)
+    
+    dim_arr = shape(nav%lat)
+    allocate ( raw(dim_arr(1),dim_arr(2)))
     
     CALL READ_LAND_SFC_HDF(modis_alb_id, modis_alb_str, Nav%Lat, &
-                          Nav%Lon, Geo%Space_Mask, Two_Byte_Temp)
-    Ref_Sfc_White_Sky = 0.1*Two_Byte_Temp
+                          Nav%Lon, Geo%Space_Mask, raw)
+                       
+    Ref_Sfc_White_Sky = 0.1* raw
 
 !---->    Ref_Sfc_White_Sky = 1.10*Ref_Sfc_White_Sky   !EMPIRICAL ADJUSTMENT
 
-    where(Two_Byte_Temp == 32767)
+    where(raw == 32767)
              Ref_Sfc_White_Sky = Missing_Value_Real4
     endwhere
 
