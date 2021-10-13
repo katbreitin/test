@@ -94,7 +94,7 @@ subroutine viirs_coef_type__read_file ( self, sensor)
    integer :: lun_id
    
   if ( self % is_set .and. trim(self % sensor) .eq. trim(sensor)) return
-  self % file = '/apollo/cloud/Ancil_Data/clavrx_ancil_data/static/clavrx_constant_files/viirs_npp_instr.dat'
+  !self % file = '/apollo/cloud/Ancil_Data/clavrx_ancil_data/static/clavrx_constant_files/viirs_npp_instr.dat'
   print*,'reads it ', trim(self % file)
   lun_id = 12
   open(unit=lun_id,file=trim( self % file),status="old",position="rewind",action="read",iostat=ios0)
@@ -162,7 +162,7 @@ subroutine read_viirs_nasa_hres_data (in_config)
          , cx_sds_read &
          , MAXNCNAM
   
-  use Pixel_Common_Mod, only : ch, image , nav, geo 
+  use Pixel_Common_Mod, only : ch, image , nav, geo , ancil_data_dir
   
   use VIEWING_GEOMETRY_MOD, only: &
         GLINT_ANGLE &
@@ -213,6 +213,7 @@ subroutine read_viirs_nasa_hres_data (in_config)
  
   call in_config % map_modis_to_viirs ()
   file_local = trim(in_config%Path)//trim(in_config%filename)
+   coef % file = trim(Ancil_Data_dir)//'static/clavrx_constant_files/viirs_npp_instr.dat'
    call coef % read_file(in_config % sensor)
   
   start = (/1,in_config % ny_start - 1 /)
@@ -227,7 +228,7 @@ subroutine read_viirs_nasa_hres_data (in_config)
       write ( ch_str, '(i2.2)' ) i_ch 
       status=cx_sds_read(file_local,'observation_data/M'//ch_str//'_highres',out,start = start,count = count)
       
-      ch(in_config % modis_chn_list(i_ch)) % ref_toa(:,1:count(2)) = out
+      ch(in_config % modis_chn_list(i_ch)) % ref_toa(:,1:count(2)) = 100.* out
       call update_bowtie(in_config % ny_start, ch(in_config % modis_chn_list(i_ch)) % ref_toa(:,1:count(2)))
      
     end if
