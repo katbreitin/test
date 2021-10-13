@@ -1537,7 +1537,7 @@ module SENSOR_MOD
       
       
             !---  VIIRS-NASA SNPP HIGH RES
-      if (index(Image%Level1b_Name, 'VNP02MOD') > 0 .or. &
+      if (index(Image%Level1b_Name, 'VNP02MOD') > 0 .and. &
           index(Image%Level1b_Name, 'highres') > 0) then
          Sensor%Sensor_Name = 'VIIRS-NASA-HRES'
          Sensor%Spatial_Resolution_Meters = 375
