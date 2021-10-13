@@ -779,6 +779,7 @@ end subroutine CONVERT_TIME
   if (Sensor%Platform_Name == 'SNPP' .and. trim(Sensor%Sensor_Name) == 'VIIRS' ) then
             coef_fn=trim(Ancil_Data_Dir)//'/static/sfc_data/cx_lstrc_jpss_0_viirs.bin'
             tsfc_onechannel = .false.
+            tsfc_onechannel = .true. ! VIIRS coefs are still off AW 13 Oct.2021
   end if
    
   if (Sensor%Platform_Name == 'HIM8' .and. trim(Sensor%Sensor_Name) == 'AHI ') then
