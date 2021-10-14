@@ -77,7 +77,7 @@ contains
        integer, parameter :: abi_map_modis(6) = [3,1,2,26,6,7] 
      
       ! it is more efficient to allocate only for first segment
-      ! if ( count ( geo % solzen .lt. 60. .and. geo % solzen .gt. 0.  ) .LT. 100 ) return
+      if ( count ( (geo % solzen .lt. 60.) .and. (geo % solzen .gt. 0.)  ) .LT. 100 ) return
       if (first_call ) print*,'MURI Start'
       first_call = .false.
       ! - this checks if allocation is needed 
@@ -98,8 +98,14 @@ contains
       input % path = trim(ancil_data_dir)//'static/luts/muri/'
      
       do i=1,6 
-        
-         input % ref(i,:,:) = ch(ahi_map_modis(i))%ref_toa(1:dim1,1:dim2)/100.
+          if ( .not. allocated(ch(ahi_map_modis(i))%ref_toa)) then
+            if (first_call ) then
+              print*,'Not all MURI channels are allocated..'
+              print*,'no MURI'
+            end if
+            return
+          end if
+          input % ref(i,:,:) = ch(ahi_map_modis(i))%ref_toa(1:dim1,1:dim2)/100.
         
       end do
        
