@@ -141,7 +141,10 @@ contains
         list = chn
         sensor_string = 'sentinel3_2_slstr'
         
-            
+    case('FY3-D')
+        Chn_List(20:32) = [ 20,-1,-1,21,-1,-1,-1,-1, 22,23,-1,24,25 ]
+        list = chn
+        sensor_string = 'fy3_4_mersi2'   
    
     case default
       if (index(sensor,'AVHRR')  .gt. 0) then
@@ -195,6 +198,8 @@ contains
         end if
         
       else if  (index(sensor,'GOES-') .gt. 0)  then
+        rttov_version_string = '8'
+        
         chn_list(1) = 1
         chn_list(20) = 2
         chn_list(27) = 3
@@ -204,6 +209,7 @@ contains
         sensor_string = 'goes_'//sensor(6:7)//'_imager'
         if ( sensor(6:6) .ne. '1' ) then
            sensor_string = 'goes_'//sensor(6:6)//'_imager'
+           rttov_version_string = '7'
         end if   
         list = chn_list(chn)
        
