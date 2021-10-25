@@ -162,9 +162,9 @@ contains
         
         case default
         
-          chn_list(20) = 1
-          chn_list(31) = 2
-          chn_list(32) = 3
+          chn_list(20) = 3
+          chn_list(31) = 4
+          chn_list(32) = 5
         end select 
         
         if (index(sensor,'AVHRR-METOP')  .gt. 0) then
@@ -172,23 +172,29 @@ contains
           chn_list(20) = 4
           chn_list(31) = 5
           chn_list(32) = 6
-          
         end if
         
-        list = chn_list(chn)
+        
         sensor_string = 'noaa_'//sensor(11:12)//'_avhrr'
        
         if ( index(sensor, 'NOAA0' ) .gt. 0 ) then
           sensor_string = 'noaa_'//sensor(12:12)//'_avhrr'
           rttov_version_string = '8'
+           chn_list(20) = 1
+          chn_list(31) = 2
+          chn_list(32) = 3
         end if
-        
+        list = chn_list(chn)
        
         if (index(sensor,'AVHRR-METOP')  .gt. 0 ) then
           sensor_string = 'metop_'//metop_nr//'_avhrr'
         end if
         if (index(sensor,'AVHRR-TIROSN') .gt. 0) then 
           sensor_string = 'noaa_5_avhrr'
+            rttov_version_string = '8'
+           chn_list(20) = 1
+          chn_list(31) = 2
+          chn_list(32) = 3
         end if
         
       else if (index(sensor,'HIRS') .gt. 0) then 
