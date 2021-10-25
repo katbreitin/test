@@ -143,7 +143,7 @@ contains
         
     case('FY3-D')
         Chn_List(20:32) = [ 20,-1,-1,21,-1,-1,-1,-1, 22,23,-1,24,25 ]
-        list = chn
+        list = chn_list(chn)
         sensor_string = 'fy3_4_mersi2'   
    
     case default
