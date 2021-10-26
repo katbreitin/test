@@ -43,7 +43,9 @@ module GFS_HDF_MOD
   use CX_SCIENCE_TOOLS_MOD, only: wind_speed, wind_direction, vapor, vapor_ice
   
   use NWP_COMMON_MOD
+
   use CX_HDF4_MOD
+
   use CLAVRX_MESSAGE_MOD, only: mesg, verb_lev
 
   implicit none
@@ -52,7 +54,7 @@ module GFS_HDF_MOD
  
   integer, parameter :: GFS_IDENT = 7
 
-  real (kind=real4), parameter, private :: Missing_Gfs = 9.999E+20
+  real (kind=real4), parameter, private :: Missing_GFS = 9.999E+20
 
   character(len=11), parameter:: MODULE_PROMPT = "GFS_MODULE:"
   contains
