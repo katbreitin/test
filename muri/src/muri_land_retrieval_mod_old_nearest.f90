@@ -10,7 +10,6 @@ module muri_land_retrieval_mod
       land_lut
    
    use lib_array, only:interp1d
-   use aw_lib_array, only: interp3d 
 	
    
 	
@@ -37,7 +36,7 @@ contains
       integer :: n_opt ,i_size
       integer, parameter :: N_FMR=11
       integer, parameter :: N_BANDS = 3
-      integer, parameter :: i_band2p3=3 ! the 3rd index is 2p3 2.3 um wavelengths
+		integer, parameter :: i_band2p3=3 ! the 3rd index is 2p3 2.3 um wavelengths
       real :: fmr
       real, allocatable:: refl_toa (:,:,:)
       
@@ -52,11 +51,8 @@ contains
       real :: n2
       real :: err(N_FMR,3)
       real :: err_640 (N_FMR)
-      real :: opt_0470(8),opt_0640(8),opt_2300(8) ! NOPT
-      real :: opt_b1,opt_b3
-      real :: wavb1,wavb3
 		
-      real :: aod_nleta_temp
+		real :: aod_nleta_temp
       real :: err_nleta_temp
       real :: fmf_nleta_temp
       integer :: idx(1), idx2(2)
@@ -88,17 +84,13 @@ contains
       REAL :: Fd_NL(NLTAU,NLWAV,NLSIZE), T_NL(NLTAU,NLWAV,NLSIZE)
       REAL :: SBAR_NL(NLTAU,NLWAV,NLSIZE),OPTH_NL(NLTAU,NLWAV,NLSIZE)
       REAL :: REF_RAY_NL(NLWAV)
-      real :: WAV_NL(NLWAV),EQWAV_NL(NLWAV)
+		real :: WAV_NL(NLWAV),EQWAV_NL(NLWAV)
       
       
       integer :: ii
 		
-		wavb1=470
-		wavb3=640
-		
 		WAV_NL=(/0.47, 0.64, 2.3/)
 		band=(/1,3,6/)
-		
 		MHGHT=inp % surf_elev
       MHGHT=MHGHT/1000
        
@@ -109,49 +101,36 @@ contains
 		
       err_nleta_temp = huge(err_nleta_temp)
       err_640 = huge(err_640)
-      aod_nleta_temp=-99.00
-      
-      
 	
 		!********************************************************
 		! surface reflectance parameter to estimate 
 		! this part can be modified to subroutine or function later
 		
-		 !MVIB6B4=(inp % rfl(4)-inp % rfl(6))/(inp % rfl(4)+inp % rfl(6))
-                 !MVI=(0.23*MVIB6B4**2)+(0.67*MVIB6B4)+0.008
-		 
-		 MVI=(inp % rfl(4)-inp % rfl(6))/(inp % rfl(4)+inp % rfl(6))
-                 
+		 MVIB6B4=(inp % rfl(4)-inp % rfl(6))/(inp % rfl(4)+inp % rfl(6))
+       MVI=(0.23*MVIB6B4**2)+(0.67*MVIB6B4)+0.008
 		 
 		 yint466=0.005
-		 slope466=0.49
-		 
-		 ! yint644=0.0 to  add yint644=0.025
+			slope466=0.49
   
-                if(MVI.gt.0.75) then
-   		yint644=0.025 
-		slope644=0.58
+       if(MVI.gt.0.75) then
+   		yint644=0.0
+			slope644=0.58
 			
  		else if(MVI.lt.0.25) then
-   		yint644=0.025 
-		slope644=0.48
+   		yint644=0.0
+			slope644=0.48
 			
  		else
-   		yint644=0.025
-		slope644=0.48+0.2*(MVI-0.25) 
+   		yint644=0.0
+			slope644=0.48+0.2*(MVI-0.25) 
    		
  		end if
 		!print*, 'slopes 644 should be between 0.48 to 0.58 :',slope644
-		
-                
+
  		yint644=yint644-0.00025*inp%scat_angle+0.033684
- 		slope644=slope644+0.002*inp%scat_angle-0.27 +0.025 ! increase slope 0.025
-		
+ 		slope644=slope644+0.002*inp%scat_angle-0.27
 	  ! print*,'scatteringh angle',inp%scat_angle
-          !print*, 'final slopes 644  :',slope644
-	  
-	  
-	  
+      !print*, 'final slopes 644  :',slope644
 		
 		! why we need these parameter : slope_644, yint644, slope_466, yint466
 		! becasue ==>
@@ -160,11 +139,10 @@ contains
 		! Rho_surf_466=slope_466*Rho_surf644 + yint466
 		
 		!********************************************************
-        
-           call land_lut % read_land_lut ( inp % sol,inp%sat,inp%azi, path = inp % path)
+   
+      call land_lut % read_land_lut ( inp % sol,inp%sat,inp%azi, path = inp % path)
 	
-           call land_lut % sub_land_table (inp % sol,inp%sat,inp%azi,inp%lat, inp%lon, inp%month)
-     
+		call land_lut % sub_land_table (inp % sol,inp%sat,inp%azi,inp%lat, inp%lon, inp%month)
 	!	print*,inp%month
 	!	print*,'shape of atmospheric path reflectance after sol,sat,azi selected nearest index', shape(land_lut % path_refl_x)
 		
@@ -175,12 +153,12 @@ contains
 		T_NL=land_lut % Tup_x
 		SBAR_NL=land_lut % Sbar_x
 		
-		OPTH_NL=land_lut % opt_land_x ! will use / modidy later
+!		OPTH_NL(iopt,:,i_size)=land_lut % opt_x! will use / modidy later
 
 		!*********************
 		! land surface elevation correction 
 
-		call INT_ELEV(EQWAV_NL,INT_NL,Fd_NL,T_NL,OPTH_NL, &
+		call INT_ELEV(EQWAV_NL,INT_NL,Fd_NL,T_NL, &
                  SBAR_NL,REF_RAY_NL,MHGHT)
 		
 	
@@ -229,21 +207,10 @@ contains
 		  
 		  RHO_surf_2p3(i_opt,i_size)=P1/((P1*SBAR_NL(i_opt,i_band2p3,i_size))+P2);
 		  
-		  if (RHO_surf_2p3(i_opt,i_size).le.0.01)then
-		   RHO_surf_2p3(i_opt,i_size)=0.01;
+		  if (RHO_surf_2p3(i_opt,i_size).le.0.000005)then
+		   RHO_surf_2p3(i_opt,i_size)=0.000005;
 		  end if
-		  
-		 
-		  
-		  
-		  
-                 ! bright surface  
-	          if(inp % rfl(6).gt.0.18)then
-	          slope644=slope644+0.025
-	          slope466=slope466+0.025
-	          end if
-	    
-
+      
 		  
       ! Estiamte surface reflectance using Red/IR and Blue/Red surface correlation
       	RHO_surf_644=slope644*RHO_surf_2p3(i_opt,i_size)+yint644;
@@ -270,8 +237,6 @@ contains
 		 
 		end do
 		end do
-		
-          	
 	
             ! loop over fine mode ratio
             do i_fmr = 1,N_FMR
@@ -282,26 +247,16 @@ contains
                   do i_cha = 1,n_BANDS
                      refl_toa (i_opt,i_fmr,i_cha) = fmr * lut_toa_ref(i_opt,i_cha,1) &
                         & + (1 - fmr) * lut_toa_ref(i_opt,i_cha,2) 
-			
-		
-			
                         
                   end do
                end do  
               
-	        
-	      
-	      
                !- reference channel is #1
                refl_reference = refl_toa(:,i_fmr,CHANNEL_REFERENCE)
                
-              !print*,'refl_reference',refl_reference 
+               !print*,'refl_reference',refl_reference 
 					
- 	      !print*,'input band 1',inp % rfl(CHANNEL_REFERENCE)
-	      !print*,' AOT array', land_lut % aot_550nm
-	      
-	      
-	      !! interpolated in log scale 
+					!print*,'input band 1',inp % rfl(CHANNEL_REFERENCE)
 					 
                aot_temp(i_fmr) = interp1d(refl_reference &
                   , land_lut % aot_550nm &
@@ -310,29 +265,25 @@ contains
                   , FILL_VALUE = -999.)
                   
                   
-              ! print*,'aot',aot_temp(i_fmr)
-               
+               ! print*,i_fm,i_cm, i_fmr,aot_temp(i_fmr)
+               ! print*,'refl_ch4: ',refl_ch4
+               ! print*,inp % rfl(4)
                 
                 
                   
             end do
 				
 				
-	   !print*,'aot_temp',aot_temp
+				!print*,'aot_temp',aot_temp
 				
 				
             
              do i_cha = 1,3
                   do i_fmr =1,11
-		  
                      refl_corrsp(i_fmr,i_cha) = interp1d(land_lut % aot_550nm,refl_toa(:,i_fmr,i_cha) &
                         , aot_temp(i_fmr),bounds_error = .false., FILL_VALUE = -999. )
-			
                       !  print*,refl_toa(:,i_fmr,i_cha), aot_temp(i_fmr)
-                      !  print*,'refl_corrsp: ',i_cha,i_fmr, refl_corrsp(i_fmr,i_cha), inp % rfl(i_cha)
-		      
-		      
-	
+                    !  print*,'refl_corrsp: ',i_cha,i_fmr, refl_corrsp(i_fmr,i_cha), inp % rfl(i_cha)
                   end do
                  
                end do
@@ -352,8 +303,8 @@ contains
             end do
 				
 				
-	   !  Determine error at 644nm 
-	   !   err_sqrt to err_640 since over land use differntely 
+				!  Determine error at 644nm 
+				!   err_sqrt to err_640 since over land use differntely 
 				
                err_640 = err(:,2)
              
@@ -365,7 +316,7 @@ contains
 			
             idx=minloc(abs(err_640))
 				
-	   !print*,'idx', idx 
+				!print*,'idx', idx 
            ! print*,'aot',aot_temp(idx(1))
             aod_nleta_temp = aot_temp(idx(1))
             err_nleta_temp = val
@@ -378,8 +329,7 @@ contains
       
       !val2 = minval(err_nleta_temp)
       !idx2 = minloc(err_nleta_temp)
-	
-      
+		
       
       !- once find a good match between fwd and measurment give output
       out% aot = aod_nleta_temp
@@ -388,22 +338,9 @@ contains
       ! print*,fmf_nleta_temp
       !stop
       out % fmf = fmf_nleta_temp
-      out% err_n = val
-      
-       	
-	opt_0470=fmf_nleta_temp * OPTH_NL(:,1,1)+(1-fmf_nleta_temp) * OPTH_NL(:,1,2)
-	opt_0640=fmf_nleta_temp * OPTH_NL(:,2,1)+(1-fmf_nleta_temp) * OPTH_NL(:,2,2)
-     !	opt_2300=fmf_nleta_temp * OPTH_NL(:,3,1)+(1-fmf_nleta_temp) * OPTH_NL(:,3,2)
-     
-	
-		   
-       opt_b1 = interp1d(land_lut % aot_550nm,opt_0470 &
-                        , aod_nleta_temp,bounds_error = .false., FILL_VALUE = -999. )
-      
-       opt_b3 = interp1d(land_lut % aot_550nm,opt_0640 &
-                        , aod_nleta_temp,bounds_error = .false., FILL_VALUE = -999. )
-			
-       out% angstrom_exponent= - (log(opt_b1/opt_b3)/log(wavb1/wavb3))
+      do i_cha =1,6 
+         !out% aot_channel(i_cha) = aod_allbands(idx2(1),idx2(2),i_cha)
+      end do
 		
 		
       
@@ -411,7 +348,7 @@ contains
 	
 	!!**********************************************************************
 		
-      subroutine INT_ELEV(EQWAV_NL,INT_NL,Fd_NL,T_NL,OPTH_NL,&
+      subroutine INT_ELEV(EQWAV_NL,INT_NL,Fd_NL,T_NL,&
                  SBAR_NL,REF_RAY_NL,MHGHT)
 	  
 !DESCRIPTION:  Subroutine INTELEV interpolates the lookup
@@ -471,7 +408,7 @@ contains
 		
       REAL :: INT_NL9(NLTAU,NLWAV,NLSIZE)
       REAL :: Fd_NL9(NLTAU,NLWAV,NLSIZE), T_NL9(NLTAU,NLWAV,NLSIZE)
-      REAL :: SBAR_NL9(NLTAU,NLWAV,NLSIZE),OPTH_NL9(NLTAU,NLWAV,NLSIZE)
+      REAL :: SBAR_NL9(NLTAU,NLWAV,NLSIZE)!,OPTH_NL9(NLTAU,NLWAV,NLSIZE)
 
       REAL :: ROD_1013(NLWAV)
       REAL :: p, expfactor
@@ -598,18 +535,18 @@ contains
                 Y(LL)=ALOG(INT_NL(ITAU,JWAV,ISIZE))
 !                W(LL)=ALOG(FdT_NL(ITAU,JWAV,ISIZE))
                 Z(LL)=ALOG(SBAR_NL(ITAU,JWAV,ISIZE))
-                V(LL)=OPTH_NL(ITAU,JWAV,ISIZE)
+!                V(LL)=OPTH_NL(ITAU,JWAV,ISIZE)
                 U(LL)=ALOG(Fd_NL(ITAU,JWAV,ISIZE))
                 T(LL)=ALOG(T_NL(ITAU,JWAV,ISIZE))
-                IF (OPTH_NL(ITAU,JWAV,ISIZE) .GT. 0.) THEN
-                  V(LL)=ALOG(OPTH_NL(ITAU,JWAV,ISIZE))
-                ENDIF
+!                IF (OPTH_NL(ITAU,JWAV,ISIZE) .GT. 0.) THEN
+!                  V(LL)=ALOG(OPTH_NL(ITAU,JWAV,ISIZE))
+!                ENDIF
 60            CONTINUE
 
               CALL INTERP_EXTRAP(LL,ALOG(EQWAV_NL(IWAV)),X,Y,Y1,1)
 !             CALL INTERP_EXTRAP(LL,ALOG(EQWAV_NL(IWAV)),X,W,W1,1)
               CALL INTERP_EXTRAP(LL,ALOG(EQWAV_NL(IWAV)),X,Z,Z1,1)
-              CALL INTERP_EXTRAP(LL,ALOG(EQWAV_NL(IWAV)),X,V,V1,1)
+!              CALL INTERP_EXTRAP(LL,ALOG(EQWAV_NL(IWAV)),X,V,V1,1)
               CALL INTERP_EXTRAP(LL,ALOG(EQWAV_NL(IWAV)),X,U,U1,1)
               CALL INTERP_EXTRAP(LL,ALOG(EQWAV_NL(IWAV)),X,T,T1,1)
 
@@ -618,10 +555,10 @@ contains
               Fd_NL9(ITAU,IWAV,ISIZE) = EXP(U1)
               T_NL9(ITAU,IWAV,ISIZE) = EXP(T1)
               SBAR_NL9(ITAU,IWAV,ISIZE) = EXP(Z1)
-              OPTH_NL9(ITAU,IWAV,ISIZE) = EXP(V1)
-              IF (V1 .EQ. 0.) THEN
-                OPTH_NL9(ITAU,IWAV,ISIZE) = V1
-              ENDIF
+!             OPTH_NL9(ITAU,IWAV,ISIZE) = EXP(V1)
+!              IF (V1 .EQ. 0.) THEN
+!                OPTH_NL9(ITAU,IWAV,ISIZE) = V1
+!              ENDIF
 
 
 25          CONTINUE
@@ -636,7 +573,7 @@ contains
               Fd_NL(ITAU,IWAV,ISIZE) = Fd_NL9(ITAU,IWAV,ISIZE)
               T_NL(ITAU,IWAV,ISIZE) = T_NL9(ITAU,IWAV,ISIZE)
               SBAR_NL(ITAU,IWAV,ISIZE) = SBAR_NL9(ITAU,IWAV,ISIZE)
-              OPTH_NL(ITAU,IWAV,ISIZE) = OPTH_NL9(ITAU,IWAV,ISIZE)
+!              OPTH_NL(ITAU,IWAV,ISIZE) = OPTH_NL9(ITAU,IWAV,ISIZE)
             END DO
             REF_RAY_NL(IWAV) = INT_NL(1,IWAV,ISIZE)
           END DO

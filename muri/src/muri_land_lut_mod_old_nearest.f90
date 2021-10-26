@@ -9,9 +9,6 @@ module muri_land_lut_mod
       ! cx_sds_finfo &
       ! , cx_sds_read !, cx_sds_read_6d_real
       
-    use lib_array, only: interp1d
-    use aw_lib_array, only: interp3d 
-      
    implicit none 
    
    integer, parameter :: N_BANDS = 3
@@ -55,7 +52,7 @@ module muri_land_lut_mod
       real, allocatable :: T_dn(:,:,:,:,:,:)  ! downward transmission
       real, allocatable :: S_bar(:,:,:,:,:,:) ! atmospheric spherical abledo
       
-      real, allocatable :: OPT_land_Bands(:,:,:) ! optical depth of 3 bands (0.47,0.64,2.3)
+!		real, allocatable :: opt(:,:,:,:,:,:) ! optical depth ( will modify later)
 		
 		
       real, allocatable :: aot_aer_fine(:,:,:)
@@ -63,20 +60,21 @@ module muri_land_lut_mod
       real, allocatable :: refl_fine(:,:,:)
       real, allocatable :: refl_coarse(:,:,:)
 		
-!     real, allocatable :: path_refl_x(:,:,:) !  (band=3, opt=8, size=2) atmospheric path reflectance 
-!     real, allocatable :: Tup_x(:,:,:)  ! (band=3, opt=8, size=2)  upward transmission
-!     real, allocatable :: Tdn_x(:,:,:)  ! (band=3, opt=8, size=2) downward transmission
-!     real, allocatable :: Sbar_x(:,:,:) ! (band=3, opt=8, size=2) atmospheric spherical abledo
-
-      real   :: path_refl_x(8,3,2) !  (band=3, opt=8, size=2) atmospheric path reflectance 
-      real   :: Tup_x(8,3,2)  ! (band=3, opt=8, size=2)  upward transmission
-      real   :: Tdn_x(8,3,2)  ! (band=3, opt=8, size=2) downward transmission
-      real   :: Sbar_x(8,3,2) ! (band=3, opt=8, size=2) atmospheric spherical abledo
-      real   :: opt_land_x(8,3,2)
+		real, allocatable :: path_refl_x(:,:,:) !  (band=3, opt=8, size=2) atmospheric path reflectance 
+		real, allocatable :: Tup_x(:,:,:)  ! (band=3, opt=8, size=2)  upward transmission
+		real, allocatable :: Tdn_x(:,:,:)  ! (band=3, opt=8, size=2) downward transmission
+		real, allocatable :: Sbar_x(:,:,:) ! (band=3, opt=8, size=2) atmospheric spherical abledo
 		
-      integer :: land_fine_mode
+		integer :: land_fine_mode
 		
 	
+      
+      
+      !real :: aot_aer_fine (8,6,4)
+      !real :: aot_aer_coarse (8,6,5)
+      !real :: refl_fine (N_BANDS,N_OPT,N_FINE)
+      !real :: refl_coarse (N_BANDS,N_OPT,N_COARSE)
+      
       contains
 
       procedure ::read_land_lut => muri_land_lut_type_read_lut 
@@ -117,19 +115,19 @@ contains
       real,allocatable :: sat_zen_ang(:,:)
       logical :: file_exists
       real, allocatable :: temp_2d_real(:,:)
-      real, allocatable :: temp_3d_real(:,:,:) ! to read aerosol types map
+		real, allocatable :: temp_3d_real(:,:,:) ! to read aerosol types map
       real, allocatable :: temp_5d_real(:,:,:,:,:) ! over land LUT dimension is 5D
       integer :: band
       character :: band_string
       integer ::  shp_5d(5)
       integer :: band_arr(3) ! 3 bands 1,3,6
-		  integer :: fine_mode_aerosol_selection
+		integer :: fine_mode_aerosol_selection
 		
-		  band_arr(:)=(/1,3,6/)
+		band_arr(:)=(/1,3,6/)
       
       if ( present(path)) then
         path_local = trim(path)
-      else
+       else
        !path_local = trim('/apollo/cloud/Ancil_Data/clavrx_ancil_data/static/luts/muri/')
         path_local = trim('/apollo/cloud/scratch/mino/MURI_aerosol_LUT/')
       end if 
@@ -138,35 +136,60 @@ contains
 		  
       if ( this % is_read)  return
       
-        land_lut_file =  trim(path_local)//trim('/AHI_Land_Aerosol_LUT_RB1_v212A.hdf')
+        land_lut_file =  trim(path_local)//trim('/AHI_Land_Aerosol_LUT_B1_v01.hdf')
         
+        !print*,land_lut_file
+		  
+		 
         istatus = cx_sds_read ( trim(land_lut_file),'Solar_Zenith_Angles', temp_2d_real)
         allocate ( this %sol(size(temp_2d_real(:,1)) ), source = temp_2d_real(:,1))
-		            
+		   
+         
         istatus = cx_sds_read ( trim(land_lut_file),'View_Zenith_Angles',temp_2d_real )
         allocate ( this %sat(size(temp_2d_real(:,1))), source = temp_2d_real(:,1))
           
         istatus = cx_sds_read ( trim(land_lut_file),'Relative_Azimuth_Angles', temp_2d_real)
         allocate ( this %azi(size(temp_2d_real(:,1))), source = temp_2d_real(:,1))
-       ! print*,'azi',this %azi
+        this%azi(27)=130
+	this%azi(28)=135
+	this%azi(29)=140
+	this%azi(30)=145
+	this%azi(31)=150
+	this%azi(32)=155
+	this%azi(33)=160
+	this%azi(34)=165
+	this%azi(35)=170
+	this%azi(36)=171
+	this%azi(37)=172
+	this%azi(38)=173
+	this%azi(39)=174
+	this%azi(40)=175
+	this%azi(41)=176
+	this%azi(42)=177
+	this%azi(43)=178
+	this%azi(44)=179
+	this%azi(45)=180
         
         istatus = cx_sds_read ( trim(land_lut_file),'AOT_at_550nm',temp_2d_real)
         ! - add scale factor  Jan 2019 AW
-        allocate ( this %aot_550nm(size(temp_2d_real(1,:))), source = temp_2d_real(1,:))
-        this % aot_550nm(:) = temp_2d_real (1,:) /100.  ! -- new scale factor with v03
-			  
-       ! Aerosol map ( longitude , latitude , season)  
-	      istatus = cx_sds_read ( trim(land_lut_file),'Aerosol_land_map', temp_3d_real)
+        allocate ( this %aot_550nm(size(temp_2d_real(:,1))), source = temp_2d_real(:,1))
+        this % aot_550nm(:) = temp_2d_real (:,1) /10.  ! -- new scale factor with v03
+		  
+		  ! Aerosol map ( longitude , latitude , season)  
+		  istatus = cx_sds_read ( trim(land_lut_file),'Aerosol_land_map', temp_3d_real)
 		 
-	      !print*,shape(temp_3d_real)
+		  !print*,shape(temp_3d_real)
 		  
         allocate ( this %aerosol_land_map(4,180,360))
-	      this %aerosol_land_map(:,:,:)=temp_3d_real
- 
+	     this %aerosol_land_map(:,:,:)=temp_3d_real
+        
+        
+      
+          
         do band = 1,N_BANDS 
           write ( band_string, "(i1)") band_arr(band)
          
-          land_lut_file = trim(path_local)//trim('/AHI_Land_Aerosol_LUT_RB'//band_string//'_v212A.hdf')
+          land_lut_file = trim(path_local)//trim('/AHI_Land_Aerosol_LUT_B'//band_string//'_v01.hdf')
   
           INQUIRE(file = land_lut_file,EXIST=file_exists)
           if ( .not. file_exists) then 
@@ -174,85 +197,73 @@ contains
             print*,'CLAVR-x was searching at ',land_lut_file
             stop      
           end if
-
+			 
+	
         
-          ! Atmospheric Path reflctance 
+      ! Atmospheric Path reflctance 
           istatus = cx_sds_read ( trim(land_lut_file), 'Path_Reflectance_land' , temp_5d_real)
        
         
-          if ( band .eq. 1) then
-            if ( .not. allocated( this%path_refl)) then
-              shp_5d = shape(temp_5d_real)
-              n_sol=  shp_5d(1) 
-              n_sat = shp_5d(2) 
-              n_azi = shp_5d(3) 
-              n_opt = shp_5d(4) 
-              this % n_opt = n_opt 
-              n_mode = shp_5d(5) 
-              allocate ( this%path_refl(n_sol,n_sat,n_azi,N_opt,N_bands,N_mode))
-            end if  
-            this%path_refl = -999.  
-          end if
+        if ( band .eq. 1) then
+          if ( .not. allocated( this%path_refl)) then
+            shp_5d = shape(temp_5d_real)
+            n_sol=  shp_5d(1) 
+            n_sat = shp_5d(2) 
+            n_azi = shp_5d(3) 
+            n_opt = shp_5d(4) 
+            this % n_opt = n_opt 
+            n_mode = shp_5d(5) 
+            allocate ( this%path_refl(n_sol,n_sat,n_azi,N_opt,N_bands,N_mode))
+          end if  
+          this%path_refl = -999.  
+        end if
          
-          !print*,shape(temp_5d_real)
+       !print*,shape(temp_5d_real)
 		 
-          this%path_refl(:,:,:,:,band,:) =  0.0001 * temp_5d_real(:,:,:,:,:)
+       this%path_refl(:,:,:,:,band,:) =  0.0001 * temp_5d_real(:,:,:,:,:)
 		 
 		 
-          ! Transmission up T_up 
+		 ! Transmission up T_up 
           istatus = cx_sds_read ( trim(land_lut_file), 'Total_Scat_Trans_Up_land' , temp_5d_real)
      
-          if ( band .eq. 1) then
-            allocate ( this%T_up(n_sol,n_sat,n_azi,N_opt,N_bands,N_mode)) 
-            this%T_up = -999.  
-          end if
-          this%T_up(:,:,:,:,band,:) =  0.0001 * temp_5d_real(:,:,:,:,:)
+        if ( band .eq. 1) then
+          
+        allocate ( this%T_up(n_sol,n_sat,n_azi,N_opt,N_bands,N_mode)) 
+          this%T_up = -999.  
+        end if
+       
+      
+       this%T_up(:,:,:,:,band,:) =  0.0001 * temp_5d_real(:,:,:,:,:)
 		 
-          ! Transmission down T_dn 
+		 
+		 ! Transmission down T_dn 
           istatus = cx_sds_read ( trim(land_lut_file), 'Total_Scat_Trans_Dn_land' , temp_5d_real)
      
         if ( band .eq. 1) then
-        allocate ( this%T_dn(n_sol,n_sat,n_azi,N_opt,N_bands,N_mode))
+      
+            allocate ( this%T_dn(n_sol,n_sat,n_azi,N_opt,N_bands,N_mode))
+       
           this%T_dn = -999.  
         end if
+       
+      
        this%T_dn(:,:,:,:,band,:) =  0.0001 * temp_5d_real(:,:,:,:,:)
 		 
-     ! Atmospheric albedo S_bar
+		 ! Atmospheric albedo S_bar
           istatus = cx_sds_read ( trim(land_lut_file), 'Atmospheric_Spherical_albedo_land' , temp_5d_real)
      
-          if ( band .eq. 1) then
-          allocate ( this%S_bar(n_sol,n_sat,n_azi,N_opt,N_bands,N_mode))
+        if ( band .eq. 1) then
+   
+            allocate ( this%S_bar(n_sol,n_sat,n_azi,N_opt,N_bands,N_mode))
   
-           this%S_bar = -999.  
-          end if
-           this%S_bar(:,:,:,:,band,:) =  0.0001 * temp_5d_real(:,:,:,:,:)
-	   
-     ! AOT_at_B1, AOT_at_B3, AOT_at_B6
-     
-          if ( band .eq. 1) then
-          allocate ( this%OPT_land_Bands(N_opt,N_mode,N_bands))
-  
-           this%OPT_land_Bands = -999.  
-           end if
-	   
-	   
-           if(band .eq. 1) then
-           istatus = cx_sds_read ( trim(land_lut_file), 'AOT_at_B1' , temp_2d_real)
-           this%OPT_land_Bands(:,:,band) =  0.001 * temp_2d_real(:,:) 
-	   end if   
-	   
-	   if(band .eq. 2) then
-           istatus = cx_sds_read ( trim(land_lut_file), 'AOT_at_B3' , temp_2d_real)
-           this%OPT_land_Bands(:,:,band) =  0.001 * temp_2d_real(:,:) 
-	   end if  
-	   
-	   if(band .eq. 3) then
-           istatus = cx_sds_read ( trim(land_lut_file), 'AOT_at_B6' , temp_2d_real)
-           this%OPT_land_Bands(:,:,band) =  0.001 * temp_2d_real(:,:) 
-	   end if     
+          this%S_bar = -999.  
+        end if
        
-       
-    
+      
+       this%S_bar(:,:,:,:,band,:) =  0.0001 * temp_5d_real(:,:,:,:,:)
+		 
+      
+      
       end do
      
        this % is_read = .true.
@@ -272,9 +283,9 @@ contains
       real, intent(in) :: sol
       real, intent(in) :: sat
       real, intent(in) :: azi
-      real, intent(in) :: lat
-      real, intent(in) :: lon
-      integer, intent(in) :: month
+		real, intent(in) :: lat
+		real, intent(in) :: lon
+		integer, intent(in) :: month
 		
       
       integer,parameter :: idp = selected_int_kind(13)
@@ -291,23 +302,23 @@ contains
       integer :: pos_sat
       integer :: pos_azi
 		
-     integer :: season_index
-     integer :: land_fine_mode,shp_2d_x(2)
-     integer :: sh1x,sh2x
-     real, parameter :: dlat = 0.5, dlon = 0.5
-     integer :: ilat, ilon
+		integer :: season_index
+		integer :: land_fine_mode,shp_2d_x(2)
+		integer :: sh1x,sh2x
+		real, parameter :: dlat = 0.5, dlon = 0.5
+      integer :: ilat, ilon
 		
 		
 		
       
-      !call dcomp_interpolation_weight(size( this % sol) , sol , this % sol &
-      !   &, near_index =  pos_sol  )
+      call dcomp_interpolation_weight(size( this % sol) , sol , this % sol &
+         &, near_index =  pos_sol  )
 
-      !call dcomp_interpolation_weight(size( this % sat) , sat , this % sat &
-      !   &, near_index =  pos_sat  )
+      call dcomp_interpolation_weight(size( this % sat) , sat , this % sat &
+         &, near_index =  pos_sat  )
 
-      !call dcomp_interpolation_weight(size( this % azi) , azi , this % azi &
-      !   &, near_index = pos_azi  )  
+      call dcomp_interpolation_weight(size( this % azi) , azi , this % azi &
+         &, near_index = pos_azi  )  
 		
 		!*********************************************************************************	
 			
@@ -328,13 +339,14 @@ contains
    	   season_index=4
    	end if
 		
-	
+		season_index=4 ! bcasue month=9 ! temporary ( we need to fix this later)
 		!print*,'season_index = ',season_index
-
+		
+		! campex is sep , so season_index=4 is correct. need to fix later
 		
 		
-        ilon = 181 + NINT(lon + dlon)
-        ilat = 91 - NINT(lat + dlat)
+		ilon = 181 + NINT(lon + dlon)
+      ilat = 91 - NINT(lat + dlat)
   
       ! Note that fine mode aerosol types are 2,3,4 in MODIS collection 6.1. Continental model is not included
 	   ! Continental model is reserved for different retrieval
@@ -348,64 +360,30 @@ contains
 		
 		 !print*,'shape of atmpspheric path reflectance',shape(this % path_refl)
 		! print*,'selected index of sol, sat, azi',pos_sol,pos_sat,pos_azi
+		 
+		 shp_2d_x=shape(this % path_refl(pos_sol,pos_sat,pos_azi,:,:,land_fine_mode))  
+		 sh1x=shp_2d_x(1)
+		 sh2x=shp_2d_x(2)
+		if (.not. allocated (this%path_refl_x )) allocate ( this%path_refl_x(sh1x,sh2x,2)) 
+      ! index  1 is fine, 2 is coarse
+      this % path_refl_x(:,:,1)  = this % path_refl(pos_sol,pos_sat,pos_azi,:,:,land_fine_mode) 
 		
+      this % path_refl_x(:,:,2)  = this % path_refl(pos_sol,pos_sat,pos_azi,:,:,5)
 		
+		if (.not. allocated (this%Tup_x )) allocate ( this%Tup_x(sh1x,sh2x,2)) 
 		
-          do i_band=1,3
-            do i_opt=1,8
-	    
-	   
-            this % path_refl_x(i_opt,i_band,1)=interp3d(this%sol,this%sat,this%azi &
-						       ,this%path_refl(:,:,:,i_opt,i_band,land_fine_mode) &
-						       ,sol,sat,azi &
-                                                       , bounds_error = .false., FILL_VALUE = -999.) 
-	   					      
-            this % path_refl_x(i_opt,i_band,2)=interp3d(this%sol,this%sat,this%azi &
-						       ,this%path_refl(:,:,:,i_opt,i_band,5) &
-						       ,sol,sat,azi &
-						       , bounds_error = .false., FILL_VALUE = -999.) 
-	 				      
-	    this % Tup_x(i_opt,i_band,1)=interp3d(this%sol,this%sat,this%azi &
-						       ,this%T_up(:,:,:,i_opt,i_band,land_fine_mode) &
-						       ,sol,sat,azi &
-						       , bounds_error = .false., FILL_VALUE = -999.) 
-	  					       
-            this % Tup_x(i_opt,i_band,2)=interp3d(this%sol,this%sat,this%azi &
-						       ,this%T_up(:,:,:,i_opt,i_band,5) &
-						       ,sol,sat,azi &
-						       , bounds_error = .false., FILL_VALUE = -999.) 
-	   
-	   					      
-	   this % Tdn_x(i_opt,i_band,1)=interp3d(this%sol,this%sat,this%azi &
-						       ,this%T_dn(:,:,:,i_opt,i_band,land_fine_mode) &
-						       ,sol,sat,azi &
-						       , bounds_error = .false., FILL_VALUE = -999.) 
-						      
-           this % Tdn_x(i_opt,i_band,2)=interp3d(this%sol,this%sat,this%azi &
-						       ,this%T_dn(:,:,:,i_opt,i_band,5) &
-						       ,sol,sat,azi &
-						       , bounds_error = .false., FILL_VALUE = -999.) 
-							      
-	  this % Sbar_x(i_opt,i_band,1)=interp3d(this%sol,this%sat,this%azi &
-						       ,this%S_bar(:,:,:,i_opt,i_band,land_fine_mode) &
-						       ,sol,sat,azi &
-						       , bounds_error = .false., FILL_VALUE = -999.) 
+		this % Tup_x(:,:,1)  = this % T_up(pos_sol,pos_sat,pos_azi,:,:,land_fine_mode) 
+      this % Tup_x(:,:,2)  = this % T_up(pos_sol,pos_sat,pos_azi,:,:,5)
 		
-						      
-          this % Sbar_x(i_opt,i_band,2)=interp3d(this%sol,this%sat,this%azi &
-						       ,this%S_bar(:,:,:,i_opt,i_band,5) &
-						       ,sol,sat,azi &
-						       , bounds_error = .false., FILL_VALUE = -999.) 
-						       
-	 this % opt_land_x(i_opt,i_band,1)=	this%OPT_land_Bands(i_opt,land_fine_mode,i_band)				       
-	 this % opt_land_x(i_opt,i_band,2)=	this%OPT_land_Bands(i_opt,5,i_band)	
-	 
-	 
-	 
-
-	    end do
-	 end do
-	 
+		if (.not. allocated (this%Tdn_x )) allocate ( this%Tdn_x(sh1x,sh2x,2)) 
+		
+		this % Tdn_x(:,:,1)  = this % T_dn(pos_sol,pos_sat,pos_azi,:,:,land_fine_mode) 
+      this % Tdn_x(:,:,2)  = this % T_dn(pos_sol,pos_sat,pos_azi,:,:,5)
+		
+		if (.not. allocated (this%Sbar_x )) allocate ( this%Sbar_x(sh1x,sh2x,2)) 
+		
+		this % Sbar_x(:,:,1)  = this % S_bar(pos_sol,pos_sat,pos_azi,:,:,land_fine_mode) 
+      this % Sbar_x(:,:,2)  = this % S_bar(pos_sol,pos_sat,pos_azi,:,:,5)
 		
 		
 

@@ -19,7 +19,7 @@ module muri_definitions_mod
       logical :: is_sedimental
       character(len=400) :: path
       integer :: sfc_class
-		integer :: land_class
+      integer :: land_class
       
       contains
       
@@ -29,7 +29,7 @@ module muri_definitions_mod
    
    type muri_output_type
       real :: aot
-      real :: aot_channel(6)
+      real :: angstrom_exponent
       integer :: cm_mode
       integer :: fm_mode
       real :: fmf
@@ -37,6 +37,7 @@ module muri_definitions_mod
       integer ::aerosol_QA
       real :: trans_re_default
       real :: trans_re
+      real :: err_n
 		
    
    end type  muri_output_type

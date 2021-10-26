@@ -141,7 +141,10 @@ contains
         list = chn
         sensor_string = 'sentinel3_2_slstr'
         
-            
+    case('FY3-D')
+        Chn_List(20:32) = [ 20,-1,-1,21,-1,-1,-1,-1, 22,23,-1,24,25 ]
+        list = chn_list(chn)
+        sensor_string = 'fy3_4_mersi2'   
    
     case default
       if (index(sensor,'AVHRR')  .gt. 0) then
@@ -171,14 +174,27 @@ contains
           chn_list(32) = 6
         end if
         
-        list = chn_list(chn)
+        
         sensor_string = 'noaa_'//sensor(11:12)//'_avhrr'
+       
+        if ( index(sensor, 'NOAA0' ) .gt. 0 ) then
+          sensor_string = 'noaa_'//sensor(12:12)//'_avhrr'
+          rttov_version_string = '8'
+           chn_list(20) = 1
+          chn_list(31) = 2
+          chn_list(32) = 3
+        end if
+        list = chn_list(chn)
        
         if (index(sensor,'AVHRR-METOP')  .gt. 0 ) then
           sensor_string = 'metop_'//metop_nr//'_avhrr'
         end if
         if (index(sensor,'AVHRR-TIROSN') .gt. 0) then 
           sensor_string = 'noaa_5_avhrr'
+            rttov_version_string = '8'
+           chn_list(20) = 1
+          chn_list(31) = 2
+          chn_list(32) = 3
         end if
         
       else if (index(sensor,'HIRS') .gt. 0) then 
@@ -195,6 +211,8 @@ contains
         end if
         
       else if  (index(sensor,'GOES-') .gt. 0)  then
+        rttov_version_string = '8'
+        
         chn_list(1) = 1
         chn_list(20) = 2
         chn_list(27) = 3
@@ -204,6 +222,7 @@ contains
         sensor_string = 'goes_'//sensor(6:7)//'_imager'
         if ( sensor(6:6) .ne. '1' ) then
            sensor_string = 'goes_'//sensor(6:6)//'_imager'
+           rttov_version_string = '7'
         end if   
         list = chn_list(chn)
        

@@ -120,11 +120,33 @@ module LEVEL2_STRUCTURES_MOD
     integer(kind=int1), dimension(:,:,:), pointer:: Sds_Data_3d_I1
     real, dimension(:), pointer:: Sds_Data_1d_R4
     real, dimension(:,:), pointer:: Sds_Data_2d_R4
+    
+    contains
+    
+    procedure:: info => Sds_Struct__info
+    
+    
   end type Sds_Struct
 
   type (L2_Glob_Attr_Definition), public:: Clavrx_Global_Attr
 
 contains
+
+!
+!    prints info on screen for debugging
+  subroutine Sds_Struct__info(self)
+    class(sds_struct) :: self
+    
+    print*,self % sds_name
+    print*,self % rank
+    print*,self % valid_range
+    print*,self % actual_range
+  
+  
+  
+  end subroutine 
+
+
 !-------------------------------------------------------------------------
 ! Set the Global Attribute Structure
 !-------------------------------------------------------------------------

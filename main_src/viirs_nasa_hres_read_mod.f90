@@ -94,7 +94,7 @@ subroutine viirs_coef_type__read_file ( self, sensor)
    integer :: lun_id
    
   if ( self % is_set .and. trim(self % sensor) .eq. trim(sensor)) return
-  self % file = '/DATA/Ancil_Data/clavrx_ancil_data/static/clavrx_constant_files/viirs_npp_instr.dat'
+  !self % file = '/apollo/cloud/Ancil_Data/clavrx_ancil_data/static/clavrx_constant_files/viirs_npp_instr.dat'
   print*,'reads it ', trim(self % file)
   lun_id = 12
   open(unit=lun_id,file=trim( self % file),status="old",position="rewind",action="read",iostat=ios0)
@@ -162,7 +162,7 @@ subroutine read_viirs_nasa_hres_data (in_config)
          , cx_sds_read &
          , MAXNCNAM
   
-  use Pixel_Common_Mod, only : ch, image , nav, geo 
+  use Pixel_Common_Mod, only : ch, image , nav, geo , ancil_data_dir
   
   use VIEWING_GEOMETRY_MOD, only: &
         GLINT_ANGLE &
@@ -172,6 +172,8 @@ subroutine read_viirs_nasa_hres_data (in_config)
   use Planck_mod
   
   use file_tools
+  
+  use CX_READH5DATASET
   
   type ( viirs_nasa_hres_config_type), intent (in) :: in_config
   integer :: status
@@ -187,6 +189,8 @@ subroutine read_viirs_nasa_hres_data (in_config)
   character(len=15) :: time_identifier
   integer :: cc
   logical :: rel_path = .TRUE.
+  character(len=5) :: daynight
+  integer :: mband_start
   
   if ( first_run) then
     print*,'START:  READ nasa viirs hres ',trim(in_config % filename)
@@ -198,20 +202,33 @@ subroutine read_viirs_nasa_hres_data (in_config)
   ! time identifier
   time_identifier =  in_config%filename(9:23)
   
+  file_v03img = file_search(trim(in_config % path),'VNP03IMG'//trim(time_identifier)//'*.nc',cc,rel_path)
+  
+ ! status = cx_sds_read(file_v03img,'DayNightFlag',daynight)
+  
+  call H5READDATASET (trim(file_v03img(1)), &
+                                       'DayNightFlag', daynight)
+  
+ 
+ 
   call in_config % map_modis_to_viirs ()
   file_local = trim(in_config%Path)//trim(in_config%filename)
+   coef % file = trim(Ancil_Data_dir)//'static/clavrx_constant_files/viirs_npp_instr.dat'
    call coef % read_file(in_config % sensor)
   
   start = (/1,in_config % ny_start - 1 /)
   count = (/6400,in_config % ny_end- in_config % ny_start + 1 /)
   
-  do i_ch =1,11
-   
+  Mband_start =1 
+  if (trim(daynight) .eq. 'Night') Mband_Start = 7
+  
+  do i_ch =mband_start,11
+    if (trim(daynight) .eq. 'Night' .and. (i_ch .eq. 9) .or. (i_ch .eq. 11)) cycle 
     if (in_config % channel_on_viirs (i_ch)) then
       write ( ch_str, '(i2.2)' ) i_ch 
       status=cx_sds_read(file_local,'observation_data/M'//ch_str//'_highres',out,start = start,count = count)
       
-      ch(in_config % modis_chn_list(i_ch)) % ref_toa(:,1:count(2)) = out
+      ch(in_config % modis_chn_list(i_ch)) % ref_toa(:,1:count(2)) = 100.* out
       call update_bowtie(in_config % ny_start, ch(in_config % modis_chn_list(i_ch)) % ref_toa(:,1:count(2)))
      
     end if
@@ -219,7 +236,6 @@ subroutine read_viirs_nasa_hres_data (in_config)
 
   
   do i_ch =12,16
-     
       if (in_config % channel_on_viirs (i_ch)) then
         write ( ch_str, '(i2.2)' ) i_ch 
         modis_ch = in_config % modis_chn_list(i_ch)
@@ -227,7 +243,9 @@ subroutine read_viirs_nasa_hres_data (in_config)
         ch(modis_ch) % rad_toa(:,1:count(2)) = out
         call update_bowtie(in_config % ny_start, ch(modis_ch) % rad_toa(:,1:count(2)))
         ! - convert to radiance to NOAA unit.. 
-        noaa_nasa_correct = ((10000.0 / coef % planck_nu(modis_ch) ** 2)/10. )
+        
+        noaa_nasa_correct = (((10000.0 / coef % planck_nu(modis_ch)) ** 2)/10. )
+       
         ch(modis_ch) % rad_toa =  ch(modis_ch) % rad_toa * noaa_nasa_correct
         
         ! -  compute BT
@@ -240,10 +258,11 @@ subroutine read_viirs_nasa_hres_data (in_config)
   
  ! print*,'++++++++++++++  TO-DO make correct VJ! file ',__FILE__,' ' ,__LINE__
   
-  file_v03img = file_search(trim(in_config % path),'VNP03IMG'//trim(time_identifier)//'*.nc',cc,rel_path)
+  
   
   if (cc .ne. 1 ) then
-    print*,'Missing VNP03IMG file'
+    print*,'Missing VNP03IMG file stopping....'
+    stop
   end if
   
   if ( first_run) print*,trim(file_v03img(1))

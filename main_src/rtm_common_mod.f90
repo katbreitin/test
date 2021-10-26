@@ -59,7 +59,10 @@
 !--------------------------------------------------------------------------------------
 module RTM_COMMON_MOD
  
-   use CONSTANTS_MOD
+   use CONSTANTS_MOD, only: &
+    int1, int4 &
+    , Missing_Value_Int1 &
+    , EXE_PROMPT
 
    implicit none
    private

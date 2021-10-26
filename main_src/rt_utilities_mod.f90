@@ -896,6 +896,12 @@ contains
         
       case(225)  !VIIRS NOAA-20
          Sensor_Name_Rtm = 'VIIRS-N20'
+     
+      case(250) !GOES-8
+        Sensor_Name_Rtm = 'GOES-6'
+      
+       case(251) !GOES-8
+        Sensor_Name_Rtm = 'GOES-7'      
 
       case(252) !GOES-8
         Sensor_Name_Rtm = 'GOES-8'

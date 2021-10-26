@@ -1,4 +1,4 @@
-! $Id: aw_lib_array.f90 3878 2020-06-18 20:05:19Z mino $
+! $Id: aw_lib_array.f90 3387 2019-06-26 15:31:31Z awalther $
 !
 !
 !
@@ -7,32 +7,23 @@
 module aw_lib_array
   use lib_array,only: &
       locate &
-      , interp2d , interp1d
+      , interp2d 
       
   implicit none
   save
   private
+   
   integer,parameter :: idp = selected_int_kind(13)
   integer,parameter :: sp = selected_real_kind(p=6,r=37)
   integer,parameter :: dp = selected_real_kind(p=15,r=307)
 
   public:: nearest_bin_4d_sp
   public :: interp4d
-  public :: interp3d
-  
   
   interface interp4d
     module procedure interp4d_sp
     module procedure interp4d_dp
   end interface interp4d
-  
-  
-  interface interp3d
-    module procedure interp3d_sp
-    module procedure interp3d_dp
-  end interface interp3d
-  
-
 
 contains
  
@@ -61,8 +52,6 @@ contains
     real(dp),allocatable :: temp_array_2d_interp(:,:)
     real(dp),allocatable :: temp_2d(:,:)
     
-   
-    
     if(present(bounds_error)) then
        bounds_error_tmp = bounds_error
     else
@@ -84,10 +73,7 @@ contains
     if(size(x).ne.size(array,2)) stop "aw_lib_array.f90: x does not match array"
     if(size(y).ne.size(array,3)) stop "y does not match array"
     if(size(z).ne.size(array,4)) stop "z does not match array"  
-     
-    !print*,'inside interp4d_dp'
-    
-    
+   
     i1 = locate(w,w0) ; i2 = i1 + 1
     j1 = locate(x,x0) ; j2 = j1 + 1
     k1 = locate(y,y0) ; k2 = k1 + 1
@@ -177,19 +163,6 @@ contains
     
     
     real(sp) :: t4d ( 2,2,2,2)
-    
-    !print*,'w',w
-    !print*,'x',x
-    !print*,'y',y
-    !print*,'z',z
-    !print*,'w0',w0
-    !print*,'x0',x0
-    !print*,'y0',y0
-    !print*,'z0',z0
-    
-     
-    !print*,'inside interp4d_sp'
-    
 
     if(present(bounds_error)) then
        bounds_error_tmp = bounds_error
@@ -206,20 +179,7 @@ contains
     end if
         fill_value_tmp = -999.
     bounds_error_tmp = .false.
-    
-    !print*,'shape array',shape(array)
-    !print*,'shape of w',shape(w)
-    !print*,'w',w
-    !print*,'w0',w0
-    !print*,'x',x
-    !print*,'y',y
-    !print*,'z',z
-    !print*,'x0',x0
-    !print*,'y0',y0
-    !print*,'z0',z0
-    ! the problem in going back and forth of land and ocean
-    
-    if(size(w).ne.size(array,1)) stop "w does not match array in 4d_interp line 206"
+    if(size(w).ne.size(array,1)) stop "w does not match array in 4d_interp"
     if(size(x).ne.size(array,2)) stop "x does not match array in 4d_interp"
     if(size(y).ne.size(array,3)) stop "y does not match array in 4d_interp"
     if(size(z).ne.size(array,4)) stop "z does not match array in 4d_interp"  
@@ -274,7 +234,6 @@ contains
    
   
     t4d = array(i1:i2,j1:j2,k1:k2,m1:m2)
-    
     
     ww = (w0 - w(i1) ) / (w(i2) - w(i1))
     xx = (x0 - x(j1) ) / (x(j2) - x(j1))
@@ -346,7 +305,7 @@ contains
     end if
         fill_value_tmp = -999.
     bounds_error_tmp = .false.
-    if(size(w).ne.size(array,1)) stop "w does not match array in 4d_interp line 333"
+    if(size(w).ne.size(array,1)) stop "w does not match array in 4d_interp"
     if(size(x).ne.size(array,2)) stop "x does not match array in 4d_interp"
     if(size(y).ne.size(array,3)) stop "y does not match array in 4d_interp"
     if(size(z).ne.size(array,4)) stop "z does not match array in 4d_interp"  
@@ -404,237 +363,7 @@ contains
 
   end function nearest_bin_4d_sp
   
- !*********************************************************************************************************************************************** 
-  
-    function interp3d_dp(w,x,y,array,w0,x0,y0,bounds_error,fill_value) result(value)
-    ! Bilinar interpolation of array = f(w,x,y) at (w0,x0,y0)
-
-    implicit none
-
-    real(dp),intent(in) :: w(:),x(:),y(:),array(:,:,:),w0,x0,y0
-
-    logical,intent(in),optional :: bounds_error
-    ! whether to raise an out of bounds error
-
-    real(dp),intent(in),optional :: fill_value
-    ! value for out of bounds if bounds_error is .false.
-
-    real(dp) :: value,norm
-    integer :: i1,i2,j1,j2
-    integer :: k1,k2
-    
-    logical :: bounds_error_tmp
-    real(dp) :: fill_value_tmp
-    
-    integer :: ii,jj
-    real(dp),allocatable :: temp_array_2d_interp(:,:)
-    real(dp),allocatable :: temp_2d(:,:)
-    real(dp),allocatable :: temp_1d(:)
-    
-   
-    
-    if(present(bounds_error)) then
-       bounds_error_tmp = bounds_error
-    else
-       bounds_error_tmp = .true.
-    end if
-
-    if(.not.bounds_error_tmp) then
-       if(present(fill_value)) then
-          fill_value_tmp = fill_value
-       else
-          fill_value_tmp = 0._dp
-       end if
-    end if
-    
-    fill_value_tmp = -999.
-    bounds_error_tmp = .false.
-  
-    if(size(w).ne.size(array,1)) stop "w does not match array ?? why ? here"
-    if(size(x).ne.size(array,2)) stop "aw_lib_array.f90: x does not match array"
-    if(size(y).ne.size(array,3)) stop "y does not match array"
-   
-     
-    !print*,'inside interp3d_dp'
-    
-    
-    i1 = locate(w,w0) ; i2 = i1 + 1
-    j1 = locate(x,x0) ; j2 = j1 + 1
-    k1 = locate(y,y0) ; k2 = k1 + 1
-   
-
-    if(i1==-1) then
-       if(bounds_error_tmp) then
-          write(0,'("ERROR: Interpolation out of bounds 4D w : ",ES11.4," in [",ES11.4,":",ES11.4,"]")') w0,w(1),w(size(w))
-          stop
-       else
-          value = fill_value_tmp
-          return
-       end if
-    end if
-
- if(j1==-1) then
-       if(bounds_error_tmp) then
-          write(0,'("ERROR: Interpolation out of bounds : ",ES11.4," in [",ES11.4,":",ES11.4,"]")') x0,x(1),x(size(x))
-          stop
-       else
-          value = fill_value_tmp
-          return
-       end if
-    end if
-    
-    
-       if(k1==-1) then
-       if(bounds_error_tmp) then
-          write(0,'("ERROR: Interpolation out of bounds : ",ES11.4," in [",ES11.4,":",ES11.4,"]")') y0,y(1),y(size(y))
-          stop
-       else
-          value = fill_value_tmp
-          return
-       end if
-    end if
-
  
    
-    ! first reduce from 4d to 2d
-    allocate ( temp_array_2d_interp(size(w),size(x))  )
-    allocate ( temp_1d(size(y))  )
-    do ii = 1, size(w)
-      do jj = 1, size(x)
-      
-         temp_1d = array(ii,jj,:)
-      
-         temp_array_2d_interp(ii,jj) = interp1d (y,temp_1d,y0,bounds_error=bounds_error_tmp,fill_value = fill_value)
-        
-      end do
-    end do   
-    
-    value = interp2d (w,x,temp_array_2d_interp,w0,x0,bounds_error=bounds_error_tmp,fill_value = fill_value)
-   
-
-    end function interp3d_dp
-    
-    !************************************************************
-    
-    function interp3d_sp(w,x,y,array,w0,x0,y0,bounds_error,fill_value) result(value)
-    ! Bilinar interpolation of array = f(w,x,y) at (w0,x0,y0)
-
-    implicit none
-
-    real(sp),intent(in) :: w(:),x(:),y(:),array(:,:,:),w0,x0,y0
-
-    logical,intent(in),optional :: bounds_error
-    ! whether to raise an out of bounds error
-
-    real(sp),intent(in),optional :: fill_value
-    ! value for out of bounds if bounds_error is .false.
-
-    real(sp) :: value,norm
-    integer :: i1,i2,j1,j2
-    integer :: k1,k2,mm
-    real(sp) :: ww,xx,yy
-    
-    logical :: bounds_error_tmp
-    real(dp) :: fill_value_tmp
-    
-    
-  
-    real(sp) :: t3d ( 2,2,2)
-    
-    !print*,'w',w
-    !print*,'x',x
-    !print*,'y',y
-   
-    !print*,'w0',w0
-    !print*,'x0',x0
-    !print*,'y0',y0
-    
-   
-    !print*,'inside interp3d_sp'
-    
-
-    if(present(bounds_error)) then
-       bounds_error_tmp = bounds_error
-    else
-       bounds_error_tmp = .true.
-    end if
-
-    if(.not.bounds_error_tmp) then
-       if(present(fill_value)) then
-          fill_value_tmp = fill_value
-       else
-          fill_value_tmp = 0._dp
-       end if
-    end if
-        fill_value_tmp = -999.
-    bounds_error_tmp = .false.
-    
-    if(size(w).ne.size(array,1)) stop "w does not match array in 3d_interp here line 558"
-    if(size(x).ne.size(array,2)) stop "x does not match array in 3d_interp"
-    if(size(y).ne.size(array,3)) stop "y does not match array in 3d_interp"
-  
-    i1 = locate(w,w0) ; i2 = i1 + 1
-    j1 = locate(x,x0) ; j2 = j1 + 1
-    k1 = locate(y,y0) ; k2 = k1 + 1
- 
-
-    if(i1==-1) then
-       if(bounds_error_tmp) then
-          write(0,'("ERROR: Interpolation out of bounds 1.DIM : ",ES11.4," in [",ES11.4,":",ES11.4,"]")') w0,w(1),w(size(w))
-          stop
-       else
-          value = fill_value_tmp
-          return
-       end if
-    end if
-
- if(j1==-1) then
-       if(bounds_error_tmp) then
-          write(0,'("ERROR: Interpolation out of bounds 2.DIM: ",ES11.4," in [",ES11.4,":",ES11.4,"]")') x0,x(1),x(size(x))
-          stop
-       else
-          value = fill_value_tmp
-          return
-       end if
-    end if
-    
-    
-       if(k1==-1) then
-       if(bounds_error_tmp) then
-          write(0,'("ERROR: Interpolation out of bounds 3.DIM: ",ES11.4," in [",ES11.4,":",ES11.4,"]")') y0,y(1),y(size(y))
-          stop
-       else
-          value = fill_value_tmp
-          return
-       end if
-    end if
-
-   
-  
-    t3d = array(i1:i2,j1:j2,k1:k2)
-    
-    
-    ww = (w0 - w(i1) ) / (w(i2) - w(i1))
-    xx = (x0 - x(j1) ) / (x(j2) - x(j1))
-    yy = (y0 - y(k1) ) / (y(k2) - y(k1))
- 
-    value = t3d(1,1,1) * ( 1 - ww ) * ( 1 - xx ) * ( 1 - yy )  + &
-            t3d(1,1,2) * ( 1 - ww ) * ( 1 - xx ) * ( yy )  + &
-            t3d(1,2,1) * ( 1 - ww ) * ( xx ) * ( 1 - yy ) + &
-            t3d(1,2,2) * ( 1 - ww ) * ( xx ) * ( yy )+ &
-            t3d(2,1,1) * ( ww ) * ( 1 - xx ) * ( 1 - yy ) + &
-            t3d(2,1,2) * ( ww ) * ( 1 - xx ) * ( yy )  + &
-            t3d(2,2,1) * ( ww ) * ( xx ) * ( 1 - yy ) + &
-            t3d(2,2,2) * ( ww ) * ( xx ) * (  yy )                             
-   
-   
-   
-   
-   !print*,'value',value
-   
-   
-  end function interp3d_sp
-    
- 
 
 end module aw_lib_array

@@ -64,9 +64,10 @@ module MODIS_MOD
                 , Reff_Aux &
                 , Ec_Aux &
                 , Temp_Pix_Array_1 &
-                , Line_Idx_Min_segment
+                , Line_Idx_Min_segment &
+                , bad_pixel_mask
 
-        use PIXEL_ROUTINES_MOD,only: qc_modis
+    !   use PIXEL_ROUTINES_MOD,only: qc_modis
                 
         use cx_date_time_tools_mod,only: julian         
  
@@ -1409,6 +1410,28 @@ error_check: do while (Error_Status == 0 .and. End_Flag == 0)
     endif
 
     end subroutine READ_MODIS
+    
+    
+!----------------------------------------------------------------------
+! rudimentary quality check of modis
+!----------------------------------------------------------------------
+subroutine QC_MODIS(jmin,nj)
+
+  integer, intent(in):: jmin,nj
+  integer:: Line_Idx
+
+  Bad_Pixel_Mask = sym%NO
+
+  line_loop: do Line_Idx= jmin, nj- jmin + 1
+     if (maxval(ch(31)%Rad_Toa(:,Line_Idx)) < 0.0) then
+        Bad_Pixel_Mask(:,Line_Idx) = sym%YES
+     endif
+     if (maxval(Nav%Lat_1b(:,Line_Idx)) < -100.0) then
+        Bad_Pixel_Mask(:,Line_Idx) = sym%YES
+     endif
+  enddo line_loop
+
+end subroutine QC_MODIS
 
 !======================================================================
 ! READ_MODIS_TIME_ATTR
