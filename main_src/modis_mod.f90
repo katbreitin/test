@@ -56,6 +56,7 @@ module MODIS_MOD
                 , CLDMASK &
                 , Cld_Phase_Aux &
                 , Cld_Type_Aux &
+                , Tc_Aux &
                 , Zc_Aux &
                 , Pc_Top1_Aux &
                 , Metadata_Aux &
@@ -974,6 +975,7 @@ end subroutine READ_MODIS_LEVEL1B_CLOUD_MASK
 subroutine READ_MODIS_LEVEL1B_CLOUD_PRODUCTS(path,file_name,  &
                               Cloud_Phase_Out,  &
                               Cloud_Type_Out,  &
+                              Cloud_Temperature_Out,  &
                               Cloud_Height_Out,  &
                               Cloud_Pressure_Out,  &
                               Cloud_Height_Method_Out,  &
@@ -993,6 +995,7 @@ subroutine READ_MODIS_LEVEL1B_CLOUD_PRODUCTS(path,file_name,  &
       integer(kind=int4), intent(out):: Error_Status
       integer(kind=int1), dimension(:,:), intent(out):: Cloud_Phase_Out
       integer(kind=int1), dimension(:,:), intent(out):: Cloud_Type_Out
+      real(kind=real4), dimension(:,:), intent(out):: Cloud_Temperature_Out
       real(kind=real4), dimension(:,:), intent(out):: Cloud_Height_Out
       real(kind=real4), dimension(:,:), intent(out):: Cloud_Pressure_Out
       integer(kind=int1), dimension(:,:), intent(out):: Cloud_Height_Method_Out
@@ -1078,7 +1081,11 @@ error_check: do while (Status_Flag == 0 .and. Iend == 0)
       Status_Flag = sfendacc(Sds_Id) + Status_Flag
 
       !--- Read Cloud Top Height (i2, scale = 1, add_offset = 0, fill=-999)
-      Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('cloud_top_height_1km')))
+      if (Atml2_File) then
+         Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('Cloud_Top_Height_1km')))
+      else
+         Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('cloud_top_height_1km')))
+      endif
       Status_Flag = sfrdata(Sds_Id, sds_start, sds_stride, sds_edges, i2_buffer) + Status_Flag
       r4_buffer = 1.0*real(i2_buffer) + 0.0
       where(i2_buffer == -999)
@@ -1104,8 +1111,27 @@ error_check: do while (Status_Flag == 0 .and. Iend == 0)
         Status_Flag = sfendacc(Sds_Id) + Status_Flag
       endif
 
+      !--- Read Cloud Top Pressure (i2, scale = 0.01, add_offset = -15000.0, fill=-999)
+      if (Atml2_File) then
+          Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('Cloud_Top_Temperature_1km')))
+      else
+          Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('cloud_top_temperature_1km')))
+      endif
+      Status_Flag = sfrdata(Sds_Id, sds_start, sds_stride, sds_edges, i2_buffer) + Status_Flag
+      r4_buffer = 0.01*real(i2_buffer) + 150.0
+      where(i2_buffer == -999)
+         r4_buffer = Missing_Value_Real4
+      endwhere
+
+      Cloud_Temperature_Out = Missing_Value_Real4
+      Cloud_Temperature_Out(1:nx_min,1:ny_min) = r4_buffer(1:nx_min,1:ny_min)
+
       !--- Read Cloud Top Pressure (i2, scale = 0.1, add_offset = 0, fill=-999)
-      Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('cloud_top_pressure_1km')))
+      if (Atml2_File) then
+         Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('Cloud_Top_Pressure_1km')))
+      else
+         Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('cloud_top_pressure_1km')))
+      endif
       Status_Flag = sfrdata(Sds_Id, sds_start, sds_stride, sds_edges, i2_buffer) + Status_Flag
       r4_buffer = 0.1*real(i2_buffer) + 0.0
       where(i2_buffer == -999)
@@ -1114,9 +1140,12 @@ error_check: do while (Status_Flag == 0 .and. Iend == 0)
       Cloud_Pressure_Out = Missing_Value_Real4
       Cloud_Pressure_Out(1:nx_min,1:ny_min) = r4_buffer(1:nx_min,1:ny_min)
 
-
       !--- Read Cloud Top Height Method
-      Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('cloud_top_method_1km')))
+      if (Atml2_File) then
+         Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('Cloud_Height_Method')))
+      else
+         Sds_Id = sfselect(Sd_Id, sfn2index(Sd_Id,trim('cloud_top_method_1km')))
+      endif
       Status_Flag = sfrdata(Sds_Id, sds_start, sds_stride, sds_edges, i1_buffer) + Status_Flag
       Cloud_Height_Method_Out(1:nx_min,1:ny_min) = i1_buffer(1:nx_min,1:ny_min)
       where(Cloud_Height_Method_Out == 127_int1)  !fill value is 127
@@ -1313,6 +1342,7 @@ error_check: do while (Error_Status == 0 .and. End_Flag == 0)
                                              trim(Image%Auxiliary_Cloud_Product_File_Name), &
                                              Cld_Phase_Aux, & 
                                              Cld_Type_Aux, & 
+                                             Tc_Aux, & 
                                              Zc_Aux, & 
                                              Pc_Top1_Aux, &
                                              Metadata_Aux, &
