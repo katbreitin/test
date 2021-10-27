@@ -162,7 +162,9 @@
       , COMPUTE_MIN_MAX_MEAN_STD_METRICS &
       , COMPUTE_SPATIAL_CORRELATION_ARRAYS &
       , COMPUTE_RADIATIVE_CENTER_ARRAYS
-
+  
+  use CX_REAL_BOOLEAN_MOD 
+  
    use CONSTANTS_MOD !, only: &
       !  int4, real4 &
       !  , int1, int2 &
@@ -339,7 +341,7 @@
     , Level2_File_Flag &
     , AVHRR_Fusion_Flag &
     , Pc_Co2,Tc_Co2,Zc_Co2, Ec_Co2 &   
-    , Pc_H2O,Tc_H2O,Zc_H2O, Ec_H2O &   
+    , Pc_H2O,Tc_H2O,Zc_H2O  &   
     , Nonconfident_Cloud_Mask_Count &
     , cloud_mask_count &
     , Cloud_Mask_Bayesian_Flag &
@@ -775,6 +777,8 @@
       Level1b_Exists = file_test(trim(Image%Level1b_Path)//trim(File_1b_Temp))
       if (Level1b_Exists .eqv. .FALSE.) then
          call MESG( "ERROR: Level-1b file not found, skipping this file", level=5, color=1)
+         print*,trim(Image%Level1b_Path)//trim(File_1b_Temp)
+         print*,'gggg'
          cycle file_loop
       endif
       
@@ -1116,6 +1120,7 @@
                                 Time_Since_Launch,AREAstr,NAVstr,Nrec_Avhrr_Header,Ierror_Level1b)
          if (Ierror_Level1b /= 0) then
             call MESG ("ERROR:  Error reading level1b, skipping this file ",level = verb_lev% ERROR)
+            print*,Image%Level1b_Full_Name
             exit
          endif
 
@@ -1161,7 +1166,7 @@
 
            !TEST - EMPIRICAL FIT TO NASA Reflectances to match NOAA - AKH
           if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA') then 
-            where(Ch(44)%Ref_Toa /= Missing_Value_Real4)
+            where(Ch(44)%Ref_Toa .NER. Missing_Value_Real4)
               Ch(44)%Ref_Lunar_Toa = Dnb_Coef(1) + &
                                      Dnb_Coef(2)*Ch(44)%Ref_Lunar_Toa + &
                                      Dnb_Coef(3)*Ch(44)%Ref_Lunar_Toa**2
