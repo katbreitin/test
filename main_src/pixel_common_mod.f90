@@ -891,6 +891,7 @@ module PIXEL_COMMON_MOD
   integer (kind=int1),dimension(:,:),allocatable, public, save, target:: Cld_Type_Aux
   integer (kind=int1),dimension(:,:),allocatable, public, save, target:: Cld_Phase_Aux
   real (kind=real4), dimension(:,:), allocatable, public, save, target:: Zc_Aux
+  real (kind=real4), dimension(:,:), allocatable, public, save, target:: Tc_Aux
   real (kind=real4), dimension(:,:), allocatable, public, save, target:: Ec_Aux
   real (kind=real4), dimension(:,:), allocatable, public, save, target:: Pc_Top1_Aux
   real (kind=real4), dimension(:,:), allocatable, public, save, target:: Pc_Top2_Aux
@@ -3141,6 +3142,7 @@ subroutine CREATE_CLOUD_TYPE_ARRAYS(dim1,dim2)
      allocate(Ctp_Multilayer_Flag(dim1,dim2))
      allocate(Zc_Aux(dim1,dim2))
      allocate(Ec_Aux(dim1,dim2))
+     allocate(Tc_Aux(dim1,dim2))
   endif
 end subroutine CREATE_CLOUD_TYPE_ARRAYS
 subroutine RESET_CLOUD_TYPE_ARRAYS()
@@ -3156,6 +3158,7 @@ subroutine RESET_CLOUD_TYPE_ARRAYS()
       Ctp_Multilayer_Flag = Missing_Value_Int1
       Zc_Aux = Missing_Value_Real4
       Ec_Aux = Missing_Value_Real4
+      Tc_Aux = Missing_Value_Real4
   endif
 end subroutine RESET_CLOUD_TYPE_ARRAYS
 subroutine DESTROY_CLOUD_TYPE_ARRAYS
@@ -3171,6 +3174,7 @@ subroutine DESTROY_CLOUD_TYPE_ARRAYS
      deallocate(Ctp_Multilayer_Flag)
      deallocate(Zc_Aux)
      deallocate(Ec_Aux)
+     deallocate(Tc_Aux)
   endif
 end subroutine DESTROY_CLOUD_TYPE_ARRAYS
 !-----------------------------------------------------------
