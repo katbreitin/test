@@ -67,7 +67,7 @@ contains
        ErrorFlag=0
       
       CALL h5open_f(ErrorFlag)
-      print*,obj_type, H5F_OBJ_DATASET_F
+      ! print*,obj_type, H5F_OBJ_DATASET_F
       
       h5_get_finfo = 1
       
@@ -80,17 +80,17 @@ contains
       CALL h5gopen_f(file_id, "/", root_id, ErrorFlag)
       
       call H5GGET_INFO_F ( root_id,s_type,nlinks,max_corder,hdferr)
-      print*,s_type,nlinks,max_corder
+       print*,s_type,nlinks,max_corder
       
       
       
       call H5GN_MEMBERS_F ( root_id,'/',nmem,hdferr)
-      print*,'Number of elements root: ',nmem
+      ! print*,'Number of elements root: ',nmem
       
       do i=0,nmem-1
       call H5GGET_OBJ_INFO_IDX_F(root_id, '/', i, & 
                                  obj_name, obj_type, hdferr)           
-        print*,i,' ',trim(obj_name),obj_type
+       ! print*,i,' ',trim(obj_name),obj_type
         if ( obj_type .eq. 0 ) then
             call H5GN_MEMBERS_F ( root_id,'/'//trim(obj_name),nmem1,hdferr)
             do ii=0,nmem1-1
@@ -249,7 +249,7 @@ contains
             sdata(1) % data % rank = 2
 
          case(1)
-          print*,'one dim'
+         ! print*,'one dim'
             call H5ReadDataset ( h5_file, sds_name(1), dataset_1d )
             allocate (sdata(1))
             allocate ( sdata(1) % data % r4values(dims(1)))
