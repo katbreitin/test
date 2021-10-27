@@ -36,6 +36,7 @@
 !
 !--------------------------------------------------------------------------------------
 module PIXEL_ROUTINES_MOD
+
  use CONSTANTS_MOD, only: &
   missing_value_real4 &
     , sym , int1, int2, exe_prompt  &

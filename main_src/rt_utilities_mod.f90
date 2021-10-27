@@ -110,7 +110,7 @@ module RT_UTILITIES_MOD
       , Beta_104um_85um_Tropo_Rtm &
       , Beta_104um_67um_Tropo_Rtm &
       , Beta_104um_133um_Tropo_Rtm &
-      , Beta_104um_11um_Tropo_Rtm 
+      , Beta_104um_11um_Tropo_Rtm  
       
    use NUMERICAL_ROUTINES_MOD , only: &
        LOCATE
@@ -145,7 +145,7 @@ module RT_UTILITIES_MOD
       cx_rtm_input &
       , cx_calculate_rtm
       
-   use CX_REAL_BOOLEAN_MOD   
+   use CX_REAL_BOOLEAN_MOD 
    
    use cx_nwp_rtm_mod,only: &
       convert_atmos_prof_nwp_rtm &
@@ -669,7 +669,7 @@ contains
             exit
          end if
       end do
-      Rtm(Lon_Idx,Lat_Idx)%Sfc_Level = max ( 1, min(  NLevels_Rtm -1, Rtm(Lon_Idx,Lat_Idx)%Sfc_Level))
+      Rtm(Lon_Idx,Lat_Idx)%Sfc_Level = max ( int(1,kind=1), min(  int(NLevels_Rtm,kind=1) - int(1,kind=1), Rtm(Lon_Idx,Lat_Idx)%Sfc_Level))
       !--------------------------------------------------------------------
       !--- find tropopause Level  based on tropopause pressure
       !--- tropopause is between tropopause_Level and tropopaue_Level + 1
@@ -679,7 +679,7 @@ contains
             (P_Std_Rtm(k+1) > NWP%P_Trop(Lon_Idx,Lat_Idx))) then
             Rtm(Lon_Idx,Lat_Idx)%Tropo_Level = k
          end if
-      end do
+      end do 
 
       !--- check if tropopause Level found
       if (Rtm(Lon_Idx,Lat_Idx)%Tropo_Level == 0) then
@@ -1390,7 +1390,7 @@ contains
 
       !--- upwelling
       do Chan_Idx = Chan_Idx_Min, Chan_Idx_Max
-
+         
          if (Sensor%Chan_On_Flag_Default(Chan_Idx) == sym%NO) cycle
     
          if (Ch(Chan_Idx)%Obs_Type /= THERMAL_OBS_TYPE .and. &
@@ -1409,6 +1409,7 @@ contains
                 Ch(Chan_Idx)%Rad_Toa_Clear(Elem_Idx,Line_Idx), & ! OUT
                 Ch(Chan_Idx)%Bt_Toa_Clear(Elem_Idx,Line_Idx)) ! OUT
                 
+               
       end do
      
 
