@@ -83,7 +83,7 @@ contains
         ! 2020/09/25: AW masked this.
         !  there might be a good reason to have it...
         call H5Fis_hdf5_f(file,status,hdferr)
-        if (status) file_type = 3
+        !if (status) file_type = 3
       end if
       if ( postfix .eq. '.h5') file_type = 3
 
@@ -140,7 +140,7 @@ contains
 
       if ( ftype .eq. 3) then
          cx_sds_finfo = h5_get_finfo(file, nsds, sds_name, natt, att_name)
-         print*,'success'
+         print*,'success',shape(sds_name)
       end if
          
    
