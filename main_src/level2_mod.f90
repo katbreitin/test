@@ -1595,6 +1595,12 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Actual_Range = [-0.2,1.2]
             Sds_Info(Var_Idx)%Units =  "none"
             if (allocated(ACHA%Ec)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => ACHA%Ec
+         case("cld_emiss_prior_acha")
+            Sds_Info(Var_Idx)%Standard_Name = "convective_cloud_longwave_emissivity_prior"
+            Sds_Info(Var_Idx)%Long_Name = "convective_cloud_longwave_emissivity_prior"
+            Sds_Info(Var_Idx)%Actual_Range = [-0.2,1.2]
+            Sds_Info(Var_Idx)%Units =  "none"
+            if (allocated(ACHA%Ec_Ap)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => ACHA%Ec_Ap
          case("cld_emiss_acha_uncer")
             Sds_Info(Var_Idx)%Standard_Name = "convective_cloud_longwave_emissivity_uncertainty"
             Sds_Info(Var_Idx)%Long_Name = "convective_cloud_longwave_emissivity_uncertainty"
@@ -1607,6 +1613,12 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Actual_Range = [0.2,2.0]
             Sds_Info(Var_Idx)%Units =  "none"
             if (allocated(ACHA%Beta)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => ACHA%Beta
+         case("cld_beta_prior_acha")
+            Sds_Info(Var_Idx)%Standard_Name = "cld_beta_prior_acha"
+            Sds_Info(Var_Idx)%Long_Name = "cld_beta_prior_acha"
+            Sds_Info(Var_Idx)%Actual_Range = [0.2,2.0]
+            Sds_Info(Var_Idx)%Units =  "none"
+            if (allocated(ACHA%Beta_Ap)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => ACHA%Beta_Ap
          case("cld_press_acha")
             Sds_Info(Var_Idx)%Standard_Name = "air_pressure_at_cloud_top"
             Sds_Info(Var_Idx)%Actual_Range = [50.0,1100.0]
@@ -1782,6 +1794,11 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Actual_Range = [-0.2,1.2]
             Sds_Info(Var_Idx)%Units = "none"
             if (allocated(Ec_Aux)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Ec_Aux
+         case("cld_temp_aux")
+            Sds_Info(Var_Idx)%Standard_Name = "air_temperature_at_cloud_top_aux"
+            Sds_Info(Var_Idx)%Actual_Range = [160.0,320.0]
+            Sds_Info(Var_Idx)%Units = "K"
+            if (allocated(Tc_Aux)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Tc_Aux
          case("cld_press_aux")
             Sds_Info(Var_Idx)%Standard_Name = "air_pressure_at_cloud_top_aux"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,1100.0]

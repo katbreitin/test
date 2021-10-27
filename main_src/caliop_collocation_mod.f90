@@ -61,7 +61,6 @@ subroutine CALIOP_COLLOCATION(Seg_Idx)
   character(len=4) :: Time_String
   character(len=2) :: Hour_String
   character(len=2) :: Minute_String
-  character(len=100) :: Sds_Name
   character(len=1020), dimension(:), pointer:: Files
   integer(kind=int4) :: Num_Files
   integer(kind=int4) :: Status
@@ -146,9 +145,8 @@ subroutine CALIOP_COLLOCATION(Seg_Idx)
 
   ! --- read file
   Status = 0
-  Sds_Name = 'passive_pixel_element'
   Status = OPEN_FILE_HDF_READ(trim(Caliop_Dir)//trim(Caliop_File), Sd_Id)
-  Status = HDF_SDS_READER(Sd_Id, trim(Sds_Name), Start_1d, Stride_1d, &
+  Status = HDF_SDS_READER(Sd_Id, 'passive_pixel_element', Start_1d, Stride_1d, &
                           Edge_1d, Pixel_Element_Idx) + Status
   Status = HDF_SDS_READER(Sd_Id, 'closest_calipso_number_of_cloud_layers', Start_1d, &
                           Stride_1d, Edge_1d, Caliop_Num_Cld_Layers_1D) + Status

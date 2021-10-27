@@ -701,47 +701,47 @@ subroutine OPAQUE_CLOUD_HEIGHT(ABI_Use_104um_Flag)
       Solution_Found = .false.
 
 !--- top down
-!     level_loop: do Level_Idx = Level_Idx_Start, Level_Idx_End
-!         if (Rad_BB_Cloud_Profile(Level_Idx) >  Rad_Toa) then
-!           Pc_Opaque_Cloud(Elem_Idx,Line_Idx) = P_Std_Rtm(Level_Idx - 1)
-!           Zc_Opaque_Cloud(Elem_Idx,Line_Idx) = Z_Prof(Level_Idx - 1)
-!           Tc_Opaque_Cloud(Elem_Idx,Line_Idx) = T_Prof(Level_Idx - 1)
-!           Solution_Found = .true.
-!           exit
-!         endif
-!     enddo Level_Loop
-
-!--- bottom up
-      level_loop: do Level_Idx = Level_Idx_End, Level_Idx_Start+1, -1
-
-!         print *, "looking ", Level_Idx, Rad_BB_Cloud_Profile(Level_Idx), Rad_BB_Cloud_Profile(Level_Idx+1)
-          if ((Rad_BB_Cloud_Profile(Level_Idx-1) > Rad_Toa) .and.  &
-              (Rad_BB_Cloud_Profile(Level_Idx) < Rad_Toa)) then
-              Solution_Found = .true.
-          endif
-          if ((Rad_BB_Cloud_Profile(Level_Idx-1) < Rad_Toa) .and.   &
-              (Rad_BB_Cloud_Profile(Level_Idx) > Rad_Toa)) then
-              Solution_Found = .true.
-          endif
-
-          if (Solution_Found) then
-            dRad  = Rad_BB_Cloud_Profile(Level_Idx) - Rad_BB_Cloud_Profile(Level_Idx-1)
-            if (dRad .ner. 0.00) then
-              Slope = (P_Std_Rtm(Level_Idx) - P_Std_Rtm(Level_Idx-1)) / dRad 
-              Pc_Opaque_Cloud(Elem_Idx,Line_Idx)  =  P_Std_Rtm(Level_Idx-1) + Slope * (Rad_Toa - Rad_BB_Cloud_Profile(Level_Idx-1))
-              Slope = (Z_Prof(Level_Idx) - Z_Prof(Level_Idx-1)) / dRad 
-              Zc_Opaque_Cloud(Elem_Idx,Line_Idx)  =  Z_Prof(Level_Idx-1) + Slope * (Rad_Toa - Rad_BB_Cloud_Profile(Level_Idx-1))
-              Slope = (T_Prof(Level_Idx) - T_Prof(Level_Idx-1)) / dRad 
-              Tc_Opaque_Cloud(Elem_Idx,Line_Idx)  =  T_Prof(Level_Idx-1) + Slope * (Rad_Toa - Rad_BB_Cloud_Profile(Level_Idx-1))
-             else
-              Pc_Opaque_Cloud(Elem_Idx,Line_Idx) = P_Std_Rtm(Level_Idx-1)
-              Zc_Opaque_Cloud(Elem_Idx,Line_Idx) = Z_Prof(Level_Idx-1)
-              Tc_Opaque_Cloud(Elem_Idx,Line_Idx) = T_Prof(Level_Idx-1)
-            endif 
+      level_loop: do Level_Idx = Level_Idx_Start, Level_Idx_End
+          if (Rad_BB_Cloud_Profile(Level_Idx) >  Rad_Toa) then
+            Pc_Opaque_Cloud(Elem_Idx,Line_Idx) = P_Std_Rtm(Level_Idx - 1)
+            Zc_Opaque_Cloud(Elem_Idx,Line_Idx) = Z_Prof(Level_Idx - 1)
+            Tc_Opaque_Cloud(Elem_Idx,Line_Idx) = T_Prof(Level_Idx - 1)
+            Solution_Found = .true.
             exit
           endif
-
       enddo Level_Loop
+
+!--- bottom up
+!     level_loop: do Level_Idx = Level_Idx_End, Level_Idx_Start+1, -1
+
+!         print *, "looking ", Level_Idx, Rad_BB_Cloud_Profile(Level_Idx), Rad_BB_Cloud_Profile(Level_Idx+1)
+!         if ((Rad_BB_Cloud_Profile(Level_Idx-1) > Rad_Toa) .and.  &
+!             (Rad_BB_Cloud_Profile(Level_Idx) < Rad_Toa)) then
+!             Solution_Found = .true.
+!         endif
+!         if ((Rad_BB_Cloud_Profile(Level_Idx-1) < Rad_Toa) .and.   &
+!             (Rad_BB_Cloud_Profile(Level_Idx) > Rad_Toa)) then
+!             Solution_Found = .true.
+!         endif
+
+!         if (Solution_Found) then
+!           dRad  = Rad_BB_Cloud_Profile(Level_Idx) - Rad_BB_Cloud_Profile(Level_Idx-1)
+!           if (dRad .ner. 0.00) then
+!             Slope = (P_Std_Rtm(Level_Idx) - P_Std_Rtm(Level_Idx-1)) / dRad 
+!             Pc_Opaque_Cloud(Elem_Idx,Line_Idx)  =  P_Std_Rtm(Level_Idx-1) + Slope * (Rad_Toa - Rad_BB_Cloud_Profile(Level_Idx-1))
+!             Slope = (Z_Prof(Level_Idx) - Z_Prof(Level_Idx-1)) / dRad 
+!             Zc_Opaque_Cloud(Elem_Idx,Line_Idx)  =  Z_Prof(Level_Idx-1) + Slope * (Rad_Toa - Rad_BB_Cloud_Profile(Level_Idx-1))
+!             Slope = (T_Prof(Level_Idx) - T_Prof(Level_Idx-1)) / dRad 
+!             Tc_Opaque_Cloud(Elem_Idx,Line_Idx)  =  T_Prof(Level_Idx-1) + Slope * (Rad_Toa - Rad_BB_Cloud_Profile(Level_Idx-1))
+!            else
+!             Pc_Opaque_Cloud(Elem_Idx,Line_Idx) = P_Std_Rtm(Level_Idx-1)
+!             Zc_Opaque_Cloud(Elem_Idx,Line_Idx) = Z_Prof(Level_Idx-1)
+!             Tc_Opaque_Cloud(Elem_Idx,Line_Idx) = T_Prof(Level_Idx-1)
+!           endif 
+!           exit
+!         endif
+
+!     enddo Level_Loop
 
 
       if (.not. Solution_Found) then
