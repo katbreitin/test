@@ -47,6 +47,9 @@ module ACHA_RTM_MOD
   integer(kind=int1), private, PARAMETER:: MISSING_VALUE_integer1 = -128_int1
   integer(kind=int4), private, PARAMETER:: MISSING_VALUE_integer4 = -999
 
+  real, private, parameter:: BETA_MIN = 1.0
+  real, private, parameter:: BETA_MAX = 2.0
+
   !-------------------------------------------------------------------------------
   !ice extinction
   !-------------------------------------------------------------------------------
@@ -1756,6 +1759,15 @@ subroutine COMPUTE_BETA_AND_DERIVATIVE(beta_degree_water, &
                                 beta_xy_coef_ice(i) * (i) * (beta_x_12-1.0)**(i-1)
    enddo
 
+   !-----------------------------------------------------------------------
+   ! constrain beta values to be 1 < beta < 2.0
+   !-----------------------------------------------------------------------
+   beta_xy_ice = min(BETA_MAX,max(BETA_MIN, beta_xy_ice))
+   beta_xy_water = min(BETA_MAX,max(BETA_MIN, beta_xy_water))
+
+   !-----------------------------------------------------------------------
+   ! slope of beta with alpha
+   !-----------------------------------------------------------------------
    dbeta = beta_xy_ice - beta_xy_water
    if (abs(dbeta) < epsilon(beta_xy_ice)) dbeta = 0.01
    dalpha_dbeta = 1.0/dbeta
