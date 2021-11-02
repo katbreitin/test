@@ -128,7 +128,7 @@ subroutine compute_transmission_rttov ( &
   opts % rt_ir % addclouds           = .FALSE. ! Don't include cloud effects
   opts % rt_ir % addaerosl           = .FALSE. ! Don't include aerosol effects
 
-  opts % rt_ir % ozone_data          = .FALSE. ! Set the relevant flag to .TRUE.
+  opts % rt_ir % ozone_data          = .TRUE. ! Set the relevant flag to .TRUE.
   opts % rt_ir % co2_data            = .FALSE. !   when supplying a profile of the
   opts % rt_ir % n2o_data            = .FALSE. !   given trace gas (ensure the
   opts % rt_ir % ch4_data            = .FALSE. !   coef file supports the gas)
@@ -137,11 +137,7 @@ subroutine compute_transmission_rttov ( &
   opts % rt_mw % clw_data            = .FALSE. !
   opts % rt_mw % clw_scheme          = 0
   opts % config % verbose            = .FALSE.  ! Enable printing of warnings
-  
-  
- 
- 
- 
+
  
    lll  = channel_map (sensor,ancil_data_path, kban_in , coef_filename,cld_coef_filename)
    
@@ -253,27 +249,23 @@ subroutine compute_transmission_rttov ( &
   DO iprof = 1, nprof
     
     
-   profiles(iprof) % t(:) = temp(:,iprof)
-   profiles(iprof) % p(:) = pstd(:,iprof)
-   
+    profiles(iprof) % t(:) = temp(:,iprof)
+    profiles(iprof) % p(:) = pstd(:,iprof)
  
-    
-   ! profiles(iprof) % o3(:) = ozmr
+    profiles(iprof) % o3(:) = max(ozmr(:,iprof),0.1001E-10)
    
-   profiles(iprof) % q(:) = wvmr(:, iprof) * Q_MIXRATIO_TO_PPMV /1000. 
-   profiles(iprof) % s2m % p =pstd(96,iprof)
-   profiles(iprof) % s2m % t = temp(96,iprof)
-   profiles(iprof) % s2m % q = wvmr(96,iprof)  * Q_MIXRATIO_TO_PPMV /1000.
-   profiles(iprof) % s2m % u = 0.
-   profiles(iprof) % s2m % v = 0.
-   profiles(iprof) % s2m % wfetc = 1000000.
-   profiles(iprof) % skin % t = temp(96,iprof) + 5.
-   profiles(iprof) % zenangle = min(theta(iprof),85.29)
-   profiles(iprof) % azangle = 0.
-   profiles(iprof) % latitude = 45.
-   profiles(iprof) % longitude = 19.
-  ! profiles(iprof) % zenangle = theta
-  ! profiles(iprof) % zenangle = theta
+    profiles(iprof) % q(:) = wvmr(:, iprof) * Q_MIXRATIO_TO_PPMV /1000. 
+    profiles(iprof) % s2m % p =pstd(96,iprof)
+    profiles(iprof) % s2m % t = temp(96,iprof)
+    profiles(iprof) % s2m % q = wvmr(96,iprof)  * Q_MIXRATIO_TO_PPMV /1000.
+    profiles(iprof) % s2m % u = 0.
+    profiles(iprof) % s2m % v = 0.
+    profiles(iprof) % s2m % wfetc = 1000000.
+    profiles(iprof) % skin % t = temp(96,iprof) + 5.
+    profiles(iprof) % zenangle = min(theta(iprof),85.29)
+    profiles(iprof) % azangle = 0.
+    profiles(iprof) % latitude = 45.
+    profiles(iprof) % longitude = 19.
   
   ENDDO
   CLOSE(iup)

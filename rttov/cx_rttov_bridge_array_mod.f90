@@ -179,9 +179,9 @@ subroutine compute_transmission_rttov ( &
   opts % rt_mw % clw_scheme          = 0
   opts % config % verbose            = .FALSE.  ! Enable printing of warnings
   
-  
- 
- 
+  print*,ozmr
+ stop
+ d
  
  
  
