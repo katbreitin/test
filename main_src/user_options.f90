@@ -1274,11 +1274,20 @@ contains
          if (Sensor%Chan_On_Flag_Default(20) == 1) then 
             Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_038"
          endif
+         if (Sensor%Chan_On_Flag_Default(37) == 1) then 
+            Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_062"
+         endif
          if (Sensor%Chan_On_Flag_Default(27) == 1) then 
             Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_067"
          endif
+         if (Sensor%Chan_On_Flag_Default(28) == 1) then 
+            Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_073"
+         endif
          if (Sensor%Chan_On_Flag_Default(29) == 1) then 
             Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_085"
+         endif
+         if (Sensor%Chan_On_Flag_Default(30) == 1) then 
+            Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_097"
          endif
          if (Sensor%Chan_On_Flag_Default(31) == 1) then 
             Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_110"
@@ -1288,6 +1297,15 @@ contains
          endif
          if (Sensor%Chan_On_Flag_Default(33) == 1) then 
             Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_133"
+         endif
+         if (Sensor%Chan_On_Flag_Default(34) == 1) then 
+            Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_136"
+         endif
+         if (Sensor%Chan_On_Flag_Default(35) == 1) then 
+            Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_139"
+         endif
+         if (Sensor%Chan_On_Flag_Default(36) == 1) then 
+            Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_142"
          endif
          !-- take off first "_"
          strlen  = len_trim(Acha_Mode_Temp)
