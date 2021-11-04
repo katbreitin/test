@@ -53,6 +53,7 @@ module AWG_CLOUD_HEIGHT
 !  110_120_133
 !  067_085_110_120
 !  085_110_120_133
+!  062_085_110_120_133
 !  067_085_110_120_133
 !  110_133_136_139_142
 !  085_110_120_133_136_139_142 - 8.5,11,12,13.4,13.6,13.9 and 14.2 micron
@@ -142,7 +143,7 @@ module AWG_CLOUD_HEIGHT
   integer(kind=int4), private, PARAMETER:: MISSING_VALUE_integer4 = -999
   type(ACHA_SYMBOL_STRUCT), private :: Symbol
 
-  integer, public, parameter:: Num_ACHA_Modes = 19
+  integer, public, parameter:: Num_ACHA_Modes = 20
   integer, public, parameter:: ACHA_Mode_Max_Length = 31
   character(len=ACHA_Mode_Max_Length), dimension(Num_ACHA_Modes), public, parameter:: ACHA_Mode_Values = &
      (/'off                            ', &
@@ -160,6 +161,7 @@ module AWG_CLOUD_HEIGHT
        '110_120_133                    ', &
        '067_085_110_120                ', &
        '085_110_120_133                ', &
+       '062_085_110_120_133            ', &
        '067_085_110_120_133            ', &
        '110_133_136_139_142            ', &
        '085_110_120_133_136_139_142    ', &
@@ -1293,6 +1295,9 @@ if (FULL_RETRIEVAL) then
   !--- null profile pointers each time 
   call NULL_PIX_POINTERS(Input, ACHA_RTM_NWP)
 
+  !--- set output packed quality flags
+  call SET_OUTPUT_PACKED_QF(Output,Elem_Idx,Line_Idx)
+
  end do Element_Loop
 end do Line_Loop
 
@@ -2311,22 +2316,41 @@ subroutine NULL_PIX_POINTERS(Input, ACHA_RTM_NWP)
 
    ACHA_RTM_NWP%Z_Prof => NULL() 
 
+   if (Input%Chan_On_038um == Symbol%YES) then
+     ACHA_RTM_NWP%Atm_Rad_Prof_038um =>  NULL()
+     ACHA_RTM_NWP%Atm_Trans_Prof_038um =>  NULL()
+     ACHA_RTM_NWP%Black_Body_Rad_Prof_038um => NULL()
+   endif
+   if (Input%Chan_On_062um == Symbol%YES) then
+     ACHA_RTM_NWP%Atm_Rad_Prof_062um =>  NULL()
+     ACHA_RTM_NWP%Atm_Trans_Prof_062um =>  NULL()
+     ACHA_RTM_NWP%Black_Body_Rad_Prof_062um => NULL()
+   endif
    if (Input%Chan_On_067um == Symbol%YES) then
      ACHA_RTM_NWP%Atm_Rad_Prof_067um =>  NULL()
      ACHA_RTM_NWP%Atm_Trans_Prof_067um =>  NULL()
      ACHA_RTM_NWP%Black_Body_Rad_Prof_067um => NULL()
    endif
+   if (Input%Chan_On_073um == Symbol%YES) then
+     ACHA_RTM_NWP%Atm_Rad_Prof_073um =>  NULL()
+     ACHA_RTM_NWP%Atm_Trans_Prof_073um =>  NULL()
+     ACHA_RTM_NWP%Black_Body_Rad_Prof_073um => NULL()
+   endif
    if (Input%Chan_On_085um == Symbol%YES) then
      ACHA_RTM_NWP%Atm_Rad_Prof_085um =>  NULL()
      ACHA_RTM_NWP%Atm_Trans_Prof_085um =>  NULL()
+     ACHA_RTM_NWP%Black_Body_Rad_Prof_085um => NULL()
    endif
-
+   if (Input%Chan_On_097um == Symbol%YES) then
+     ACHA_RTM_NWP%Atm_Rad_Prof_097um =>  NULL()
+     ACHA_RTM_NWP%Atm_Trans_Prof_097um =>  NULL()
+     ACHA_RTM_NWP%Black_Body_Rad_Prof_097um => NULL()
+   endif
    if (Input%Chan_On_104um == Symbol%YES) then
       ACHA_RTM_NWP%Atm_Rad_Prof_104um => NULL()
       ACHA_RTM_NWP%Atm_Trans_Prof_104um => NULL()
       ACHA_RTM_NWP%Black_Body_Rad_Prof_104um => NULL()
    endif
-     
    if (Input%Chan_On_110um == Symbol%YES) then
       ACHA_RTM_NWP%Atm_Rad_Prof_110um => NULL()
       ACHA_RTM_NWP%Atm_Trans_Prof_110um => NULL()
@@ -2335,10 +2359,27 @@ subroutine NULL_PIX_POINTERS(Input, ACHA_RTM_NWP)
    if (Input%Chan_On_120um == Symbol%YES) then
       ACHA_RTM_NWP%Atm_Rad_Prof_120um => NULL()
       ACHA_RTM_NWP%Atm_Trans_Prof_120um => NULL()
+      ACHA_RTM_NWP%Black_Body_Rad_Prof_120um => NULL()
    endif
    if (Input%Chan_On_133um == Symbol%YES) then
       ACHA_RTM_NWP%Atm_Rad_Prof_133um => NULL()
       ACHA_RTM_NWP%Atm_Trans_Prof_133um => NULL()
+      ACHA_RTM_NWP%Black_Body_Rad_Prof_133um => NULL()
+   endif
+   if (Input%Chan_On_136um == Symbol%YES) then
+      ACHA_RTM_NWP%Atm_Rad_Prof_136um => NULL()
+      ACHA_RTM_NWP%Atm_Trans_Prof_136um => NULL()
+      ACHA_RTM_NWP%Black_Body_Rad_Prof_136um => NULL()
+   endif
+   if (Input%Chan_On_139um == Symbol%YES) then
+      ACHA_RTM_NWP%Atm_Rad_Prof_139um => NULL()
+      ACHA_RTM_NWP%Atm_Trans_Prof_139um => NULL()
+      ACHA_RTM_NWP%Black_Body_Rad_Prof_139um => NULL()
+   endif
+   if (Input%Chan_On_142um == Symbol%YES) then
+      ACHA_RTM_NWP%Atm_Rad_Prof_142um => NULL()
+      ACHA_RTM_NWP%Atm_Trans_Prof_142um => NULL()
+      ACHA_RTM_NWP%Black_Body_Rad_Prof_142um => NULL()
    endif
  
 end subroutine NULL_PIX_POINTERS
@@ -3053,6 +3094,17 @@ subroutine COMPUTE_Y(Acha_Mode_Flag,Input,Element_Idx_Min, Line_Idx_Min, Elem_Id
        y_variance(2) = Btd_110um_067um_Std**2 
        y_variance(3) = Btd_110um_085um_Std**2 
        y_variance(4) = Btd_110um_120um_Std**2 
+      case("062_085_110_120_133")
+       y(1) =  Input%Bt_110um(Elem_Idx,Line_Idx)
+       y(2) =  Input%Bt_110um(Elem_Idx,Line_Idx) -  Input%Bt_062um(Elem_Idx,Line_Idx)
+       y(3) =  Input%Bt_110um(Elem_Idx,Line_Idx) -  Input%Bt_085um(Elem_Idx,Line_Idx)
+       y(4) =  Input%Bt_110um(Elem_Idx,Line_Idx) -  Input%Bt_120um(Elem_Idx,Line_Idx)
+       y(5) =  Input%Bt_110um(Elem_Idx,Line_Idx) -  Input%Bt_133um(Elem_Idx,Line_Idx)
+       y_variance(1) = Bt_110um_Std**2
+       y_variance(2) = Btd_110um_062um_Std**2 
+       y_variance(3) = Btd_110um_085um_Std**2 
+       y_variance(4) = Btd_110um_120um_Std**2 
+       y_variance(5) = Btd_110um_133um_Std**2 
       case("067_085_110_120_133")
        y(1) =  Input%Bt_110um(Elem_Idx,Line_Idx)
        y(2) =  Input%Bt_110um(Elem_Idx,Line_Idx) -  Input%Bt_067um(Elem_Idx,Line_Idx)

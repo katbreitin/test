@@ -986,6 +986,31 @@ subroutine COMPUTE_FORWARD_MODEL_AND_KERNEL( &
         K(4,3) = dBtd_110_120_dbeta
         if (nx > 3) K(4,4) = dBtd_110_120_dTs
         if (nx > 4) K(4,5) = dBtd_110_120_dalpha
+     case('062_085_110_120_133') !11,12,8.5,13.3,6.7
+        f(2) = f_Btd_110_062
+        f(3) = f_Btd_110_085
+        f(4) = f_Btd_110_120
+        f(5) = f_Btd_110_133
+        K(2,1) = dBtd_110_062_dTc     
+        K(2,2) = dBtd_110_062_dec    
+        K(2,3) = dBtd_110_062_dbeta
+        if (nx > 3) K(2,4) = dBtd_110_062_dTs
+        if (nx > 4) K(2,5) = dBtd_110_062_dalpha
+        K(3,1) = dBtd_110_085_dTc     
+        K(3,2) = dBtd_110_085_dec    
+        K(3,3) = dBtd_110_085_dbeta
+        if (nx > 3) K(3,4) = dBtd_110_085_dTs
+        if (nx > 4) K(3,5) = dBtd_110_085_dalpha
+        K(4,1) = dBtd_110_120_dTc     
+        K(4,2) = dBtd_110_120_dec    
+        K(4,3) = dBtd_110_120_dbeta
+        if (nx > 3) K(4,4) = dBtd_110_120_dTs
+        if (nx > 4) K(4,5) = dBtd_110_120_dalpha
+        K(5,1) = dBtd_110_133_dTc     
+        K(5,2) = dBtd_110_133_dec    
+        K(5,3) = dBtd_110_133_dbeta
+        if (nx > 3) K(5,4) = dBtd_110_133_dTs
+        if (nx > 4) K(5,5) = dBtd_110_133_dalpha
      case('067_085_110_120_133') !11,12,8.5,13.3,6.7
         f(2) = f_Btd_110_067
         f(3) = f_Btd_110_085
@@ -1164,6 +1189,12 @@ subroutine COMPUTE_FORWARD_MODEL_AND_KERNEL( &
        Emiss_Vector(2) = Emiss_067um
        Emiss_Vector(3) = Emiss_085um
        Emiss_Vector(4) = Emiss_120um
+     case('062_085_110_120_133')  
+       Emiss_Vector(1) = Emiss_110um
+       Emiss_Vector(2) = Emiss_062um
+       Emiss_Vector(3) = Emiss_085um
+       Emiss_Vector(4) = Emiss_120um
+       Emiss_Vector(5) = Emiss_133um
      case('067_085_110_120_133')  
        Emiss_Vector(1) = Emiss_110um
        Emiss_Vector(2) = Emiss_067um
