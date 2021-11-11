@@ -38,9 +38,9 @@ IMPLICIT NONE
    ancil_data_path = '/Users/awalther/DATA/Ancil_data/clavrx_ancil_data/'
    temp = tstd  * 0.5
    wvmr = wstd  * 0.0000001
-   ozmr = ostd 
+   ozmr = 4.*ostd 
    theta = 0.
-   sensor='MODIS'
+   sensor='MODIS-AQUA'
    
    
    
@@ -52,7 +52,7 @@ IMPLICIT NONE
    
    kban_in = 32
    use_modis_channel_equivalent  = .true.
-  ii =20
+  ii = 30
 
     call compute_transmission_rttov ( &
             ancil_data_path &
@@ -69,4 +69,7 @@ IMPLICIT NONE
             
             write(*,'(1A,I2,2A,2x,f7.4)')  ' RTTOV Tot transmission for channel ' ,ii ,' ' &
                , trim(sensor), taut_rttovx(101,10)
+               
+               print*,taut_rttovx(:,10)
+               
 end program cx_rttov_test
