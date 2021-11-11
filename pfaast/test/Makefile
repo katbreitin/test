@@ -1,4 +1,4 @@
-RTTOVDIR=/Users/awalther/SOFTWARE/RTM/RTTOV123/
+RTTOVDIR=/DATA/SW_EXTERNAL/RTM/RTTOV123/
 fc = gfortran -g -O0
 fc = gfortran -I$(RTTOVDIR)/mod -I$(RTTOVDIR)/include -fPIC -O3 -fopenmp -ffree-line-length-none -cpp 
 main_dir=../../main_src/
@@ -10,7 +10,7 @@ pfaast_dir = ../
 
 .SUFFIXES: .f90 .F .o
 
-RTTOVDIR=/Users/awalther/SOFTWARE/RTM/RTTOV123/
+RTTOVDIR=/DATA/SW_EXTERNAL/RTM/RTTOV123/
 
 FC=gfortran
 FFLAGS= -I$(RTTOVDIR)/mod -I$(RTTOVDIR)/include -fPIC -O3 -fopenmp -ffree-line-length-none -cpp
