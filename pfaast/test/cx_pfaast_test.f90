@@ -34,13 +34,14 @@ do i=1,9
 
 
    print*
-   print*,trim(sensor_list(i))
+   print*,trim(sensor_list(3))
    call coef % read_it (trim(sensor_list(i)),trim(ancil_path))
-
+   
   
   
    print*,shape(coef % wvp_liquid)
-  ! print*,coef % modis_channel_eqv
+  
+   print*,coef % modis_channel_eqv
    
    kban = minloc ( abs ( coef % modis_channel_eqv - kban_modis ), 1)
    print*,'Native channel: ',kban
