@@ -24,8 +24,8 @@ module CLAVRX_STATIC_NAV_MODULE
     , SOLAR_OBS_TYPE
     
   use CX_NETCDF4_MOD,only:  &
-      close_netcdf &
-    , open_netcdf &
+      CLOSE_NETCDF &
+    , OPEN_NETCDF &
     , read_abi_kappa0 &
     , READ_ABI_MAX_FOCAL_PLANE_TEMP &
     , read_abi_time &
@@ -851,7 +851,7 @@ subroutine READ_SEGMENT_LEVEL1B_VER2(Ncid,Chan_Name,Segment_Number, Number_Of_Li
    integer:: Y_Res_Stride, Chan_Stride
    integer:: X_Res_Offset
    integer:: Y_Res_Offset
-   integer:: i, j, ni, nj, i1, i2, j1, j2, is, js, n
+   integer:: i, j, ni, nj, i1, i2, j1, j2, is, js, n, nn
 
    integer, dimension(2):: start_2d, stride_2d, count_2d
    
@@ -937,21 +937,42 @@ subroutine READ_SEGMENT_LEVEL1B_VER2(Ncid,Chan_Name,Segment_Number, Number_Of_Li
    endif
 
    !--- process native array into thermal band resolution
-   !
    n = X_Stride*Y_Stride
    do i = 1, nx
       is = (i-1)*X_Stride + 1 + X_Res_Offset 
       i1 = (i-1)*X_Stride + 1
       i2 = i1 + X_Stride - 1
+!     i1 = min(nx,max(1,i1))
+!     i2 = min(nx,max(1,i2))
       do j = 1, ny
            js = (j-1)*Y_Stride + 1 + Y_Res_Offset 
            j1 = (j-1)*Y_Stride + 1
            j2 = j1 + Y_Stride - 1
+
+!          j1 = min(ny,max(1,j1))
+!          j2 = min(ny,max(1,j2))
+!          n = (i2-i1+1)*(j2-j1+1)
            Output_Seg(i,j) = Native_Output_Seg(is,js)
            DQF_Seg(i,j) = Native_DQF_Seg(is,js)
            if (Chan_Average_Flag >= 1) then
-               Output_Seg(i,j) = sum(Native_Output_Seg(i1:i2,j1:j2))/n
-               DQF_Seg(i,j) = sum(Native_DQF_Seg(i1:i2,j1:j2))/n
+
+               if (minval(Native_Output_Seg(i1:i2,j1:j2)) == Missing_Value_Real4) then
+                   Output_Seg(i,j) = Missing_Value_Real4
+                   DQF_Seg(i,j) =  Missing_Value_Int1
+               else
+                   nn = (i2-i1+1)*(j2-j1+1)
+                   Output_Seg(i,j) = sum(Native_Output_Seg(i1:i2,j1:j2))/nn
+                   DQF_Seg(i,j) = sum(Native_DQF_Seg(i1:i2,j1:j2))/nn
+                   if (nn /= n) stop
+               endif      
+
+!              if (X_Stride == 4) then 
+!                 print *,  nn, n
+!                 write(6,fmt="(20F8.1)") Native_Output_Seg(i1:i2,j1:j2)
+!                 print *, Output_Seg(i,j)
+!                 if (nn /= n) stop
+!              endif
+
            endif
            if (Chan_Average_Flag == 2) then
                Min_Output_Seg(i,j) = minval(Native_Output_Seg(i1:i2,j1:j2))
