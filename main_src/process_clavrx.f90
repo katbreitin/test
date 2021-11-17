@@ -778,7 +778,6 @@
       if (Level1b_Exists .eqv. .FALSE.) then
          call MESG( "ERROR: Level-1b file not found, skipping this file", level=5, color=1)
          print*,trim(Image%Level1b_Path)//trim(File_1b_Temp)
-         print*,'gggg'
          cycle file_loop
       endif
       
@@ -1140,7 +1139,9 @@
          !------------------------------------------------------------------
          ! --- if CALIOP file not found skip level1b file
          !------------------------------------------------------------------
-         if (Skip_L1b_File_Flag) cycle Segment_loop
+         if (Skip_L1b_File_Flag) then
+             exit
+         endif
   
          !-------------------------------------------------------------------
          ! Modify Chan_On flags to account for channels read in
