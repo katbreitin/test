@@ -972,15 +972,7 @@ subroutine READ_SEGMENT_LEVEL1B_VER2(Ncid,Chan_Name,Segment_Number, Number_Of_Li
                    nn = (i2-i1+1)*(j2-j1+1)
                    Output_Seg(i,j) = sum(Native_Output_Seg(i1:i2,j1:j2))/nn
                    DQF_Seg(i,j) = sum(Native_DQF_Seg(i1:i2,j1:j2))/nn
-                   if (nn /= n) stop
                endif      
-
-!              if (X_Stride == 4) then 
-!                 print *,  nn, n
-!                 write(6,fmt="(20F8.1)") Native_Output_Seg(i1:i2,j1:j2)
-!                 print *, Output_Seg(i,j)
-!                 if (nn /= n) stop
-!              endif
 
            endif
            if (Chan_Average_Flag == 2) then
