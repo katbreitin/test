@@ -64,7 +64,16 @@ module CLAVRX_STATIC_NAV_MODULE
 
   use PLANCK_MOD, only: PLANCK_TEMP_FAST, CONVERT_RADIANCE
   
-  use CALIBRATION_CONSTANTS_MOD
+  use CALIBRATION_CONSTANTS_MOD, only: Band2_Correction_Factor, &
+    Planck_Nu &
+    , Rad_to_Ref_Fac_2_10um &
+    , Rad_to_Ref_Fac_1_60um &
+    , Rad_to_Ref_Fac_1_38um &
+    , Rad_to_Ref_Fac_0_86um &
+    , Rad_to_Ref_Fac_0_65um &
+    , Rad_to_Ref_Fac_0_55um &
+    , Rad_to_Ref_Fac_0_47um &
+    , band2_correction_start_date 
 
   use CX_DATE_TIME_TOOLS_MOD, only: compute_time_hours
 
@@ -331,7 +340,7 @@ module CLAVRX_STATIC_NAV_MODULE
           exit
         end if
       end do
-      
+      print*,Geospatial_Lon_Center_Sn , Geospatial_Lon_Center_L1b
       !--- check values use 0.01 as a threshold for difference
       if ((abs(Geospatial_Lon_Center_Sn - Geospatial_Lon_Center_L1b) .gtr. 0.01) .or.  &
           (abs(Geospatial_Lat_Center_Sn - Geospatial_Lat_Center_L1b) .gtr. 0.01)) then
