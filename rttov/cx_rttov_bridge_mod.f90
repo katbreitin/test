@@ -22,7 +22,11 @@ module cx_rttov_bridge_mod
 
   USE rttov_unix_env, ONLY : rttov_exit
   
-  use cx_rttov_mapping_mod, ONLY: channel_map
+  use cx_rttov_mapping_mod, only: channel_map
+
+  use PIXEL_COMMON_MOD, only: Geo
+
+  use CONSTANTS_MOD, only: Sym
   
 
   IMPLICIT NONE
@@ -128,7 +132,11 @@ subroutine compute_transmission_rttov ( &
   opts % rt_ir % addclouds           = .FALSE. ! Don't include cloud effects
   opts % rt_ir % addaerosl           = .FALSE. ! Don't include aerosol effects
 
-  opts % rt_ir % ozone_data          = .TRUE. ! Set the relevant flag to .TRUE.
+  if (minval(Geo%Space_Mask) == sym%NO) then
+    opts % rt_ir % ozone_data          = .TRUE. ! Set the relevant flag to .TRUE.
+  else
+    opts % rt_ir % ozone_data          = .FALSE. ! Set the relevant flag to .TRUE.
+  endif
   opts % rt_ir % co2_data            = .FALSE. !   when supplying a profile of the
   opts % rt_ir % n2o_data            = .FALSE. !   given trace gas (ensure the
   opts % rt_ir % ch4_data            = .FALSE. !   coef file supports the gas)
