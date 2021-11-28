@@ -512,7 +512,7 @@ ifdef rttov_libs
 cx_rttov_mapping_mod.o:$(RTTOV_DIR)/cx_rttov_mapping_mod.f90  $(RTTOV_LIBS)
 	$(fc) -c $(fflags) $(cppflags) $(cpp)  $(fflags_clavr) $(RTTOV_LLIBS) -I$(RTTOVDIR)/mod/ -I$(RTTOVDIR)/include/ $(RTTOV_DIR)/cx_rttov_mapping_mod.f90
 cx_rttov_bridge_mod.o:$(RTTOV_DIR)/cx_rttov_bridge_mod.f90 cx_rttov_mapping_mod.o $(RTTOV_LIBS)
-	$(fc) -c $(fflags) $(LDFLAGS_HDF5_RTTOV) $(cppflags) $(cpp) $(RTTOV_LLIBS)  -I$(RTTOVDIR)/mod/ -I$(RTTOVDIR)/include/ $(RTTOV_DIR)/cx_rttov_bridge_mod.f90
+	$(fc) -c $(fflags) $(LDFLAGS_HDF5_RTTOV) $(cppflags) $(cpp) $(RTTOV_LLIBS)  -I$(RTTOVDIR)/mod/ -I$(RTTOVDIR)/include/ $(RTTOV_DIR)/cx_rttov_bridge_mod.f90 pixel_common_mod.o constants_mod.o
 #cx_rttov_sfc_emiss.o:$(RTTOV_DIR)/cx_rttov_sfc_emiss.f90 $(RTTOV_DIR)/cx_rttov_mapping_mod.o $(RTTOV_LIBS)
 #	$(fc) -c $(fflags) $(cppflags) $(cpp) $(RTTOV_LLIBS) -I$(RTTOVDIR)/mod/ -I$(RTTOVDIR)/include/ $(RTTOV_DIR)/cx_rttov_sfc_emiss.f90  
 endif

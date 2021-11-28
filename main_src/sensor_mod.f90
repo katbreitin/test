@@ -1967,6 +1967,8 @@ module SENSOR_MOD
    subroutine SET_FILE_DIMENSIONS(Level1b_Full_Name,AREAstr,Nrec_Avhrr_Header, Ierror)
 
       use CX_READ_AHI_MOD, only : AHI_SEGMENT_INFORMATION_REGION, AHI_CONFIG_TYPE
+      use file_tools
+      
                                                                
       character(len=*), intent(in) :: Level1b_Full_Name
       type (AREA_STRUCT), intent(in) :: AREAstr ! AVHRR only
@@ -1980,6 +1982,11 @@ module SENSOR_MOD
       
       type ( Ahi_Config_Type ) :: Ahi_Config
       integer :: Offset(2), count(2)
+      integer :: cc
+      logical :: rel_path = .TRUE.
+      character(len=1024), dimension(1) :: file_v03img
+      character(len=15) :: time_identifier
+      
 
       Ierror = sym%NO
 
@@ -2037,7 +2044,25 @@ module SENSOR_MOD
       if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA-HRES') then
        
           Image%Number_Of_Elements = 6400
-          Image%Number_Of_Lines    = 6464
+          
+          
+          time_identifier =  trim(Image%Level1b_Name(9:23))
+          file_v03img = file_search( trim(Image%Level1b_Path),'VNP03IMG'//trim(time_identifier)//'*.nc',cc,rel_path)
+          
+          if ( cc .eq. 0) then
+              print*,'we need V03IMG file ..'
+              return ! skip file
+          end if
+
+          call READ_NUMBER_OF_SCANS_VIIRS_NASA (trim(file_v03img(1)),Image%Number_Of_Lines,Ierror_Nscans)
+          Image%Number_Of_Lines = Image%Number_Of_Lines * 2
+          
+          ! If error reading, then go to next file
+          if (Ierror_Nscans /= 0) then
+            Ierror = sym%YES
+            return      ! skips file
+          endif
+          
       end if
 
       if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA') then
