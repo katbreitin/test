@@ -689,10 +689,12 @@ contains
         elseif (trim(fargv) == "-acha_x") then
            call getarg(i+1,junk)
            read(junk,'(I5)') Elem_Abs_Idx_ACHA_Dump
+           print *, "acha_x ", Elem_Abs_Idx_ACHA_Dump
 
         elseif (trim(fargv) == "-acha_y") then
            call getarg(i+1,junk)
            read(junk,'(I5)') Line_Abs_Idx_ACHA_Dump
+           print *, "acha_y ", Line_Abs_Idx_ACHA_Dump
 
         elseif (trim(fargv) == "-use_iband") then
            Use_Iband = .true.

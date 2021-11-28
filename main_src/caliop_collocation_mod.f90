@@ -30,7 +30,7 @@ module CALIOP_COLLOCATION_MOD
       , Geo &
       , Image &
       , Month &
-      ,Day_of_Month &
+      , Day_of_Month &
       , Caliop_Num_Cld_Layers &
       , Caliop_Cod & 
       , Caliop_Cld_Height

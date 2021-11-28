@@ -2625,7 +2625,18 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Actual_Range = [0.0,1200.0]
             Sds_Info(Var_Idx)%Long_Name = "Cloud Water Path from NWP Ancillary Data"
             Sds_Info(Var_Idx)%Units = "g m-2"
-            if (allocated(NWP_PIX%Cwp)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => NWP_PIX%Cwp
+         case("cld_iwp_nwp")
+            Sds_Info(Var_Idx)%Standard_Name = "cld_iwp_nwp"
+            Sds_Info(Var_Idx)%Actual_Range = [0.0,1200.0]
+            Sds_Info(Var_Idx)%Long_Name = "Cloud Ice Path from NWP Ancillary Data"
+            Sds_Info(Var_Idx)%Units = "g m-2"
+            if (allocated(NWP_PIX%Iwp)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => NWP_PIX%Iwp
+         case("cld_lwp_nwp")
+            Sds_Info(Var_Idx)%Standard_Name = "cld_lwp_nwp"
+            Sds_Info(Var_Idx)%Actual_Range = [0.0,1200.0]
+            Sds_Info(Var_Idx)%Long_Name = "Cloud Liquid Water Path from NWP Ancillary Data"
+            Sds_Info(Var_Idx)%Units = "g m-2"
+            if (allocated(NWP_PIX%Lwp)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => NWP_PIX%Lwp
          case("surface_relative_humidity_nwp")
             Sds_Info(Var_Idx)%Standard_Name = "surface_relative_humidity_nwp"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,110.0]
@@ -3106,9 +3117,6 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
   character(len=1020):: File_1b_root
   character(len=1020):: File_Level2
 
-  !character(len=1020):: Long_Name_Temp
-  !character(len=1020):: Standard_Name_Temp
-  !character(len=128):: Sds_Name
   character(len=8):: Orbit_Number_String
 
   integer(kind=int4):: blank_int4
@@ -3163,7 +3171,7 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
   !--- special processing for viirs - remove hdf suffix - this hard coded for
   if (trim(Sensor%Sensor_Name) == 'VIIRS') then
     StrLen = len_trim(File_1b_Root)-34 -7
-    File_1b_Root = File_1b_Root(7:len_trim(File_1b_Root)-34)
+    File_1b_Root(1:Strlen) = File_1b_Root(7:len_trim(File_1b_Root)-34)
   endif
 
   !--- special processing for viirs nasa - remove nc suffix - this hard coded for
