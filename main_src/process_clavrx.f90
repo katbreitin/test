@@ -1130,7 +1130,7 @@
                  Cost_Aux,Pc_Top1_Aux,Pc_Top2_Aux,Pc_Uncertainty1_Aux,Pc_Uncertainty2_Aux, &
                  Tau_Aux,Cld_Phase_Aux)
          endif
-
+         
          !------------------------------------------------------------------
          ! Apply spatial limits
          !------------------------------------------------------------------
