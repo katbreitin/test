@@ -80,14 +80,11 @@ contains
       if ( postfix .eq. 'hdf') file_type = 1
       if ( postfix .eq. '.nc') then
         file_type = 2
-        ! 2020/09/25: AW masked this.
-        ! there might be a good reason to have it...
-
-        ! some files with .nc are in reality h5 files
+        ! some files with .ncshould be read with h5 tools
         call H5Fis_hdf5_f(file,status,hdferr)
         if (status) file_type = 3
       end if
-      if ( postfix .eq. '.h5') file_type = 3
+      if ( postfix .eq. '.h5') file_type  = 3
 
    end function file_type
 
@@ -135,6 +132,7 @@ contains
       ftype = 1 ! todo define params for HDF4, HDF5(2) and NCDF(3), not_existing(-1), not defined(0)
       ftype = file_type(file)
 
+
       !#ifdef MFHDF
       if ( ftype .eq. 1) cx_sds_finfo = hdf_get_finfo(file, nsds, sds_name, natt, att_name)
       !#endif
@@ -152,7 +150,7 @@ contains
    !
    !
    !
-      function cx_sds_varinfo ( file , var, ftype,  natt, att_name, ndim, dim )
+   function cx_sds_varinfo ( file , var, ftype,  natt, att_name, ndim, dim )
       implicit none
       
       integer :: cx_sds_varinfo
@@ -202,13 +200,17 @@ contains
       type(cx_att_type),  allocatable :: attrs(:)
       
       integer :: i
+      
+      cx_sds_att = 0
+      
       ftype = file_type(file)
 
       if ( ftype .eq. 1 ) then
-         !#ifdef MFHDF
+        
          cx_sds_att = hdf_get_file_att(trim(file), natt, attrs)
-      !#endif
+      
       end if
+      
       if ( ftype .eq. 2 ) then
          cx_sds_att = ncdf_get_file_att(trim(file), natt, attrs)
       end if
@@ -330,15 +332,22 @@ contains
       if ( ftype .eq. 2 ) then
 
          cx_sds_read_raw = ncdf_get_file_sds(file, nsds,sds,1, (/sds_name/) &
-         ,start_inp=start,stride_inp = stride,count_inp =count)
+         ,start_inp=start,stride_inp = stride,count_inp = count)
+         
+          if ( cx_sds_read_raw .eq. -1 ) then
+            cx_sds_read_raw = h5_get_file_sds(file, nsds,sds, (/sds_name/)  &
+         ,start_inp=start,stride_inp = stride,count_inp =count) 
           
+          end if
+         
       end if
 
       if ( ftype .eq. 3 ) then
           
-         cx_sds_read_raw = h5_get_file_sds(file, nsds,sds,1, (/sds_name/)  &
+         cx_sds_read_raw = h5_get_file_sds(file, nsds,sds, (/sds_name/)  &
          ,start_inp=start,stride_inp = stride,count_inp =count) 
              
+           
         
       end if
 		
@@ -422,35 +431,31 @@ contains
     real, allocatable:: temp_1d(:)
 
     type ( cx_sds_type), allocatable, target :: sds(:)
-    type ( cx_sds_data_type), pointer :: pd
-    type ( cx_sds_type), pointer :: ps
+    type ( cx_sds_data_type), pointer :: pd => null()
+    type ( cx_sds_type), pointer :: ps => null()
 
     integer :: dim1, dim2
     real :: add_offset(1)
     real :: slope (1)
     real :: missing(1)
+    integer :: MISS_VALUE(1)
     real :: scaled(1)
     logical :: att_exist
     
     ! -  executable
        
     if (  cx_sds_read_raw ( file, sds_name, sds, start=start, stride=stride, count=count) < 0 ) goto 9999
-    
+   
     pd=>sds(1) % data
     ps=>sds(1)
     
     add_offset = ps %get_att('add_offset')
-    
-   
-    
     slope = ps%get_att('scale_factor')
-    
     scaled = ps%get_att('SCALED')
-    missing = ps%get_att('missing',exist = att_exist)
-   
-   
-    if ( .not. att_exist) missing = ps%get_att('_FillValue',exist = att_exist)
-      
+    MISS_VALUE = ps%get_att('missing',exist = att_exist)
+  
+    if ( .not. att_exist) MISS_VALUE = ps%get_att('_FillValue',exist = att_exist)
+     
     if ( add_offset(1) .NE. -999.) scaled(1) = 1
     ! for  ATMS files which have bad attribute setting
     if (( add_offset(1) .EQ. -999.) .AND. (slope(1) .gt. 0)) then
@@ -478,7 +483,7 @@ contains
         out = out * slope(1) + add_offset(1)
       end if
       
-      where (reshape (temp_1d,(/dim1,dim2/)) .EQ. missing(1))
+      where (reshape (temp_1d,(/dim1,dim2/)) .EQ. MISS_VALUE(1))
         out = -999.
       end where
     
@@ -491,9 +496,10 @@ contains
 9999 continue
     ! cx_sds_read_2d_real = -1
      if ( allocated(temp_1d)) deallocate ( temp_1d)
-    call pd % deallocate
+    if ( associated(pd)) call pd % deallocate
+    
     pd=>null()
-    call ps % deallocate()
+    if ( associated(ps)) call ps % deallocate()
     ps=>null()
     if (allocated(sds)) deallocate(sds)
     
@@ -509,8 +515,8 @@ contains
      real, intent(out), allocatable :: out(:,:,:)
      real, allocatable:: temp_1d(:)
      type ( cx_sds_type), allocatable, target :: sds(:)
-     type ( cx_sds_data_type), pointer :: pd
-     type ( cx_sds_type), pointer :: ps
+     type ( cx_sds_data_type), pointer :: pd => null()
+     type ( cx_sds_type), pointer :: ps => null()
      integer :: dim1, dim2, dim3
      real :: add_offset(1)
      real :: slope (1)
@@ -555,7 +561,7 @@ contains
      cx_sds_read_3d_real = 0
 9999 continue
      !cx_sds_read_2d_real = -1
-    call pd % deallocate 
+   if ( associated(pd)) call pd % deallocate
     pd=>null()
     ps=>null()
     if (allocated(sds)) deallocate(sds)
@@ -571,8 +577,8 @@ contains
      real, intent(out), allocatable :: out(:,:,:,:)
      real, allocatable:: temp_1d(:)
      type ( cx_sds_type), allocatable, target :: sds(:)
-     type ( cx_sds_data_type), pointer :: pd
-     type ( cx_sds_type), pointer :: ps
+     type ( cx_sds_data_type), pointer :: pd => null()
+     type ( cx_sds_type), pointer :: ps => null()
      integer :: dim1, dim2, dim3,dim4
      real :: add_offset(1)
      real :: slope (1)
@@ -618,7 +624,7 @@ contains
      cx_sds_read_4d_real = 0
 9999 continue
      !cx_sds_read_2d_real = -1
-     call pd % deallocate 
+    if ( associated(pd)) call pd % deallocate
     pd=>null()
     ps=>null()
     if (allocated(sds)) deallocate(sds)
@@ -639,8 +645,8 @@ contains
      real, intent(out), allocatable :: out(:,:,:,:,:)
      real, allocatable:: temp_1d(:)
      type ( cx_sds_type), allocatable, target :: sds(:)
-     type ( cx_sds_data_type), pointer :: pd
-     type ( cx_sds_type), pointer :: ps
+     type ( cx_sds_data_type), pointer :: pd => null()
+     type ( cx_sds_type), pointer :: ps => null()
      integer :: dim1, dim2, dim3, dim4 , dim5
      real :: add_offset(1)
      real :: slope (1)
@@ -705,7 +711,7 @@ contains
      integer, optional, intent(in) :: start(:), stride(:), count(:)
      real, allocatable:: temp_1d(:)
      type ( cx_sds_type), allocatable, target :: sds(:)
-     type ( cx_sds_data_type), pointer :: pd
+     type ( cx_sds_data_type), pointer :: pd => null()
      type ( cx_sds_type), pointer :: ps
      integer :: dim1, dim2, dim3, dim4 , dim5,dim6
      real :: add_offset(1)
@@ -754,7 +760,7 @@ contains
      cx_sds_read_6d_real = 0
 9999 continue
      !cx_sds_read_2d_real = -1
-     call pd % deallocate 
+    if (associated(pd)) call pd % deallocate 
     pd=>null()
     ps=>null()
     if (allocated(sds)) deallocate(sds)
@@ -775,8 +781,8 @@ contains
      real, intent(out), allocatable :: out(:,:,:,:,:,:,:)
      real, allocatable:: temp_1d(:)
      type ( cx_sds_type), allocatable, target :: sds(:)
-     type ( cx_sds_data_type), pointer :: pd
-     type ( cx_sds_type), pointer :: ps
+     type ( cx_sds_data_type), pointer :: pd => null()
+     type ( cx_sds_type), pointer :: ps => null()
      integer :: dim1, dim2, dim3, dim4 , dim5, dim6, dim7
      real :: add_offset(1)
      real :: slope (1)

@@ -14,7 +14,7 @@ program cx_sds_test
 
    implicit none
    
-   character(len=1024) :: file_nc,file_h4,file_h5,file_hiirs
+   character(len=1024) :: file_nc,file_h4,file_h5,file_hiirs,fileh5_c
    include 'cx_sds_constants.inc'
 
 
@@ -34,20 +34,35 @@ program cx_sds_test
    real , allocatable :: sat_zen ( :)
    real,allocatable :: Rad_Hirs(:,:)
  
-  integer :: sds_start (2)
-      integer :: Sds_Count (2)
+   integer :: sds_start (2)
+  integer :: Sds_Count (2)
       logical :: existence
    character(len=300) :: file_list   
    file_list='test_files.txt'
    inquire ( FILE = file_list, EXIST = existence )
-   print*, existence
+  
    open (unit=24,file=file_list)
    read ( 24,fmt="(a)") file_nc
    read ( 24,fmt="(a)") file_h4
    read ( 24,fmt="(a)") file_h5
    read ( 24,fmt="(a)") file_hiirs
+   read ( 24,fmt="(a)") fileh5_c
+   read ( 24,fmt="(a)") fileh5_c
+   print*,trim(fileh5_c)
+   
+   !test = cx_sds_finfo(trim(fileh5_c), ftype, nsds, sds_name, natt, att_name)
+  ! print*,'dddd', nsds
+  ! print*,sds_name
   
-   if (8 .eq. 9 ) then
+   test = cx_sds_read (  fileh5_c, '/observation_data/M07_highres', tra_2d)
+   
+   print*, tra_2d(1:10,1:10)
+   print*
+   print*,maxval(tra_2d)
+   
+   
+  
+   if (9 .eq. 9 ) then
    print*,"NCDF FILE TEST"
    print*,trim(file_nc)
    inquire ( FILE = file_nc, EXIST = existence )
@@ -102,20 +117,19 @@ program cx_sds_test
  end if 
    print*
    print*,'HDF5 FILE TEST'
-  print*,'h5 has to be finished soon'
+  
   
   if ( 6 .eq. 6 ) then
    print*,'start read Variable All_Data/VIIRS-DNB-GEO_All/Height '
       print*,'File H5: ', trim(file_h5)
-     ! call h5fget_filesize_f(file_id, size, hdferr)
-     ! print*,
+   
       status = cx_sds_finfo ( file_h5 , ftype, nsds, sds_name, natt, att_name )
 
-    !  print*,'number of dataset: ',nsds
+    ! print*,'number of dataset: ',nsds
     !  do i=1,nsds
     !    print*,i,trim(sds_name(i))
-     ! end do
-     ! wait(120)
+    !  end do
+    ! wait(120)
      
       test = cx_sds_read ( file_h5, '/observation_data/M05_highres', tra_2d , start=(/100,100/),count=(/100,50/))
       

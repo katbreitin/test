@@ -328,46 +328,49 @@ contains
     logical :: calibrated = .false.
     integer :: dim_id(36)
       
-      ! -------------
-      !   
-      ncdf_get_file_sds = -1
+    ! ------------- -------------  -------------  -------------  -------------
+    ! -------------  -------------  -------------  -------------  -------------  
+    
+    ncdf_get_file_sds = -1
 
-      if (std_error((present(nsdsn).or.present(sds_name)).and.(.not.(present(nsdsn).and.present(sds_name))), &
+    if (std_error((present(nsdsn).or.present(sds_name)).and.(.not.(present(nsdsn).and.present(sds_name))), &
          'Optional arguments must be both defined or undefined')) return
 
-      status = nf90_open(ncdf_file, mode = nf90_nowrite,ncid=sd_id)
-
-      status = nf90_inquire(sd_id, nDimensions, nsds, nAtt, &
+    status = nf90_open(trim(ncdf_file), mode = nf90_nowrite,ncid=sd_id)
+     
+    if ( status .ne. 0 ) goto 99999
+   
+    status = nf90_inquire(sd_id, nDimensions, nsds, nAtt, &
          unlimitedDimId, formatNum)
      
-      if (present(nsdsn)) nsds = nsdsn
-      att_sw = .true.
+    if (present(nsdsn)) nsds = nsdsn
+    
+    att_sw = .true.
+    if (present(attr)) att_sw = attr
 
-      if (present(attr)) att_sw = attr
+    if (nsds <= 0) goto 99999
 
-      if (nsds <= 0) goto 99999
+    allocate (sdsind(1:nsds), stat=ierr)
+    if (std_error(ierr /= 0, "Dynamic memory allocation error l294")) goto 99999
 
-      allocate (sdsind(1:nsds), stat=ierr)
-      if (std_error(ierr /= 0, "Dynamic memory allocation error l294")) goto 99999
-
-      if (.not.present(nsdsn)) then
-         do isds = 1, nsds
-            sdsind(isds) = isds - 1
-         end do
-      else
-         do isds = 1, nsds
-
-            status = NF90_INQ_VARID(sd_id, sds_name(isds) , sdsind(isds))
-
-            if (ncdf_error(status)) goto 99999
-         end do
-      end if
-
-      
-      allocate (sdata(1:nsds), stat=ierr)
-      if (std_error(ierr /= 0, "Dynamic memory allocation error cx-hdf_read-mod")) goto 99999
-
+    if (.not.present(nsdsn)) then
       do isds = 1, nsds
+        sdsind(isds) = isds - 1
+      end do
+    else
+      do isds = 1, nsds
+              
+        status = NF90_INQ_VARID(sd_id, sds_name(isds) , sdsind(isds))
+                 
+        if (ncdf_error(status)) goto 99999
+      end do
+    end if
+  
+    allocate (sdata(1:nsds), stat=ierr)
+    
+    if (std_error(ierr /= 0, "Dynamic memory allocation error cx-hdf_read-mod")) goto 99999
+
+    do isds = 1, nsds
 
          sds_id = sdsind(isds)
          if (ncdf_error(sds_id)) goto 99999
@@ -376,15 +379,15 @@ contains
          pd => sdata(isds)%data
          status = NF90_INQUIRE_VARIABLE (sd_id,sds_id,ps%name , pd%type_ncdf , pd%rank , dim_id , ps%nattr)
         
-        call pd % type_ncdf_to_hdf()
+         call pd % type_ncdf_to_hdf()
         
        
          do i = 1, pd % rank
             status = nf90_inquire_dimension(sd_id, dim_id(i) , len = pd%dimsize(i))
          end do
 
-         !  if (ncdf_error(sfginfo(sds_id, ps%name, pd%rank, pd%dimsize, pd%type, ps%nattr))) &
-         !    & goto 99999
+        ! if (ncdf_error(sfginfo(sds_id, ps%name, pd%rank, pd%dimsize, pd%type, ps%nattr))) &
+        !     & goto 99999
 
          pd % calbrtd = DECLBRTD
         
@@ -494,6 +497,7 @@ contains
                case default
                   print *, "Unimplemented data type 2: ", pd%type_ncdf; goto 99999
             end select
+          
 
             if (present(cal_sub)) then
                call cal_sub(pd%nval, r8data, pd%calibr(1), pd%calibr(3))
@@ -712,20 +716,21 @@ contains
 
 99999 continue
 
-
+       
       if (allocated(sdsind)) then
+         
          deallocate (sdsind, stat=ierr)
+        
          if (std_error(ierr /= 0, "Dynamic memory deallocation error")) ncdf_get_file_sds = -1
       endif
       
-                  if (allocated(bdata)) then
-               deallocate(bdata, stat=ierr)
-               if (std_error(ierr /= 0, "Dynamic memory desallocation error l 428")) goto 99999
-            endif
-
+      if (allocated(bdata)) then
+        deallocate(bdata, stat=ierr)
+         if (std_error(ierr /= 0, "Dynamic memory desallocation error l 428")) goto 99999
+      end if
 
       ! if (ncdf_error(sfend(sd_id))) ncdf_get_file_sds = -1
-status = nf90_close(sd_id)
+      status = nf90_close(sd_id)
 
    end function ncdf_get_file_sds
 
