@@ -3842,10 +3842,13 @@ subroutine DEFINE_LEVEL2_SDS_NETCDF(Var_Idx,Istatus_Sum)
 
    !--- attributes
    Istatus = nf90_put_att(Sd_Id_Level2,Sds_Info(Var_Idx)%Sds_Id, "SCALED", Sds_Info(Var_Idx)%Scaling_Type) + Istatus
+   if (Sds_Info(Var_Idx)%Scaling_Type == 1) then
 
    Istatus = nf90_put_att(Sd_Id_Level2,Sds_Info(Var_Idx)%Sds_Id, "add_offset", Sds_Info(Var_Idx)%Add_Offset) + Istatus
 
    Istatus = nf90_put_att(Sd_Id_Level2,Sds_Info(Var_Idx)%Sds_Id, "scale_factor", Sds_Info(Var_Idx)%Scale_Factor) + Istatus
+
+   endif
 
    Istatus = nf90_put_att(Sd_Id_Level2,Sds_Info(Var_Idx)%Sds_Id, "units", trim(Sds_Info(Var_Idx)%Units)) + Istatus
 
@@ -3875,6 +3878,7 @@ subroutine DEFINE_LEVEL2_SDS_NETCDF(Var_Idx,Istatus_Sum)
     end select
 
    !--- Valid Range
+   if (Sds_Info(Var_Idx)%Scaling_Type == 1) then
    select case(Sds_Info(Var_Idx)%Level2_Data_Type_NETCDF)
 
           case(NF90_BYTE)
@@ -3889,6 +3893,7 @@ subroutine DEFINE_LEVEL2_SDS_NETCDF(Var_Idx,Istatus_Sum)
           case(NF90_DOUBLE)
             Istatus = nf90_put_att(Sd_Id_Level2,Sds_Info(Var_Idx)%Sds_Id, "valid_range", real(Sds_Info(Var_Idx)%Valid_Range,kind=real8)) + Istatus
     end select
+    endif
 
     !--- Actual Missing - NEEDED???
    if (Sds_Info(Var_Idx)%Scaling_Type > 0) then
