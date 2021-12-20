@@ -30,7 +30,7 @@
 !   - when done, repeat this in reverse
 !
 !--------------------------------------------------------------------------------------
-module NBM_CLOUD_MASK_CLAVRX_BRIDGE
+module ECM2_CLOUD_MASK_CLAVRX_BRIDGE
 
    ! -- MODULES USED
    use PIXEL_COMMON_MOD, only: &
@@ -77,13 +77,13 @@ module NBM_CLOUD_MASK_CLAVRX_BRIDGE
        Cloud_Mask_Version, & 
        Cloud_Mask_Lut_Version
 
-   use CX_REAL_BOOLEAN_MOD
+   use CX_real_BOOLEAN_MOD
        
-   use NBM_CLOUD_MASK_MODULE
+   use ECM2_CLOUD_MASK_MODULE
    use NB_CLOUD_MASK_ADDONS
    use NB_CLOUD_MASK_SERVICES
    use NB_CLOUD_MASK_SOLAR_RTM
-   use NBM_CLOUD_MASK_LUT_MODULE
+   use ECM2_CLOUD_MASK_LUT_MODULE
 
    use CLAVRX_MESSAGE_MOD, only: MESG
 
@@ -98,7 +98,7 @@ module NBM_CLOUD_MASK_CLAVRX_BRIDGE
 
    implicit none
 
-   public :: NBM_CLOUD_MASK_BRIDGE
+   public :: ECM2_CLOUD_MASK_BRIDGE
    public:: COMPUTE_TYPE_FROM_PHASE
 
    private :: COVARIANCE_LOCAL
@@ -112,6 +112,8 @@ module NBM_CLOUD_MASK_CLAVRX_BRIDGE
    private :: BETA_11_12_OVERLAP_TEST
    private :: BETA_11_133_OVERLAP_TEST
    private :: WATER_EDGE_FILTER
+   private :: MODIS_AQUA_SBAF
+   private :: SBAF_QUAD
 
    !--- define these structure as module wide
    type(mask_input), private :: Input   
@@ -119,23 +121,22 @@ module NBM_CLOUD_MASK_CLAVRX_BRIDGE
    type(diag_output), private :: Diag  
    type(symbol_naive_bayesian), private :: Symbol
 
+   !--- string to control on-screen prompts
+   character(*), parameter, private :: EXE_PROMPT_CM = "ECM2 Cloud Mask Bridge >> "
+   real, dimension(:,:), allocatable, target, private :: Ref1_Clr_Routine
+   integer:: N_Class
 
-  !--- string to control on-screen prompts
-  character(*), parameter, private :: EXE_PROMPT_CM = "ECM2 Cloud Mask Bridge >> "
-  real, dimension(:,:), allocatable, target, private :: Ref1_Clr_Routine
-  integer:: N_Class
+   !-----------------------------------------------------------------------
+   ! flags for options
+   !-----------------------------------------------------------------------
+   logical, parameter, private:: USE_DIAG = .false.
+   logical, parameter, private:: USE_PRIOR_TABLE = .true.
+   logical, parameter, private:: USE_065UM_RTM = .false.
+   real, parameter, private:: CLD_PHASE_UNCER_LRC_THRESH = 0.10    !NEEDS VERIFICATION
+   real, parameter, private:: CLD_PHASE_UNCER_MULTI_THRESH = 0.10    !NEEDS VERIFICATION
 
-  !-----------------------------------------------------------------------
-  ! flags for options
-  !-----------------------------------------------------------------------
-  logical, parameter, private:: USE_DIAG = .false.
-  logical, parameter, private:: USE_PRIOR_TABLE = .true.
-  logical, parameter, private:: USE_065UM_RTM = .false.
-  real, parameter, private:: CLD_PHASE_UNCER_LRC_THRESH = 0.10    !NEEDS VERIFICATION
-  real, parameter, private:: CLD_PHASE_UNCER_MULTI_THRESH = 0.10    !NEEDS VERIFICATION
-
-  !Use_104um_Flag
-  logical, private:: Use_104um_Flag
+   !Use_104um_Flag
+   logical, private:: Use_104um_Flag
 
 contains
 
@@ -144,7 +145,7 @@ contains
 !
 ! Note, the Diag argument is optional
 !---------------------------------------------------------------------- 
- subroutine NBM_CLOUD_MASK_BRIDGE(Segment_Number)
+ subroutine ECM2_CLOUD_MASK_BRIDGE(Segment_Number)
  
    implicit none
 
@@ -175,52 +176,45 @@ contains
    integer(kind=int1), dimension(:,:), allocatable:: Phase_Temp
    real, dimension(:,:), allocatable:: Uncer_Temp
 
-
    if (First_Call) then
        call MESG('NB-Modified Cloud Mask starts ', color = 46)
    endif
 
-   !--- set structure (symbol, input, output, diag)  
-   !    elements to corresponding values in this framework
+   !--- set structure (symbol, input, output, diag)
    call SET_SYMBOL()
    
    !--- allocate internal Ch1 clear sky albedo
    Num_Elem = Image%Number_Of_Elements
    Num_Line = Image%Number_Of_Lines_Read_This_Segment
    
-   
    !--- initialize all variables
-   
    CLDMASK%Smoke_Mask = symbol%NO
    CLDMASK%Dust_Mask  = symbol%NO
    CLDMASK%Fire_Mask  = symbol%NO
    CLDMASK%Cld_Test_Vector_Packed = Missing_Value_Int1
    CLDMASK%Cld_Mask = Missing_Value_Int1
-   CLDMASK%Posterior_Cld_Probability = MISSING_VALUE_REAL4
-   !CLDMASK%Cloud_Mask_QF = symbol%FILL_QF !
-  
-
+   CLDMASK%Posterior_Cld_Probability = MISSING_VALUE_real4
 
    if (USE_065UM_RTM) allocate(Ref1_Clr_Routine(Num_Elem,Num_Line))
 
-!-------------------------------------------------------------------------------
+   !-------------------------------------------------------------------------------
    !--- on first segment, read table, set 
-!-------------------------------------------------------------------------------
+   !-------------------------------------------------------------------------------
    if (.not. Is_Classifiers_Read) then
 
        ! --- Read LUT
        Naive_Bayes_File_Name_Full_Path = trim(Ancil_Data_Dir)// &
             "static/luts/ecm2/"//trim(Bayesian_Cloud_Mask_Name)
-       call NBM_CLOUD_MASK_LUT_READ(trim(Naive_Bayes_File_Name_Full_Path), N_Class)
+       call ECM2_CLOUD_MASK_LUT_READ(trim(Naive_Bayes_File_Name_Full_Path), N_Class)
 
    endif
 
    !---  Read and Compute Prior Cloud Probability
-   ! - initialize to missing
-   CLDMASK%Prior_Cld_Probability = MISSING_VALUE_REAL4
+   !---  initialize to missing
+   CLDMASK%Prior_Cld_Probability = MISSING_VALUE_real4
    if (USE_PRIOR_TABLE) then 
      Prior_File_Name_Full_Path = trim(Ancil_Data_Dir)//"static/luts/ecm2/"//"nb_cloud_mask_calipso_prior.nc"
-     call NBM_CLOUD_MASK_COMPUTE_PRIOR(trim(Prior_File_Name_Full_Path),Nav%Lon,Nav%Lat,Month,CLDMASK%Prior_Cld_Probability)
+     call ECM2_CLOUD_MASK_COMPUTE_PRIOR(trim(Prior_File_Name_Full_Path),Nav%Lon,Nav%Lat,Month,CLDMASK%Prior_Cld_Probability)
    endif
 
    !--- Compute TOA Clear-Sky 0.65um Reflectance
@@ -237,32 +231,38 @@ contains
                                    Ref1_Clr_Routine)
    endif
 
-   !-----------  Initialize channel on flag -----   WCS
-   CALL SET_ECM_CHAN_ON()
+   !---  Initialize channel on flag -----   WCS
+   call SET_ECM_CHAN_ON()
 
    !-- Since the arrays are already initialized to fill
    !   in process_clavrx by RESET_PIXEL_ARRAYS_TO_MISSING
    !   We simply exit for catastrophic case
 
-   IF ((Input%Chan_On_11um == sym%NO) .AND. &
-       (Input%Chan_On_10um == sym%NO)) THEN
-
+   if ((Input%Chan_On_11um == sym%NO) .and. &
+       (Input%Chan_On_10um == sym%NO)) then
        call MESG( "ERROR: Catastrophic LHP Event, exiting" , level = verb_lev % DEFAULT)
-       RETURN
-   ENDIF
+       return
+   endif
    
-
-   !-----------    loop over pixels -----   
+   !---------------------------------------------------------------------
+   ! loop over pixels 
+   !---------------------------------------------------------------------
    line_loop: do i = 1, Image%Number_Of_Elements
       elem_loop: do  j = 1, Image%Number_Of_Lines_Read_This_Segment
 
+         !--- setup input structure
          call SET_INPUT(i,j)
+
+         !--- perform spectral band correction if needed
+         !if (index(Bayesian_Cloud_Mask_Name,"isccp") > 0) then 
+         !   call MODIS_AQUA_SBAF(Sensor%WMO_Id)
+         !endif
 
          ! --- check if pixel is valid
          if (Input%Invalid_Data_Mask == 1) cycle
 
          !---call cloud mask routine
-         call NBM_CLOUD_MASK_ALGORITHM(  &
+         call ECM2_CLOUD_MASK_ALGORITHM(  &
                       N_Class, &
                       Symbol,  &
                       Input,   &
@@ -271,10 +271,11 @@ contains
                       Use_104um_Flag)!, & !)
                       !Diag)
 
-         ! --- set cloud mask qf: good=0, bad=1
+         !--- set cloud mask qf: good=0, bad=1
          Output%Cld_Mask_QF = symbol%BAD_QF
          if (ibits(Output%Cld_Flags_Packed(1),0,1) == 1) Output%Cld_Mask_QF = symbol%GOOD_QF
-         !If any channel used is turned off for the FPT, mark QF as degraded
+
+         !--- If any channel used is turned off for the FPT, mark QF as degraded
          IF ((Sensor%WMO_Id ==271) .AND. &
              (Input%Chan_On_67um == sym%NO) .OR.  &
              (Input%Chan_On_73um == sym%NO) .OR.  &
@@ -340,18 +341,18 @@ contains
    !--- only need to do this once, so do on first segment
    !------------------------------------------------------------------------------
    if (Segment_Number == 1) then
-     call SET_NBM_CLOUD_MASK_VERSION(Cloud_Mask_Version)
+     call SET_ECM2_CLOUD_MASK_VERSION(Cloud_Mask_Version)
    endif
 
    !-------------------------------------------------------------------------------
    ! Compute Cloud Probability Uncertainty
    !-------------------------------------------------------------------------------
-   CLDMASK%Posterior_Cld_Probability_Uncer = MISSING_VALUE_REAL4
+   CLDMASK%Posterior_Cld_Probability_Uncer = MISSING_VALUE_real4
    where(CLDMASK%Posterior_Cld_Probability >= 0.50)
          CLDMASK%Posterior_Cld_Probability_Uncer = 1.0 - CLDMASK%Posterior_Cld_Probability
    endwhere     
 
-   where((CLDMASK%Posterior_Cld_Probability .ner. MISSING_VALUE_REAL4) .and. &
+   where((CLDMASK%Posterior_Cld_Probability .ner. MISSING_VALUE_real4) .and. &
          (CLDMASK%Posterior_Cld_Probability .ltr. 0.50))
          CLDMASK%Posterior_Cld_Probability_Uncer = CLDMASK%Posterior_Cld_Probability
    endwhere     
@@ -374,7 +375,7 @@ contains
             case(3) ! conf cloud
               CLDMASK%Posterior_Cld_Probability(i,j) = 1.0
             case default
-              CLDMASK%Posterior_Cld_Probability(i,j) = MISSING_VALUE_REAL4
+              CLDMASK%Posterior_Cld_Probability(i,j) = MISSING_VALUE_real4
           end select
         endif
 
@@ -437,8 +438,8 @@ contains
    line_loop_type: do i = 1, Image%Number_Of_Elements
       elem_loop_type: do  j = 1, Image%Number_Of_Lines_Read_This_Segment
 
-       Beta_x_12um_Tropo_Rtm_Temp = MISSING_VALUE_REAL4
-       Beta_x_133um_Tropo_Rtm_Temp = MISSING_VALUE_REAL4
+       Beta_x_12um_Tropo_Rtm_Temp = MISSING_VALUE_real4
+       Beta_x_133um_Tropo_Rtm_Temp = MISSING_VALUE_real4
 
        if (.not. ABI_Use_104um_Flag) then
        
@@ -527,9 +528,9 @@ contains
       CLDMASK%N_Classifiers = N_Class
       CLDMASK%Classifiers_Names_Attr = trim(Output%Cld_Mask_Test_Names)
 
-      call RESET_NBM_CLOUD_MASK_LUT()
+      call RESET_ECM2_CLOUD_MASK_LUT()
        
-      if (USE_PRIOR_TABLE) call RESET_NBM_CLOUD_MASK_PRIOR_LUT()
+      if (USE_PRIOR_TABLE) call RESET_ECM2_CLOUD_MASK_PRIOR_LUT()
 
    endif
    
@@ -538,7 +539,7 @@ contains
    
    if (allocated(Ref1_Clr_Routine)) deallocate (Ref1_Clr_Routine)
 
-   end subroutine NBM_CLOUD_MASK_BRIDGE
+   end subroutine ECM2_CLOUD_MASK_BRIDGE
 
    !====================================================================
    ! Function Name: Covariance_LOCAL
@@ -695,6 +696,7 @@ contains
       Input%Path_Tpw = NWP_PIX%Tpw(i,j) / Geo%Coszen(i,j)
       Input%Topa = Tc_Opaque_Cloud(i,j)
       Input%Zopa = Zc_Opaque_Cloud(i,j)
+      Input%Ttropo = NWP_PIX%Ttropo(i,j)
 
       Input%City_Mask = Sfc%City_Mask(i,j)
       Input%Moon_Illum_Frac = Geo%Moon_Illum_Frac
@@ -720,9 +722,9 @@ contains
            Input%Ref_063um_Max_Sub = ch(1)%Ref_Toa_Max_Sub(i,j)
            Input%Ref_063um_Std_Sub = ch(1)%Ref_Toa_Std_Sub(i,j)
         else
-           Input%Ref_063um_Min_Sub = MISSING_VALUE_REAL4
-           Input%Ref_063um_Max_Sub = MISSING_VALUE_REAL4
-           Input%Ref_063um_Std_Sub = MISSING_VALUE_REAL4
+           Input%Ref_063um_Min_Sub = MISSING_VALUE_real4
+           Input%Ref_063um_Max_Sub = MISSING_VALUE_real4
+           Input%Ref_063um_Std_Sub = MISSING_VALUE_real4
         endif
 
         Input%Log_Ref_063um_Std = Missing_Value_Real4
@@ -730,8 +732,8 @@ contains
         if (Input%Log_Ref_063um_Std == 0.0) Input%Log_Ref_063um_Std = -2.0
       endif
 
-      if (Input%Ref_063um_Min_Sub /= MISSING_VALUE_REAL4 .and. &
-          Input%Ref_063um_Max_Sub /= MISSING_VALUE_REAL4)  then
+      if (Input%Ref_063um_Min_Sub /= MISSING_VALUE_real4 .and. &
+          Input%Ref_063um_Max_Sub /= MISSING_VALUE_real4)  then
           Input%Log_Drefl_065um_Max_Min_Sub = Missing_Value_Real4
           if ((Input%Ref_063um_Max_Sub - Input%Ref_063um_Min_Sub) >0.0) &
                  Input%Log_Drefl_065um_Max_Min_Sub = log10(Input%Ref_063um_Max_Sub - &
@@ -739,7 +741,7 @@ contains
           if ((Input%Ref_063um_Max_Sub - Input%Ref_063um_Min_Sub) == 0.0) &
                  Input%Log_Drefl_065um_Max_Min_Sub = -2.0
       else
-          Input%Log_Drefl_065um_Max_Min_Sub = MISSING_VALUE_REAL4
+          Input%Log_Drefl_065um_Max_Min_Sub = MISSING_VALUE_real4
       endif
 
       if (Input%Chan_On_086um == sym%YES)  then 
@@ -1093,25 +1095,28 @@ subroutine SET_ECM_CHAN_ON ()
   Input%Chan_On_DNB = Sensor%Chan_On_Flag_Default(44)
 
   !For GOES-17, reset local chan on
-  IF (Sensor%WMO_Id ==271) CALL LHP_CHN_CHECK()
+  if (Sensor%WMO_Id ==271) call LHP_CHN_CHECK()
 
 end subroutine SET_ECM_CHAN_ON
 
-SUBROUTINE LHP_CHN_CHECK ()
-  REAL, DIMENSION(Nchan_Clavrx) :: LHP_THRESH
-  REAL, DIMENSION(Nchan_Clavrx) :: LHP_THRESH_INIT
-  REAL :: MFPT_104, MFPT_110
+!============================================================================
+!
+!============================================================================
+subroutine LHP_CHN_CHECK ()
+  real, DIMENSION(Nchan_Clavrx) :: LHP_THRESH
+  real, DIMENSION(Nchan_Clavrx) :: LHP_THRESH_INIT
+  real :: MFPT_104, MFPT_110
   INTEGER :: N_chan
   CHARACTER(3000) :: Algo_Thresh_File
-  REAL, PARAMETER:: SOUNDER_LHP_THRESH = 999.0
+  real, PARAMETER:: SOUNDER_LHP_THRESH = 999.0
 
   !initalize LHP THRESHOLD
-  LHP_THRESH (:) = MISSING_VALUE_REAL4
-  LHP_THRESH_INIT (:) = MISSING_VALUE_REAL4
+  LHP_THRESH (:) = MISSING_VALUE_real4
+  LHP_THRESH_INIT (:) = MISSING_VALUE_real4
 
   !Initialize 10.3 and 11um FPT local variables
-  MFPT_104 = MISSING_VALUE_REAL4
-  MFPT_110 = MISSING_VALUE_REAL4
+  MFPT_104 = MISSING_VALUE_real4
+  MFPT_110 = MISSING_VALUE_real4
 
   !Initialize Use_104um_Flag
   Use_104um_Flag = .FALSE.
@@ -1138,11 +1143,11 @@ SUBROUTINE LHP_CHN_CHECK ()
     print*, "Opening ", trim(Algo_Thresh_File)
   endif
 
-  CALL READ_LHP_THRESH_FILE(TRIM(Algo_Thresh_File), LHP_THRESH)
+  call READ_LHP_THRESH_FILE(TRIM(Algo_Thresh_File), LHP_THRESH)
 
   !Check if LHP_THRESH is missing
   do N_Chan = 1, Nchan_Clavrx
-     IF (LHP_THRESH(N_Chan) == MISSING_VALUE_REAL4) &
+     IF (LHP_THRESH(N_Chan) == MISSING_VALUE_real4) &
         LHP_THRESH(N_Chan) = LHP_THRESH_INIT(N_Chan)
 
   end do
@@ -1171,13 +1176,13 @@ SUBROUTINE LHP_CHN_CHECK ()
       Use_104um_Flag = .TRUE.
   ENDIF
 
-END SUBROUTINE LHP_CHN_CHECK
+end subroutine LHP_CHN_CHECK
 
-   ! -----------------------------------------------------
+   !-----------------------------------------------------
    !    Overlap test using Visible and Split-Window
    !  
    !    05/01/2014 AW
-   ! ---------------------------------------------------- 
+   !---------------------------------------------------- 
    subroutine VIS_SPLIT_WINDOW_OVERLAP_TEST (bt_11 &
                         , bt_12 &
                         , ref_vis &
@@ -1309,13 +1314,103 @@ END SUBROUTINE LHP_CHN_CHECK
             (Cld_Phase_Uncer .ger. CLD_PHASE_UNCER_MULTI_THRESH)) then
             Cld_Type = sym%OVERLAP_TYPE
         endif
-        if ((Cld_Phase == sym%WATER_PHASE) .and. &
+        if ((Cld_Phase == sym%SUPERCOOLED_PHASE) .and. &
             (Cld_Phase_Uncer .ger. CLD_PHASE_UNCER_MULTI_THRESH)) then
             Cld_Type = sym%MIXED_TYPE
         endif
 
    end subroutine COMPUTE_TYPE_FROM_PHASE
 
+   !-------------------------------------------------------------------------------
+   ! use spectral band adjustments to make input refs and bt look like MODIS Aqua
+   !-------------------------------------------------------------------------------
+   subroutine MODIS_AQUA_SBAF(WMO_Id)
+      integer, intent(in):: WMO_Id
+
+      real, dimension(Nchan_Clavrx):: a, b, c
+
+      a = 0.0
+      b = 1.0
+      c = 0.0
+
+      select case(WMO_Id)
+         case(56,70) ! Meteosat-09 SEVIRI
+            !print *, "applying Met9 sbaf"
+            a(1) = -1.6053e-04; b(1) = 1.00090e+00; c(1) = -1.0948e-02
+            a(2) = -2.9523e-03; b(2) = 1.1018e+00; c(2) = -9.0779e-02
+            a(6) = -1.7647e-03; b(6) = 1.0233e+00; c(6) = 1.0872e-02
+            a(20) = -3.1318e+01 ; b(20) = 1.1273e+00 ; c(20) =  2.5217e-05   
+            a(27) = -1.1585e+02 ; b(27) = 1.98830e00 ; c(27) = -2.0575e-03    
+            a(29) = -9.4610e+00 ; b(29) = 1.0844e+00 ; c(29) = -1.8488e-04    
+            a(31) = -9.7897e-01 ; b(31) = 1.0022e+00 ; c(31) = 3.6371e-06   
+            a(32) =  9.2946e+00 ; b(32) = 9.2066e-01 ; c(32) = 1.7150e-04   
+            a(33) = -4.326e+01  ; b(33) = 1.4101e+00 ; c(33) = -9.3848e-04  
+         case(57) ! Meteosat-10 SEVIRI
+         case(270) ! GOES-16 ABI
+            print *, "applying G16 sbaf"
+            a(1) = -2.2593e-04 ; b(1) = 1.0121e+00 ; c(1) = -1.2726e-02
+            a(2) = 6.8924e-04  ; b(2) = 9.8662e-01 ; c(2) = 4.8933e-03
+            a(6) = -3.0901e-04 ; b(6) = 1.0647e+00 ; c(6) = -4.5392e-02
+            a(20) = 1.2183e+01 ; b(20) = 1.0082e+00; c(20) = -1.5189e-04
+            a(26) = 1.6385e-03 ; b(26) = 1.0781e+00; c(26) = -2.5894e-01
+            a(27) = 9.5392e+01 ; b(27) = 2.5818e-01; c(27) = 1.3586e-03
+            a(29) = 4.7787e+00 ; b(29) = 9.5642e-01; c(29) = 9.9197e-05
+            a(31) = -9.5058e+00; b(31) = 1.0763e+00; c(31) = -1.4525e-04
+            a(32) = -5.2077e+00; b(32) = 1.0225e+00; c(32) = 1.1741e-05
+            a(33) = -1.2428e+01; b(33) = 1.1756e+00; c(33) = -5.5166e-04
+         case default
+      end select
+
+      if (Input%Ref_041um /= MISSING_VALUE_REAL4) call SBAF_QUAD(a(8),b(8),c(8),Input%Ref_041um)
+
+!     if (Input%Ref_041um /= MISSING_VALUE_REAL4) Input%Ref_041um = a_sbaf(8) + b_sbaf(8)*Input%Ref_041um
+!     if (Input%Ref_063um /= MISSING_VALUE_REAL4) Input%Ref_063um = a_sbaf(1) + b_sbaf(1)*Input%Ref_063um
+!     if (Input%Ref_086um /= MISSING_VALUE_REAL4) Input%Ref_086um = a_sbaf(2) + b_sbaf(2)*Input%Ref_086um
+!     if (Input%Ref_138um /= MISSING_VALUE_REAL4) Input%Ref_138um = a_sbaf(26) + b_sbaf(26)*Input%Ref_138um
+!     if (Input%Ref_160um /= MISSING_VALUE_REAL4) Input%Ref_160um = a_sbaf(6) + b_sbaf(6)*Input%Ref_160um
+!     if (Input%Ref_213um /= MISSING_VALUE_REAL4) Input%Ref_213um = a_sbaf(7) + b_sbaf(7)*Input%Ref_213um
+!     if (Input%Bt_375um /= MISSING_VALUE_REAL4) Input%Bt_375um = a_sbaf(20) + b_sbaf(20)*Input%Bt_375um
+!     if (Input%Bt_67um /= MISSING_VALUE_REAL4) Input%Bt_67um = a_sbaf(27) + b_sbaf(27)*Input%Bt_67um
+!     if (Input%Bt_73um /= MISSING_VALUE_REAL4) Input%Bt_73um = a_sbaf(28) + b_sbaf(28)*Input%Bt_73um
+!     if (Input%Bt_85um /= MISSING_VALUE_REAL4) Input%Bt_85um = a_sbaf(29) + b_sbaf(29)*Input%Bt_85um
+!     if (Input%Bt_10um /= MISSING_VALUE_REAL4) Input%Bt_10um = a_sbaf(38) + b_sbaf(38)*Input%Bt_10um
+!     if (Input%Bt_11um /= MISSING_VALUE_REAL4) Input%Bt_11um = a_sbaf(31) + b_sbaf(31)*Input%Bt_11um
+!     if (Input%Bt_12um /= MISSING_VALUE_REAL4) Input%Bt_12um = a_sbaf(32) + b_sbaf(32)*Input%Bt_12um
+!     if (Input%Bt_133um /= MISSING_VALUE_REAL4) Input%Bt_133um = a_sbaf(33) + b_sbaf(33)*Input%Bt_133um 
+
+! Input%Chan_On_041um = Sensor%Chan_On_Flag_Default(8)
+! Input%Chan_On_063um = Sensor%Chan_On_Flag_Default(1)
+! Input%Chan_On_086um = Sensor%Chan_On_Flag_Default(2)
+! Input%Chan_On_138um = Sensor%Chan_On_Flag_Default(26)
+! Input%Chan_On_160um = Sensor%Chan_On_Flag_Default(6)
+! Input%Chan_On_213um = Sensor%Chan_On_Flag_Default(7)
+! Input%Chan_On_375um = Sensor%Chan_On_Flag_Default(20)
+! Input%Chan_On_62um = Sensor%Chan_On_Flag_Default(37)
+! Input%Chan_On_67um = Sensor%Chan_On_Flag_Default(27)
+! Input%Chan_On_73um = Sensor%Chan_On_Flag_Default(28)
+! Input%Chan_On_85um = Sensor%Chan_On_Flag_Default(29)
+! Input%Chan_On_97um = Sensor%Chan_On_Flag_Default(30)
+! Input%Chan_On_10um = Sensor%Chan_On_Flag_Default(38)
+! Input%Chan_On_11um = Sensor%Chan_On_Flag_Default(31)
+! Input%Chan_On_12um = Sensor%Chan_On_Flag_Default(32)
+! Input%Chan_On_133um = Sensor%Chan_On_Flag_Default(33)
+! Input%Chan_On_I1_064um = Sensor%Chan_On_Flag_Default(39)
+! Input%Chan_On_I4_374um = Sensor%Chan_On_Flag_Default(42)
+! Input%Chan_On_I5_114um = Sensor%Chan_On_Flag_Default(43)
+! Input%Chan_On_DNB = Sensor%Chan_On_Flag_Default(44)
+
+   end subroutine MODIS_AQUA_SBAF
+
+!-------------------------------------------------------------------------------
+!
+!-------------------------------------------------------------------------------
+   subroutine SBAF_QUAD(a,b,c,Obs)
+     real, intent(in):: a, b, c
+     real, intent(inout):: Obs
+
+     Obs = a + b*Obs + c*(Obs**2)
+
+   end subroutine SBAF_QUAD
 !-------------------------------------------------------------------------------
 
-end module NBM_CLOUD_MASK_CLAVRX_BRIDGE
+end module ECM2_CLOUD_MASK_CLAVRX_BRIDGE

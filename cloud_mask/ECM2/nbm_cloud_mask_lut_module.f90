@@ -16,7 +16,7 @@
 !
 !-------------------------------------------------------------------
 
-module NBM_CLOUD_MASK_LUT_MODULE
+module ECM2_CLOUD_MASK_LUT_MODULE
 
 
  use NB_CLOUD_MASK_SERVICES
@@ -42,10 +42,10 @@ module NBM_CLOUD_MASK_LUT_MODULE
 
  implicit none
 
- public NBM_CLOUD_MASK_COMPUTE_PRIOR
- public NBM_CLOUD_MASK_LUT_READ
- public RESET_NBM_CLOUD_MASK_LUT
- public RESET_NBM_CLOUD_MASK_PRIOR_LUT
+ public ECM2_CLOUD_MASK_COMPUTE_PRIOR
+ public ECM2_CLOUD_MASK_LUT_READ
+ public RESET_ECM2_CLOUD_MASK_LUT
+ public RESET_ECM2_CLOUD_MASK_PRIOR_LUT
 
  logical, public, save:: Is_Classifiers_Read = .false.
  logical, public, save:: Is_Prior_Read_M = .false.
@@ -57,7 +57,7 @@ module NBM_CLOUD_MASK_LUT_MODULE
 
 !-------------------------------------------------------------------
 
-subroutine NBM_CLOUD_MASK_COMPUTE_PRIOR(Prior_File_Name, Lon, Lat, Month, Prior_Probability)
+subroutine ECM2_CLOUD_MASK_COMPUTE_PRIOR(Prior_File_Name, Lon, Lat, Month, Prior_Probability)
 
 character(len=*), intent(in) :: Prior_File_Name
 real, dimension(:,:), intent(in) :: Lon
@@ -138,11 +138,11 @@ Is_Prior_Read_M = .true.
 ! --- deallocate prior table
 if (allocated(Prior_Table)) deallocate(Prior_Table)
 
-end subroutine NBM_CLOUD_MASK_COMPUTE_PRIOR
+end subroutine ECM2_CLOUD_MASK_COMPUTE_PRIOR
 
 !-------------------------------------------------------------------
 
-subroutine NBM_CLOUD_MASK_LUT_READ(Lut_File_Full_Path, N_Classifier)
+subroutine ECM2_CLOUD_MASK_LUT_READ(Lut_File_Full_Path, N_Classifier)
 
 character(len=*), intent(in) :: Lut_File_Full_Path
 integer, intent(out) :: N_Classifier
@@ -306,7 +306,7 @@ do Class_Idx = 1, N_Classifier
    allocate(Lut(Class_Idx)%On_Flag(Lut(Class_Idx)%N_Sfc))
    call READ_NETCDF_1D_INT(Group_Id, (/1/), (/1/), (/Lut(Class_Idx)%N_Sfc/), 'on_flag', Lut(Class_Idx)%On_Flag)
    
-   !alloate and read in prior LUT - WCS3
+   !alloate and read in prior LUT 
    allocate(Lut(Class_Idx)%Cloud_fraction(Lut(Class_Idx)%N_Sfc))
    call READ_NETCDF_1D_REAL(Group_Id, (/1/), (/1/), (/Lut(Class_Idx)%N_Sfc/), 'cloud_fraction', &
                              Lut(Class_Idx)%Cloud_fraction)
@@ -442,12 +442,12 @@ if (allocated(Buffer_2d)) deallocate(Buffer_2d)
 if (allocated(Buffer_2d)) deallocate(Buffer_3d)
 if (allocated(Buffer_2d)) deallocate(Buffer_4d)
 
-end subroutine NBM_CLOUD_MASK_LUT_READ
+end subroutine ECM2_CLOUD_MASK_LUT_READ
 
 !-----------------------------------------------------------------------------------------
 ! This routine deallocates all LUT arrays and resets Is_Classifiers_Read to be false
 !-----------------------------------------------------------------------------------------
-subroutine RESET_NBM_CLOUD_MASK_LUT()
+subroutine RESET_ECM2_CLOUD_MASK_LUT()
 
 deallocate(Classifier_Names)
 deallocate(Mask_Thresh%Conf_Clear_Prob_Clear_Thresh)
@@ -459,19 +459,19 @@ deallocate(Lut)
 
 Is_Classifiers_Read = .false.
 
-end subroutine RESET_NBM_CLOUD_MASK_LUT
+end subroutine RESET_ECM2_CLOUD_MASK_LUT
 
 !-----------------------------------------------------------------------------------------
 !
 !-----------------------------------------------------------------------------------------
-subroutine RESET_NBM_CLOUD_MASK_PRIOR_LUT()
+subroutine RESET_ECM2_CLOUD_MASK_PRIOR_LUT()
 
  Is_Prior_Read_M = .false.
 
-end subroutine RESET_NBM_CLOUD_MASK_PRIOR_LUT
+end subroutine RESET_ECM2_CLOUD_MASK_PRIOR_LUT
 
 
 !=========================================================================================
 
-end module NBM_CLOUD_MASK_LUT_MODULE
+end module ECM2_CLOUD_MASK_LUT_MODULE
 

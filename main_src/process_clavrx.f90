@@ -258,7 +258,7 @@
    
    use NB_CLOUD_MASK_CLAVRX_BRIDGE, only: NB_CLOUD_MASK_BRIDGE
    
-   use NBM_CLOUD_MASK_CLAVRX_BRIDGE, only: NBM_CLOUD_MASK_BRIDGE
+   use ECM2_CLOUD_MASK_CLAVRX_BRIDGE, only: ECM2_CLOUD_MASK_BRIDGE
    
    use NCEP_REANALYSIS,only: READ_NCEP_REANALYSIS_DATA
    
@@ -1576,7 +1576,7 @@
                      call BASELINE_CLOUD_MASK_MAIN(Segment_Number)
                   elseif (Cloud_Mask_Bayesian_Flag == sym%ECM2) then
                      Cloud_Mask_Mode = 'ecm2'
-                     call NBM_CLOUD_MASK_BRIDGE(Segment_Number)
+                     call ECM2_CLOUD_MASK_BRIDGE(Segment_Number)
 
                      ! if use MODAWG set (3) and it is read in save it as cloud mask (Denis B. 2020-08-03)
                      if (Use_Aux_Flag == sym%USE_AUX_MODAWG .and. Cloud_Mask_Aux_Read_Flag == sym%YES) then

@@ -45,10 +45,10 @@
 !
 !----------------------------------------------------------------------
 
-MODULE NBM_CLOUD_MASK_MODULE
+MODULE ECM2_CLOUD_MASK_MODULE
 
  USE NB_CLOUD_MASK_SERVICES
- USE NBM_CLOUD_MASK_LUT_MODULE
+ USE ECM2_CLOUD_MASK_LUT_MODULE
  USE NBM_CLOUD_MASK_GET_PROB_MASK_PHASE
 
  IMPLICIT NONE
@@ -59,8 +59,8 @@ MODULE NBM_CLOUD_MASK_MODULE
  PRIVATE:: PACK_BITS_INTO_BYTES
  PRIVATE:: SET_NONCLOUD_FLAGS
 
- PUBLIC:: NBM_CLOUD_MASK_ALGORITHM
- PUBLIC:: SET_NBM_CLOUD_MASK_VERSION
+ PUBLIC:: ECM2_CLOUD_MASK_ALGORITHM
+ PUBLIC:: SET_ECM2_CLOUD_MASK_VERSION
 
  !--- set thresholds and algorithm specific constants
  INCLUDE 'nbm_cloud_mask.inc'
@@ -76,10 +76,10 @@ MODULE NBM_CLOUD_MASK_MODULE
 !  Cloud_Mask_Thresholds_Version is a MODULE-wide variable
 !  that is PRIVATE
 !====================================================================
- SUBROUTINE SET_NBM_CLOUD_MASK_VERSION(Cloud_Mask_Version)
+ SUBROUTINE SET_ECM2_CLOUD_MASK_VERSION(Cloud_Mask_Version)
    CHARACTER(len=*), INTENT(OUT):: Cloud_Mask_Version
    Cloud_Mask_Version = "$Id: nbm_cloud_mask_MODULE.f90 3030 2019-09-31 23:02:31Z heidinger $"
- END SUBROUTINE SET_NBM_CLOUD_MASK_VERSION
+ END SUBROUTINE SET_ECM2_CLOUD_MASK_VERSION
 
 
 !====================================================================
@@ -99,7 +99,7 @@ MODULE NBM_CLOUD_MASK_MODULE
 ! 7 - Desert
 !
 !====================================================================
- SUBROUTINE NBM_CLOUD_MASK_ALGORITHM( &
+ SUBROUTINE ECM2_CLOUD_MASK_ALGORITHM( &
             Nclass, &    
             Symbol, &    
             Input,  &
@@ -353,6 +353,10 @@ MODULE NBM_CLOUD_MASK_MODULE
          Value_Dim = MISSING_VALUE_REAL4   !AKH Added this initialization
 
          SELECT CASE(trim(Dim_Name))
+             CASE('tsfc')
+                 Value_Dim = Input%Sfc_Temp
+             CASE('dtsfcbt11')
+                 Value_Dim = Input%Sfc_Temp - Input%Bt_11um
              CASE('etropo10')
                  Value_Dim = Input%Emiss_10um_Tropo
              CASE('etropo11')
@@ -402,6 +406,8 @@ MODULE NBM_CLOUD_MASK_MODULE
              CASE('dbt10max3x3')
                  Value_Dim = Input%Bt_10um_Max - Input%Bt_10um
                  if (Input%Chan_On_10um == 0) Value_Dim = MISSING_VALUE_REAL4
+             CASE('bt11ratio')
+                 Value_Dim = (Input%Bt_11um - Input%Sfc_Temp)/(Input%Ttropo - Input%Sfc_Temp)
              CASE('dbt11max3x3')
                  Value_Dim = Input%Bt_11um_Max - Input%Bt_11um
              CASE('dbt11maxsub')
@@ -800,7 +806,7 @@ IF (ALLOCATED(Chan_Wvl)) DEALLOCATE (Chan_Wvl)
 IF (ALLOCATED(Class_Use_Flag)) DEALLOCATE (Class_Use_Flag)
 
 
-END SUBROUTINE NBM_CLOUD_MASK_ALGORITHM
+END SUBROUTINE ECM2_CLOUD_MASK_ALGORITHM
 
 
 !====================================================================
@@ -1254,5 +1260,5 @@ END SUBROUTINE SET_NONCLOUD_FLAGS
 
 !====================================================================
 
-END MODULE NBM_CLOUD_MASK_MODULE
+END MODULE ECM2_CLOUD_MASK_MODULE
 

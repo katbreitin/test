@@ -113,12 +113,9 @@
     REAL(kind=REAL4) :: Path_Tpw = Missing_Value_Real4               !TPW along IR path from ancillary sources
     REAL(kind=REAL4) :: Prior = Missing_Value_Real4                  !Prior from a precomputed source
     real(kind=real4) :: Cld_Fraction_Background
-!    real(kind=real4) :: Cld_Fraction_Background
-!    real(kind=real4) :: Cld_Fraction_Background
-
-    ! NEW Variables to add
     REAL(kind=REAL4) :: Topa = Missing_Value_Real4                   !NWP temperature of opaque cloud
     REAL(kind=REAL4) :: Zopa = Missing_Value_Real4                   !NWP height of opaque cloud
+    REAL(kind=REAL4) :: Ttropo = Missing_Value_Real4                 !NWP temperature of tropopause
     REAL(kind=REAL4) :: Bt_11um_Min_Sub = Missing_Value_Real4        !11 um toa brightness temp subpixel Min (K)
     REAL(kind=REAL4) :: Bt_11um_Max_Sub = Missing_Value_Real4        !11 um toa brightness temp subpixel Max (K)
     REAL(kind=REAL4) :: Ref_063um_Min_Sub = Missing_Value_Real4      !0.63 um toa reflectance subpixel Min (%)
@@ -127,7 +124,6 @@
     REAL(kind=REAL4) :: Log_Drefl_065um_Max_Min_Sub = Missing_Value_Real4 !0.63 um toa reflectance subpixel difference Max-Min (%)
     REAL(kind=REAL4) :: Moon_Illum_Frac = Missing_Value_Real4        !moon illumination fraction for dnb
     INTEGER(kind=int1) :: City_Mask = Missing_Value_Int1             !city lights mask for dnb
-
     INTEGER(kind=int1) :: Use_Aux_Mask = Missing_Value_Int1          !aux mask flag
 
  END TYPE mask_input 
