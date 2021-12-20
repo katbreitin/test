@@ -327,7 +327,8 @@ subroutine COMPUTE_NxN_METRICS(N,Bad_Mask,Z,Z_Min,Z_Max,Z_Mean,Z_Std)
   real, dimension(:,:), intent(in):: Z
   real, dimension(:,:), intent(out):: Z_Min,Z_Max,Z_Mean,Z_Std
   integer:: Nx, Ny, N_Good
-  real:: Sum_Temp, Sum_Temp2, Min_Temp, Max_Temp
+  real*8:: Sum_Temp, Sum_Temp2
+  real :: Min_Temp, Max_Temp
   integer:: Count_Temp
   integer:: i, i1, i2, ii, j, j1, j2, jj   !local indices
 
@@ -385,7 +386,6 @@ subroutine COMPUTE_NxN_METRICS(N,Bad_Mask,Z,Z_Min,Z_Max,Z_Mean,Z_Std)
 
         N_Good = N_Good + 1
         sum_Temp = Sum_Temp + Z(ii,jj)
-        sum_Temp2 = Sum_Temp2 + Z(ii,jj)**2
 
         if (Z(ii,jj) .ltr. Min_Temp) then
            Min_Temp = z(ii,jj)
@@ -401,7 +401,25 @@ subroutine COMPUTE_NxN_METRICS(N,Bad_Mask,Z,Z_Min,Z_Max,Z_Mean,Z_Std)
      !--- if any good pixels found, compute mean and standard deviation
      if (N_Good > 0) then
        Z_Mean(i,j) = sum_temp / N_Good
-       Z_Std(i,j) = sqrt(max(0.0,(sum_temp2/N_Good - Z_Mean(i,j)**2)))
+       N_Good = 0
+         !--- go through each element in NxN array
+         do jj = j1,j2
+          do ii = i1,i2
+
+            if (Bad_Mask(ii,jj) == sym%YES) then
+              cycle
+            endif
+
+            if (Z(ii,jj) .eqr. Missing_Value_Real4) then
+              cycle
+            endif
+
+            N_Good = N_Good + 1
+            Sum_Temp2 = Sum_Temp2 + (Z(ii,jj)-Z_Mean(i,j))**2
+
+           end do
+         end do
+       Z_Std(i,j) = sqrt(max(0.0,(Sum_temp2/N_Good)))
        Z_Min(i,j) = Min_Temp
        Z_Max(i,j) = Max_Temp
      endif

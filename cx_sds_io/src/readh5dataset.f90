@@ -1136,7 +1136,7 @@ CONTAINS
     CHARACTER (len = *), INTENT(in)                      :: datasetname
 
     !Going out:
-    INTEGER,  DIMENSION(:,:), POINTER                    :: dataset
+    INTEGER,  DIMENSION(:,:), ALLOCATABLE                   :: dataset
 
     !<<<<<<<<<<<<<<<<<<<<<<< Local variables >>>>>>>>>>>>>>>>>>>>>>>>
     INTEGER, PARAMETER                                   :: maxdims = 4
@@ -1195,8 +1195,7 @@ CONTAINS
 
     dims(1) = datadims(1)
     dims(2) = datadims(2)
-    dims(1) =6000
-    dims(2) = 6000
+   
     CALL DebugMessage("     > Size dim. 1: ",int(dims(1)))
     CALL DebugMessage("     > Size dim. 2: ",int(dims(2)))
 
@@ -1211,7 +1210,7 @@ CONTAINS
 
     CALL DebugMessage(" --- Reading the data")
     IF ( ltype == H5G_DATASET_F) THEN
-       !CALL h5dread_f(d_id, H5T_NATIVE_INTEGER, H5dataset, dims, ErrorFlag)
+       CALL h5dread_f(d_id, H5T_NATIVE_INTEGER, H5dataset, dims, ErrorFlag)
     ELSE  !  ltype.eqv.3
        CALL h5aread_f(d_id, H5T_NATIVE_INTEGER, H5dataset, dims, ErrorFlag)
     ENDIF
@@ -1226,17 +1225,20 @@ CONTAINS
        ErrorMessage=" *** Error allocating dataset"
        return
     ENDIF
-print*,H5dataset(10,10),' <==1===='
-    dataset => H5dataset
-print*,dataset(10,10),' <===2==='
+    
+    dataset = H5dataset
+    
+    
+   
+
     DEALLOCATE(H5dataset)
     IF ( AllocStat.ne.0 ) THEN
        ErrorFlag=-1
        ErrorMessage=" *** Error deallocating H5dataset"
        return
     ENDIF
-    print*,shape(dataset)
-print*,dataset(10,10),' <===3==='
+   
+
     DEALLOCATE(dims)
     IF ( AllocStat.ne.0 ) THEN
        ErrorFlag=-1
@@ -1247,7 +1249,11 @@ print*,dataset(10,10),' <===3==='
     ! Close all that is open
 
     CALL H5Read_close
-print*,dataset(10,10),' <===4==='
+    
+    
+    
+   
+
   END SUBROUTINE H5ReadInteger2D
 
 
@@ -1403,7 +1409,7 @@ print*,dataset(10,10),' <===4==='
     INTEGER , DIMENSION(2) , INTENT(in) :: offset_in, count_in   
 
     !Going out:
-    INTEGER,  DIMENSION(:,:), POINTER                    :: dataset
+    INTEGER,  DIMENSION(:,:), allocatable                   :: dataset
 
     !<<<<<<<<<<<<<<<<<<<<<<< Local variables >>>>>>>>>>>>>>>>>>>>>>>>
     INTEGER, PARAMETER                                   :: maxdims = 4
@@ -1515,7 +1521,7 @@ print*,dataset(10,10),' <===4==='
        return
     ENDIF
 
-    dataset => H5dataset
+    dataset = H5dataset
 
     DEALLOCATE(H5dataset,stat = AllocStat)
     IF ( AllocStat.ne.0 ) THEN

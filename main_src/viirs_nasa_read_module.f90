@@ -37,7 +37,9 @@ module VIIRS_NASA_READ_MODULE
   
   use FILE_TOOLS, only: &
         FILE_SEARCH &
-      , GETLUN
+      , GETLUN &
+      , FILE_TEST
+      
   use PIXEL_COMMON_MOD, only: &
         Sensor &
       , Image &
@@ -417,9 +419,10 @@ subroutine READ_VIIRS_NASA_DATA (Segment_Number, VGEOM_File, Error_Out)
 
            ! - loop over channels
            do I_Iband = 1, N_Iband
-
+               
               ! - check if channel is on 
               Is_Iband_Read(I_Iband) = .false.
+              if ( .not. file_test(  trim(Image%Level1b_Path)//trim(File_2_Read))) cycle
               if (.not. Is_Iband_On(I_Iband)) cycle
 
               ! - one more filter for missing night bands

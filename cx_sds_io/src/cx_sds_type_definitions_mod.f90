@@ -82,7 +82,7 @@ Module cx_sds_type_definitions_mod
 contains
     subroutine cx_sds_type__deallocate (self)
     class ( cx_sds_type) :: self
-    
+   
       if ( allocated(self % attr)) deallocate (self % attr)
     
     end subroutine cx_sds_type__deallocate 
@@ -187,8 +187,12 @@ contains
          case (DFNT_FLOAT64)
             data_real = real (self % r8values)
          case default
-            print*,'Missing datra type in  transform_to_real in cx_sds_type_definitions_mod.f90'  
+            print*,'Missing data type in  transform_to_real in cx_sds_type_definitions_mod.f90'  
       end select
+      
+     
+      
+      
    
    
    end subroutine transform_to_real
@@ -295,16 +299,17 @@ contains
    !
    subroutine cx_sds_data_type__deallocate(self)
       class(cx_sds_data_type)  :: self
+     
       if ( allocated( self%i1values)) deallocate( self%i1values)
-      if ( allocated( self%i2values)) deallocate( self%i2values)
-      if ( allocated( self%i4values)) deallocate( self%i4values)
-       if ( allocated( self%i8values)) deallocate( self%i8values)
-      if ( allocated( self%r4values)) deallocate( self%r4values)
-      if ( allocated(self% r8values)) deallocate( self%r8values)
-      if ( allocated( self%i1values_2d)) deallocate( self%i1values_2d)
-      if ( allocated( self%i2values_2d)) deallocate( self%i2values_2d)
-      if ( allocated( self%i4values_2d)) deallocate( self%i4values_2d)
-      if ( allocated( self%i8values_2d)) deallocate( self%i8values_2d)
+      if ( allocated( self%i2values)) deallocate( self%i2values)    
+      if ( allocated( self%i4values)) deallocate( self%i4values)     
+      if ( allocated( self%i8values)) deallocate( self%i8values)      
+      if ( allocated( self%r4values)) deallocate( self%r4values)     
+      if ( allocated(self% r8values)) deallocate( self%r8values)      
+      if ( allocated( self%i1values_2d)) deallocate( self%i1values_2d)      
+      if ( allocated( self%i2values_2d)) deallocate( self%i2values_2d)      
+      if ( allocated( self%i4values_2d)) deallocate( self%i4values_2d)       
+      if ( allocated( self%i8values_2d)) deallocate( self%i8values_2d)      
       if ( allocated( self%r4values_2d)) deallocate( self%r4values_2d)
       if ( allocated( self%r8values_2d)) deallocate( self%r8values_2d)
       if ( allocated( self%i1values_3d)) deallocate( self%i1values_3d)
@@ -312,7 +317,7 @@ contains
       if ( allocated( self%i4values_3d)) deallocate( self%i4values_3d)
       if ( allocated( self%r4values_3d)) deallocate( self%r4values_3d)
       if ( allocated( self%r8values_3d)) deallocate( self%r8values_3d)
-      if ( allocated( self%i1values_4d)) deallocate( self%i1values_4d)
+      if ( allocated( self%i1values_4d)) deallocate( self%i1values_4d)     
       if ( allocated( self%i2values_4d)) deallocate( self%i2values_4d)
       if ( allocated( self%i4values_4d)) deallocate( self%i4values_4d)
       if ( allocated( self%r4values_4d)) deallocate( self%r4values_4d)

@@ -371,7 +371,8 @@ module AWG_CLOUD_HEIGHT
   integer:: Num_Obs
   integer(kind=int1):: Cloud_Type
   integer:: Cloud_Phase
-  integer:: Undetected_Cloud
+  ! init during decl implies the save attribute
+  integer, save:: Undetected_Cloud = 0
   integer:: Sfc_Type_Forward_Model
   integer(kind=int1), dimension(NUM_META_DATA):: Meta_Data_Flags
 
