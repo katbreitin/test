@@ -308,7 +308,7 @@ implicit none
       
       this % julday = julday_cmp (this % year , this % month &
                            , this % day ,this % hour &
-                           , this % minute )
+                           , this % minute, ss = this % second )
        this % dayofyear = 1+  this % julday -  julday_cmp (this % year , 1 &
                            , 1 ,this % hour &
                            , this % minute ) 
@@ -446,25 +446,46 @@ implicit none
   !
   !     call t0 % add_time ( day=2, hour=12 )
   !
-  subroutine add_time ( this  , day , hour , minute)
+  subroutine add_time ( this  , day , hour , minute, second)
       class ( date_type ) :: this
-      integer , optional ::   day , hour , minute
+      integer , optional ::   day , hour , minute, second
       integer ::   day_add, hour_add , minute_add
-      real ( kind = r15) :: julday_add
+      real ( kind = r15) :: julday_add, second_add
+      real :: day_fract, hour_fract , minute_fract, second_fract
       
       day_add = 0
       hour_add = 0
       minute_add = 0
+      second_add = 0 
       
       if ( present ( day) )      day_add = day
       if ( present ( hour ) )    hour_add = hour
       if ( present ( minute ) )  minute_add = minute
+      if ( present ( second ) )  second_add = second
+     
+      julday_add = this % julday + day_add + hour_add/24. + minute_add/(24.*60.) + second_add/(24.* 60.)/ ( 60.)
+     
+      call cdate ( julday_add , this % year , this % month , this % day )
+       
+      day_fract = julday_add - int(julday_add) 
       
-      julday_add = this % julday + day_add + hour_add/24. + minute_add/(24.*60.)
-      call cdate ( julday_add , this % year , this % month , this % day ) 
-      this % hour =  int (24.* ( julday_add - int(julday_add) ))
-      this % minute = int((60)  &
-             * ((24. * ( julday_add - int(julday_add) )) - this % hour))
+      this % hour =  int ( 24 * day_fract)
+      
+      hour_fract = (24 * day_fract)  - this % hour
+      
+      this % minute = int(60 * hour_fract)
+      
+      minute_fract = (60 * hour_fract) - this % minute
+             
+     
+      
+      
+           
+      this % second   = nint(  60   * minute_fract )
+      
+     
+           !print*,  hour_fract , minute_fract, second_fract
+               
       call this % update()
   end subroutine add_time
   
@@ -537,17 +558,19 @@ implicit none
   end function time_mid
   
   !
-  function julday_cmp(yyyy, mm, dd, hh , uu ) result(ival)
+  function julday_cmp(yyyy, mm, dd, hh , uu , ss) result(ival)
      
       integer, intent(in)  :: yyyy
       integer, intent(in)  :: mm
       integer, intent(in)  :: dd
-      integer, intent(in) , optional :: hh , uu 
+      integer, intent(in) , optional :: hh , uu , ss
+      integer :: ss_add
       real ( kind = r15 )   :: ival
-
+      ss_add = 0
+      if ( present (ss) ) ss_add = ss
       ival = dd - 32075 + 1461*(yyyy+4800+(mm-14)/12)/4 +  &
        367*(mm-2-((mm-14)/12)*12)/12 - 3*((yyyy+4900+(mm-14)/12)/100)/4
-      ival = ival + hh/24. + uu/(24.* 60) 
+      ival = ival + hh/24. + uu/(24.* 60) + ss_add/(24.* 60. * 60.)
       return
   end function julday_cmp
   
