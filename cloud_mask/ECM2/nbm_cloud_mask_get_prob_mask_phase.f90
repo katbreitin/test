@@ -161,9 +161,6 @@ subroutine GET_PROB_MASK_PHASE (X,Y,Z,Satzen, Solzen, Lunzen, Solglintzen, Lungl
      
     ! --- determine probabilitz
 
-    !Ix = min((Lut(Class_Idx)%Nbins_X), max(1,NINT((X - &
-    !                                       Lut(Class_Idx)%X_Min) / &
-    !                                       Lut(Class_Idx)%X_Bin)))
     Ix = min((Lut(Class_Idx)%Nbins_X), max(1,INT((X - &
                                            Lut(Class_Idx)%X_Min) / &
                                            Lut(Class_Idx)%X_Bin + 1)))
@@ -173,9 +170,6 @@ subroutine GET_PROB_MASK_PHASE (X,Y,Z,Satzen, Solzen, Lunzen, Solglintzen, Lungl
 
     if (Classifier_Rank >=  2) then 
        if (Y == Missing_Value_Real) return
-       !Iy = min((Lut(Class_Idx)%Nbins_Y), max(1,NINT((Y - &
-       !                                    Lut(Class_Idx)%Y_Min) / &
-       !                                    Lut(Class_Idx)%Y_Bin)))
        Iy = min((Lut(Class_Idx)%Nbins_Y), max(1,INT((Y - &
                                            Lut(Class_Idx)%Y_Min) / &
                                            Lut(Class_Idx)%Y_Bin + 1)))
@@ -183,9 +177,6 @@ subroutine GET_PROB_MASK_PHASE (X,Y,Z,Satzen, Solzen, Lunzen, Solglintzen, Lungl
 
     if (Classifier_Rank >= 3) then 
        if (Z == Missing_Value_Real) return
-       !Iz = min((Lut(Class_Idx)%Nbins_Z), max(1,NINT((Z - &
-       !                                    Lut(Class_Idx)%Z_Min) / &
-       !                                    Lut(Class_Idx)%Z_Bin)))
        Iz = min((Lut(Class_Idx)%Nbins_Z), max(1,INT((Z - &
                                            Lut(Class_Idx)%Z_Min) / &
                                            Lut(Class_Idx)%Z_Bin + 1)))
