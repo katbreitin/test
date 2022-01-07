@@ -42,7 +42,7 @@ all: cx_sds_io
 cx_sds_io: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: MacOS X Fortran Linker'
-	gfortran -L"${HDF5_PATH}/lib/" -L"${HDF4_PATH}/lib" -L"${NETCDF_PATH}/lib/" -o "cx_sds_io" $(OBJS) $(USER_OBJS) $(LIBS)
+	gfortran -g -O0 -L"${HDF5_PATH}/lib/" -L"${HDF4_PATH}/lib" -L"${NETCDF_PATH}/lib/" -o "cx_sds_io" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 	$(MAKE) --no-print-directory post-build
