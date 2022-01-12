@@ -82,7 +82,7 @@ Module cx_sds_type_definitions_mod
 contains
     subroutine cx_sds_type__deallocate (self)
     class ( cx_sds_type) :: self
-   
+     
       if ( allocated(self % attr)) deallocate (self % attr)
     
     end subroutine cx_sds_type__deallocate 
@@ -294,6 +294,11 @@ contains
       end do
       
    end function cx_sds_type__get_att
+   
+   
+   
+   
+   
    !
    !
    !

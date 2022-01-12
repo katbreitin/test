@@ -23,6 +23,7 @@ contains
     character (len=1) :: rttov_version_string
     character (len = 1) :: metop_nr
     integer :: avhrr_num
+    integer :: nr_hirs
    
 #ifndef RTTOVPATH
     print*,'RTTOV PATH not set ..stop'
@@ -202,6 +203,9 @@ contains
         chn_List(20:36) = [ 19,-1,-1,18,15,14,-1,12,11,-1,9, 8,10, 7, 6, 5, 4 ]
         list = chn_list(chn)
         sensor_string = 'noaa_'//sensor(10:11)//'_hirs-shifted'
+        read ( sensor(10:10), '(I1)') nr_hirs
+        if ( nr_hirs .eq. 0 ) sensor_string = 'noaa_'//sensor(11:11)//'_hirs-shifted'
+        
         rttov_version_string = '8'
         if (index(sensor,'AVHRR-METOP')  .gt. 0 ) then
           sensor_string = 'metop_'//metop_nr//'_hirs-shifted'

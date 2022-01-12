@@ -159,28 +159,27 @@ subroutine GET_PROB_MASK_PHASE (X,Y,Z,Satzen, Solzen, Lunzen, Solglintzen, Lungl
 
 
      
-    ! --- determine probability
+    ! --- determine probabilitz
 
-!   Ix = min((Lut(Class_Idx)%Nbins_X), max(1,NINT((X - &
-!                                          Lut(Class_Idx)%X_Min) / &
-!                                          Lut(Class_Idx)%X_Bin)))
+    Ix = min((Lut(Class_Idx)%Nbins_X), max(1,INT((X - &
+                                           Lut(Class_Idx)%X_Min) / &
+                                           Lut(Class_Idx)%X_Bin + 1)))
 
-    Ix = min((Lut(Class_Idx)%Nbins_X), max(1,INT((X - Lut(Class_Idx)%X_Min) / Lut(Class_Idx)%X_Bin + 1)))
     Iy = 0
     Iz = 0
 
     if (Classifier_Rank >=  2) then 
        if (Y == Missing_Value_Real) return
-       Iy = min((Lut(Class_Idx)%Nbins_Y), max(1,NINT((Y - &
+       Iy = min((Lut(Class_Idx)%Nbins_Y), max(1,INT((Y - &
                                            Lut(Class_Idx)%Y_Min) / &
-                                           Lut(Class_Idx)%Y_Bin)))
+                                           Lut(Class_Idx)%Y_Bin + 1)))
     endif
 
     if (Classifier_Rank >= 3) then 
        if (Z == Missing_Value_Real) return
-       Iz = min((Lut(Class_Idx)%Nbins_Z), max(1,NINT((Z - &
+       Iz = min((Lut(Class_Idx)%Nbins_Z), max(1,INT((Z - &
                                            Lut(Class_Idx)%Z_Min) / &
-                                           Lut(Class_Idx)%Z_Bin)))
+                                           Lut(Class_Idx)%Z_Bin + 1)))
     endif
     
     Obs_Prob_thresh = 0.0

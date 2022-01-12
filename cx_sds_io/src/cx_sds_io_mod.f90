@@ -81,8 +81,8 @@ contains
       if ( postfix .eq. '.nc') then
         file_type = 2
         ! some files with .ncshould be read with h5 tools
-        call H5Fis_hdf5_f(file,status,hdferr)
-        if (status) file_type = 3
+        !call H5Fis_hdf5_f(file,status,hdferr)
+        !if (status) file_type = 3
       end if
       if ( postfix .eq. '.h5') file_type  = 3
 
@@ -140,7 +140,6 @@ contains
 
       if ( ftype .eq. 3) then
          cx_sds_finfo = h5_get_finfo(file, nsds, sds_name, natt, att_name)
-         print*,'success',shape(sds_name)
       end if
          
    
@@ -312,7 +311,7 @@ contains
       type (cx_sds_type),  intent(out), allocatable, target :: sds(:)
       integer, optional, intent(in) :: start(:), stride(:), count(:)
       
-      integer :: nsds
+      integer :: nsds, ii
       integer :: ftype
 
       cx_sds_read_raw = -1
@@ -329,17 +328,26 @@ contains
 
       end if
       
+      ! ncdf
       if ( ftype .eq. 2 ) then
-
+          ! do ii = 1,100000
          cx_sds_read_raw = ncdf_get_file_sds(file, nsds,sds,1, (/sds_name/) &
          ,start_inp=start,stride_inp = stride,count_inp = count)
+        ! call sds(1) % data % deallocate()
+         ! call sds(1) % deallocate
+         
+         ! if (allocated(sds)) deallocate(sds)
+       !  print*,ii
+       !  end do
          
           if ( cx_sds_read_raw .eq. -1 ) then
             cx_sds_read_raw = h5_get_file_sds(file, nsds,sds, (/sds_name/)  &
          ,start_inp=start,stride_inp = stride,count_inp =count) 
-          
-          end if
          
+          
+            stop 'used h5 Routines for ncdf'
+          end if
+         !stop 'remove me later on cs_sds_io '
       end if
 
       if ( ftype .eq. 3 ) then
@@ -412,6 +420,7 @@ contains
 9999 continue
     !cx_sds_read_1d_real = -1
     call pd % deallocate
+    call ps % deallocate
     pd=>null()
     ps=>null()
     if (allocated(sds)) deallocate(sds)
@@ -434,7 +443,7 @@ contains
     type ( cx_sds_data_type), pointer :: pd => null()
     type ( cx_sds_type), pointer :: ps => null()
 
-    integer :: dim1, dim2
+    integer :: dim1, dim2, ii
     real :: add_offset(1)
     real :: slope (1)
     real :: missing(1)
@@ -443,8 +452,10 @@ contains
     logical :: att_exist
     
     ! -  executable
-       
+     
     if (  cx_sds_read_raw ( file, sds_name, sds, start=start, stride=stride, count=count) < 0 ) goto 9999
+        
+    
    
     pd=>sds(1) % data
     ps=>sds(1)
@@ -495,14 +506,19 @@ contains
     cx_sds_read_2d_real = 0
 9999 continue
     ! cx_sds_read_2d_real = -1
-     if ( allocated(temp_1d)) deallocate ( temp_1d)
+   
+    
+    if ( allocated(temp_1d)) deallocate ( temp_1d)
     if ( associated(pd)) call pd % deallocate
     
-    pd=>null()
-    if ( associated(ps)) call ps % deallocate()
-    ps=>null()
-    if (allocated(sds)) deallocate(sds)
     
+   
+    if ( associated(ps)) call ps % deallocate()
+   !call ps % info
+    if (allocated(sds)) deallocate(sds)
+   
+   pd=> null()
+   ps => null()
    
   end function cx_sds_read_2d_real
   !
@@ -523,7 +539,7 @@ contains
      real :: missing(1)
      real :: scaled(1)
       
-      
+     
      if (  cx_sds_read_raw ( file, sds_name, sds) < 0 ) goto 9999
      pd=>sds(1)%data
      ps=>sds(1)
