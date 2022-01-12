@@ -99,8 +99,6 @@ subroutine READ_NUMBER_OF_SCANS_ISCCPNG(Nlat,Nlon,Ierror)
    
    call CLOSE_NETCDF(Ncid)
 
-   print *, "end of number of scans ", Nlon, Nlat, Ierror
-
 end subroutine READ_NUMBER_OF_SCANS_ISCCPNG
 
 !----------------------------------------------------------------------

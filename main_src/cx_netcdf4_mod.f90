@@ -46,6 +46,8 @@ module CX_NETCDF4_MOD
  public :: read_netcdf
  public :: read_and_unscale_netcdf_1d
  public :: read_and_unscale_netcdf_2d
+ public :: read_and_unscale_netcdf_3d
+ public :: read_and_unscale_netcdf_4d
  public :: read_netcdf_variable_attribute_real
  public :: read_netcdf_attribute_real
  public :: read_netcdf_attribute_double
@@ -82,8 +84,10 @@ module CX_NETCDF4_MOD
           read_netcdf_2d_int2,  &
           read_netcdf_2d_int4,  &
           read_netcdf_2d_char, &
+          read_netcdf_3d_int2, &
           read_netcdf_3d_real, &
           read_netcdf_4d_real, &
+          read_netcdf_4d_int2, &
           read_netcdf_4d_int4
  end interface read_netcdf
 
@@ -583,8 +587,6 @@ module CX_NETCDF4_MOD
 
    end subroutine read_and_unscale_netcdf_1d
 
-
-
    ! ----------------------------------------------------------
    ! Read and Uscale 2D arrays Two-Byte Integers
    ! ----------------------------------------------------------
@@ -649,7 +651,133 @@ module CX_NETCDF4_MOD
 
    end subroutine read_and_unscale_netcdf_2d
 
- 
+   ! ----------------------------------------------------------
+   ! Read and Uscale 3D arrays Two-Byte Integers
+   ! ----------------------------------------------------------
+   subroutine read_and_unscale_netcdf_3d (nc_file_id, var_start, var_stride, &
+                                          var_dim, var_name, var_output_unscaled)
+      integer, intent(in) :: nc_file_id
+      integer, dimension(:), intent(in) :: var_start
+      integer, dimension(:), intent(in) :: var_stride
+      integer, dimension(:), intent(in) :: var_dim
+      character(len=*), intent(in) :: var_name
+
+      real(kind=4) , dimension(var_dim(1),var_dim(2),var_dim(3)) :: var_output_scaled
+      real(kind=4) , intent(out), dimension(:,:,:) :: var_output_unscaled
+      real(kind=4) , dimension(var_dim(1),var_dim(2),var_dim(3)) :: var_output_unscaled_temp
+      real(kind=4):: add_offset, scale_factor
+
+      integer(kind=2):: Fill_Value
+
+      integer :: nc_var_id
+      integer :: status
+
+      status = nf90_inq_varid(nc_file_id, trim(var_name), nc_var_id)
+      if (status /= nf90_noerr) then
+            print *, "Error: Unable to get variable id for ", trim(var_name)
+            return
+      endif
+
+      status = nf90_get_att(nc_file_id, nc_var_id, "add_offset", add_offset)
+      if (status /= 0) add_offset = 0.0
+
+      status = nf90_get_att(nc_file_id, nc_var_id, "scale_factor", scale_factor)
+      if (status /= 0) scale_factor = 1.0
+
+      status = nf90_get_att(nc_file_id, nc_var_id, "_FillValue", fill_value)
+      if (status /= 0) fill_value = -999.0
+
+      !get Variable
+      status = nf90_get_var(nc_file_id, nc_var_id, var_output_scaled, start=var_start, &
+                            count=var_dim, stride=var_stride)
+      if ((status /= nf90_noerr)) then
+            print *,'Error: ',  trim(nf90_strerror(status)),'   ', trim(var_name)
+             print *, "in read_and_unscale_netcdf_3d"
+          print *, "var name = ", trim(var_name)
+          print *, "var start = ", var_start
+          print *, "var count = ", var_dim
+          print *, "var stride = ", var_stride
+          print *, "varname =  ",trim(var_name)
+          print *, "shape var_output_scaled = ", shape(var_output_scaled)
+            stop
+            return
+      endif
+
+      !--- unscale
+      where(var_output_scaled /= fill_value)
+         var_output_unscaled_temp = add_offset + scale_factor * var_output_scaled
+      elsewhere
+         var_output_unscaled_temp = Missing_Value_Netcdf
+      endwhere
+
+      var_output_unscaled = Missing_Value_Netcdf
+      var_output_unscaled(1:var_dim(1),1:var_dim(2),1:var_dim(3)) = var_output_unscaled_temp
+
+   end subroutine read_and_unscale_netcdf_3d
+
+   ! ----------------------------------------------------------
+   ! Read and Uscale 4D arrays Two-Byte Integers
+   ! ----------------------------------------------------------
+   subroutine read_and_unscale_netcdf_4d (nc_file_id, var_start, var_stride, &
+                                          var_dim, var_name, var_output_unscaled)
+      integer, intent(in) :: nc_file_id
+      integer, dimension(:), intent(in) :: var_start
+      integer, dimension(:), intent(in) :: var_stride
+      integer, dimension(:), intent(in) :: var_dim
+      character(len=*), intent(in) :: var_name
+
+      real(kind=4) , dimension(var_dim(1),var_dim(2),var_dim(3),var_dim(4)) :: var_output_scaled
+      real(kind=4) , intent(out), dimension(:,:,:,:) :: var_output_unscaled
+      real(kind=4) , dimension(var_dim(1),var_dim(2),var_dim(3),var_dim(4)) :: var_output_unscaled_temp
+      real(kind=4):: add_offset, scale_factor
+
+      integer(kind=2):: Fill_Value
+
+      integer :: nc_var_id
+      integer :: status
+
+      status = nf90_inq_varid(nc_file_id, trim(var_name), nc_var_id)
+      if (status /= nf90_noerr) then
+            print *, "Error: Unable to get variable id for ", trim(var_name)
+            return
+      endif
+
+      status = nf90_get_att(nc_file_id, nc_var_id, "add_offset", add_offset)
+      if (status /= 0) add_offset = 0.0
+
+      status = nf90_get_att(nc_file_id, nc_var_id, "scale_factor", scale_factor)
+      if (status /= 0) scale_factor = 1.0
+
+      status = nf90_get_att(nc_file_id, nc_var_id, "_FillValue", fill_value)
+      if (status /= 0) fill_value = -999.0
+
+      !get Variable
+      status = nf90_get_var(nc_file_id, nc_var_id, var_output_scaled, start=var_start, &
+                            count=var_dim, stride=var_stride)
+      if ((status /= nf90_noerr)) then
+            print *,'Error: ',  trim(nf90_strerror(status)),'   ', trim(var_name)
+             print *, "in read_and_unscale_netcdf_3d"
+          print *, "var name = ", trim(var_name)
+          print *, "var start = ", var_start
+          print *, "var count = ", var_dim
+          print *, "var stride = ", var_stride
+          print *, "varname =  ",trim(var_name)
+          print *, "shape var_output_scaled = ", shape(var_output_scaled)
+            stop
+            return
+      endif
+
+      !--- unscale
+      where(var_output_scaled /= fill_value)
+         var_output_unscaled_temp = add_offset + scale_factor * var_output_scaled
+      elsewhere
+         var_output_unscaled_temp = Missing_Value_Netcdf
+      endwhere
+
+      var_output_unscaled = Missing_Value_Netcdf
+      var_output_unscaled(1:var_dim(1),1:var_dim(2),1:var_dim(3),1:var_dim(4)) = var_output_unscaled_temp
+
+   end subroutine read_and_unscale_netcdf_4d
   
    ! ----------------------------------------------------------
    ! Read in 1D Real arrays
@@ -930,6 +1058,40 @@ module CX_NETCDF4_MOD
    ! ----------------------------------------------------------
    ! Read in 3D arrays
    ! ----------------------------------------------------------
+   subroutine read_netcdf_3d_int2 (nc_file_id, var_start, var_stride, &
+                                  var_dim, var_name, var_output)
+
+      integer, intent(in) :: nc_file_id
+      integer, dimension(:), intent(in) :: var_start
+      integer, dimension(:), intent(in) :: var_stride
+      integer, dimension(:), intent(in) :: var_dim
+
+      character(len=*), intent(in) :: var_name
+      integer(kind=2) , intent(out), dimension(:,:,:) :: var_output
+
+      integer :: nc_var_id
+      integer :: status = 0
+
+      print *, "READ_NETCDF_3D_INT2"
+
+      status = nf90_inq_varid(nc_file_id, trim(var_name), nc_var_id)
+      if (status /= nf90_noerr) then
+            print *, "Error: Unable to get variable id for ", trim(var_name)
+            return
+      endif
+
+      !get Variable
+      status = nf90_get_var(nc_file_id, nc_var_id, var_output, start=var_start, count=var_dim)
+      if ((status /= nf90_noerr)) then
+            print *,'Error: ',  trim(nf90_strerror(status)),'   ', trim(var_name)
+            return
+      endif
+
+   end subroutine read_netcdf_3d_int2
+
+   ! ----------------------------------------------------------
+   ! Read in 3D arrays
+   ! ----------------------------------------------------------
    subroutine read_netcdf_3d_real (nc_file_id, var_start, var_stride, &
                                   var_dim, var_name, var_output)
 
@@ -963,6 +1125,35 @@ module CX_NETCDF4_MOD
    ! ----------------------------------------------------------
    ! Read in 4D arrays
    ! ----------------------------------------------------------
+   subroutine read_netcdf_4d_int2 (nc_file_id, var_start, var_stride, &
+                                   var_dim, var_name, var_output)
+
+      integer, intent(in) :: nc_file_id
+      integer, dimension(:), intent(in) :: var_start
+      integer, dimension(:), intent(in) :: var_stride
+      integer, dimension(:), intent(in) :: var_dim
+
+      character(len=*), intent(in) :: var_name
+      integer(kind=2) , intent(out), dimension(:,:,:,:) :: var_output
+
+      integer :: nc_var_id
+      integer :: status = 0
+
+      status = nf90_inq_varid(nc_file_id, trim(var_name), nc_var_id)
+      if (status /= nf90_noerr) then
+            print *, "Error: Unable to get variable id for ", trim(var_name)
+            return
+      endif
+
+      !get Variable
+      status = nf90_get_var(nc_file_id, nc_var_id, var_output, start=var_start, count=var_dim)
+      if ((status /= nf90_noerr)) then
+            print *,'Error: ',  trim(nf90_strerror(status)),'   ', trim(var_name)
+            return
+      endif
+
+   end subroutine read_netcdf_4d_int2
+
    subroutine read_netcdf_4d_real (nc_file_id, var_start, var_stride, &
                                   var_dim, var_name, var_output)
 

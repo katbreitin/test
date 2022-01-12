@@ -289,6 +289,7 @@ clavrxorb_objs = process_clavrx.o \
                  cx_real_boolean_mod.o \
                  cx_abi_lhp_mod.o \
                  cx_vgac_mod.o \
+                 cx_isccpng_mod.o \
                  cx_eps_sg_mod.o \
                  cx_atmospheric_correction_vis_mod.o \
                  cx_nwp_rtm_mod.o \
@@ -524,6 +525,8 @@ cx_sea_ir_emiss_mod.o: cx_sea_ir_emiss_mod.f90 pixel_common_mod.o clavrx_message
 cx_dust_mod.o: cx_dust_mod.f90 pixel_common_mod.o clavrx_message_mod.o cx_netcdf4_mod.o 
 cx_vgac_mod.o: cx_vgac_mod.f90 pixel_common_mod.o clavrx_message_mod.o cx_netcdf4_mod.o viewing_geometry_mod.o planck_mod.o constants_mod.o calibration_constants_mod.o cx_real_boolean_mod.o class_time_date.o
 	$(fc) -c $(fflags) $(cppflags) $(cpp) $(netcdflibs) cx_vgac_mod.f90
+cx_isccpng_mod.o: cx_isccpng_mod.f90 pixel_common_mod.o cx_date_time_tools_mod.o clavrx_message_mod.o cx_netcdf4_mod.o constants_mod.o cx_real_boolean_mod.o class_time_date.o
+	$(fc) -c $(fflags) $(cppflags) $(cpp) $(netcdflibs) cx_isccpng_mod.f90
 cx_eps_sg_mod.o: cx_eps_sg_mod.f90 pixel_common_mod.o cx_date_time_tools_mod.o clavrx_message_mod.o cx_netcdf4_mod.o viewing_geometry_mod.o planck_mod.o constants_mod.o calibration_constants_mod.o cx_real_boolean_mod.o class_time_date.o
 cx_string_tools_mod.o:cx_string_tools_mod.f90 
 cx_abi_lhp_mod.o:cx_abi_lhp_mod.f90
@@ -604,7 +607,7 @@ viirs_nasa_read_module.o: viirs_nasa_read_module.f90 file_tools.o pixel_common_m
 viirs_nasa_hres_read_mod.o: viirs_nasa_hres_read_mod.f90
 	$(fc) -c $(fflags) $(cppflags) $(cpp) $(hdf5libs) -I$(CX_DATA_IO) viirs_nasa_hres_read_mod.f90 
 fy3d_read_module.o: fy3d_read_module.f90 constants_mod.o pixel_common_mod.o cx_readh5dataset.o file_tools.o
-sensor_mod.o: sensor_mod.f90 constants_mod.o pixel_common_mod.o avhrr_mod.o goes_mod.f90 modis_mod.o fy2_mod.o fy3d_read_module.o fy4_mod.o viirs_clavrx_bridge.o viirs_nasa_read_module.o seviri_mod.o coms_mod.o iff_clavrx_bridge.o algorithm_constants_mod.o ahi_clavrx_bridge.o abi_mod.o mvcm_read_mod.o sapf_read_mod.o hirs_fusion_mod.o ahi_mod.o clavrx_static_nav_module.o class_time_date.o cx_vgac_mod.o cx_eps_sg_mod.o viirs_nasa_hres_read_mod.o
+sensor_mod.o: sensor_mod.f90 constants_mod.o pixel_common_mod.o avhrr_mod.o goes_mod.f90 modis_mod.o fy2_mod.o fy3d_read_module.o fy4_mod.o viirs_clavrx_bridge.o viirs_nasa_read_module.o seviri_mod.o coms_mod.o iff_clavrx_bridge.o algorithm_constants_mod.o ahi_clavrx_bridge.o abi_mod.o mvcm_read_mod.o sapf_read_mod.o hirs_fusion_mod.o ahi_mod.o clavrx_static_nav_module.o class_time_date.o cx_vgac_mod.o cx_eps_sg_mod.o viirs_nasa_hres_read_mod.o cx_isccpng_mod.o
 	$(fc) -c $(fflags) $(fflags_clavr) ${hdf5libs} $(cpp) $(LIB_HIM_FLAG) sensor_mod.f90 
 
 else
@@ -664,7 +667,7 @@ sub_routine = constants_mod.o pixel_common_mod.o pixel_routines_mod.o clavrx_sst
               land_sfc_properties_mod.o  level2_mod.o cloud_height_routines.o \
               dncomp_clavrx_bridge_mod.o cx_nucaps_mod.o kdtree2.o city_mask_mod.o \
               clavrx_message_mod.o avhrr_pixel_aerosol.o cx_hdf4_mod.o cx_sea_ir_emiss_mod.o cx_dust_mod.o dnb_retrievals_mod.o \
-              cx_vgac_mod.o cx_eps_sg_mod.o cx_abi_lhp_mod_alg_function.o sort_module.o \
+              cx_vgac_mod.o cx_isccpng_mod.o cx_eps_sg_mod.o cx_abi_lhp_mod_alg_function.o sort_module.o \
               calibration_constants_mod.o algorithm_constants_mod.o  \
               acha_clavrx_bridge_module.o cloud_base_clavrx_bridge_module.o \
               ccl_clavrx_bridge_module.o asos_clavrx_bridge_module.o \

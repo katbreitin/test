@@ -64,7 +64,9 @@ module SENSOR_MOD
       , geo &
       , ancil_data_dir &
       , use_aux_flag &
-      , cloud_mask_aux_read_flag
+      , cloud_mask_aux_read_flag &
+      , WMO_Id_ISCCPNG
+
       
    use CALIBRATION_CONSTANTS_MOD,only: &  
       planck_a1,planck_a2 &
@@ -216,6 +218,11 @@ module SENSOR_MOD
       READ_HSD_FIXED_GRID_STATIC_NAV, &
       READ_LEVEL1B_FIXED_GRID_STATIC_NAV
 
+   use CX_ISCCPNG_MOD, only: &
+      READ_NUMBER_OF_SCANS_ISCCPNG, &
+      READ_ISCCPNG_DATE_TIME, &
+      READ_ISCCPNG_DATA
+
    use CX_VGAC_MOD, only: &
       READ_NUMBER_OF_SCANS_VGAC, &
       READ_VGAC_DATE_TIME, &
@@ -324,6 +331,24 @@ module SENSOR_MOD
       type(date_type) :: time_obj_nasa_hres(2)
       character(len=15) :: time_identifier
       integer :: yyyy,doy1,hour1,minu
+
+      do 
+
+      !----------------------------------------------
+      ! --- ISCCP-NG L1g files
+      !----------------------------------------------
+      if (index(Image%Level1b_Name,'ISCCP-NG_L1g') > 0) then
+         call READ_ISCCPNG_DATE_TIME(Start_Year_Tmp,Start_Day_Tmp,Start_Time_Tmp,&
+                                     End_Year_Tmp,End_Day_Tmp,End_Time_Tmp)
+         Image%Start_Year = Start_Year_Tmp
+         Image%End_Year = End_Year_Tmp
+         Image%Start_Doy = Start_Day_Tmp
+         Image%End_Doy = End_Day_Tmp
+         Image%Start_Time = Start_Time_Tmp
+         Image%End_Time = End_Time_Tmp
+         exit
+      endif
+
       !----------------------------------------------
       ! for AVHRR, this is read in with level-1b data
       !----------------------------------------------
@@ -337,6 +362,7 @@ module SENSOR_MOD
                             Image%Start_Year, Image%Start_Doy, Image%Start_Time, &
                             Image%End_Year, Image%End_Doy, Image%End_Time)
   
+         exit
       end if
 
       !----------------------------------------------
@@ -360,6 +386,7 @@ module SENSOR_MOD
          PRINT *, "No HDF5 libraries installed, stopping"
          stop
 #endif
+         exit
       end if 
       
       if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA-HRES') then
@@ -386,13 +413,11 @@ module SENSOR_MOD
          Image%End_Time =  time_obj_nasa_hres(2) % msec_of_day
          
         
+         exit
          ! print*,'  +++++++++++++++++++++++++++++++++++  ++++++++++++++++++++++++++++++++++++++++='
-          
-          
          
       end if 
        
-        
       !----------------------------------------------
       ! read VIIRS-NASA time from VGEOM
       !----------------------------------------------
@@ -414,6 +439,7 @@ module SENSOR_MOD
          PRINT *, "No HDF5 libraries installed, stopping"
          stop
 #endif
+         exit
       endif
 
       !----------------------------------------------
@@ -444,6 +470,8 @@ module SENSOR_MOD
          Image%End_Year  = year
          Image%End_Doy   = doy  
 
+         exit
+
       endif
       
       !----------------------------------------------
@@ -458,6 +486,7 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
+         exit
       endif
 
       !----------------------------------------------
@@ -473,6 +502,7 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
+         exit
       endif
 
       !----------------------------------------------
@@ -488,6 +518,7 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
+         exit
       endif
 
        !----------------------------------------------
@@ -511,6 +542,7 @@ module SENSOR_MOD
           PRINT *, "No HDF5 libraries installed, stopping"
           stop
 #endif
+         exit
        endif
 
 
@@ -527,6 +559,7 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
+         exit
       endif
 
 
@@ -608,8 +641,15 @@ module SENSOR_MOD
           Image%End_Time = abi_time_end%msec_of_day !millisec
 
         endif
+
+        exit
  
       end if
+
+      print *, "Sensor not found in time, stopping"
+      stop
+
+      end do   !end of while loop
 
       !-------------------------------------------------------------------------
       ! compute start, end and mean time in units of hours
@@ -624,12 +664,12 @@ module SENSOR_MOD
         Image%Mean_Time_Hours = Image%Mean_Time_Hours - 24.0
       endif
 
-
       !----------------------------------------------------------------------------
       ! Replace with a date_type variables from class_time_date.f90
       !----------------------------------------------------------------------------
 
    end subroutine SET_DATA_DATE_AND_TIME
+
    !--------------------------------------------------------------------------------------
    !   screen output of sensor structure
    !--------------------------------------------------------------------------------------
@@ -1618,6 +1658,41 @@ module SENSOR_MOD
          exit test_loop
       endif
 
+      !--- ISCCP-NG
+      if (index(Image%Level1b_Name, 'ISCCP') > 0) then
+
+         Sensor%WMO_Id = WMO_Id_ISCCPNG
+
+         select case(Sensor%WMO_Id)
+ 
+         case (173)  !GOES-17
+            Sensor%Sensor_Name = 'AHI'
+            Sensor%Platform_Name = 'HIM8'
+            Sensor%Spatial_Resolution_Meters = 2000
+            Sensor%Instr_Const_File = 'him8_instr.dat'
+
+         case (270)  !GOES-16
+            Sensor%Sensor_Name = 'GOES-RU-IMAGER'
+            Sensor%Platform_Name = 'GOES-16'
+            Sensor%Spatial_Resolution_Meters = 2000
+            Sensor%Instr_Const_File = 'goes_16_instr.dat'
+
+         case (271)  !GOES-17
+            Sensor%Sensor_Name = 'GOES-RU-IMAGER'
+            Sensor%Platform_Name = 'GOES-17'
+            Sensor%Spatial_Resolution_Meters = 2000
+            Sensor%Instr_Const_File = 'goes_17_instr.dat'
+
+         case default
+                print *, "WMO-ID not appropriate for ISCCP-NG, stopping"
+                stop
+
+         end select
+
+         exit test_loop
+
+      endif
+
       !--- AVHRR IFF
       !--- MJH: is it ok to use avhrr algo files here? or do we need new
       !         ones for AVHRR/HIRS?
@@ -1770,6 +1845,7 @@ module SENSOR_MOD
             end if
 
       endif
+
       
       !-------------------------------------------------------------------------------
       !---if sensor not detected, assume AVHRR
@@ -1987,16 +2063,28 @@ module SENSOR_MOD
       character(len=1024), dimension(1) :: file_v03img
       character(len=15) :: time_identifier
       
-
       Ierror = sym%NO
+
+      print *, "in set file dimensions"
+
+      do 
+
+      if (index(Image%Level1b_Name,'ISCCP-NG') > 0) then
+         print *, "calling isccp dims"
+         call READ_NUMBER_OF_SCANS_ISCCPNG(Image%Number_Of_Lines, Image%Number_Of_Elements, Ierror)
+         print *, "returned from isccp dims"
+         exit
+      endif
 
       if (index(Sensor%Sensor_Name,'MODIS') > 0) then
          call READ_MODIS_SIZE_ATTR(trim(Level1b_Full_Name),Image%Number_Of_Elements,Image%Number_Of_Lines)
+         exit
       endif
    
       if (trim(Sensor%Sensor_Name) == 'MODIS-MAC') then
          Image%Number_Of_Elements =  11
          Image%Number_Of_Lines = 2030
+         exit
       endif
       
       if ( trim(Sensor%Sensor_Name) == 'AHI') then
@@ -2014,6 +2102,7 @@ module SENSOR_MOD
             Image%Number_Of_Lines = count(2)
          endif
 
+         exit
 
       end if
       
@@ -2039,6 +2128,8 @@ module SENSOR_MOD
             return      !skips file
          end if
 
+         exit
+
       end if
       
       if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA-HRES') then
@@ -2063,6 +2154,8 @@ module SENSOR_MOD
             return      ! skips file
           endif
           
+         exit
+          
       end if
 
       if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA') then
@@ -2077,6 +2170,8 @@ module SENSOR_MOD
             Ierror = sym%YES
             return      ! skips file
           endif
+
+          exit
         
       endif
 
@@ -2090,6 +2185,9 @@ module SENSOR_MOD
             Ierror = sym%YES
             return      ! skips file
          endif
+
+         exit
+
       endif
 
       if (trim(Sensor%Sensor_Name) == 'METIMAGE') then
@@ -2102,6 +2200,7 @@ module SENSOR_MOD
             Ierror = sym%YES
             return      ! skips file
          endif
+         exit
       endif
 
       if (trim(Sensor%Sensor_Name) == 'MERSI-2') then
@@ -2114,11 +2213,13 @@ module SENSOR_MOD
             Ierror = sym%YES
             return      ! skips file
          endif
+         exit
       endif
       
       !--- if an IFF, call routine to determine dimensions from latitude sds
       if (index(Sensor%Sensor_Name,'IFF') > 0) then
          call GET_IFF_DIMS_BRIDGE(trim(Image%Level1b_Path)//trim(Image%Level1b_Name),Image%Number_Of_Elements,Image%Number_Of_Lines)
+         exit
       end if
      
       !--- AVHRR
@@ -2145,6 +2246,8 @@ module SENSOR_MOD
          !-------------------------------------------------------------------
          call READ_AVHRR_LEVEL1B_HEADER(trim(Level1b_Full_Name))
 
+         exit
+
       end if
 
       !------------------------------------------------------------------------
@@ -2156,6 +2259,7 @@ module SENSOR_MOD
          Image%Number_Of_Lines = AREAstr%Num_Line
          L1b_Rec_Length = AREAstr%Num_Byte_Ln_Prefix +  &
                      (AREAstr%Num_Elem*AREAstr%Bytes_Per_Pixel)
+         exit
       end if
 
       !--- Does this break AREA files?
@@ -2173,6 +2277,7 @@ module SENSOR_MOD
           stop
          endif
         endif
+        exit
       end if
 
       if (trim(Sensor%Sensor_Name) == 'GOES_IP_SOUNDER') then
@@ -2180,11 +2285,13 @@ module SENSOR_MOD
          Image%Number_Of_Lines = AREAstr%Num_Line
          L1b_Rec_Length = AREAstr%Num_Byte_Ln_Prefix +  &
                      (AREAstr%Num_Elem*AREAstr%Bytes_Per_Pixel)
+         exit
       end if
 
       if (trim(Sensor%Sensor_Name) == 'SEVIRI') then
          Image%Number_Of_Elements =  int(AREAstr%Num_Elem)
          Image%Number_Of_Lines = AREAstr%Num_Line
+         exit
       end if
 
       if (trim(Sensor%Sensor_Name) == 'MTSAT-IMAGER' .or. &
@@ -2192,8 +2299,14 @@ module SENSOR_MOD
           trim(Sensor%Sensor_Name) == 'COMS-IMAGER') then
          Image%Number_Of_Elements =  int(AREAstr%Num_Elem)
          Image%Number_Of_Lines = AREAstr%Num_Line
+         exit
       end if
 
+      print *, "Error in SET_FILE_DIMENSIONS, stopping"
+
+      stop
+
+      end do   !end of send 
 
    end subroutine SET_FILE_DIMENSIONS
 
@@ -2226,6 +2339,13 @@ module SENSOR_MOD
          call READ_MODIS(Segment_Number,Ierror_Level1b)
          if (Ierror_Level1b /= 0) return
       end if
+
+      print *, trim(Image%Level1b_Name)
+
+      if (index(Image%Level1b_Name,"ISCCP-NG_L1g")> 0) then
+         call READ_ISCCPNG_DATA(Segment_Number, Ierror_Level1b)
+
+      else
 
       select case (trim(Sensor%Sensor_Name))
 
@@ -2328,7 +2448,6 @@ module SENSOR_MOD
         
       case('VIIRS-NASA-HRES')
         
-          
           nasa_hres_config % channel_on_modis(1:45) = Sensor%Chan_On_Flag_Default(1:45)  == sym%YES
           
           nasa_hres_config % sensor = 'npp'
@@ -2414,6 +2533,9 @@ module SENSOR_MOD
          call READ_EPS_SG_DATA(Segment_Number, Ierror_Level1b)
          ! If error reading, then go to next file
          if (Ierror_Level1b /= 0) return
+      endif
+
+
       endif
        
    end subroutine READ_LEVEL1B_DATA

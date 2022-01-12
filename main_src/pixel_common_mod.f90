@@ -118,6 +118,11 @@
 !  CSBT_Mask = Clear Sky Brighntess Temperature Mask
 !  Opaque_Height = Maximum Height at which trans to space is 0.
 !  Obs_Type = type of observation (solar,lunar,mixed,thermal).  Controls what is allocated
+!
+!  ISCCP-NG Vars
+!  WMO_Idx_L1g = 
+!  Layer_Idx_L1g = 
+!  Sample_Mod_L1g = 
 !--------------------------------------------------------------------------------------
 module PIXEL_COMMON_MOD
 
@@ -174,6 +179,7 @@ module PIXEL_COMMON_MOD
   private:: CREATE_CLOUD_PROD_ARRAYS, RESET_CLOUD_PROD_ARRAYS, DESTROY_CLOUD_PROD_ARRAYS
   private:: CREATE_NUCAPS_ARRAYS, RESET_NUCAPS_ARRAYS, DESTROY_NUCAPS_ARRAYS
   private:: CREATE_CALIOP_ARRAYS, RESET_CALIOP_ARRAYS, DESTROY_CALIOP_ARRAYS
+  private:: CREATE_L1G_ARRAYS,RESET_L1G_ARRAYS,DESTROY_L1G_ARRAYS
 
   !--- arrays to keep track of files written to temporary directory, max 100 assumed
   integer, public, save:: Number_Of_Temporary_Files
@@ -185,6 +191,8 @@ module PIXEL_COMMON_MOD
   integer, public, save:: Line_Abs_Idx_Acha_Dump
   
   integer, public :: Use_Land_IR_Emiss
+  integer, public :: WMO_Id_ISCCPNG
+  character(len=20), public :: Sensor_Name_ISCCPNG
 
   !---------------------------------------------------------------------------------
   ! CLAVR-x file list variables
@@ -608,6 +616,12 @@ module PIXEL_COMMON_MOD
     real (kind=real4), dimension(:,:), allocatable:: Tpw_Above_Cloud
   end type nwp_pix_definition
 
+  type l1g_definition
+     integer(kind=2), dimension(:,:), allocatable:: WMO_Id
+     integer(kind=1), dimension(:,:), allocatable:: Layer_Idx
+     integer(kind=1), dimension(:,:), allocatable:: Sample_Mode
+  end type l1g_definition
+
 
   !---- declare structures using above types
   type(observations), dimension(Nchan_Clavrx), public, save, target :: Ch
@@ -623,6 +637,7 @@ module PIXEL_COMMON_MOD
   type(cloud_mask_definition), public, save, target :: CLDMASK
   type(nucaps_definition), public, save, target :: NUCAPS
   type(nwp_pix_definition), public, save, target :: NWP_PIX
+  type(l1g_definition), public, save, target :: L1g
 
   !---- declare other global variables
   integer,public, save:: Use_Aux_Flag
@@ -1335,6 +1350,7 @@ subroutine CREATE_PIXEL_ARRAYS()
   call  CREATE_CLOUD_PROD_ARRAYS(dim1, dim2)
   call  CREATE_NUCAPS_ARRAYS(dim1, dim2)
   call  CREATE_CALIOP_ARRAYS(dim1, dim2)
+  call  CREATE_L1G_ARRAYS(dim1, dim2)
 
   !--- pixel level parameters
    allocate(Zen_Idx_Rtm(dim1,dim2))
@@ -1482,8 +1498,7 @@ subroutine DESTROY_PIXEL_ARRAYS()
   call DESTROY_CLOUD_PROD_ARRAYS()
   call DESTROY_NUCAPS_ARRAYS()
   call DESTROY_CALIOP_ARRAYS()
-
-  
+  call DESTROY_L1G_ARRAYS()
 
   deallocate(Sst_Anal)
   deallocate(Sst_Anal_Err)
@@ -1570,6 +1585,7 @@ subroutine RESET_PIXEL_ARRAYS_TO_MISSING()
       call RESET_CLOUD_PROD_ARRAYS()
       call RESET_NUCAPS_ARRAYS()
       call RESET_CALIOP_ARRAYS()
+      call RESET_L1G_ARRAYS()
 
       Sst_Anal = Missing_Value_Real4
       Sst_Anal_Err = Missing_Value_Real4
@@ -1981,6 +1997,27 @@ subroutine DESTROY_NWP_PIX_ARRAYS()
    deallocate(NWP_PIX%Lon_Nwp_Fac)
    deallocate(NWP_PIX%Lat_Nwp_Fac)
 end subroutine DESTROY_NWP_PIX_ARRAYS
+!------------------------------------------------------------------------------
+!
+!------------------------------------------------------------------------------
+subroutine CREATE_L1G_ARRAYS(dim1,dim2)
+   integer, intent(in):: dim1, dim2
+   allocate(L1g%WMO_Id(dim1,dim2))
+   allocate(L1g%Layer_Idx(dim1,dim2))
+   allocate(L1g%Sample_Mode(dim1,dim2))
+end subroutine CREATE_L1G_ARRAYS
+
+subroutine RESET_L1G_ARRAYS()
+   L1g%WMO_Id = MISSING_VALUE_INT4
+   L1g%Layer_Idx = MISSING_VALUE_INT1
+   L1g%Sample_Mode = MISSING_VALUE_INT1
+end subroutine RESET_L1G_ARRAYS
+
+subroutine DESTROY_L1G_ARRAYS()
+   deallocate(L1g%WMO_Id)
+   deallocate(L1g%Layer_Idx)
+   deallocate(L1g%Sample_Mode)
+end subroutine DESTROY_L1G_ARRAYS
 !------------------------------------------------------------------------------
 !
 !------------------------------------------------------------------------------

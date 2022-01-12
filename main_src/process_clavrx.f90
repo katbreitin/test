@@ -910,7 +910,6 @@
       Month = int(COMPUTE_MONTH(int(Image%Start_Doy, kind=int4), int(ileap, kind=int4)),kind=int2)
       Day_Of_Month = int(COMPUTE_DAY(int(Image%Start_Doy, kind=int4), int(ileap, kind=int4)),kind=int2)
 
-
       !*************************************************************************
       ! Marker:  READ IN SENSOR-SPECIFIC CONSTANTS
       !*************************************************************************
@@ -1114,7 +1113,7 @@
          !---- Marker: Read level-1b data
          !-----------------------------------------------------------------
          Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
-
+print *, "before level1b"
          call READ_LEVEL1B_DATA(Image%Level1b_Full_Name,Segment_Number, &
                                 Time_Since_Launch,AREAstr,NAVstr,Nrec_Avhrr_Header,Ierror_Level1b)
          if (Ierror_Level1b /= 0) then

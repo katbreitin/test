@@ -486,6 +486,31 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Actual_Range = [0.0,5000.0]
             Sds_Info(Var_Idx)%Units =  "meters"
             if (allocated(Sfc%Zsfc_Std)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Sfc%Zsfc_Std
+         case("layer_l1g")
+            Sds_Info(Var_Idx)%Standard_Name = "layer_l1g"
+            Sds_Info(Var_Idx)%Scaling_Type =  0_int1
+            Sds_Info(Var_Idx)%Input_Data_Type_HDF =  DFNT_INT8
+            Sds_Info(Var_Idx)%Level2_Data_Type_HDF =  DFNT_INT8
+            Sds_Info(Var_Idx)%Level2_Data_Type_NETCDF = NF90_BYTE
+            Sds_Info(Var_Idx)%Units = "none"
+            if (allocated(L1g%Layer_Idx)) Sds_Info(Var_Idx)%Sds_Data_2d_I1 => L1g%Layer_Idx
+         case("sample_mode_l1g")
+            Sds_Info(Var_Idx)%Standard_Name = "sample_mode_l1g"
+            Sds_Info(Var_Idx)%Scaling_Type =  0_int1
+            Sds_Info(Var_Idx)%Input_Data_Type_HDF =  DFNT_INT8
+            Sds_Info(Var_Idx)%Level2_Data_Type_HDF =  DFNT_INT8
+            Sds_Info(Var_Idx)%Level2_Data_Type_NETCDF = NF90_BYTE
+            Sds_Info(Var_Idx)%Units = "none"
+            if (allocated(L1g%Sample_Mode)) Sds_Info(Var_Idx)%Sds_Data_2d_I1 => L1g%Sample_Mode
+         case("wmo_id_l1g")
+            Sds_Info(Var_Idx)%Standard_Name = "wmo_id_l1g"
+            Sds_Info(Var_Idx)%Scaling_Type =  0_int1
+            Sds_Info(Var_Idx)%Input_Data_Type_HDF =  DFNT_INT16
+            Sds_Info(Var_Idx)%Level2_Data_Type_HDF =  DFNT_INT16
+            Sds_Info(Var_Idx)%Level2_Data_Type_NETCDF = NF90_BYTE
+            Sds_Info(Var_Idx)%Units = "none"
+            if (allocated(L1g%WMO_Id)) Sds_Info(Var_Idx)%Sds_Data_2d_I2 => L1g%WMO_Id
+
          !----------------------------------------------------------------------------------------------------
          ! Nav Members
          !----------------------------------------------------------------------------------------------------
@@ -3127,8 +3152,11 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
   integer:: Istatus
   integer:: ipos
   integer:: ilen
+  integer:: ilen_wmo_id
   integer:: Var_Idx
   integer:: StrLen
+
+  character(len=3):: Wmo_String
   !integer:: n
  
   ! HDF function declarations
@@ -3144,12 +3172,21 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
   blank_char = " "
 
   !--- make a file name base for output
-  File_1b_Root = trim (file_1b)
-
+  File_1b_Root = trim(file_1b)
 
   !-----------------------------------------------------------------------------
   ! perform sensor specific modification of level-2 file name
   !-----------------------------------------------------------------------------
+
+  !--- ISCCP-NG
+  if (index(File_1b_Root,'ISCCP-NG_L1g') > 0) then
+     write(Wmo_String,fmt="(I0.3)") WMO_Id_ISCCPNG
+     ipos = index(file_1b,"__")
+     ilen = len(trim(file_1b))
+     ilen_wmo_id = len('wmo_id')
+     File_1b_Root = trim(file_1b(1:ipos)) // trim(file_1b(ipos+ilen_wmo_id+3:ilen-3)) // "_" // Wmo_String
+  !   print *, trim(File_1b_Root)
+  endif
 
   !--- FY4A - shorten name.
   if (File_1b_Root(1:4) == 'FY4A') then
@@ -3166,7 +3203,6 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
   if (trim(l1b_ext) == ".hdf") then
     File_1b_Root = File_1b_Root(1:len_trim(File_1b_Root)-4)
   endif
-
 
   !--- special processing for viirs - remove hdf suffix - this hard coded for
   if (trim(Sensor%Sensor_Name) == 'VIIRS') then
@@ -3303,18 +3339,19 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
   !---------------------------------------------------------
   !-- define level2 file structure
   !---------------------------------------------------------
-  if (Level2_File_Flag == sym%YES) then
+  print *, "here in level2", Level2_File_Flag, Output_Format_Flag
+ if (Level2_File_Flag == sym%YES) then
 
      if (Output_Format_Flag == 0) File_Level2 = trim(File_1b_Root)//".level2.hdf"
 
      if (Output_Format_Flag == 1) File_Level2 = trim(File_1b_Root)//".level2.nc"
 
-     call MESG(MOD_PROMPT//"creating level-2 file "//trim(file_Level2))
+     call MESG(MOD_PROMPT//"creating level-2 file "//trim(File_Level2))
 
      if (Output_Format_Flag == 0) then 
-        Sd_Id_Level2 = sfstart(trim(Dir_Level2)//trim(file_Level2),DFACC_CREATE)
+        Sd_Id_Level2 = sfstart(trim(Dir_Level2)//trim(File_Level2),DFACC_CREATE)
      elseif (Output_Format_Flag == 1) then 
-        Istatus_Sum = nf90_create(trim(Dir_Level2)//trim(file_Level2), &
+        Istatus_Sum = nf90_create(trim(Dir_Level2)//trim(File_Level2), &
                                   cmode=ior(NF90_CLOBBER,NF90_NETCDF4), &
                                   ncid = Sd_Id_Level2)
      endif

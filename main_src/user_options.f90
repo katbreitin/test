@@ -112,7 +112,8 @@ module USER_OPTIONS
       , Y_Sample_Offset &
       , Elem_Abs_Idx_ACHA_Dump &
       , Line_Abs_Idx_ACHA_Dump &
-      , Use_Iband
+      , Use_Iband &
+      , WMO_Id_ISCCPNG
       
    use CONSTANTS_MOD, only: &
       Sym &
@@ -475,6 +476,12 @@ contains
       read(unit=Default_Lun,fmt=*) Chan_On_Flag_Default_User_Set(31:36)
       read(unit=Default_Lun,fmt=*) Chan_On_Flag_Default_User_Set(37:42)
       read(unit=Default_Lun,fmt=*) Chan_On_Flag_Default_User_Set(43:45)
+
+      !--- read in wmo id for selected ISSCP-NG L1g sensor (can be missing)
+      read(unit=Default_Lun,fmt=*,iostat = erstat) WMO_Id_ISCCPNG
+      if (erstat /= 0) then
+         WMO_Id_ISCCPNG = -999
+      endif 
              
       !--- close the options file
       close(unit=Default_Lun)
@@ -1491,6 +1498,13 @@ contains
 
       Ch(1:NCHAN_CLAVRX)%Sub_Pixel_On_Flag = .false.
 
+      !--- ISCCP-NG L1g
+      if (index(Image%Level1b_Name,'ISCCP-NG_L1g') > 0) then
+         if (Sensor%Chan_On_Flag_Default(1) == sym%YES) Ch(1)%Sub_Pixel_On_Flag = .true.  !0.65
+         if (Sensor%Chan_On_Flag_Default(31) == sym%YES) Ch(31)%Sub_Pixel_On_Flag = .true.  !11
+         return
+      endif
+
       !--- also check that is not an area file
       if (Image%Mixed_Resolution_Flag) then
          if (Image%Chan_Average_Flag == 2) then
@@ -1501,7 +1515,6 @@ contains
             if (Sensor%Chan_On_Flag_Default(6) == sym%YES) Ch(6)%Sub_Pixel_On_Flag = .true.  !1.60
          endif
       endif
-
 
       !--- Treat VIIRS I-Bands as higher resolution versions of analogous M-Bands
       if ((Sensor%WMO_Id == 224 .or. Sensor%WMO_Id == 225)) then

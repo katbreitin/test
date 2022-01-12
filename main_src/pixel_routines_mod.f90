@@ -221,45 +221,51 @@ subroutine EXPAND_SPACE_MASK_FOR_USER_LIMITS(Seg_Idx, Space_Mask)
    integer(kind=int4), intent(in):: Seg_Idx
    integer(kind=int1), dimension(:,:), intent(inout):: Space_Mask
 
-   !--- check if subset processing is on
-   if (Nav%Limit_Flag /= sym%NO) return
+   print *, "in expand space"
+   print *, "#1 count no space = ", count(Space_Mask == sym%no)
 
    !--- check for latitudinal bounds
-   where(Nav%Lat_1b /= Missing_Value_Real4 .and. Nav%Lon_1b /= Missing_Value_Real4)
-        Space_Mask = sym%NO
-   elsewhere 
+   where(Nav%Lat_1b == Missing_Value_Real4 .or. Nav%Lon_1b == Missing_Value_Real4)
         Space_Mask = sym%YES
    end where
+   print *, "#2 count no space = ", count(Space_Mask == sym%no)
 
    where(isnan(Nav%Lat_1b) .or. isnan(Nav%Lon_1b))
         Space_Mask = sym%YES
    end where
+   print *, "#3 count no space = ", count(Space_Mask == sym%no)
 
-   where(Nav%Lat_1b < Nav%Lat_South_Limit .or. Nav%Lat_1b > Nav%Lat_North_Limit)
+   !--- check if subset processing is on
+   if (Nav%Limit_Flag == sym%YES) then
+
+     where(Nav%Lat_1b < Nav%Lat_South_Limit .or. Nav%Lat_1b > Nav%Lat_North_Limit)
         Space_Mask = sym%YES
-   end where
+     end where
+     print *, "#4 count no space = ", count(Space_Mask == sym%no)
 
-   !--- check for longitudinal bounds including the dateline condition
-   if ( Nav%Lon_West_Limit > Nav%Lon_East_Limit) then
+     !--- check for longitudinal bounds including the dateline condition
+     if ( Nav%Lon_West_Limit > Nav%Lon_East_Limit) then
        where((Nav%Lon_1b < Nav%Lon_West_Limit .and. Nav%Lon_1b > 0.0) .or. &
              (Nav%Lon_1b > Nav%Lon_East_Limit .and. Nav%Lon_1b < 0.0))
         Space_Mask = sym%YES
        end where
-   else
+     else
        where(Nav%Lon_1b < Nav%Lon_West_Limit .or. Nav%Lon_1b > Nav%Lon_East_Limit)
         Space_Mask = sym%YES
        end where
+     endif
+
+     !--- Satzen limit
+     where (Geo%Satzen > Geo%Satzen_Max_Limit .or. Geo%Satzen < Geo%Satzen_Min_Limit)
+        Space_Mask = sym%YES
+     end where
+
+     !--- Solzen limit
+     where (Geo%Solzen < Geo%Solzen_Min_Limit .or. Geo%Solzen > Geo%Solzen_Max_Limit .or. Geo%Satzen == Missing_Value_Real4)
+        Space_Mask = sym%YES
+     end where
+
    endif
-
-   !--- Satzen limit
-   where (Geo%Satzen > Geo%Satzen_Max_Limit .or. Geo%Satzen < Geo%Satzen_Min_Limit)
-        Space_Mask = sym%YES
-   end where
-
-   !--- Solzen limit
-   where (Geo%Solzen < Geo%Solzen_Min_Limit .or. Geo%Solzen > Geo%Solzen_Max_Limit .or. Geo%Satzen == Missing_Value_Real4)
-        Space_Mask = sym%YES
-   end where
 
    !--- CALIOP collocation
    if (Caliop_Flag) then
@@ -269,6 +275,7 @@ subroutine EXPAND_SPACE_MASK_FOR_USER_LIMITS(Seg_Idx, Space_Mask)
    !--- test if any valid data, if not, print a warning 
    if (minval(Space_Mask) == sym%YES) then
       print *, EXE_PROMPT, "WARNING: All Data in Segment are Classified as Space via Spatial Subsetting Logic" 
+      stop
    endif
 
 end subroutine EXPAND_SPACE_MASK_FOR_USER_LIMITS
