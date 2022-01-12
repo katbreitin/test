@@ -159,11 +159,13 @@ subroutine GET_PROB_MASK_PHASE (X,Y,Z,Satzen, Solzen, Lunzen, Solglintzen, Lungl
 
 
      
-    ! --- determine probabilitz
+    ! --- determine probability
 
-    Ix = min((Lut(Class_Idx)%Nbins_X), max(1,NINT((X - &
-                                           Lut(Class_Idx)%X_Min) / &
-                                           Lut(Class_Idx)%X_Bin)))
+!   Ix = min((Lut(Class_Idx)%Nbins_X), max(1,NINT((X - &
+!                                          Lut(Class_Idx)%X_Min) / &
+!                                          Lut(Class_Idx)%X_Bin)))
+
+    Ix = min((Lut(Class_Idx)%Nbins_X), max(1,INT((X - Lut(Class_Idx)%X_Min) / Lut(Class_Idx)%X_Bin + 1)))
     Iy = 0
     Iz = 0
 
