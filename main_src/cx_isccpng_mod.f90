@@ -515,60 +515,11 @@ subroutine READ_NAV_L1G(Segment_Number)
 
 end subroutine READ_NAV_L1G
 
-!--------------------------------------------------------------------------------------------------
-! Construct from L1g a field of WMO and Layer where the L1g WMO equals the chosen WMO
-!--------------------------------------------------------------------------------------------------
-!subroutine READ_WMO_LAYER_L1G(WMO_Idx,Segment_Number, WMO_L1g, Layer_L1g) 
-!
-!  integer, intent(in) :: WMO_Idx, Segment_Number
-!  integer, intent(out), dimension(:,:):: WMO_L1g, Layer_L1g
-!
-!  integer:: Nx_Start, Nx_End, Ny_Start, Ny_End, Layer_Idx
-!  integer:: Ncid
-!  integer, dimension(3):: Sds_Start, Sds_Count, Sds_Stride
-!  real, dimension(:,:,:), allocatable:: Sds_Data_Temp
-!  integer, dimension(:,:), allocatable:: WMO_Temp
-!  integer:: Num_Layers_L1g
-!
-!  Num_Layers_L1g = 3
-!
-!  call OPEN_NETCDF(Image%Level1b_Full_Name,Ncid)
-!
-!  Nx_Start = 1
-!  Nx_End = Nx_Start + Image%Number_Of_Elements - 1
-!  Ny_Start = (Segment_Number - 1) * Image%Number_Of_Lines_Per_Segment + 1
-!  Ny_End = min(Image%Number_Of_Lines, Ny_Start + Image%Number_of_Lines_Per_Segment - 1)
-!
-!  Sds_Start = [1,Ny_Start,1]
-!  Sds_Stride = [1,1,1]
-!  Sds_Count = [Nx_End - Nx_Start + 1, Ny_End - Ny_Start + 1,1]
-!
-!  allocate(Sds_Data_Temp(Image%Number_Of_Elements, Image%Number_of_Lines_Per_Segment, Num_Layers_L1g))
-!  allocate(WMO_Temp(Image%Number_Of_Elements, Image%Number_of_Lines_Per_Segment))
-!
-!  Sds_Data_Temp = MISSING_VALUE_REAL4
-!
-!  call READ_AND_UNSCALE_NETCDF_3D(Ncid, Sds_Start, Sds_Stride, Sds_Count, "wmo_id", Sds_Data_Temp)
-!  do  Layer_Idx = 1,Num_Layers_L1g
-!    WMO_Temp = int(Sds_Data_Temp(:,:,Layer_Idx))
-!
-!    WMO_Temp = CONVERT_WMO(WMO_Temp)
-!
-!    where (WMO_Temp == WMO_Idx)
-!            WMO_L1g = WMO_Temp
-!            Layer_L1g = Layer_Idx
-!    endwhere
-!  enddo
-!
-!  call CLOSE_NETCDF(Ncid)
-!
-!  deallocate(Sds_Data_Temp)
-!  deallocate(WMO_Temp)
-!
-!end subroutine READ_WMO_LAYER_L1G 
 !----------------------------------------------------------------------
 ! Convert L1g WMO numbers into those used by CLAVR-x
-! 152=GOES-16;664=GOES-17;167=Himawari-8;684=Meteosat-8;305=Meteosat-11"
+! L1g: 152=GOES-16;664=GOES-17;167=Himawari-8;684=Meteosat-8;305=Meteosat-11"
+! CLAVR-x comes from 
+! https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/WMO306_vI2_CommonTable_en_v23.0.0.pdf
 !----------------------------------------------------------------------
 function CONVERT_WMO(WMO_Idx_In) result(WMO_Idx_Out)
   integer(kind=2), intent(in), dimension(:,:,:):: WMO_Idx_In
