@@ -45,6 +45,8 @@ public:: READ_ISCCPNG_DATA
 
 private:: READ_WMO_L1G
 private:: READ_NAV_L1G
+private:: READ_SINGLE_L1G
+private:: READ_LAYERED_L1G
 private:: CONVERT_WMO
 
 integer,parameter, private:: Num_Layers_L1g = 3
@@ -59,8 +61,6 @@ subroutine READ_NUMBER_OF_SCANS_ISCCPNG(Nlat,Nlon,Ierror)
    integer, intent(out):: Nlat,Nlon,Ierror
    integer :: status, dim_id, Ncid
    character(len=100):: dim_name_dummy
-
-   print *, "In Dims ", trim(Image%Level1b_Full_Name)
 
    Ierror = 0
 
@@ -181,8 +181,6 @@ subroutine READ_ISCCPNG_DATA(Segment_Number, Error_Status)
   integer:: ipos, ilen, ilen_wmo_id
   integer:: Lat_Idx, Layer_Idx
 
-  print *, "In READ_ISCCP_DATA"
-
   !--- determine location of segement data in the file
   Nx_Start = 1
   Nx_End = Nx_Start + Image%Number_Of_Elements - 1
@@ -218,39 +216,47 @@ subroutine READ_ISCCPNG_DATA(Segment_Number, Error_Status)
   File_Prefix = Image%Level1b_Full_Name(1:ipos+1)
   File_Suffix = Image%Level1b_Full_Name(ipos+ilen_wmo_id+2:ilen)
 
-  !print *,"Prefix = ", trim(File_Prefix)
-  !print *,"Suffix = ", trim(File_Suffix)
-
-  print *, "Before sample mode"
-  call READ_L1G(File_Prefix, File_Suffix, 'sample_mode', Segment_Number, WMO_L1g, Temp_Pix_Array_1) 
-  print *, "after sample mode"
+  call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'sample_mode', Segment_Number, WMO_L1g, Temp_Pix_Array_1) 
   L1g%Sample_Mode = int(Temp_Pix_Array_1,kind=1)
 
   !--- generic call for constructng one 2d field for this WMO and all layers
-  print *, "Before satzen"
-  call READ_L1G(File_Prefix, File_Suffix, 'satellite_zenith_angle', Segment_Number, WMO_L1g, Geo%Satzen) 
-  print *, "satzen = ", shape(Geo%Satzen),maxval(Geo%Satzen), count(Geo%Satzen > 0), count(Geo%Satzen == MISSING_VALUE_REAL4)
+  call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'satellite_zenith_angle', Segment_Number, WMO_L1g, Geo%Satzen) 
+  call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'satellite_azimuth_angle', Segment_Number, WMO_L1g, Geo%Sataz) 
 
-  call READ_L1G(File_Prefix, File_Suffix, 'solar_zenith_angle', Segment_Number, WMO_L1g, Geo%Solzen) 
-  call READ_L1G(File_Prefix, File_Suffix, 'satellite_azimuth_angle', Segment_Number, WMO_L1g, Geo%Sataz) 
-  call READ_L1G(File_Prefix, File_Suffix, 'solar_azimuth_angle', Segment_Number, WMO_L1g, Geo%Solaz) 
+  !--- solar angles are a single layer
+  call READ_SINGLE_L1G(File_Prefix, File_Suffix, 'solar_zenith_angle', Segment_Number, WMO_L1g, Geo%Solzen) 
+  call READ_SINGLE_L1G(File_Prefix, File_Suffix, 'solar_azimuth_angle', Segment_Number, WMO_L1g, Geo%Solaz) 
 
-  print *, "Before space mask"
   !--- based Space Mask on Satzen
   Geo%Space_Mask = sym%YES
   where(Geo%Satzen /= MISSING_VALUE_REAL4)
      Geo%Space_Mask = sym%NO
   endwhere
 
-  print *, "Before angles"
+  !--- convert azimuths from L1g to CLAVR-x convention
+  ! L1g is clockwise from West
+  ! CLAVR-x is clockwise from North
+  ! l1g = (clavrx + 90)%360.
+  where(Geo%Sataz /= MISSING_VALUE_REAL4)
+     Geo%Sataz = Geo%Sataz + 90.0
+  endwhere
+  where(Geo%Sataz > 180.0) 
+     Geo%Sataz = Geo%Sataz - 360.0
+  endwhere
+  where(Geo%Solaz /= MISSING_VALUE_REAL4)
+     Geo%Solaz = Geo%Solaz + 90.0
+  endwhere
+  where(Geo%Solaz > 180.0) 
+     Geo%Solaz = Geo%Solaz - 360.0
+  endwhere
+
   !--- make Relaz and Glint and Scattering angles here
   Geo%Relaz = RELATIVE_AZIMUTH (Geo%Solaz, Geo%Sataz)
   Geo%Glintzen = GLINT_ANGLE (Geo%Solzen, Geo%Satzen, Geo%Relaz )
   Geo%Scatangle = SCATTERING_ANGLE (Geo%Solzen, Geo%Satzen, Geo%Relaz)
 
-  print *, "Before time"
   !--- read time and convert to clavrx standard
-  call READ_L1G(File_Prefix, File_Suffix, 'pixel_time', Segment_Number, WMO_L1g, Pixel_Time) 
+  call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'pixel_time', Segment_Number, WMO_L1g, Pixel_Time) 
   where(Pixel_Time /= MISSING_VALUE_REAL4)
        Pixel_Time = 1000.0*Pixel_Time
   endwhere
@@ -258,78 +264,67 @@ subroutine READ_ISCCPNG_DATA(Segment_Number, Error_Status)
   !--- make scanline time
   do Lat_Idx = 1, Image%Number_Of_Lines_Per_Segment
      Image%Scan_Time_Ms(Lat_Idx) = maxval(Pixel_Time(:,Lat_Idx))
+     Image%Scan_Number(Lat_Idx) = (Segment_Number - 1)*Image%Number_of_Lines_Per_Segment + Lat_Idx
   enddo
 
-  print *, "before channel read"
   !--- read radiometric data
   if (Sensor%Chan_On_Flag_Default(3) == sym%Yes) then
-    call READ_L1G(File_Prefix, File_Suffix, 'refl_00_47um', Segment_Number, WMO_L1g, Ch(3)%Ref_Toa) 
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'refl_00_47um', Segment_Number, WMO_L1g, Ch(3)%Ref_Toa) 
   endif
-  print *, "Bubba 1"
   if (Sensor%Chan_On_Flag_Default(4) == sym%Yes) then
-    call READ_L1G(File_Prefix, File_Suffix, 'refl_00_51um', Segment_Number, WMO_L1g, Ch(4)%Ref_Toa) 
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'refl_00_51um', Segment_Number, WMO_L1g, Ch(4)%Ref_Toa) 
   endif
-  print *, "Bubba 2"
   if (Sensor%Chan_On_Flag_Default(1) == sym%Yes) then
-    call READ_L1G(File_Prefix, File_Suffix, 'refl_00_65um', Segment_Number, WMO_L1g, Ch(1)%Ref_Toa) 
-  print *, "Bubba 2.1"
-    call READ_L1G(File_Prefix, File_Suffix, 'refl_00_65um_std', Segment_Number, WMO_L1g, Ch(1)%Ref_Toa_Std_Sub) 
-  print *, "Bubba 2.2"
-    call READ_L1G(File_Prefix, File_Suffix, 'refl_00_65um_min', Segment_Number, WMO_L1g, Ch(1)%Ref_Toa_Min_Sub) 
-  print *, "Bubba 2.3"
-    call READ_L1G(File_Prefix, File_Suffix, 'refl_00_65um_max', Segment_Number, WMO_L1g, Ch(1)%Ref_Toa_Max_Sub) 
-  print *, "Bubba 2.4"
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'refl_00_65um', Segment_Number, WMO_L1g, Ch(1)%Ref_Toa) 
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'refl_00_65um_std', Segment_Number, WMO_L1g, Ch(1)%Ref_Toa_Std_Sub) 
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'refl_00_65um_min', Segment_Number, WMO_L1g, Ch(1)%Ref_Toa_Min_Sub) 
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'refl_00_65um_max', Segment_Number, WMO_L1g, Ch(1)%Ref_Toa_Max_Sub) 
   endif
-  print *, "Bubba 3"
   if (Sensor%Chan_On_Flag_Default(2) == sym%Yes) then
-    call READ_L1G(File_Prefix, File_Suffix, 'refl_00_86um', Segment_Number, WMO_L1g, Ch(2)%Ref_Toa) 
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'refl_00_86um', Segment_Number, WMO_L1g, Ch(2)%Ref_Toa) 
   endif
-  print *, "Bubba 4"
   if (Sensor%Chan_On_Flag_Default(26) == sym%Yes) then
-    call READ_L1G(File_Prefix, File_Suffix, 'refl_01_38um', Segment_Number, WMO_L1g, Ch(26)%Ref_Toa) 
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'refl_01_38um', Segment_Number, WMO_L1g, Ch(26)%Ref_Toa) 
   endif
-  print *, "Bubba 5"
   if (Sensor%Chan_On_Flag_Default(6) == sym%Yes) then
-    call READ_L1G(File_Prefix, File_Suffix, 'refl_01_60um', Segment_Number, WMO_L1g, Ch(6)%Ref_Toa) 
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'refl_01_60um', Segment_Number, WMO_L1g, Ch(6)%Ref_Toa) 
   endif
-  print *, "Bubba 6"
   if (Sensor%Chan_On_Flag_Default(7) == sym%Yes) then
-    call READ_L1G(File_Prefix, File_Suffix, 'refl_02_20um', Segment_Number, WMO_L1g, Ch(7)%Ref_Toa) 
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'refl_02_20um', Segment_Number, WMO_L1g, Ch(7)%Ref_Toa) 
   endif
-  print *, "Bubba 7"
   if (Sensor%Chan_On_Flag_Default(20) == sym%Yes) then
-    call READ_L1G(File_Prefix, File_Suffix, 'temp_03_80um', Segment_Number, WMO_L1g, Ch(20)%Bt_Toa) 
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_03_80um', Segment_Number, WMO_L1g, Ch(20)%Bt_Toa) 
   endif
   if (Sensor%Chan_On_Flag_Default(37) == sym%Yes) then
-    call READ_L1G(File_Prefix, File_Suffix, 'temp_06_20um', Segment_Number, WMO_L1g, Ch(37)%Bt_Toa) 
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_06_20um', Segment_Number, WMO_L1g, Ch(37)%Bt_Toa) 
   endif
   if (Sensor%Chan_On_Flag_Default(27) == sym%Yes) then
-    call READ_L1G(File_Prefix, File_Suffix, 'temp_06_70um', Segment_Number, WMO_L1g, Ch(27)%Bt_Toa) 
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_06_70um', Segment_Number, WMO_L1g, Ch(27)%Bt_Toa) 
   endif
   if (Sensor%Chan_On_Flag_Default(28) == sym%Yes) then
-    call READ_L1G(File_Prefix, File_Suffix, 'temp_07_30um', Segment_Number, WMO_L1g, Ch(28)%Bt_Toa) 
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_07_30um', Segment_Number, WMO_L1g, Ch(28)%Bt_Toa) 
   endif
   if (Sensor%Chan_On_Flag_Default(29) == sym%Yes) then
-    call READ_L1G(File_Prefix, File_Suffix, 'temp_08_50um', Segment_Number, WMO_L1g, Ch(29)%Bt_Toa) 
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_08_50um', Segment_Number, WMO_L1g, Ch(29)%Bt_Toa) 
   endif
   if (Sensor%Chan_On_Flag_Default(30) == sym%Yes) then
-    call READ_L1G(File_Prefix, File_Suffix, 'temp_09_70um', Segment_Number, WMO_L1g, Ch(30)%Bt_Toa) 
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_09_70um', Segment_Number, WMO_L1g, Ch(30)%Bt_Toa) 
   endif
   if (Sensor%Chan_On_Flag_Default(38) == sym%Yes) then
-    call READ_L1G(File_Prefix, File_Suffix, 'temp_10_40um', Segment_Number, WMO_L1g, Ch(38)%Bt_Toa) 
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_10_40um', Segment_Number, WMO_L1g, Ch(38)%Bt_Toa) 
   endif
   if (Sensor%Chan_On_Flag_Default(31) == sym%Yes) then
-    call READ_L1G(File_Prefix, File_Suffix, 'temp_11_00um', Segment_Number, WMO_L1g, Ch(31)%Bt_Toa) 
-    call READ_L1G(File_Prefix, File_Suffix, 'temp_11_00um_std', Segment_Number, WMO_L1g, Ch(31)%Bt_Toa_Std_Sub) 
-    call READ_L1G(File_Prefix, File_Suffix, 'temp_11_00um_min', Segment_Number, WMO_L1g, Ch(31)%Bt_Toa_Min_Sub) 
-    call READ_L1G(File_Prefix, File_Suffix, 'temp_11_00um_max', Segment_Number, WMO_L1g, Ch(31)%Bt_Toa_Max_Sub) 
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_11_00um', Segment_Number, WMO_L1g, Ch(31)%Bt_Toa) 
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_11_00um_std', Segment_Number, WMO_L1g, Ch(31)%Bt_Toa_Std_Sub) 
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_11_00um_min', Segment_Number, WMO_L1g, Ch(31)%Bt_Toa_Min_Sub) 
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_11_00um_max', Segment_Number, WMO_L1g, Ch(31)%Bt_Toa_Max_Sub) 
     call COMPUTE_RAD_ARRAY( Ch(31)%Bt_Toa,Ch(31)%Rad_Toa,31,MISSING_VALUE_REAL4)
   endif
   if (Sensor%Chan_On_Flag_Default(32) == sym%Yes) then
-    call READ_L1G(File_Prefix, File_Suffix, 'temp_12_00um', Segment_Number, WMO_L1g, Ch(32)%Bt_Toa) 
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_12_00um', Segment_Number, WMO_L1g, Ch(32)%Bt_Toa) 
   endif
   if (Sensor%Chan_On_Flag_Default(33) == sym%Yes) then
-    call READ_L1G(File_Prefix, File_Suffix, 'temp_13_30um', Segment_Number, WMO_L1g, Ch(33)%Bt_Toa) 
+    call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_13_30um', Segment_Number, WMO_L1g, Ch(33)%Bt_Toa) 
   endif
 
   deallocate(WMO_L1g, WMO_Temp)
@@ -341,9 +336,9 @@ subroutine READ_ISCCPNG_DATA(Segment_Number, Error_Status)
 
 end subroutine READ_ISCCPNG_DATA
 !--------------------------------------------------------------------------------------------------
-!
+! Read L1g variables that are layered (ie. brightness temperatures)
 !--------------------------------------------------------------------------------------------------
-subroutine READ_L1G(File_Name_Prefix, File_Name_Suffix, Sds_Name, Segment_Number, WMO_L1g_3d, Sds_Data)
+subroutine READ_LAYERED_L1G(File_Name_Prefix, File_Name_Suffix, Sds_Name, Segment_Number, WMO_L1g_3d, Sds_Data)
   character(len=*), intent(in):: File_Name_Prefix, File_Name_Suffix, Sds_Name
   integer, intent(in):: Segment_Number
   real, intent(out), dimension(:,:) :: Sds_Data
@@ -358,8 +353,6 @@ subroutine READ_L1G(File_Name_Prefix, File_Name_Suffix, Sds_Name, Segment_Number
 
   File_Name = trim(File_Name_Prefix)// trim(Sds_Name)//trim(File_Name_Suffix)
 
-  !print *, "File_Name = ", trim(File_Name)
-
   call OPEN_NETCDF(File_Name,Ncid)
 
   Nx_Start = 1
@@ -369,7 +362,7 @@ subroutine READ_L1G(File_Name_Prefix, File_Name_Suffix, Sds_Name, Segment_Number
 
   Sds_Start = [1,Ny_Start,1,1]
   Sds_Stride = [1,1,1,1]
-  Sds_Count = [Nx_End - Nx_Start + 1, Ny_End - Ny_Start + 1,1,1]
+  Sds_Count = [Nx_End - Nx_Start + 1, Ny_End - Ny_Start + 1,Num_Layers_L1g,Num_Time_L1g]
 
   allocate(Sds_Data_4d(Image%Number_Of_Elements, Image%Number_of_Lines_Per_Segment, Num_Layers_L1g,Num_Time_L1g))
   allocate(Sds_Data_2d(Image%Number_Of_Elements, Image%Number_of_Lines_Per_Segment))
@@ -384,14 +377,64 @@ subroutine READ_L1G(File_Name_Prefix, File_Name_Suffix, Sds_Name, Segment_Number
     where (WMO_L1g_2d == WMO_Id_ISCCPNG)
             Sds_Data =  Sds_Data_2d
     endwhere
-    print *, 'Read L1g ',Layer_Idx, count(Sds_Data /= MISSING_VALUE_REAL4)
   enddo
 
   call CLOSE_NETCDF(Ncid)
 
   deallocate(Sds_Data_4d, Sds_Data_2d, WMO_L1g_2d)
 
-end subroutine READ_L1G
+!  if (Segment_Number == 2 .and. trim(Sds_Name) == "temp_11_00um") stop
+
+end subroutine READ_LAYERED_L1G
+!--------------------------------------------------------------------------------------------------
+! Read L1g variables that are not layered (ie. solar angles)
+!--------------------------------------------------------------------------------------------------
+subroutine READ_SINGLE_L1G(File_Name_Prefix, File_Name_Suffix, Sds_Name, Segment_Number, WMO_L1g_3d, Sds_Data)
+  character(len=*), intent(in):: File_Name_Prefix, File_Name_Suffix, Sds_Name
+  integer, intent(in):: Segment_Number
+  real, intent(out), dimension(:,:) :: Sds_Data
+  integer(kind=2), dimension(:,:,:), intent(in):: WMO_L1g_3d
+  integer(kind=2), dimension(:,:), allocatable:: WMO_L1g_2d
+  real, dimension(:,:), allocatable:: Sds_Data_2d
+  real, dimension(:,:,:,:), allocatable:: Sds_Data_4d
+  character(len=1020):: File_Name
+  integer:: Nx_Start, Nx_End, Ny_Start, Ny_End, Layer_Idx
+  integer, dimension(4):: Sds_Start, Sds_Count, Sds_Stride
+  integer:: Ncid
+
+  File_Name = trim(File_Name_Prefix)// trim(Sds_Name)//trim(File_Name_Suffix)
+
+  call OPEN_NETCDF(File_Name,Ncid)
+
+  Nx_Start = 1
+  Nx_End = Nx_Start + Image%Number_Of_Elements - 1
+  Ny_Start = (Segment_Number - 1) * Image%Number_Of_Lines_Per_Segment + 1
+  Ny_End = min(Image%Number_Of_Lines, Ny_Start + Image%Number_of_Lines_Per_Segment - 1)
+
+  Sds_Start = [1,Ny_Start,1,1]
+  Sds_Stride = [1,1,1,1]
+  Sds_Count = [Nx_End - Nx_Start + 1, Ny_End - Ny_Start + 1,1,Num_Time_L1g]
+
+  allocate(Sds_Data_4d(Image%Number_Of_Elements, Image%Number_of_Lines_Per_Segment, 1,Num_Time_L1g))
+  allocate(Sds_Data_2d(Image%Number_Of_Elements, Image%Number_of_Lines_Per_Segment))
+  allocate(WMO_L1g_2d(Image%Number_Of_Elements, Image%Number_of_Lines_Per_Segment))
+
+  call READ_AND_UNSCALE_NETCDF_4D(Ncid, Sds_Start, Sds_Stride, Sds_Count, Sds_Name, Sds_Data_4d)
+
+  Sds_Data = MISSING_VALUE_REAL4
+  Sds_Data_2d = Sds_Data_4d(:,:,1,1)
+  do  Layer_Idx = 1,Num_Layers_L1g
+    WMO_L1g_2d = WMO_L1g_3d(:,:,Layer_Idx)
+    where (WMO_L1g_2d == WMO_Id_ISCCPNG)
+            Sds_Data =  Sds_Data_2d
+    endwhere
+  enddo
+
+  call CLOSE_NETCDF(Ncid)
+
+  deallocate(Sds_Data_4d, Sds_Data_2d, WMO_L1g_2d)
+
+end subroutine READ_SINGLE_L1G
 !--------------------------------------------------------------------------------------------------
 ! Construct from L1g a field of WMO and Layer where the L1g WMO equals the chosen WMO
 !--------------------------------------------------------------------------------------------------
@@ -421,21 +464,9 @@ subroutine READ_WMO_L1G(WMO_Idx,Segment_Number, WMO_L1g)
   Sds_Data_Temp = MISSING_VALUE_REAL4
 
   call READ_NETCDF(Ncid, Sds_Start, Sds_Stride, Sds_Count, "wmo_id", Sds_Data_Temp)
-  print *, "raw 1 wmo count = ", count(Sds_Data_Temp(:,:,1,1) == 152)
-  print *, "raw 2 wmo count = ", count(Sds_Data_Temp(:,:,2,1) == 152)
-  print *, "raw 3 wmo count = ", count(Sds_Data_Temp(:,:,3,1) == 152)
-  print *, "raw 4 wmo count = ", count(Sds_Data_Temp == 152)
-
-! print *, "shape = ", shape(Sds_Data_Temp)
-! print *, "range = ", minval(Sds_Data_Temp), maxval(Sds_Data_Temp)
-! print *, "g16 wmo count = ", count(Sds_Data_Temp == 152)
-! call READ_AND_UNSCALE_NETCDF_3D(Ncid, Sds_Start, Sds_Stride, Sds_Count, "wmo_id", Sds_Data_Temp)
 
   WMO_L1g = Sds_Data_Temp(:,:,:,1)
-  print *, "g16 1 wmo count = ", count(WMO_L1g(:,:,1) == 152)
-  print *, "g16 2 wmo count = ", count(WMO_L1g(:,:,2) == 152)
-  print *, "g16 3 wmo count = ", count(WMO_L1g(:,:,3) == 152)
-  stop
+
   WMO_L1g = CONVERT_WMO(WMO_L1g)
 
   call CLOSE_NETCDF(Ncid)
@@ -454,8 +485,6 @@ subroutine READ_NAV_L1G(Segment_Number)
   integer:: Ncid, Lon_Idx, Lat_Idx
   real, dimension(:), allocatable:: Lon_1d, Lat_1d
 
-  print *, "Start with READ_NAV_L1G"
-
   Nx_Start = 1
   Nx_End = Nx_Start + Image%Number_Of_Elements - 1
   Ny_Start = (Segment_Number - 1) * Image%Number_Of_Lines_Per_Segment + 1
@@ -465,21 +494,17 @@ subroutine READ_NAV_L1G(Segment_Number)
 
   allocate(Lon_1d(Image%Number_of_Elements))
   call READ_AND_UNSCALE_NETCDF_1D(Ncid, [Nx_Start], [1],[Nx_End-Nx_Start+1] , "longitude", Lon_1d)
-  print *, "lon 1d range = ", minval(lon_1d), maxval(lon_1d)
 
   allocate(Lat_1d(Image%Number_of_Lines_Per_Segment))
   call READ_AND_UNSCALE_NETCDF_1D(Ncid, [Ny_Start], [1],[Ny_End-Ny_Start+1] , "latitude", Lat_1d)
-  print *, "lat 1d range = ", minval(lat_1d), maxval(lat_1d)
 
   do Lon_Idx = 1,Nx_End - Nx_Start + 1
     Nav%Lat_1b(Lon_Idx,1:Ny_End-Ny_Start+1) = Lat_1d
   enddo
-  print *, "lat 2d range = ", minval(nav%lat_1b), maxval(nav%lat_1b)
 
   do Lat_Idx = 1,Ny_End-Ny_Start+1
     Nav%Lon_1b(1:Nx_End-Nx_Start+1,Lat_Idx) = Lon_1d
   enddo
-  print *, "lon 2d range = ", minval(nav%lon_1b), maxval(nav%lon_1b)
 
   call CLOSE_NETCDF(Ncid)
 
@@ -488,9 +513,8 @@ subroutine READ_NAV_L1G(Segment_Number)
   Nav%Lon = Nav%Lon_1b
   Nav%Lat = Nav%Lat_1b
 
-  print *, "Done with READ_NAV_L1G"
-
 end subroutine READ_NAV_L1G
+
 !--------------------------------------------------------------------------------------------------
 ! Construct from L1g a field of WMO and Layer where the L1g WMO equals the chosen WMO
 !--------------------------------------------------------------------------------------------------

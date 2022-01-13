@@ -130,9 +130,9 @@ module PIXEL_ROUTINES_MOD
           MODIFY_AUX_CLOUD_TYPE
 
   private:: REMOTE_SENSING_REFLECTANCE, &
-            NORMALIZED_DIFFERENCE_VEGETATION_INDEX, &
-            NORMALIZED_DIFFERENCE_SNOW_INDEX, &
-            NORMALIZED_DIFFERENCE_DESERT_INDEX, &
+            NORMALIZED_DifFERENCE_VEGETATION_INDEX, &
+            NORMALIZED_DifFERENCE_SNOW_INDEX, &
+            NORMALIZED_DifFERENCE_DESERT_INDEX, &
             COMPUTE_TSFC
 
   contains
@@ -221,19 +221,14 @@ subroutine EXPAND_SPACE_MASK_FOR_USER_LIMITS(Seg_Idx, Space_Mask)
    integer(kind=int4), intent(in):: Seg_Idx
    integer(kind=int1), dimension(:,:), intent(inout):: Space_Mask
 
-   print *, "in expand space"
-   print *, "#1 count no space = ", count(Space_Mask == sym%no)
-
    !--- check for latitudinal bounds
    where(Nav%Lat_1b == Missing_Value_Real4 .or. Nav%Lon_1b == Missing_Value_Real4)
         Space_Mask = sym%YES
    end where
-   print *, "#2 count no space = ", count(Space_Mask == sym%no)
 
    where(isnan(Nav%Lat_1b) .or. isnan(Nav%Lon_1b))
         Space_Mask = sym%YES
    end where
-   print *, "#3 count no space = ", count(Space_Mask == sym%no)
 
    !--- check if subset processing is on
    if (Nav%Limit_Flag == sym%YES) then
@@ -241,7 +236,6 @@ subroutine EXPAND_SPACE_MASK_FOR_USER_LIMITS(Seg_Idx, Space_Mask)
      where(Nav%Lat_1b < Nav%Lat_South_Limit .or. Nav%Lat_1b > Nav%Lat_North_Limit)
         Space_Mask = sym%YES
      end where
-     print *, "#4 count no space = ", count(Space_Mask == sym%no)
 
      !--- check for longitudinal bounds including the dateline condition
      if ( Nav%Lon_West_Limit > Nav%Lon_East_Limit) then
@@ -817,12 +811,11 @@ end subroutine CONVERT_TIME
   else
    !--- read LST regcoefs from binary file
     Coef_Lun=GETLUN()
-    OPEN(unit=Coef_Lun, file=TRIM(Coef_Fn),recl=leng*4, form ='unformatted', access = 'direct',status='old',action = 'read', iostat=ios)
-    IF (ios /= 0) THEN
-         
-	  write(*,*) 'ERROR: Opening LST Coef binary file', TRIM(Coef_Fn)
-          stop
-    ENDIF
+    open(unit=Coef_Lun, file=TRIM(Coef_Fn),recl=leng*4, form ='unformatted', access = 'direct',status='old',action = 'read', iostat=ios)
+    if (ios /= 0) THEN
+      write(*,*) 'ERROR: Opening LST Coef binary file', TRIM(Coef_Fn)
+      stop
+    endif
             
     READ(unit=Coef_Lun,rec=1, iostat=ERR) Regcoef       
     close(Coef_Lun)
@@ -954,8 +947,8 @@ end subroutine COMPUTE_TSFC
 
   ! for these sensors, no correction is needed
   if (trim(Sensor%Sensor_Name) == 'VIIRS') return 
-  if (trim(Sensor%Sensor_Name) == 'VIIRS-IFF') return 
-  if (trim(Sensor%Sensor_Name) == 'AVHRR-IFF') return 
+  if (trim(Sensor%Sensor_Name) == 'VIIRS-ifF') return 
+  if (trim(Sensor%Sensor_Name) == 'AVHRR-ifF') return 
   if (trim(Sensor%Sensor_Name) == 'METIMAGE') return 
 
   !--------------------------------------------------------------------
@@ -1936,7 +1929,7 @@ end subroutine COMPUTE_DCOMP_PERFORMANCE_METRICS
 !
 ! note, missing value passed from global memory
 !==============================================================================
- real elemental function NORMALIZED_DIFFERENCE_VEGETATION_INDEX ( &
+ real elemental function NORMALIZED_DifFERENCE_VEGETATION_INDEX ( &
                                              atmos_corrected_063_reflectance, &
                                              atmos_corrected_086_reflectance, &
                                              solar_zenith)
@@ -1955,14 +1948,14 @@ end subroutine COMPUTE_DCOMP_PERFORMANCE_METRICS
     normalized_difference_vegetation_index = Missing_Value_Real4
   endif
 
- end function NORMALIZED_DIFFERENCE_VEGETATION_INDEX
+ end function NORMALIZED_DifFERENCE_VEGETATION_INDEX
 !==============================================================================
 !
 ! normalized difference snow index - for land applications
 !
 ! note, missing value passed from global memory
 !==============================================================================
- real elemental function NORMALIZED_DIFFERENCE_SNOW_INDEX ( &
+ real elemental function NORMALIZED_DifFERENCE_SNOW_INDEX ( &
                                              atmos_corrected_063_reflectance, &
                                              atmos_corrected_160_reflectance, &
                                              solar_zenith)
@@ -1981,14 +1974,14 @@ end subroutine COMPUTE_DCOMP_PERFORMANCE_METRICS
     normalized_difference_snow_index = Missing_Value_Real4
   endif
 
- end function NORMALIZED_DIFFERENCE_SNOW_INDEX
+ end function NORMALIZED_DifFERENCE_SNOW_INDEX
 !==============================================================================
 !
 ! normalized difference desert index - for land applications
 !
 ! note, missing value passed from global memory
 !==============================================================================
- real elemental function NORMALIZED_DIFFERENCE_DESERT_INDEX ( &
+ real elemental function NORMALIZED_DifFERENCE_DESERT_INDEX ( &
                                              atmos_corrected_063_reflectance, &
                                              atmos_corrected_160_reflectance, &
                                              solar_zenith)
@@ -2007,7 +2000,7 @@ end subroutine COMPUTE_DCOMP_PERFORMANCE_METRICS
     normalized_difference_desert_index = Missing_Value_Real4
   endif
 
- end function NORMALIZED_DIFFERENCE_DESERT_INDEX
+ end function NORMALIZED_DifFERENCE_DESERT_INDEX
 
 !==============================================================================
 ! A routine that call functions to populate some simple surface parameters
@@ -2031,12 +2024,12 @@ end subroutine COMPUTE_DCOMP_PERFORMANCE_METRICS
   if (Sensor%Chan_On_Flag_Default(1) == sym%YES .and. &
       Sensor%Chan_On_Flag_Default(6) == sym%YES) then
 
-       Ndsi_Toa = NORMALIZED_DIFFERENCE_SNOW_INDEX(  &
+       Ndsi_Toa = NORMALIZED_DifFERENCE_SNOW_INDEX(  &
                              ch(1)%Ref_Toa, &
                              ch(6)%Ref_Toa, &
                              Geo%Solzen)
 
-       Ndsi_Sfc = NORMALIZED_DIFFERENCE_SNOW_INDEX(  &
+       Ndsi_Sfc = NORMALIZED_DifFERENCE_SNOW_INDEX(  &
                              ch(1)%Ref_Sfc, &
                              ch(6)%Ref_Sfc, &
                              Geo%Solzen)
@@ -2046,17 +2039,17 @@ end subroutine COMPUTE_DCOMP_PERFORMANCE_METRICS
   if (Sensor%Chan_On_Flag_Default(1) == sym%YES .and. &
       Sensor%Chan_On_Flag_Default(2) == sym%YES) then
 
-       Ndvi_Toa = NORMALIZED_DIFFERENCE_VEGETATION_INDEX(  &
+       Ndvi_Toa = NORMALIZED_DifFERENCE_VEGETATION_INDEX(  &
                              ch(1)%Ref_Toa, &
                              ch(2)%Ref_Toa, &
                              Geo%Solzen)
 
-       Ndvi_Sfc = NORMALIZED_DIFFERENCE_VEGETATION_INDEX(  &
+       Ndvi_Sfc = NORMALIZED_DifFERENCE_VEGETATION_INDEX(  &
                              ch(1)%Ref_Sfc, &
                              ch(2)%Ref_Sfc, &
                              Geo%Solzen)
 
-       Ndvi_Sfc_White_Sky = NORMALIZED_DIFFERENCE_VEGETATION_INDEX(  &
+       Ndvi_Sfc_White_Sky = NORMALIZED_DifFERENCE_VEGETATION_INDEX(  &
                              ch(1)%Sfc_Ref_White_Sky, &
                              ch(2)%Sfc_Ref_White_Sky, &
                              Geo%Solzen)
@@ -2070,7 +2063,7 @@ end subroutine COMPUTE_DCOMP_PERFORMANCE_METRICS
   if (Sensor%Chan_On_Flag_Default(1) == sym%YES .and. &
       Sensor%Chan_On_Flag_Default(6) == sym%YES) then
 
-       Nddi_Toa = NORMALIZED_DIFFERENCE_DESERT_INDEX(  &
+       Nddi_Toa = NORMALIZED_DifFERENCE_DESERT_INDEX(  &
                              ch(1)%Ref_Toa, &
                              ch(6)%Ref_Toa, &
                              Geo%Solzen)
@@ -2101,7 +2094,7 @@ integer(kind=int1) elemental function DESERT_MASK_FOR_CLOUD_DETECTION( &
         Surface_Type > 0 .and.         &
         Emiss_Sfc_375um < 0.93  .and.  &
         abs(Lat) < 60.0 .and. &
-        ((Surface_Type == sym%OPEN_SHRUBS_SFC) .or.  &
+        ((Surface_Type == sym%open_SHRUBS_SFC) .or.  &
          (Surface_Type == sym%CLOSED_SHRUBS_SFC) .or. &
          (Surface_Type == sym%GRASSES_SFC) .or.  &
          (Surface_Type == sym%BARE_SFC)) ) then
@@ -2174,12 +2167,12 @@ end function CITY_MASK_FOR_CLOUD_DETECTION
      real, parameter :: EUMETCAST_FIRE_NIGHT_SOLZEN_THRESH = 90.0
 
      real, parameter :: BT_375UM_EUMET_FIRE_DAY_THRESH = 310.0
-     real, parameter :: BT_DIFF_EUMET_FIRE_DAY_THRESH = 8.0
+     real, parameter :: BT_DifF_EUMET_FIRE_DAY_THRESH = 8.0
      real, parameter :: STDDEV_11UM_EUMET_FIRE_DAY_THRESH = 1.0
      real, parameter :: STDDEV_375UM_EUMET_FIRE_DAY_THRESH = 4.0
 
      real, parameter :: BT_375UM_EUMET_FIRE_NIGHT_THRESH = 290.0
-     real, parameter :: BT_DIFF_EUMET_FIRE_NIGHT_THRESH = 0.0
+     real, parameter :: BT_DifF_EUMET_FIRE_NIGHT_THRESH = 0.0
      real, parameter :: STDDEV_11UM_EUMET_FIRE_NIGHT_THRESH = 1.0
      real, parameter :: STDDEV_375UM_EUMET_FIRE_NIGHT_THRESH = 4.0
 

@@ -2065,14 +2065,10 @@ module SENSOR_MOD
       
       Ierror = sym%NO
 
-      print *, "in set file dimensions"
-
       do 
 
       if (index(Image%Level1b_Name,'ISCCP-NG') > 0) then
-         print *, "calling isccp dims"
          call READ_NUMBER_OF_SCANS_ISCCPNG(Image%Number_Of_Lines, Image%Number_Of_Elements, Ierror)
-         print *, "returned from isccp dims"
          exit
       endif
 
@@ -2339,8 +2335,6 @@ module SENSOR_MOD
          call READ_MODIS(Segment_Number,Ierror_Level1b)
          if (Ierror_Level1b /= 0) return
       end if
-
-      print *, trim(Image%Level1b_Name)
 
       if (index(Image%Level1b_Name,"ISCCP-NG_L1g")> 0) then
          call READ_ISCCPNG_DATA(Segment_Number, Ierror_Level1b)

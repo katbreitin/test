@@ -3185,7 +3185,6 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
      ilen = len(trim(file_1b))
      ilen_wmo_id = len('wmo_id')
      File_1b_Root = trim(file_1b(1:ipos)) // trim(file_1b(ipos+ilen_wmo_id+3:ilen-3)) // "_" // Wmo_String
-  !   print *, trim(File_1b_Root)
   endif
 
   !--- FY4A - shorten name.
@@ -3339,7 +3338,6 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
   !---------------------------------------------------------
   !-- define level2 file structure
   !---------------------------------------------------------
-  print *, "here in level2", Level2_File_Flag, Output_Format_Flag
  if (Level2_File_Flag == sym%YES) then
 
      if (Output_Format_Flag == 0) File_Level2 = trim(File_1b_Root)//".level2.hdf"
