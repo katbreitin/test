@@ -1664,12 +1664,30 @@ module SENSOR_MOD
          Sensor%WMO_Id = WMO_Id_ISCCPNG
 
          select case(Sensor%WMO_Id)
- 
-         case (173)  !GOES-17
+
+         case (55)  !Meteosat-8
+            Sensor%Sensor_Name = 'SEVIRI'
+            Sensor%Platform_Name = 'Meteosat-8'
+            Sensor%Instr_Const_File = 'met8_instr.dat'
+            Sensor%Spatial_Resolution_Meters = 3000
+
+         case (70)  !Meteosat-11
+            Sensor%Sensor_Name = 'SEVIRI'
+            Sensor%Platform_Name = 'Meteosat-11'
+            Sensor%Instr_Const_File = 'met11_instr.dat'
+            Sensor%Spatial_Resolution_Meters = 3000
+
+         case (173)  !HIMAWARI-8
             Sensor%Sensor_Name = 'AHI'
             Sensor%Platform_Name = 'HIM8'
             Sensor%Spatial_Resolution_Meters = 2000
             Sensor%Instr_Const_File = 'him8_instr.dat'
+
+         case (174)  !HIMAWARI-9
+            Sensor%Sensor_Name = 'AHI'
+            Sensor%Platform_Name = 'HIM9'
+            Sensor%Spatial_Resolution_Meters = 2000
+            Sensor%Instr_Const_File = 'him9_instr.dat'
 
          case (270)  !GOES-16
             Sensor%Sensor_Name = 'GOES-RU-IMAGER'
