@@ -216,18 +216,20 @@ subroutine read_viirs_nasa_hres_data (in_config)
    coef % file = trim(Ancil_Data_dir)//'static/clavrx_constant_files/viirs_npp_instr.dat'
    call coef % read_file(in_config % sensor)
   
-  start = (/1,in_config % ny_start - 1 /)
+  start = (/1,in_config % ny_start  /)
   count = (/6400,in_config % ny_end- in_config % ny_start + 1 /)
-  
+    
   Mband_start =1 
   if (trim(daynight) .eq. 'Night') Mband_Start = 7
   
   do i_ch =mband_start,11
+   
     if (trim(daynight) .eq. 'Night' .and. (i_ch .eq. 9) .or. (i_ch .eq. 11)) cycle 
     if (in_config % channel_on_viirs (i_ch)) then
       write ( ch_str, '(i2.2)' ) i_ch 
-      status=cx_sds_read(file_local,'observation_data/M'//ch_str//'_highres',out,start = start,count = count)
-      
+     
+      status=cx_sds_read(file_local,'/observation_data/M'//ch_str//'_highres',out,start = start,count = count)
+       
       ch(in_config % modis_chn_list(i_ch)) % ref_toa(:,1:count(2)) = 100.* out
       call update_bowtie(in_config % ny_start, ch(in_config % modis_chn_list(i_ch)) % ref_toa(:,1:count(2)))
      
@@ -239,7 +241,7 @@ subroutine read_viirs_nasa_hres_data (in_config)
       if (in_config % channel_on_viirs (i_ch)) then
         write ( ch_str, '(i2.2)' ) i_ch 
         modis_ch = in_config % modis_chn_list(i_ch)
-        status=cx_sds_read(file_local,'observation_data/M'//ch_str//'_highres',out,start = start,count = count)
+        status=cx_sds_read(file_local,'/observation_data/M'//ch_str//'_highres',out,start = start,count = count)
         ch(modis_ch) % rad_toa(:,1:count(2)) = out
         call update_bowtie(in_config % ny_start, ch(modis_ch) % rad_toa(:,1:count(2)))
         ! - convert to radiance to NOAA unit.. 
@@ -267,22 +269,22 @@ subroutine read_viirs_nasa_hres_data (in_config)
   
   if ( first_run) print*,trim(file_v03img(1))
    
-   status=cx_sds_read(trim(file_v03img(1)),'geolocation_data/longitude',out,start = start,count = count)
+   status=cx_sds_read(trim(file_v03img(1)),'/geolocation_data/longitude',out,start = start,count = count)
     Nav % Lon_1b(:,1:count(2)) = out
   
-   status=cx_sds_read(trim(file_v03img(1)),'geolocation_data/latitude',out,start = start,count = count)
+   status=cx_sds_read(trim(file_v03img(1)),'/geolocation_data/latitude',out,start = start,count = count)
    Nav % Lat_1b(:,1:count(2)) = out
  
-   status=cx_sds_read(trim(file_v03img(1)),'geolocation_data/sensor_azimuth',out,start = start,count = count)
+   status=cx_sds_read(trim(file_v03img(1)),'/geolocation_data/sensor_azimuth',out,start = start,count = count)
    geo % sataz(:,1:count(2)) = out
  
-   status=cx_sds_read(trim(file_v03img(1)),'geolocation_data/sensor_zenith',out,start = start,count = count)
+   status=cx_sds_read(trim(file_v03img(1)),'/geolocation_data/sensor_zenith',out,start = start,count = count)
    geo % satzen(:,1:count(2)) = out
   
-   status=cx_sds_read(trim(file_v03img(1)),'geolocation_data/solar_azimuth',out,start = start,count = count)
+   status=cx_sds_read(trim(file_v03img(1)),'/geolocation_data/solar_azimuth',out,start = start,count = count)
    geo % solaz(:,1:count(2)) = out
   
-   status=cx_sds_read(trim(file_v03img(1)),'geolocation_data/solar_zenith',out,start = start,count = count)
+   status=cx_sds_read(trim(file_v03img(1)),'/geolocation_data/solar_zenith',out,start = start,count = count)
   
    geo % solzen(:,1:count(2)) = out
   
