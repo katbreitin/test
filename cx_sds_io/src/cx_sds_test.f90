@@ -14,7 +14,7 @@ program cx_sds_test
 
    implicit none
    
-   character(len=1024) :: file_nc,file_h4,file_h5,file_hiirs,fileh5_c
+   character(len=1024) :: file_nc,file_h4,file_h5,file_hiirs,fileh5_c,file_h5_v3
    include 'cx_sds_constants.inc'
 
 
@@ -30,6 +30,7 @@ program cx_sds_test
    integer :: ftype, i, j
    real ,allocatable :: tra_3d(:,:,:)
    real, allocatable :: tra_2d(:,:)
+   real, allocatable :: lon(:,:)
    real ,allocatable :: tra_5d(:,:,:,:,:)
    real , allocatable :: sat_zen ( :)
    real,allocatable :: Rad_Hirs(:,:)
@@ -49,6 +50,7 @@ program cx_sds_test
    read ( 24,fmt="(a)") file_nc
    read ( 24,fmt="(a)") file_h4
    read ( 24,fmt="(a)") file_h5
+   read ( 24,fmt="(a)") file_h5_v3
    read ( 24,fmt="(a)") file_hiirs
    read ( 24,fmt="(a)") fileh5_c
   
@@ -158,8 +160,20 @@ program cx_sds_test
 
     print*,'exit h5 read'
     print*,'tra_2d:', maxval(tra_2d)
+    
+    
+    test = cx_sds_read ( file_h5_v3,'/geolocation_data/longitude',lon)
+   print*,'tra_2d:', maxval(lon)
+     
+     
+     
+        status = cx_sds_finfo ( file_h5_v3 , ftype, nsds, sds_name, natt, att_name )
 
-     ! status = cx_sds_finfo ( file_h5 , ftype, nsds, sds_name, natt, att_name )
+      print*,'number of dataset: ',nsds
+      do i=1,nsds
+        print*,i,trim(sds_name(i))
+      end do
+     
    
   end if
    
@@ -196,7 +210,7 @@ program cx_sds_test
           print*,maxval(rad_hirs), shape(rad_hirs)
  
           deallocate(rad_hirs)
-          status = cx_sds_read(File_hiirs,'Latitude',Rad_Hirs)
+          status = cx_sds_read(File_hiirs,'/Latitude',Rad_Hirs)
           print*,maxval(rad_hirs), shape(rad_hirs)
           print*
           deallocate(rad_hirs)

@@ -68,22 +68,29 @@ module cx_sds_io_mod
    public :: cx_att_r4
    
 contains
-   !
+   ! ------------------------------------------------------------------------------
+   !  This tool determines file type
+   ! ------------------------------------------------------------------------------
+   
    function file_type (file)
-        use hdf5
+      use hdf5
       integer :: file_type
       character(len = * ), intent(in) :: file
       character ( len = 3) :: postfix
       integer :: hdferr
       logical :: status
+      
       postfix = file(len_trim(file) -2 : len_trim(file))
+      
       if ( postfix .eq. 'hdf') file_type = 1
+      
       if ( postfix .eq. '.nc') then
         file_type = 2
         ! some files with .ncshould be read with h5 tools
         !call H5Fis_hdf5_f(file,status,hdferr)
         !if (status) file_type = 3
       end if
+      
       if ( postfix .eq. '.h5') file_type  = 3
 
    end function file_type
@@ -91,7 +98,7 @@ contains
    ! ------------------------------------------------------------------------------
    !
    ! ------------------------------------------------------------------------------
-   !---------------------------------------------------------------------------  
+   ! ---------------------------------------------------------------------------  
    !> @author 
    !> cx_sds_finfo Andi Walther CIMSS 
    !
@@ -331,12 +338,15 @@ contains
       ! ncdf
       if ( ftype .eq. 2 ) then
           ! do ii = 1,100000
-         cx_sds_read_raw = ncdf_get_file_sds(file, nsds,sds,1, (/sds_name/) &
+         
+          allocate(sds(1))
+         
+         cx_sds_read_raw = ncdf_get_file_sds(file, sds(1), sds_name &
          ,start_inp=start,stride_inp = stride,count_inp = count)
         ! call sds(1) % data % deallocate()
          ! call sds(1) % deallocate
          
-         ! if (allocated(sds)) deallocate(sds)
+          !if (allocated(sds)) deallocate(sds)
        !  print*,ii
        !  end do
          
@@ -452,7 +462,7 @@ contains
     logical :: att_exist
     
     ! -  executable
-     
+   
     if (  cx_sds_read_raw ( file, sds_name, sds, start=start, stride=stride, count=count) < 0 ) goto 9999
         
     
@@ -464,8 +474,12 @@ contains
     slope = ps%get_att('scale_factor')
     scaled = ps%get_att('SCALED')
     MISS_VALUE = ps%get_att('missing',exist = att_exist)
+    
+    
+    
   
     if ( .not. att_exist) MISS_VALUE = ps%get_att('_FillValue',exist = att_exist)
+    
      
     if ( add_offset(1) .NE. -999.) scaled(1) = 1
     ! for  ATMS files which have bad attribute setting
@@ -483,17 +497,18 @@ contains
       .or. allocated(pd % i4values) &
       .or. allocated(pd % i2values) &
       .or. allocated(pd % i1values) ) then
-      
+     
       allocate(temp_1d(pd%nval))
    
       call pd%transform_to_real(temp_1d)
     
       out = reshape (temp_1d,(/dim1,dim2/))
-    
+      
       if (scaled(1) .EQ. 1) then
+       
         out = out * slope(1) + add_offset(1)
       end if
-      
+     
       where (reshape (temp_1d,(/dim1,dim2/)) .EQ. MISS_VALUE(1))
         out = -999.
       end where
