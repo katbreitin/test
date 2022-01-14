@@ -332,7 +332,7 @@ module SENSOR_MOD
       character(len=15) :: time_identifier
       integer :: yyyy,doy1,hour1,minu
 
-      !do 
+      sensor_search: do 
 
       !----------------------------------------------
       ! --- ISCCP-NG L1g files
@@ -346,12 +346,15 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
-         !exit
+         exit
       endif
 
       !----------------------------------------------
       ! for AVHRR, this is read in with level-1b data
       !----------------------------------------------
+      if (index(Sensor%Sensor_Name,'AVHRR') > 0) then
+         exit
+      endif
 
       !----------------------------------------------
       ! for Modis, take time from file name
@@ -362,8 +365,8 @@ module SENSOR_MOD
                             Image%Start_Year, Image%Start_Doy, Image%Start_Time, &
                             Image%End_Year, Image%End_Doy, Image%End_Time)
   
-         !exit
-      end if
+         exit
+      endif
 
       !----------------------------------------------
       ! read VIIRS-NOAA time from GMTCO
@@ -386,11 +389,10 @@ module SENSOR_MOD
          PRINT *, "No HDF5 libraries installed, stopping"
          stop
 #endif
-        ! exit
+         exit
       end if 
       
       if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA-HRES') then
-         
          
          time_identifier = Image%Level1b_Name(9:23)
          
@@ -413,8 +415,7 @@ module SENSOR_MOD
          Image%End_Time =  time_obj_nasa_hres(2) % msec_of_day
          
         
-         !exit
-         ! print*,'  +++++++++++++++++++++++++++++++++++  ++++++++++++++++++++++++++++++++++++++++='
+         exit
          
       end if 
        
@@ -470,7 +471,7 @@ module SENSOR_MOD
          Image%End_Year  = year
          Image%End_Doy   = doy  
 
-         !exit
+         exit
 
       endif
       
@@ -486,7 +487,7 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
-         !exit
+         exit
       endif
 
       !----------------------------------------------
@@ -502,7 +503,7 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
-         !exit
+         exit
       endif
 
       !----------------------------------------------
@@ -518,7 +519,7 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
-         !exit
+         exit
       endif
 
        !----------------------------------------------
@@ -542,7 +543,7 @@ module SENSOR_MOD
           PRINT *, "No HDF5 libraries installed, stopping"
           stop
 #endif
-         !exit
+         exit
        endif
 
 
@@ -559,7 +560,7 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
-         !exit
+         exit
       endif
 
 
@@ -642,14 +643,14 @@ module SENSOR_MOD
 
         endif
 
-        !exit
+        exit
  
       end if
 
-      !print *, "Sensor not found in time, stopping"
-      !stop
+      print *, "Sensor not found in time, stopping"
+      stop
 
-      !end do   !end of while loop
+      end do sensor_search
 
       !-------------------------------------------------------------------------
       ! compute start, end and mean time in units of hours
