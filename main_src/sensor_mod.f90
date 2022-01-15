@@ -395,6 +395,7 @@ module SENSOR_MOD
 
          exit
 
+
       end if 
       
       if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA-HRES') then
@@ -420,12 +421,10 @@ module SENSOR_MOD
          Image%End_Time =  time_obj_nasa_hres(2) % msec_of_day
          
 
-
-         
          image % time_start = time_obj_nasa_hres(1)
          image % time_end = time_obj_nasa_hres(2)
          
-         exit
+
          
       end if 
        
