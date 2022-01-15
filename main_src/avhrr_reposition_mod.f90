@@ -545,14 +545,14 @@ module AVHRR_REPOSITION_MOD
     orbit_start_mjdn = &
          real(DTMJDN(year,month,day,hour,minute,isecond),kind=real4) + &
          mjdn_offset
-    print*,orbit_start_mjdn
+   ! print*,orbit_start_mjdn
     
-   orbit_start_mjdn = image%time_start % epoch_time_day() + &
-         mjdn_offset
-   orbit_end_mjdn = image%time_end % epoch_time_day() + &
-         mjdn_offset 
-    print*,orbit_start_mjdn
-    stop
+  ! orbit_start_mjdn = image%time_start % epoch_time_day() + &
+  !       mjdn_offset
+  ! orbit_end_mjdn = image%time_end % epoch_time_day() + &
+   !      mjdn_offset 
+  !  print*,orbit_start_mjdn
+   
     !--- determine MJDN at end of orbit
     day = end_dom
     month = end_month
