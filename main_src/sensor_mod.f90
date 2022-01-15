@@ -362,8 +362,21 @@ module SENSOR_MOD
       if (index(Sensor%Sensor_Name,'MODIS') > 0) then
 
          call READ_MODIS_TIME_ATTR(trim(Image%Level1b_Path), trim(Image%Level1b_Name), &
-                            Image%Start_Year, Image%Start_Doy, Image%Start_Time, &
-                            Image%End_Year, Image%End_Doy, Image%End_Time)
+                            Start_Year_Tmp, Start_Day_Tmp, Start_Time_Tmp, &
+                            End_Year_Tmp, End_Day_Tmp, End_Time_Tmp)
+          
+         Image%Start_Year = Start_Year_Tmp
+         Image%End_Year = End_Year_Tmp
+         Image%Start_Doy = Start_Day_Tmp
+         Image%End_Doy = End_Day_Tmp
+         Image%Start_Time = Start_Time_Tmp
+         Image%End_Time = End_Time_Tmp
+          
+                            
+         call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
+               , msec_of_day = Start_Time_Tmp)
+         call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
+               , msec_of_day =  End_Time_Tmp)                   
   
          exit
       endif
