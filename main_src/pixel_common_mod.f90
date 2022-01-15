@@ -384,6 +384,7 @@ module PIXEL_COMMON_MOD
     real(kind=real4):: Start_Time_Hours
     real(kind=real4):: End_Time_Hours
     real(kind=real4):: Mean_Time_Hours
+    type(date_type) :: time_start, time_end
     character(len=1020) :: Auxiliary_Cloud_Mask_File_Name
     character(len=1020) :: Auxiliary_Cloud_Product_File_Name
     character(len=1020) :: Auxiliary_Cloud_Type_File_Name
