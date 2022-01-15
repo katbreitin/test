@@ -1064,7 +1064,8 @@
       !--------------------------------------------------------------
       if ((trim(Sensor%Sensor_Name) == 'AVHRR-1') .or. &
           (trim(Sensor%Sensor_Name) == 'AVHRR-2') .or. &
-          (trim(Sensor%Sensor_Name) == 'AVHRR-3')) then
+          (trim(Sensor%Sensor_Name) == 'AVHRR-3') .or. &
+          (trim(Sensor%Sensor_Name) == 'AVHRR-FUSION') ) then
 
          if(Nav_Opt == 2) then
             call INTERPOLATE_CLOCK_ERROR(Image%Start_Year, Image%Start_Time,  &

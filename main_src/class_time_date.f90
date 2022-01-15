@@ -96,6 +96,8 @@ implicit none
       procedure :: set_jday
       procedure :: days_since_proj_time0
       procedure :: print_data 
+      procedure :: epoch_time_sec
+      procedure :: epoch_time_day
       procedure :: date_string 
       procedure :: add_time
       procedure :: add_days
@@ -323,6 +325,50 @@ implicit none
        endif
   
   end function days_since_proj_time0
+  
+  function epoch_time_day ( self , verbose ) result(out)
+      class ( date_type)  :: self
+      real :: out
+      
+      logical, intent(in), optional :: verbose
+      type (date_type)  :: epoch
+      
+      call epoch % set_date(year=1970,day=1,month=1,hour=0,minute=0)
+     
+      out = self%julday - epoch%julday
+      
+      
+       if ( present(verbose)) then
+         print*,' days since 01/01/1970T00:00:00'
+         print*, 'to: '
+         print*, self%  date_string('yy/mm/dd/hh')
+         print*,out
+       endif
+  
+  end function epoch_time_day
+  
+  
+  
+    function epoch_time_sec ( self , verbose ) result(out)
+      class ( date_type)  :: self
+      real :: out
+      
+      logical, intent(in), optional :: verbose
+      type (date_type)  :: epoch
+      
+      call epoch % set_date(year=1970,day=1,month=1,hour=0,minute=0)
+     
+      out = 24.*60.*60. * (self%julday - epoch%julday)
+      
+      
+       if ( present(verbose)) then
+         print*,' days since 01/01/1970T00:00:00'
+         print*, 'to: '
+         print*, self%  date_string('yy/mm/dd/hh')
+         print*,out
+       endif
+  
+  end function epoch_time_sec
   
 
   !
