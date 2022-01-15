@@ -283,7 +283,7 @@ module SENSOR_MOD
       ! - this is only needed/used for AVHRR
       type (AREA_STRUCT), intent(in) :: AREAstr
 
-      integer(kind=int32):: Start_Year_Tmp
+      integer(kind=int4):: Start_Year_Tmp
       integer(kind=int4):: Start_Day_Tmp
       integer(kind=int4):: End_Year_Tmp
       integer(kind=int4):: End_Day_Tmp
@@ -346,6 +346,14 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
+         
+         
+         call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
+               , msec_of_day = Start_Time_Tmp)
+         call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
+               , msec_of_day =  End_Time_Tmp)
+         
+         
          exit
       endif
 
@@ -437,7 +445,7 @@ module SENSOR_MOD
          image % time_start = time_obj_nasa_hres(1)
          image % time_end = time_obj_nasa_hres(2)
          
-
+         exit
          
       end if 
        
@@ -457,6 +465,13 @@ module SENSOR_MOD
 
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
+         
+         
+         call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
+               , msec_of_day = Start_Time_Tmp)
+         call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
+               , msec_of_day =  End_Time_Tmp)
+         
 
 
          exit
@@ -489,6 +504,9 @@ module SENSOR_MOD
          Image%Start_Doy   = doy   
          Image%End_Year  = year
          Image%End_Doy   = doy  
+         
+         image % time_start = time0_obj
+         image % time_end = time1_obj
 
          exit
 
@@ -506,6 +524,12 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
+         
+          call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
+               , msec_of_day = Start_Time_Tmp)
+         call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
+               , msec_of_day =  End_Time_Tmp)
+         
          exit
       endif
 
@@ -522,6 +546,13 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
+         
+         call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
+               , msec_of_day = Start_Time_Tmp)
+         call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
+               , msec_of_day =  End_Time_Tmp)
+         
+         
          exit
       endif
 
@@ -538,6 +569,13 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
+         
+         
+         call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
+               , msec_of_day = Start_Time_Tmp)
+         call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
+               , msec_of_day =  End_Time_Tmp)
+         
          exit
       endif
 
@@ -557,6 +595,12 @@ module SENSOR_MOD
 
           Image%Start_Time = Start_Time_Tmp
           Image%End_Time = End_Time_Tmp
+          
+          
+           call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
+               , msec_of_day = Start_Time_Tmp)
+           call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
+               , msec_of_day =  End_Time_Tmp)
 
 
          exit
@@ -576,6 +620,13 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
+         
+         
+         call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
+               , msec_of_day = Start_Time_Tmp)
+         call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
+               , msec_of_day =  End_Time_Tmp)
+         
          exit
       endif
 
@@ -603,6 +654,13 @@ module SENSOR_MOD
          second = (AREAstr%img_Time - hour * 10000 - minute * 100) / 100
          Image%Start_Time = ((hour * 60 + minute) * 60 + second) * 1000 !millisec
          Image%End_Time = Image%Start_Time
+         
+         
+         call image % time_start % set_date_with_doy (   1900 + int(AREAstr%img_Date / 1000), AREAstr%img_Date - (Image%Start_Year - 1900) * 1000 &
+               , hour = hour, minute = minute, second = second )
+         call image % time_end % set_date_with_doy (  1900 + int(AREAstr%img_Date / 1000), AREAstr%img_Date - (Image%Start_Year - 1900) * 1000 &
+               , hour = hour, minute = minute, second = second )
+         
 
         endif
 
@@ -631,10 +689,10 @@ module SENSOR_MOD
           read(Start_Sec_Tmp_Str,*) Start_Sec_Tmp
           Start_Msec_Tmp_Str = Start_Year_Mon_Day_HH_MM_Tmp(21:21)
           read(Start_Msec_Tmp_Str,*) Start_Msec_Tmp
-          call abi_time_start % set_date(Start_Year_Tmp, Start_Mon_Tmp, Start_DD_Tmp, Start_HH_Tmp, Start_Min_Tmp, Start_Sec_Tmp)
-          Image%Start_Year = abi_time_start%year
-          Image%Start_Doy = abi_time_start%dayOfYear
-          Image%Start_Time = abi_time_start%msec_of_day !millisec
+          call image % time_start % set_date(Start_Year_Tmp, Start_Mon_Tmp, Start_DD_Tmp, Start_HH_Tmp, Start_Min_Tmp, Start_Sec_Tmp)
+          Image%Start_Year = image % time_start %year
+          Image%Start_Doy = image % time_start %dayOfYear
+          Image%Start_Time = image % time_start %msec_of_day !millisec
 
           !--- Image End
           call READ_NETCDF_GLOBAL_ATTRIBUTE(trim(L1b_Full_File_Name), 'time_coverage_end', End_Year_Mon_Day_HH_MM_Tmp)
@@ -652,10 +710,10 @@ module SENSOR_MOD
           read(End_Sec_Tmp_Str,*) End_Sec_Tmp
           End_Msec_Tmp_Str = End_Year_Mon_Day_HH_MM_Tmp(21:21)
           read(End_Msec_Tmp_Str,*) End_Msec_Tmp
-          call abi_time_end % set_date(End_Year_Tmp, End_Mon_Tmp, End_DD_Tmp, End_HH_Tmp, End_Min_Tmp, End_Sec_Tmp)
-          Image%End_Year = abi_time_end%year
-          Image%End_Doy = abi_time_end%dayOfYear
-          Image%End_Time = abi_time_end%msec_of_day !millisec
+          call image % time_end % set_date(End_Year_Tmp, End_Mon_Tmp, End_DD_Tmp, End_HH_Tmp, End_Min_Tmp, End_Sec_Tmp)
+          Image%End_Year = image % time_end%year
+          Image%End_Doy = image % time_end % dayOfYear
+          Image%End_Time = image % time_end % msec_of_day !millisec
 
         endif
 

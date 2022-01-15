@@ -482,7 +482,13 @@ implicit none
          case ('yyyy')
            out = year_s  
          case ('yyyy_doy')
-           out = year_s//'_'//doy_s     
+           out = year_s//'_'//doy_s  
+         case ('yyyy_doy_hhmm')
+           out = year_s//'_'//doy_s//'_'//hour_s//minute_s
+         case ('yyyy_doy.hhmm')
+           out = year_s//'_'//doy_s//'.'//hour_s//minute_s
+         case ('yyyydoyhhmm')
+           out = year_s//doy_s//hour_s//minute_s
          case ( 'mm')
            out =  month_s
          case  ('dd')
