@@ -38,7 +38,12 @@
 !--------------------------------------------------------------------------------------
 module AVHRR_REPOSITION_MOD
  use CONSTANTS_MOD
- use PIXEL_COMMON_MOD
+ use PIXEL_COMMON_MOD, only: &
+   image &
+   , bad_scan_flag &
+   , nav &
+   , AVHRR_GAC_Flag
+   
  use CX_DATE_TIME_TOOLS_MOD,only: &
   compute_month &
   , compute_day &
