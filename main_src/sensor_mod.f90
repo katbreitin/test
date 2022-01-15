@@ -386,12 +386,14 @@ module SENSOR_MOD
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
 
+
           
          call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
                , msec_of_day = Start_Time_Tmp)
          call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
                , msec_of_day =  End_Time_Tmp)
 
+         exit
 
       end if 
       
@@ -418,12 +420,12 @@ module SENSOR_MOD
          Image%End_Time =  time_obj_nasa_hres(2) % msec_of_day
          
 
-         exit
 
+         
          image % time_start = time_obj_nasa_hres(1)
          image % time_end = time_obj_nasa_hres(2)
          
-
+         exit
          
       end if 
        
@@ -445,7 +447,7 @@ module SENSOR_MOD
          Image%End_Time = End_Time_Tmp
 
 
-         !exit
+         exit
       endif
 
       !----------------------------------------------
