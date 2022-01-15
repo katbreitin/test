@@ -75,9 +75,11 @@ implicit none
       integer :: hour = 0
       integer :: minute = 0 
       integer :: second = 0
+      integer :: msec = 0
+      integer :: msec_of_day = 0
       integer :: dayOfYear
       real :: hour_frac
-      integer :: msec_of_day
+      
       character(4) :: yyyy
       character(2) :: mm
       character(2) :: dd
@@ -90,6 +92,7 @@ implicit none
  contains
       procedure :: set_date 
       procedure :: set_date_with_doy
+      procedure :: set_date_with_doy_msec
       procedure :: set_jday
       procedure :: days_since_proj_time0
       procedure :: print_data 
@@ -184,9 +187,7 @@ implicit none
       write (  out_string  , fmt = '(i3.3)') iperiod16
    
   end function period_16
-  
-
-  !  -- 
+    !  -- 
   !   poplutes with day of year ( from 1 to 366) instead of month and day
   !  ---
   subroutine set_date_with_doy (this , year , doy, hour , minute, second)
@@ -221,6 +222,54 @@ implicit none
       call this % update()
        
   end subroutine set_date_with_doy
+
+  !  -- 
+  !   poplutes with day of year and msec ( from 1 to 366) instead of month and day
+  !  ---
+  subroutine set_date_with_doy_msec (this , year , doy, msec_of_day)
+      class ( date_type) :: this
+      integer , optional :: year , doy , msec_of_day
+      integer , dimension(12) :: jmonth 
+      integer, dimension(12) :: last_day_month
+      integer :: i
+      integer , dimension(12) :: day_dum
+      integer :: month(1)
+      integer :: msec_intern
+      integer :: msec_hour, msec_minute
+       
+      if ( present(year) ) this % year = year
+      if ( present(doy) ) this % dayOfYear = doy
+      
+      msec_intern = 0
+      
+      if ( present ( msec_of_day ) ) msec_intern = msec_of_day
+      ! compute hour,minute and second
+      this % hour = floor(msec_intern/(1000.*60.*60.))
+      msec_hour = msec_intern - ( this % hour *60. *60. * 1000)
+      this % minute = floor(msec_hour/(1000. * 60.))
+      msec_minute = msec_hour - ( this % minute * 60. * 1000.)
+      this % second = floor(msec_minute/1000.)
+      this % msec  = msec_minute - ( this % second * 1000.)
+      
+      this % msec_of_day = msec_of_day
+      
+       
+      jmonth = [31,28,31,30,31,30,31,31,30,31,30,31]
+      if  ( modulo ( this % year , 4) == 0 ) jmonth(2) = 29 
+      last_day_month(1) = 31
+       
+      do i = 2 , 12
+         last_day_month (i) = last_day_month (i-1) + jmonth(i)  
+      end do
+      day_dum = doy - last_day_month
+      month = maxloc ( day_dum , mask = day_dum <= 0 )
+      
+      this % month = month(1)
+      this % day = jmonth(month(1)) + day_dum(month(1))
+      
+      call this % update()
+       
+  end subroutine set_date_with_doy_msec
    
   ! -- ----
   !   Sets Julian Day and updates data
@@ -313,6 +362,13 @@ implicit none
                            , 1 ,this % hour &
                            , this % minute ) 
                            
+      
+      
+      this % msec_of_day = this % hour * 1000 * 60 * 60 + &
+                           this % minute * 1000 * 60 + &
+                           this % second * 1000 + &
+                           this % msec
+      
                            
       call this % update_from_jd()
       
