@@ -124,7 +124,7 @@ module SENSOR_MOD
      , READ_MODIS &
      , READ_MODIS_SIZE_ATTR &
      , DETERMINE_MODIS_GEOLOCATION_FILE &
-     , READ_MODIS_TIME_ATTR
+     , READ_MODIS_DATE_TIME
 
    use FY2_MOD, only: &
       READ_FY &
@@ -361,7 +361,7 @@ module SENSOR_MOD
       !----------------------------------------------
       if (index(Sensor%Sensor_Name,'MODIS') > 0) then
 
-         call READ_MODIS_TIME_ATTR(trim(Image%Level1b_Path), trim(Image%Level1b_Name), &
+         call READ_MODIS_DATE_TIME(trim(Image%Level1b_Path), trim(Image%Level1b_Name), &
                             Start_Year_Tmp, Start_Day_Tmp, Start_Time_Tmp, &
                             End_Year_Tmp, End_Day_Tmp, End_Time_Tmp)
           
