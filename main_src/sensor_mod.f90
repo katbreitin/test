@@ -372,7 +372,7 @@ module SENSOR_MOD
       ! read VIIRS-NOAA time from GMTCO
       !----------------------------------------------
       if (trim(Sensor%Sensor_Name) == 'VIIRS') then
-#ifdef HDF5LIBS
+
          call READ_VIIRS_DATE_TIME(trim(Image%Level1b_Path),trim(Image%Level1b_Name), &
                              Start_Year_Tmp,Start_Day_Tmp,Start_Time_Tmp, &
                              End_Time_Tmp,Orbit_Number_Tmp,Orbit_Identifier, &
@@ -385,11 +385,14 @@ module SENSOR_MOD
  
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
-#else
-         PRINT *, "No HDF5 libraries installed, stopping"
-         stop
-#endif
-         exit
+
+          
+         call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
+               , msec_of_day = Start_Time_Tmp)
+         call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
+               , msec_of_day =  End_Time_Tmp)
+
+
       end if 
       
       if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA-HRES') then
@@ -409,13 +412,18 @@ module SENSOR_MOD
          Image%End_Year = time_obj_nasa_hres(2) % year
          Image%Start_Doy = time_obj_nasa_hres(1) % dayOfYear
          Image%End_Doy = time_obj_nasa_hres(2) % dayOfYear
-         Image%Orbit_Number = 7889887
+         Image%Orbit_Number = 7889887 ! FAKE FAKE
 
          Image%Start_Time = time_obj_nasa_hres(1) % msec_of_day
          Image%End_Time =  time_obj_nasa_hres(2) % msec_of_day
          
-        
+
          exit
+
+         image % time_start = time_obj_nasa_hres(1)
+         image % time_end = time_obj_nasa_hres(2)
+         
+
          
       end if 
        
@@ -423,7 +431,7 @@ module SENSOR_MOD
       ! read VIIRS-NASA time from VGEOM
       !----------------------------------------------
       if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA') then
-#ifdef HDF5LIBS
+
          call READ_VIIRS_NASA_DATE_TIME(trim(Image%Level1b_Path),trim(Image%Level1b_Name), &
                              Start_Year_Tmp,Start_Day_Tmp,Start_Time_Tmp, &
                              End_Time_Tmp,Orbit_Number_Tmp, End_Year_Tmp , End_Day_Tmp)
@@ -436,10 +444,7 @@ module SENSOR_MOD
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
 
-#else
-         PRINT *, "No HDF5 libraries installed, stopping"
-         stop
-#endif
+
          !exit
       endif
 
@@ -526,7 +531,7 @@ module SENSOR_MOD
        ! read time from FY3D
        !----------------------------------------------
        if (trim(Sensor%Sensor_Name) == 'MERSI-2') then
-#ifdef HDF5LIBS
+
           call READ_FY3D_DATE_TIME(trim(Image%Level1b_Path),trim(Image%Level1b_Name), &
                               Start_Year_Tmp,Start_Day_Tmp,Start_Time_Tmp, &
                               End_Time_Tmp,Orbit_Number_Tmp, End_Year_Tmp , End_Day_Tmp)
@@ -539,10 +544,7 @@ module SENSOR_MOD
           Image%Start_Time = Start_Time_Tmp
           Image%End_Time = End_Time_Tmp
 
-#else
-          PRINT *, "No HDF5 libraries installed, stopping"
-          stop
-#endif
+
          exit
        endif
 

@@ -144,7 +144,8 @@ module PIXEL_COMMON_MOD
   , nchan_clavrx &
   , Max_Num_Cld_Test_Bytes
 
-  use CLASS_TIME_DATE
+  use CLASS_TIME_DATE, only: &
+      date_type
   
 !-- can not use this module due to Makefile precedence issues
 ! use CLAVRX_MESSAGE_MOD, only: MESG, VERB_LEV
@@ -375,6 +376,8 @@ module PIXEL_COMMON_MOD
     integer(kind=int2):: End_Year
     integer(kind=int2):: End_Doy
     integer(kind=int4):: End_Time
+    type(date_type) :: time_start
+    type(date_type) :: time_end
     integer(kind=int4):: X_Stride
     integer(kind=int4):: Y_Stride
     integer(kind=int4):: Chan_Average_Flag
