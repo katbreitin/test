@@ -59,7 +59,6 @@ module ECM2_CLOUD_MASK_CLAVRX_BRIDGE
        Covar_Ch27_Ch38_5x5, &
        Ref_ChDNB_Lunar_Std_3x3, &
        Ref_ChDNB_Lunar_Min_3x3, &
-       Month, &
        Diag_Pix_Array_1, &
        Diag_Pix_Array_2, &
        Diag_Pix_Array_3, &
@@ -79,7 +78,10 @@ module ECM2_CLOUD_MASK_CLAVRX_BRIDGE
 
    use CX_real_BOOLEAN_MOD
        
-   use ECM2_CLOUD_MASK_MODULE
+   use ECM2_CLOUD_MASK_MODULE,only: &
+      ecm2_cloud_mask_algorithm &
+      , set_ecm2_cloud_mask_version
+      
    use NB_CLOUD_MASK_ADDONS
    use NB_CLOUD_MASK_SERVICES
    use NB_CLOUD_MASK_SOLAR_RTM
@@ -214,7 +216,7 @@ contains
    CLDMASK%Prior_Cld_Probability = MISSING_VALUE_real4
    if (USE_PRIOR_TABLE) then 
      Prior_File_Name_Full_Path = trim(Ancil_Data_Dir)//"static/luts/ecm2/"//"nb_cloud_mask_calipso_prior.nc"
-     call ECM2_CLOUD_MASK_COMPUTE_PRIOR(trim(Prior_File_Name_Full_Path),Nav%Lon,Nav%Lat,Month,CLDMASK%Prior_Cld_Probability)
+     call ECM2_CLOUD_MASK_COMPUTE_PRIOR(trim(Prior_File_Name_Full_Path),Nav%Lon,Nav%Lat,image % time_start % Month,CLDMASK%Prior_Cld_Probability)
    endif
 
    !--- Compute TOA Clear-Sky 0.65um Reflectance

@@ -433,7 +433,7 @@ end subroutine RESET_NB_CLOUD_MASK_PRIOR_LUT
   subroutine COMPUTE_PRIOR(Lon,Lat,Month,Prior)
     real, dimension(:,:), intent(in):: Lon
     real, dimension(:,:), intent(in):: Lat
-    integer(kind=int2), intent(in):: Month
+    integer(kind=int4), intent(in):: Month
     real, dimension(:,:), intent(out):: Prior
 
     integer:: Nx, Ny
