@@ -39,7 +39,6 @@ use PIXEL_COMMON_MOD, only:  &
    , sensor &
    , temporary_file_name &
    , temporary_data_dir &
-   , ileap &
    , two_byte_temp &
    , bad_pixel_mask &
    , temp_pix_array_1 &

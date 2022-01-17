@@ -29,8 +29,6 @@ module CALIOP_COLLOCATION_MOD
       , Skip_L1b_File_Flag &
       , Geo &
       , Image &
-      , Month &
-      , Day_of_Month &
       , Caliop_Num_Cld_Layers &
       , Caliop_Cod & 
       , Caliop_Cld_Height

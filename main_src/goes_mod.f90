@@ -41,7 +41,6 @@ use PIXEL_COMMON_MOD, only: &
    , sensor &
    , temporary_file_name &
    , temporary_data_dir &
-   , ileap &
    , two_byte_temp &
    , bad_pixel_mask &
    , temp_pix_array_1 &
@@ -70,8 +69,8 @@ use CALIBRATION_CONSTANTS_MOD, only: &
    , ch1_degrad_low_1 &
    , ch1_degrad_low_2
    
-   use CX_DATE_TIME_TOOLS_MOD, only: &
-     leap_year_fct
+   
+   use class_time_date, only: date_type
       
    use PLANCK_MOD, only: &
       planck_temp_fast
@@ -3342,15 +3341,13 @@ subroutine DETERMINE_DARK_COMPOSITE_NAME(AREAstr)
  character(len=3):: Jday_String
  character(len=4):: Time_String
  logical:: Does_File_Exist
- integer:: Hour
- integer:: Minute
- integer:: itime
  integer(kind=int4), parameter :: MAX_LATENCY = 5 !including current day
  integer:: year
  integer:: year_in
  integer:: day_of_year_in
  integer:: doy
  integer:: doy_idx
+ type (date_type ) :: time_obj
 
  Dark_Composite_Name = "no_file"
 
@@ -3397,47 +3394,35 @@ subroutine DETERMINE_DARK_COMPOSITE_NAME(AREAstr)
          return
  end select
  
- Hour = AREAstr%Img_Time/10000
- Minute = (AREAstr%Img_Time - Hour*10000)/100
- Itime = Hour*100 + Minute
- write (Time_String,fmt="(I4.4)") Itime
-
+ 
  !----------------------------------------------------------------------
  ! loop through today and previous days to find the most current file
  ! if no file can be found, the file name is set to "no_file"
  !----------------------------------------------------------------------
- year_in = Image%Start_Year
- day_of_year_in = Image%Start_Doy
-
+ 
  Dark_Composite_Name = "no_file"
+ 
+ time_obj = Image% time_start
 
  do doy_idx = 0, MAX_LATENCY - 1
-    doy = day_of_year_in - doy_idx
-    year = year_in
-    ileap = leap_year_fct(year)
-    if (doy < 1) then
-           year = year - 1
-           ileap = leap_year_fct(year)
-           doy = (365 + ileap) + doy
-    endif
-
-    write (Year_String,fmt="(I4.4)") year
-    write (Jday_String,fmt="(I3.3)") doy
- 
+    call time_obj % add_time ( day = (-1) * doy_idx)   
+   
     Dark_Comp_Data_Dir_Temp = trim(Dark_Comp_Data_Dir) // &
-                              trim(Goes_Name)//"/"//Year_String//"/"
+                              trim(Goes_Name)//"/"// time_obj % yyyy//"/"                           
+                              
     print *, "Looking for dark sky composite files in "// &
          trim(Dark_Comp_Data_Dir_Temp)
 
-    !--- test for existence - assume uncompressed
-    Dark_Composite_Name = trim(Goes_Name)//"_"//Year_String//"_"// &
-                           Jday_String//"_"//Time_String// &
+   
+    Dark_Composite_Name = trim(Goes_Name)//"_"//time_obj %  date_string('yyyy_doy_hhmm')//  &                     
                            "_drk_ch1_pix.dat"
+     
+                           
     Does_File_Exist = file_test(trim(Dark_Comp_Data_Dir_Temp)// &
                                   trim(Dark_Composite_Name))
 
     !-- if found, exit loop
-    if (Does_File_Exist .neqv. .false.) then
+    if (Does_File_Exist ) then
         print *, 'Found: '//trim(Dark_Composite_Name)
         exit
     endif
@@ -3449,7 +3434,7 @@ subroutine DETERMINE_DARK_COMPOSITE_NAME(AREAstr)
                                   trim(Dark_Composite_Name))
 
     !-- if found, exit loop
-    if (Does_File_Exist .neqv. .false.) then
+    if (Does_File_Exist ) then
         print *, 'Found: '//trim(Dark_Composite_Name)
         exit
     endif

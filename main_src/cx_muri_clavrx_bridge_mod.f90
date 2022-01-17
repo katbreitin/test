@@ -24,7 +24,8 @@ module cx_muri_clavrx_bridge_mod
       ,sfc &
       ,NWP_PIX &
       , ancil_data_dir &
-      , month
+      , image
+      
    use constants_mod , only: &
       int1  
    
@@ -89,7 +90,7 @@ contains
       input % ozone = NWP_PIX%Ozone(1:dim1,1:dim2)
       input % h2o_conc = NWP_PIX%tpw(1:dim1,1:dim2)
       input % windspeed = NWP_pix%Wnd_Spd_10m(1:dim1,1:dim2)
-      input % month = month
+      input % month = image % time_start % month
       !input % sensor = Sensor%Platform_Name 
 
       input % land_class = Sfc % Land(1:dim1,1:dim2)

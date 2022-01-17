@@ -76,9 +76,9 @@ contains
       real , intent(in) :: solzen(:,:)
       real , intent(in) :: lunzen(:,:)
       integer(INT4), intent(in) :: start_time
-      integer(INT2), intent(in) :: start_year
-      integer(INT2), intent(in) :: month
-      integer(INT2), intent(in) :: day_of_month
+      integer(INT4), intent(in) :: start_year
+      integer(INT4), intent(in) :: month
+      integer(INT4), intent(in) :: day_of_month
       double precision , intent(in) :: lunar_phase_angle_topo
       character ( len = * ), intent(in) :: ancil_data_dir
       

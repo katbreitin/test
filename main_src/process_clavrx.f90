@@ -303,22 +303,15 @@
     , Destroy_Pixel_Arrays &
     , Create_Pixel_Arrays &
     , Reset_Pixel_Arrays_To_Missing  &  
-      ! - time variable   
-    , month_prev &
-    , start_year_prev &
-    , start_day_prev &
     , nav_opt &
     , file_list &
     , dir_level2 &
     , Temporary_Data_Dir &
-    , Month &
-    , Day_of_month &
     , Use_Sst_Anal &
     , Use_Sea_IR_Emiss &
     , Use_Land_IR_Emiss &
     , Use_ABI_Dust &
     , OiSst_Data_Dir &
-    , ileap &
     , Gdas_Data_Dir &
     , Cfsr_Data_Dir &
     , Ncep_Data_Dir &
@@ -666,10 +659,9 @@
    !------------------------------------------------------------------------------
    ! initialize previous date variables
    !-------------------------------------------------------------------------------
-   Month_Prev = 0_int2
+  
    Sensor%WMO_Id_Previous = 0
-   Start_Year_Prev = 0_int2
-   Start_Day_Prev = 0_int2
+  
 
    !*************************************************************************
    ! Marker: Read and Quality Check User Defined Options
@@ -900,15 +892,6 @@
          call DETERMINE_DARK_COMPOSITE_NAME(AREAstr)
       endif
    
-      !------------------------------------------------------------------
-      ! compute the month and day of month
-      !------------------------------------------------------------------
-
-      ! Made ileap consistant with oisst call.
-      ileap = int(leap_year_Fct(int(Image%Start_Year, kind=int4)),kind=int1)
-
-      Month = int(COMPUTE_MONTH(int(Image%Start_Doy, kind=int4), int(ileap, kind=int4)),kind=int2)
-      Day_Of_Month = int(COMPUTE_DAY(int(Image%Start_Doy, kind=int4), int(ileap, kind=int4)),kind=int2)
 
       !*************************************************************************
       ! Marker:  READ IN SENSOR-SPECIFIC CONSTANTS
@@ -939,10 +922,7 @@
           Use_Sst_Anal = sym%YES
       endif
 
-      !------- store previous day and year to prevent reading of same data for next orbit
-      Start_Year_Prev = Image%Start_Year
-      Start_Day_Prev = Image%Start_Doy  
-
+   
       
       !----------------------------------------------------------------------
       ! Open Modis White Sky Albedo Map appropriate for this day
@@ -1158,7 +1138,8 @@
            ! - lun and solar zenith angle
            call COMPUTE_LUNAR_REFLECTANCE (Ch (44) % Rad_Toa &
                       , Geo % Solzen, Geo%Lunzen &
-                      , Image % Start_Year, Month, Day_Of_Month, Image % Start_Time &
+                      , Image % time_start % Year, Image % time_start % Month &
+                      , Image % time_start % Day, Image % time_start % msec_of_day &
                       , Geo % Moon_Phase_Angle  &
                       , Ancil_Data_Dir &
                       , Ch(44)%Ref_Lunar_Toa)

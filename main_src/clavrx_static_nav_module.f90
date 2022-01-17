@@ -46,8 +46,6 @@ module CLAVRX_STATIC_NAV_MODULE
     , Ancil_Data_Dir &
     , X_Sample_Offset &
     , Y_Sample_Offset &
-    , Day_of_Month &
-    , Month &
     , Static_Dark_Sky_Flag &
     , QRNN_CTP_Flag &
     , QRNN_CTP_Data_Dir &
@@ -1275,58 +1273,17 @@ end subroutine DETERMINE_BOUNDS_STATIC_NAV
 !------------------------------------------------------------------------------------
 subroutine FIND_DARK_COMPOSITE()
 
-   integer :: Hour
-   character(len=10) :: Month_Str
-   character(len=2) :: Hour_Str
-
-   ! --- initialize
-   Dark_File_Exist = .false.
-   Dark_Composite_Name = "no_file"
-
-   ! --- find month string
-   select case (Month)
-    case (1)
-      Month_Str = "january"
-    case (2)
-      Month_Str = "february"
-    case (3)
-      Month_Str = "march"
-    case (4)
-      Month_Str = "april"
-    case (5)
-      Month_Str = "may"
-    case (6)
-      Month_Str = "june"
-    case (7)
-      Month_Str = "july"
-    case (8)
-      Month_Str = "august"
-    case (9)
-      Month_Str = "september"
-    case (10)
-      Month_Str = "october"
-    case (11)
-      Month_Str = "november"
-    case (12)
-      Month_Str = "december"
-    case default
-      call MESG('Cannot find Month at the READ_DARK_COMPOSITE, Skipping', level = verb_lev % DEFAULT )
-   end select
-
-   ! --- calculate Hour and convert to String
-   Hour = Image%Start_Time/60.0/60.0/1000.0
-   write(Hour_Str,fmt="(I2.2)") Hour
-
+  
    ! --- construct file name
    Dark_Composite_Name = "no_file"
 
    select case (Sensor%WMO_Id)
      case(270)
        Dark_Comp_Data_Dir = trim(Ancil_Data_Dir)//'/static/dark_comp/goes_east/'
-       Dark_Composite_Name = "goes_east_fulldisk_"//trim(Month_Str)//"_"//Hour_Str//"Z_refl065_dark_composite_2km.nc"
+       Dark_Composite_Name = "goes_east_fulldisk_"//trim(image % time_start % Monthname)//"_"//image % time_start % hh //"Z_refl065_dark_composite_2km.nc"
      case(271)
        Dark_Comp_Data_Dir = trim(Ancil_Data_Dir)//'/static/dark_comp/goes_west/'
-       Dark_Composite_Name = "goes_west_fulldisk_"//trim(Month_Str)//"_"//Hour_Str//"Z_refl065_dark_composite_2km.nc"
+       Dark_Composite_Name = "goes_west_fulldisk_"//trim(image % time_start % Monthname)//"_"//image % time_start % hh//"Z_refl065_dark_composite_2km.nc"
      case default
        call MESG('DARK COMPOSITE FILE DOES NOT EXIST FOR THIS SENSOR, SETTING TO MISSING', level = verb_lev % DEFAULT )
    end select

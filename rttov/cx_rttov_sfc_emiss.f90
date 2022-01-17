@@ -45,7 +45,7 @@ module cx_rttov_sfc_emiss
     , nchan_clavrx
    
    
-   use PIXEL_COMMON_MOD, only: Image, Ch, Sensor, Sfc, Use_Land_IR_Emiss, Month
+   use PIXEL_COMMON_MOD, only: Image, Ch, Sensor, Sfc, Use_Land_IR_Emiss
 
 #include "throw.h"
   use parkind1, only : jpim, jprb, jplm
@@ -173,9 +173,9 @@ CONTAINS
   
 ! define nprof, profiles
 !---------------------------------  
-    imonth=month
-    dim1 = Image%Number_Of_Elements
-    dim2 = Image%Number_Of_Lines_Per_Segment
+    imonth = image % time_start % month
+    dim1 =   Image % Number_Of_Elements
+    dim2 =   Image % Number_Of_Lines_Per_Segment
 
     nprof=dim1*dim2 
     
@@ -273,7 +273,7 @@ CONTAINS
   enddo
   
   init_status % is_set  = .true.
-  init_status % month = month
+  init_status % month = image % time_start % month
    
   end subroutine init_rttov_emiss
 
@@ -316,7 +316,7 @@ CONTAINS
    
     
     if ((.not. init_status % is_set) &
-          .or. (init_status % is_set .and. month .ne. init_status % month)) then
+          .or. (init_status % is_set .and. image % time_start % month .ne. init_status % month)) then
           
        if  (init_status % is_set)  call  DESTROY_RTTOV_EMISS()
           

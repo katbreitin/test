@@ -83,9 +83,11 @@ implicit none
       character(4) :: yyyy
       character(2) :: mm
       character(2) :: dd
+      character(2) :: hh
       character(6) :: yymmdd
       character(8) :: yymmddhh
       character(10) :: yyyymmdd
+      character(10) :: monthname
       real (kind = r15) :: julday
       real :: mod_julday
            
@@ -427,9 +429,13 @@ implicit none
       this % yyyy = year_s
       this % mm = month_s
       this % dd = day_s
+      this % hh = hour_s
       this % yymmdd =  year_s2d//month_s//day_s
       this % yyyymmdd =  year_s//month_s//day_s
       this % yymmddhh =  year_s2d//month_s//day_s//hour_s
+      
+      this % monthname = monthname ( this % month )
+      
   end subroutine update
   !
   !
@@ -707,6 +713,45 @@ implicit none
       yyyy = 100*(n-49) + yyyy + l
       RETURN
   END SUBROUTINE cdate
+  
+  
+  function monthname ( month ) result(month_str)
+      integer :: month
+      character(10) :: month_str
+  
+   ! --- find month string
+   select case (month)
+    case (1)
+      Month_Str = "january"
+    case (2)
+      Month_Str = "february"
+    case (3)
+      Month_Str = "march"
+    case (4)
+      Month_Str = "april"
+    case (5)
+      Month_Str = "may"
+    case (6)
+      Month_Str = "june"
+    case (7)
+      Month_Str = "july"
+    case (8)
+      Month_Str = "august"
+    case (9)
+      Month_Str = "september"
+    case (10)
+      Month_Str = "october"
+    case (11)
+      Month_Str = "november"
+    case (12)
+      Month_Str = "december"
+    case default
+      
+   end select
+  
+  
+  end function monthname
+  
   
 end module class_time_date
 

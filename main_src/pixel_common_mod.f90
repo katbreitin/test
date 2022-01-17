@@ -806,8 +806,7 @@ module PIXEL_COMMON_MOD
   integer(kind=int4), public, save:: Num_Scans_Level2_Hdf
   integer(kind=int2), public, save:: Sc_Id_Avhrr,AVHRR_Ver_1b, &
                                      AVHRR_Data_Type, Num_Loc, Tip_Parity, Aux_Sync,  &
-                                     Ramp_Auto_Cal,Start_Year_Prev, Start_Day_Prev, &
-                                     Month,Month_Prev,Day_of_Month,Ileap
+                                     Ramp_Auto_Cal
   character(len=6), public, save:: Sc_Id_Char
   character(len=7),public,save:: Proc_Block_Id
 

@@ -97,9 +97,9 @@ contains
       !--- check for required channels
       if (Sensor%Chan_On_Flag_Default(1) == sym%NO) return
       
-      Year = Image%Start_Year
-      Month_Local = month
-      Jday = Image%Start_Doy
+      Year = Image% time_start % Year
+      Month_Local = Image % time_start % month
+      Jday = Image % time_start % dayofyear
       
 
       element_loop: do Elem_Idx = First_Element, First_Element + Number_of_Elements - 1
