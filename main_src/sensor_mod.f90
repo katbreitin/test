@@ -170,7 +170,7 @@ module SENSOR_MOD
       , read_navigation_block_seviri &
       , read_seviri
    
-#ifdef HDF5LIBS
+
    use VIIRS_CLAVRX_BRIDGE , only : &
        READ_VIIRS_DATE_TIME &
        , READ_VIIRS_DATA &
@@ -186,20 +186,16 @@ module SENSOR_MOD
        , READ_NUMBER_OF_SCANS_VIIRS_NASA &
        , CHECK_IF_FUSION &
        , READ_FUSION_INSTR_CONSTANTS
-  
-  
+   
    use VIIRS_NASA_HRES_READ_MOD, only : &
       READ_VIIRS_NASA_HRES_DATA &
       , viirs_nasa_hres_config_type
-       
-  
+        
    use FY3D_READ_MODULE, only : &
        READ_FY3D_DATA &
        , READ_FY3D_DATE_TIME &
        , READ_NUMBER_OF_SCANS_FY3D &
        , READ_FY3D_INSTR_CONSTANTS
-
-#endif
 
    use CLAVRX_MESSAGE_MOD,only: &
       mesg &
@@ -2435,196 +2431,195 @@ module SENSOR_MOD
 
       else
 
-      select case (trim(Sensor%Sensor_Name))
+         select case (trim(Sensor%Sensor_Name))
 
-      case('GOES-IL-IMAGER','GOES-MP-IMAGER')
-         call READ_GOES(Segment_Number,Image%Level1b_Name, &
+         case('GOES-IL-IMAGER','GOES-MP-IMAGER')
+            call READ_GOES(Segment_Number,Image%Level1b_Name, &
                      Image%Start_Doy, Image%Start_Time, &
                      Time_Since_Launch, &
                      AREAstr,NAVstr)
 
-         if (Sensor%Chan_On_Flag_Default(1)==sym%YES) then
-            call READ_DARK_COMPOSITE_COUNTS(Segment_Number, Goes_Xstride, &
+            if (Sensor%Chan_On_Flag_Default(1)==sym%YES) then
+               call READ_DARK_COMPOSITE_COUNTS(Segment_Number, Goes_Xstride, &
                      Dark_Composite_Name,AREAstr,Two_Byte_Temp) 
-            call CALIBRATE_GOES_DARK_COMPOSITE(Two_Byte_Temp,Time_Since_Launch,Ref_Ch1_Dark_Composite)
-         end if
+               call CALIBRATE_GOES_DARK_COMPOSITE(Two_Byte_Temp,Time_Since_Launch,Ref_Ch1_Dark_Composite)
+            end if
 
-      case('GOES-IP-SOUNDER')
-         call READ_GOES_SNDR(Segment_Number,Image%Level1b_Name, &
+         case('GOES-IP-SOUNDER')
+            call READ_GOES_SNDR(Segment_Number,Image%Level1b_Name, &
                      Image%Start_Doy, Image%Start_Time, &
-                     
                      AREAstr,NAVstr)
 
-      case('GOES-RU-IMAGER')
-         if (Image%Static_Nav_Flag) then
-            if (Image%Area_Format_Flag) then
-               call READ_ABI(Segment_Number,Image%Level1b_Name, &
+         case('GOES-RU-IMAGER')
+            if (Image%Static_Nav_Flag) then
+               if (Image%Area_Format_Flag) then
+                  call READ_ABI(Segment_Number,Image%Level1b_Name, &
                            Image%Start_Doy, Image%Start_Time, &
                            AREAstr,NAVstr)
-            else
-                call READ_LEVEL1B_FIXED_GRID_STATIC_NAV()
+               else
+                  call READ_LEVEL1B_FIXED_GRID_STATIC_NAV()
+               end if
+
+               !--- read auxillary cloud mask and cloud type
+               if (Use_Aux_Flag /= sym%NO_AUX) then
+
+                  call DETERMINE_SAPF_NAME(Segment_Number)
+                  call READ_SAPF_DATA(Segment_Number)
+
+               end if
+            else 
+               print*,'read abi is to installed stopping'
+               stop
             end if
 
-            !--- read auxillary cloud mask and cloud type
-            if (Use_Aux_Flag /= sym%NO_AUX) then
-
-               call DETERMINE_SAPF_NAME(Segment_Number)
-               call READ_SAPF_DATA(Segment_Number)
-
-            end if
-         else 
-            print*,'read abi is to installed stopping'
-            stop
-         end if
-
-      case('SEVIRI')
-       !--------  MSG/SEVIRI
-         call READ_SEVIRI(Segment_Number,Image%Level1b_Name, &
+         case('SEVIRI')
+         !--------  MSG/SEVIRI
+            call READ_SEVIRI(Segment_Number,Image%Level1b_Name, &
                      Image%Start_Doy, Image%Start_Time, &
                      AREAstr)
-         call READ_DARK_COMPOSITE_COUNTS(Segment_Number,Seviri_Xstride, &
+            call READ_DARK_COMPOSITE_COUNTS(Segment_Number,Seviri_Xstride, &
                      Dark_Composite_Name,AREAstr,Two_Byte_Temp) 
-         call CALIBRATE_SEVIRI_DARK_COMPOSITE(Two_Byte_Temp,Ref_Ch1_Dark_Composite)
+            call CALIBRATE_SEVIRI_DARK_COMPOSITE(Two_Byte_Temp,Ref_Ch1_Dark_Composite)
 
-      case('MTSAT-IMAGER')
-         call READ_MTSAT(Segment_Number,Image%Level1b_Name, &
+         case('MTSAT-IMAGER')
+            call READ_MTSAT(Segment_Number,Image%Level1b_Name, &
                      Image%Start_Doy, Image%Start_Time, &
                      Time_Since_Launch, &
                      AREAstr,NAVstr)
-         call READ_DARK_COMPOSITE_COUNTS(Segment_Number,Mtsat_Xstride, &
+            call READ_DARK_COMPOSITE_COUNTS(Segment_Number,Mtsat_Xstride, &
                      Dark_Composite_Name,AREAstr,Two_Byte_Temp) 
-         call CALIBRATE_MTSAT_DARK_COMPOSITE(Two_Byte_Temp,Ref_Ch1_Dark_Composite)
+            call CALIBRATE_MTSAT_DARK_COMPOSITE(Two_Byte_Temp,Ref_Ch1_Dark_Composite)
 
-      case('FY2-IMAGER')
-         call READ_FY(Segment_Number,Image%Level1b_Name, &
+         case('FY2-IMAGER')
+            call READ_FY(Segment_Number,Image%Level1b_Name, &
                      Image%Start_Doy, Image%Start_Time, &
                      AREAstr,NAVstr)
 
-      case('AGRI') ! FY4
-         call READ_FY4_LEVEL1B_DATA(Segment_Number, trim(Image%Level1b_Name), Ierror_Level1b)
+         case('AGRI') ! FY4
+            call READ_FY4_LEVEL1B_DATA(Segment_Number, trim(Image%Level1b_Name), Ierror_Level1b)
         
-      case('COMS-IMAGER')
-         call READ_COMS(Segment_Number,Image%Level1b_Name, &
+         case('COMS-IMAGER')
+            call READ_COMS(Segment_Number,Image%Level1b_Name, &
                      Image%Start_Doy, Image%Start_Time, &
                      AREAstr,NAVstr)
 
-      case('AVHRR-1','AVHRR-2','AVHRR-3')
-         call READ_AVHRR_LEVEL1B_DATA(trim(Level1b_Full_Name), &
+         case('AVHRR-1','AVHRR-2','AVHRR-3')
+            call READ_AVHRR_LEVEL1B_DATA(trim(Level1b_Full_Name), &
               AVHRR_KLM_Flag,AVHRR_AAPP_Flag,Therm_Cal_1b,&
               Time_Since_Launch,Nrec_Avhrr_Header,Segment_Number)
 
-       case ( 'AVHRR-FUSION')
+         case ( 'AVHRR-FUSION')
             call READ_AVHRR_LEVEL1B_DATA(trim(Level1b_Full_Name), &
               AVHRR_KLM_Flag,AVHRR_AAPP_Flag,Therm_Cal_1b,&
               Time_Since_Launch,Nrec_Avhrr_Header,Segment_Number)
             call READ_HIRS_DATA(Segment_Number)
             call REPLACE_AVHRR_WITH_HIRS()
         
-       case('VIIRS')
+         case('VIIRS')
 
-         call READ_VIIRS_DATA (Segment_Number, trim(Image%Level1b_Name), Ierror_Level1b)
+            call READ_VIIRS_DATA (Segment_Number, trim(Image%Level1b_Name), Ierror_Level1b)
       
-         ! If error reading, then go to next file
-         if (Ierror_Level1b /= 0) return
+            ! If error reading, then go to next file
+            if (Ierror_Level1b /= 0) return
 
-         !--- read auxillary cloud mask and cloud type
-         if (Use_Aux_Flag /= sym%NO_AUX) then
-           call DETERMINE_SAPF_NAME(Segment_Number)
-           call READ_SAPF_DATA(Segment_Number)
-         endif
+            !--- read auxillary cloud mask and cloud type
+            if (Use_Aux_Flag /= sym%NO_AUX) then
+               call DETERMINE_SAPF_NAME(Segment_Number)
+               call READ_SAPF_DATA(Segment_Number)
+            end if
         
         
-      case('VIIRS-NASA-HRES')
+         case('VIIRS-NASA-HRES')
         
-          nasa_hres_config % channel_on_modis(1:45) = Sensor%Chan_On_Flag_Default(1:45)  == sym%YES
+            nasa_hres_config % channel_on_modis(1:45) = Sensor%Chan_On_Flag_Default(1:45)  == sym%YES
           
-          nasa_hres_config % sensor = 'npp'
-          nasa_hres_config % filename = trim(Image%Level1b_Name)
-          nasa_hres_config % path = trim(Image%Level1b_Path)
-          nasa_hres_config % ny_start = (Segment_Number - 1) * Image%Number_Of_Lines_Per_Segment + 1
-          nasa_hres_config % ny_end = min(Image%Number_Of_Lines, nasa_hres_config % ny_start + Image%Number_of_Lines_Per_Segment - 1)
-          call READ_VIIRS_NASA_HRES_DATA(nasa_hres_config)
+            nasa_hres_config % sensor = 'npp'
+            nasa_hres_config % filename = trim(Image%Level1b_Name)
+            nasa_hres_config % path = trim(Image%Level1b_Path)
+            nasa_hres_config % ny_start = (Segment_Number - 1) * Image%Number_Of_Lines_Per_Segment + 1
+            nasa_hres_config % ny_end = min(Image%Number_Of_Lines, nasa_hres_config % ny_start + Image%Number_of_Lines_Per_Segment - 1)
+            call READ_VIIRS_NASA_HRES_DATA(nasa_hres_config)
           
           
         
-           Image%Number_Of_Lines_Read_This_Segment = nasa_hres_config % ny_end - nasa_hres_config % ny_start + 1
+            Image%Number_Of_Lines_Read_This_Segment = nasa_hres_config % ny_end - nasa_hres_config % ny_start + 1
            
-           do i_line = 1, Image%Number_Of_Lines_Per_Segment
-              Image%Scan_Number(i_line) =nasa_hres_config % ny_start + i_line - 1
-           end do
+            do i_line = 1, Image%Number_Of_Lines_Per_Segment
+               Image%Scan_Number(i_line) =nasa_hres_config % ny_start + i_line - 1
+            end do
            
-       case('VIIRS-NASA')
+         case('VIIRS-NASA')
 
-         call READ_VIIRS_NASA_DATA (Segment_Number, trim(Image%Level1b_Name), Ierror_Level1b)
+            call READ_VIIRS_NASA_DATA (Segment_Number, trim(Image%Level1b_Name), Ierror_Level1b)
 
-         !--- If error reading, then go to next file
-         if (Ierror_Level1b /= 0) return
+            !--- If error reading, then go to next file
+            if (Ierror_Level1b /= 0) return
 
-         !--- read auxillary cloud mask
-         if (Use_Aux_Flag /= sym%NO_AUX) then 
-          call DETERMINE_MVCM_NAME(Segment_Number)
-          call READ_MVCM_DATA(Segment_Number)
-         endif
+            !--- read auxillary cloud mask
+            if (Use_Aux_Flag /= sym%NO_AUX) then 
+               call DETERMINE_MVCM_NAME(Segment_Number)
+               call READ_MVCM_DATA(Segment_Number)
+            endif
 
-       case('MERSI-2')
-         call READ_FY3D_DATA (Segment_Number, trim(Image%Level1b_Name), Ierror_Level1b)
+         case('MERSI-2')
+            call READ_FY3D_DATA (Segment_Number, trim(Image%Level1b_Name), Ierror_Level1b)
 
-         !--- If error reading, then go to next file
-         if (Ierror_Level1b /= 0) return
+            !--- If error reading, then go to next file
+            if (Ierror_Level1b /= 0) return
 
-       case('AHI')
+         case('AHI')
 
-         if (Image%Static_Nav_Flag) then
-            IF (Image%Nc_Format_Flag) then 
-                call READ_LEVEL1B_FIXED_GRID_STATIC_NAV()
-            else
+            if (Image%Static_Nav_Flag) then
+               IF (Image%Nc_Format_Flag) then 
+                  call READ_LEVEL1B_FIXED_GRID_STATIC_NAV()
+               else
 #ifdef LIBHIM
-                call READ_HSD_FIXED_GRID_STATIC_NAV()   
+                  call READ_HSD_FIXED_GRID_STATIC_NAV()   
 #else
-            call MESG( "LibHimawari not installed. Cannot process HSD. Stopping", level = verb_lev % ERROR , color = 4 )
-            stop
+                  call MESG( "LibHimawari not installed. Cannot process HSD. Stopping", level = verb_lev % ERROR , color = 4 )
+                  stop
 #endif
                  
-            endif
+               end if
             
-         else
-            call READ_AHI_DATA (Segment_Number, trim(Image%Level1b_Name), Ierror_Level1b)
-         endif
+            else
+               call READ_AHI_DATA (Segment_Number, trim(Image%Level1b_Name), Ierror_Level1b)
+            end if
 
-      end select
+         end select
 
-      !--- IFF data (all sensors same format)
-      if (index(Sensor%Sensor_Name,'IFF') > 0) then
-         call READ_IFF_DATA (Segment_Number, trim(Level1b_Full_Name), Ierror_Level1b)
+         !--- IFF data (all sensors same format)
+         if (index(Sensor%Sensor_Name,'IFF') > 0) then
+            call READ_IFF_DATA (Segment_Number, trim(Level1b_Full_Name), Ierror_Level1b)
 
-         ! If error reading, then go to next file
-         if (Ierror_Level1b /= 0) return
+            ! If error reading, then go to next file
+            if (Ierror_Level1b /= 0) return
 
-         !---- determine auxilliary cloud mask name and read it
-         if (Use_Aux_Flag /= sym%NO_AUX) then
-           if (Segment_Number == 1) print *,'Searching and reading MVCM'
-          call DETERMINE_MVCM_NAME(Segment_Number)
-          call READ_MVCM_DATA(Segment_Number)
-         endif
+            !---- determine auxilliary cloud mask name and read it
+            if (Use_Aux_Flag /= sym%NO_AUX) then
+               if (Segment_Number == 1) print *,'Searching and reading MVCM'
+               call DETERMINE_MVCM_NAME(Segment_Number)
+               call READ_MVCM_DATA(Segment_Number)
+            end if
+
+         end if
+
+         !--- VIIRS GAC data 
+         if (index(Sensor%Sensor_Name,'VGAC') > 0) then
+            call READ_VGAC_DATA(Segment_Number, Ierror_Level1b)
+            ! If error reading, then go to next file
+            if (Ierror_Level1b /= 0) return
+         end if
+
+         !--- read EPS-SG data
+         if (index(Sensor%Sensor_Name,'METIMAGE') > 0) then
+            call READ_EPS_SG_DATA(Segment_Number, Ierror_Level1b)
+            ! If error reading, then go to next file
+            if (Ierror_Level1b /= 0) return
+         end if
+
 
       end if
-
-      !--- VIIRS GAC data 
-      if (index(Sensor%Sensor_Name,'VGAC') > 0) then
-         call READ_VGAC_DATA(Segment_Number, Ierror_Level1b)
-         ! If error reading, then go to next file
-         if (Ierror_Level1b /= 0) return
-      endif
-
-      !--- read EPS-SG data
-      if (index(Sensor%Sensor_Name,'METIMAGE') > 0) then
-         call READ_EPS_SG_DATA(Segment_Number, Ierror_Level1b)
-         ! If error reading, then go to next file
-         if (Ierror_Level1b /= 0) return
-      endif
-
-
-      endif
        
    end subroutine READ_LEVEL1B_DATA
 

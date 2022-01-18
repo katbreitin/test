@@ -216,7 +216,7 @@ module PIXEL_ROUTINES_MOD
 !======================================================================
 subroutine EXPAND_SPACE_MASK_FOR_USER_LIMITS(Seg_Idx, Space_Mask)
 
-   use CALIOP_COLLOCATION_MOD
+   use CALIOP_COLLOCATION_MOD, only: CALIOP_COLLOCATION
 
    integer(kind=int4), intent(in):: Seg_Idx
    integer(kind=int1), dimension(:,:), intent(inout):: Space_Mask
@@ -233,42 +233,45 @@ subroutine EXPAND_SPACE_MASK_FOR_USER_LIMITS(Seg_Idx, Space_Mask)
    !--- check if subset processing is on
    if (Nav%Limit_Flag == sym%YES) then
 
-     where(Nav%Lat_1b < Nav%Lat_South_Limit .or. Nav%Lat_1b > Nav%Lat_North_Limit)
-        Space_Mask = sym%YES
-     end where
+      where(Nav%Lat_1b < Nav%Lat_South_Limit .or. Nav%Lat_1b > Nav%Lat_North_Limit)
+         Space_Mask = sym%YES
+      end where
 
-     !--- check for longitudinal bounds including the dateline condition
-     if ( Nav%Lon_West_Limit > Nav%Lon_East_Limit) then
-       where((Nav%Lon_1b < Nav%Lon_West_Limit .and. Nav%Lon_1b > 0.0) .or. &
+      !--- check for longitudinal bounds including the dateline condition
+      if ( Nav%Lon_West_Limit > Nav%Lon_East_Limit) then
+         where((Nav%Lon_1b < Nav%Lon_West_Limit .and. Nav%Lon_1b > 0.0) .or. &
              (Nav%Lon_1b > Nav%Lon_East_Limit .and. Nav%Lon_1b < 0.0))
-        Space_Mask = sym%YES
-       end where
-     else
-       where(Nav%Lon_1b < Nav%Lon_West_Limit .or. Nav%Lon_1b > Nav%Lon_East_Limit)
-        Space_Mask = sym%YES
-       end where
-     endif
+            Space_Mask = sym%YES
+         end where
+      else
+         where(Nav%Lon_1b < Nav%Lon_West_Limit .or. Nav%Lon_1b > Nav%Lon_East_Limit)
+            Space_Mask = sym%YES
+         end where
+      end if
 
-     !--- Satzen limit
-     where (Geo%Satzen > Geo%Satzen_Max_Limit .or. Geo%Satzen < Geo%Satzen_Min_Limit)
-        Space_Mask = sym%YES
-     end where
+      !--- Satzen limit
+      where (Geo%Satzen > Geo%Satzen_Max_Limit .or. Geo%Satzen < Geo%Satzen_Min_Limit)
+         Space_Mask = sym%YES
+      end where
 
-     !--- Solzen limit
-     where (Geo%Solzen < Geo%Solzen_Min_Limit .or. Geo%Solzen > Geo%Solzen_Max_Limit .or. Geo%Satzen == Missing_Value_Real4)
-        Space_Mask = sym%YES
-     end where
+      !--- Solzen limit
+      where (Geo%Solzen < Geo%Solzen_Min_Limit .or. Geo%Solzen > Geo%Solzen_Max_Limit .or. Geo%Satzen == Missing_Value_Real4)
+         Space_Mask = sym%YES
+      end where
 
    endif
 
    !--- CALIOP collocation
    if (Caliop_Flag) then
-     call CALIOP_COLLOCATION(Seg_Idx)
-   endif
+      call CALIOP_COLLOCATION(Seg_Idx)
+   end if
 
    !--- test if any valid data, if not, print a warning 
    if (minval(Space_Mask) == sym%YES) then
-      print *, EXE_PROMPT, "WARNING: All Data in Segment are Classified as Space via Spatial Subsetting Logic" 
+      print *, EXE_PROMPT, "WARNING: All Data in Segment are Classified as Space via Spatial Subsetting Logic"
+      print*, 'stopping at: ', __FILE__ , __LINE__
+    
+       
       stop
    endif
 
