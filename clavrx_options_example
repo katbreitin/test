@@ -23,7 +23,7 @@ default !E1 ALG ACHA (off, default or select combinations like 110_120_133)
 2   !E2 MASK read auxilary cloud mask 1b (0 = don't read, 1 = read from 1b and use, 2 = read and save as aux, 3 = read modawg/mvcm, but compute ecm2 type/phase)
 default
 1   !E3 SFC seebor emiss option (0=UMD, 1=RTTOV 2=SEEBOR (3=CRTM not yet installed)) 
-1   !E3 SFC see  emiss flag (0=no, 1=yes) 
+1   !E3 SFC sea emiss flag (0=no, 1=yes) 
 0   !E3 SFC read hires sfc type flag (0=no-8km, 1 = yes-1km) 
 1   !E3 SFC read land mask flag (0=no, 1=yes) (goge2_0ll.hdf)
 1   !E3 SFC read coast mask flag (0=no, 1=yes) (coast_mask_xkm.hdf, x = 1 or 8)
@@ -46,3 +46,4 @@ default
 1 1 1 0 0 0    !E6 chan on flags of channels 31,32,33,34,35,36
 1 1 0 0 0 0    !E6 chan on flags of channels 37(AHI/ABI-only),38(AHI/ABI-only),39(I1),40(I2),41(I3),42(I4)
 0 0 0 0 0 0    !E6 chan on flags of channels 43(I5),44(DNB),45-48(Spare)
+270 !ISCCP-NG WMO 270=g16, 271=g17, 173=HIM8, 70 = MET11, 55 = MET8
