@@ -375,7 +375,8 @@ CONTAINS
 
     !--- perform Band-2 Correction (Band 2 = Ch 1 in Clavrx)
     if (Sensor%Chan_On_Flag_Default(1) == sym%YES) then
-       Image_Date = Image%Start_Year + (Image%Start_Doy - 1.0) / 365.25
+       !Image_Date = Image%Start_Year + (Image%Start_Doy - 1.0) / 365.25
+       Image_Date = image % time_start % year + (image % time_start %  dayOfYear - 1)/365.25
        if (Image_Date < Band2_Correction_Start_Date) then
           where (ch(1)%Ref_Toa .ner. Missing_Value_Real4) 
              ch(1)%Ref_Toa = Band2_Correction_Factor*ch(1)%Ref_Toa

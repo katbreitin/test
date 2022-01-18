@@ -62,7 +62,7 @@ subroutine ECM2_CLOUD_MASK_COMPUTE_PRIOR(Prior_File_Name, Lon, Lat, Month, Prior
 character(len=*), intent(in) :: Prior_File_Name
 real, dimension(:,:), intent(in) :: Lon
 real, dimension(:,:), intent(in) :: Lat
-integer(kind=int2), intent(in) :: Month
+integer(kind=int4), intent(in) :: Month
 real(kind=real4), dimension(:,:), intent(inout) :: Prior_Probability
 
 real :: Nlon_Prior, Nlat_Prior, Nmonths_Prior, Ndiurnal_Prior

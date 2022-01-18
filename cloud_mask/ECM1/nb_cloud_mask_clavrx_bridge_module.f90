@@ -56,7 +56,6 @@ module NB_CLOUD_MASK_CLAVRX_BRIDGE
        Covar_Ch27_Ch38_5x5, &
        Ref_ChDNB_Lunar_Std_3x3, &
        Ref_ChDNB_Lunar_Min_3x3, &
-       Month, &
        Diag_Pix_Array_1, &
        Diag_Pix_Array_2, &
        Diag_Pix_Array_3, &
@@ -201,7 +200,7 @@ contains
      !-->Prior_File_Name_Full_Path = trim(Ancil_Data_Dir)//"static/luts/nb_cloud_mask/"//"nb_cloud_mask_calipso_prior.nc"
      Prior_File_Name_Full_Path = trim(Ancil_Data_Dir)//"static/luts/nb_cloud_mask/"//"nb_cloud_mask_modis_prior.nc"
      if (.not. Is_Prior_Read) call READ_PRIOR(Prior_File_Name_Full_Path)
-     call COMPUTE_PRIOR(Nav%Lon,Nav%Lat,Month,CLDMASK%Prior_Cld_Probability) 
+     call COMPUTE_PRIOR(Nav%Lon,Nav%Lat,image % time_start % Month,CLDMASK%Prior_Cld_Probability) 
    endif
 
    !--- Compute TOA Clear-Sky 0.65um Reflectance

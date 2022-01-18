@@ -38,7 +38,12 @@
 !--------------------------------------------------------------------------------------
 module AVHRR_REPOSITION_MOD
  use CONSTANTS_MOD
- use PIXEL_COMMON_MOD
+ use PIXEL_COMMON_MOD, only: &
+      image &
+   , bad_scan_flag &
+   , nav &
+   , AVHRR_GAC_Flag
+   
  use CX_DATE_TIME_TOOLS_MOD,only: &
   compute_month &
   , compute_day &
@@ -540,7 +545,14 @@ module AVHRR_REPOSITION_MOD
     orbit_start_mjdn = &
          real(DTMJDN(year,month,day,hour,minute,isecond),kind=real4) + &
          mjdn_offset
-
+   ! print*,orbit_start_mjdn
+    
+  ! orbit_start_mjdn = image%time_start % epoch_time_day() + &
+  !       mjdn_offset
+  ! orbit_end_mjdn = image%time_end % epoch_time_day() + &
+   !      mjdn_offset 
+  !  print*,orbit_start_mjdn
+   
     !--- determine MJDN at end of orbit
     day = end_dom
     month = end_month
@@ -571,7 +583,7 @@ module AVHRR_REPOSITION_MOD
 
         return
 
-     endif
+    end if
 
     
 

@@ -75,7 +75,7 @@ CONTAINS
 
    subroutine open_seebor_Emiss(data_dir, month )
       CHARACTER(len=*), intent(in) :: data_dir
-      INTEGER(kind=int2), intent(in) :: month
+      INTEGER(kind=int4), intent(in) :: month
     
   
       CHARACTER(len=1020) :: filename
@@ -176,7 +176,7 @@ end subroutine close_seebor_emiss
       INTEGER(kind=int4), intent(in) ::  Ichan_modis
       REAL(kind=real4), dimension(:,:), intent(in) :: Lat, Lon
       INTEGER(kind=int1), dimension(:,:), intent(in) :: Space_Mask
-      integer(kind=int2) , intent(in) :: month
+      integer(kind=int4) , intent(in) :: month
       REAL(kind=real4), dimension(:,:), intent(out) :: Emiss
       
       integer :: ichan

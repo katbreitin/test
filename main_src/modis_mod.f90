@@ -99,7 +99,7 @@ module MODIS_MOD
         public:: DETERMINE_MODIS_CLOUD_PRODUCT_FILE
         public:: READ_MODIS
         public:: READ_MODIS_INSTR_CONSTANTS
-        public:: READ_MODIS_TIME_ATTR
+        public:: READ_MODIS_DATE_TIME
         public:: READ_MODIS_SIZE_ATTR
 
         private:: READ_MODIS_THERMAL_BAND
@@ -1434,19 +1434,19 @@ subroutine QC_MODIS(jmin,nj)
 end subroutine QC_MODIS
 
 !======================================================================
-! READ_MODIS_TIME_ATTR
+! READ_MODIS_DATE_TIME
 ! Gets the start time/date and end time/date from metadata
 !======================================================================
 
-    subroutine READ_MODIS_TIME_ATTR(Path, File_Name, Start_Year, Start_Day, &
+    subroutine READ_MODIS_DATE_TIME(Path, File_Name, Start_Year, Start_Day, &
                                     Start_Time, End_Year, End_Day, End_Time)
 
       character(len=*), intent(in):: Path
       character(len=*), intent(in):: File_Name
-      integer(kind=int2), intent(out):: Start_Year
-      integer(kind=int2), intent(out):: Start_Day
-      integer(kind=int2), intent(out):: End_Year
-      integer(kind=int2), intent(out):: End_Day      
+      integer(kind=int4), intent(out):: Start_Year
+      integer(kind=int4), intent(out):: Start_Day
+      integer(kind=int4), intent(out):: End_Year
+      integer(kind=int4), intent(out):: End_Day      
       integer(kind=int4), intent(out):: Start_Time
       integer(kind=int4), intent(out):: End_Time 
 
@@ -1560,7 +1560,7 @@ end subroutine QC_MODIS
       End_Year = int(year,kind=int2)
       End_Day = int(jday,kind=int2)
     
-    end subroutine READ_MODIS_TIME_ATTR
+    end subroutine READ_MODIS_DATE_TIME
     !======================================================================
     ! READ_MODIS_SIZE_ATTR
     ! Gets the size of the array from metadata

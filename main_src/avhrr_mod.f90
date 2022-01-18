@@ -969,6 +969,15 @@ end subroutine READ_AVHRR_LEVEL1B_DATA
     integer(kind=int4):: Number_Of_Words
     integer(kind=int4):: Number_Of_Words_Read
     integer(kind=int4):: bytes_per_word
+    
+    
+    integer(kind=int4):: Start_Year_Tmp
+    integer(kind=int4):: Start_Day_Tmp
+    integer(kind=int4):: End_Year_Tmp
+    integer(kind=int4):: End_Day_Tmp
+    integer(kind=int4):: Start_Time_Tmp
+    integer(kind=int4):: End_Time_Tmp
+    
 
     !--- allocate header Buffer - taken from pixel_common_mod
     allocate(Header_Buffer_AVHRR(l1b_rec_length))
@@ -988,29 +997,29 @@ end subroutine READ_AVHRR_LEVEL1B_DATA
 
       if (AVHRR_KLM_Flag == sym%YES) then
 
-        call UNPACK_AVHRR_HEADER_RECORD_KLM(Sc_Id_AVHRR,AVHRR_Data_Type,Image%Start_Year, &
-                   Image%Start_Doy,Image%Start_time,Image%Number_Of_Lines, &
-                   Image%End_Year,Image%End_Doy,Image%End_time, &
+        call UNPACK_AVHRR_HEADER_RECORD_KLM(Sc_Id_AVHRR,AVHRR_Data_Type,Start_Year_Tmp, &
+                   Start_Day_Tmp,Start_Time_Tmp,Image%Number_Of_Lines, &
+                   End_Year_Tmp,End_Day_Tmp,End_Time_Tmp, &
                    tip_parity,aux_sync,ramp_auto_Cal,proc_block_Id,AVHRR_Ver_1b)
 
       else
 
-        call UNPACK_AVHRR_HEADER_RECORD(Sc_Id_AVHRR,AVHRR_Data_Type,Image%Start_Year, &
-                   Image%Start_Doy,Image%Start_Time,Image%Number_Of_Lines,Image%End_Year, &
-                   Image%End_Doy,Image%End_Time, &
+        call UNPACK_AVHRR_HEADER_RECORD(Sc_Id_AVHRR,AVHRR_Data_Type,Start_Year_Tmp, &
+                   Start_Day_Tmp,Start_Time_Tmp,Image%Number_Of_Lines,End_Year_Tmp, &
+                   End_Day_Tmp,End_Time_Tmp, &
                    tip_parity,aux_sync,ramp_auto_Cal,proc_block_Id,AVHRR_Ver_1b)
 
         !--- pre AVHRR_KLM_Flag used a 2 digit year
-        if (Image%End_Year > 50) then
-          Image%End_Year = Image%End_Year + 1900
+        if (End_Year_Tmp > 50) then
+          End_Year_Tmp = End_Year_Tmp + 1900
         else
-          Image%End_Year = Image%End_Year + 2000
+          End_Year_Tmp = End_Year_Tmp + 2000
         end if
         
-        if (Image%Start_Year > 50) then
-          Image%Start_Year = Image%Start_Year + 1900
+        if (Start_Year_Tmp > 50) then
+          Start_Year_Tmp = Start_Year_Tmp + 1900
         else
-          Image%Start_Year = Image%Start_Year + 2000
+          Start_Year_Tmp = Start_Year_Tmp + 2000
         end if
 
       endif
@@ -1019,33 +1028,45 @@ end subroutine READ_AVHRR_LEVEL1B_DATA
 
       if (AVHRR_KLM_Flag == sym%YES) then
 
-        call UNPACK_AVHRR_HEADER_RECORD_KLM(Sc_Id_AVHRR,AVHRR_Data_Type,Image%Start_Year, &
-                  Image%Start_Doy,Image%Start_Time,Image%Number_Of_Lines, &
-                  Image%End_Year,Image%End_Doy,Image%End_Time, &
+        call UNPACK_AVHRR_HEADER_RECORD_KLM(Sc_Id_AVHRR,AVHRR_Data_Type,Start_Year_Tmp, &
+                  Start_Day_Tmp,Start_Time_Tmp,Image%Number_Of_Lines, &
+                  End_Year_Tmp,End_Day_Tmp,End_Time_Tmp, &
                   tip_parity,aux_sync,ramp_auto_Cal,proc_block_Id,AVHRR_Ver_1b)
 
       else
 
-        call UNPACK_AVHRR_HEADER_RECORD(Sc_Id_AVHRR,AVHRR_Data_Type,Image%Start_Year, &
-                Image%Start_Doy,Image%Start_Time,Image%Number_Of_Lines, &
-                Image%End_Year,Image%End_Doy,Image%End_Time, &
+        call UNPACK_AVHRR_HEADER_RECORD(Sc_Id_AVHRR,AVHRR_Data_Type,Start_Year_Tmp, &
+                Start_Day_Tmp,Start_Time_Tmp,Image%Number_Of_Lines, &
+                End_Year_Tmp,End_Day_Tmp,End_Time_Tmp, &
                 tip_parity,aux_sync,ramp_auto_Cal,proc_block_Id,AVHRR_Ver_1b)
 
         !--- pre AVHRR_KLM_Flag used a 2 digit year
-        if (Image%End_Year > 50) then
-          Image%End_Year = Image%End_Year + 1900
+        if (End_Year_Tmp > 50) then
+          End_Year_Tmp = End_Year_Tmp + 1900
         else
-          Image%End_Year = Image%End_Year + 2000
+          End_Year_Tmp = End_Year_Tmp + 2000
         end if
         
-        if (Image%Start_Year > 50) then
-          Image%Start_Year = Image%Start_Year + 1900
+        if (Start_Year_Tmp > 50) then
+          Start_Year_Tmp = Start_Year_Tmp + 1900
         else
-          Image%Start_Year = Image%Start_Year + 2000
+          Start_Year_Tmp = Start_Year_Tmp + 2000
         end if
       end if
     end if
-
+    
+    Image%Start_Year = Start_Year_Tmp
+    Image%End_Year = End_Year_Tmp
+    Image%Start_Doy = Start_Day_Tmp
+    Image%End_Doy = End_Day_Tmp
+ 
+    Image%Start_Time = Start_Time_Tmp
+    Image%End_Time = End_Time_Tmp
+    
+    call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
+               , msec_of_day = Start_Time_Tmp)
+    call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
+               , msec_of_day =  End_Time_Tmp) 
 
    deallocate(Header_Buffer_AVHRR)
 
@@ -1944,10 +1965,11 @@ subroutine UNPACK_AVHRR_HEADER_RECORD(Sc_Id_AVHRR,AVHRR_Data_Type,Start_Year_Tem
               Start_day_Temp,Start_Time_Temp,Num_Scans,End_Year_Temp,End_day_Temp,End_Time_Temp, &
               tip_parity,aux_sync,ramp_auto_Cal,proc_block_Id,AVHRR_Ver_1b)
 
-   integer(kind=int2), intent(out):: Sc_Id_AVHRR,AVHRR_Data_Type,Start_Year_Temp,Start_day_Temp, &
-                                     End_Year_Temp,End_day_Temp, &
+   integer(kind=int2), intent(out):: Sc_Id_AVHRR,AVHRR_Data_Type, &
                                      tip_parity,aux_sync,ramp_auto_Cal,AVHRR_Ver_1b
-   integer(kind=int4), intent(out):: Start_Time_Temp,End_Time_Temp,Num_Scans
+   integer(kind=int4), intent(out):: Start_Time_Temp,End_Time_Temp,Num_Scans, &
+                                    Start_Year_Temp,Start_day_Temp, &
+                                     End_Year_Temp,End_day_Temp
    character(len=*), intent(out):: proc_block_Id
    integer(kind=int4):: i4word
    integer(kind=int2), dimension(2):: data_byte
@@ -2027,8 +2049,9 @@ subroutine UNPACK_AVHRR_HEADER_RECORD_KLM(Sc_Id_AVHRR,AVHRR_Data_Type,Start_Year
               Start_day_Temp,Start_Time_Temp,Num_Scans,End_Year_Temp,End_day_Temp,End_Time_Temp, &
               tip_parity,aux_sync,ramp_auto_Cal,proc_block_Id,AVHRR_Ver_1b)
 
-   integer(kind=int2), intent(out):: Sc_Id_AVHRR,AVHRR_Data_Type,Start_Year_Temp,Start_day_Temp, &
-                                     End_Year_Temp,End_day_Temp, &
+   integer(kind=int4), intent(out):: Start_Year_Temp,Start_day_Temp, &
+                                     End_Year_Temp,End_day_Temp
+    integer(kind=int2), intent(out):: Sc_Id_AVHRR, AVHRR_Data_Type, &
                                      tip_parity,aux_sync,ramp_auto_Cal,AVHRR_Ver_1b
    integer(kind=int4), intent(out):: Start_Time_Temp,End_Time_Temp,Num_Scans
    character(len=*), intent(out):: proc_block_Id

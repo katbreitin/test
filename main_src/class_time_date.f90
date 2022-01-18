@@ -75,24 +75,31 @@ implicit none
       integer :: hour = 0
       integer :: minute = 0 
       integer :: second = 0
+      integer :: msec = 0
+      integer :: msec_of_day = 0
       integer :: dayOfYear
       real :: hour_frac
-      integer :: msec_of_day
+      
       character(4) :: yyyy
       character(2) :: mm
       character(2) :: dd
+      character(2) :: hh
       character(6) :: yymmdd
       character(8) :: yymmddhh
       character(10) :: yyyymmdd
+      character(10) :: monthname
       real (kind = r15) :: julday
       real :: mod_julday
            
  contains
       procedure :: set_date 
       procedure :: set_date_with_doy
+      procedure :: set_date_with_doy_msec
       procedure :: set_jday
       procedure :: days_since_proj_time0
       procedure :: print_data 
+      procedure :: epoch_time_sec
+      procedure :: epoch_time_day
       procedure :: date_string 
       procedure :: add_time
       procedure :: add_days
@@ -184,9 +191,7 @@ implicit none
       write (  out_string  , fmt = '(i3.3)') iperiod16
    
   end function period_16
-  
-
-  !  -- 
+    !  -- 
   !   poplutes with day of year ( from 1 to 366) instead of month and day
   !  ---
   subroutine set_date_with_doy (this , year , doy, hour , minute, second)
@@ -221,6 +226,54 @@ implicit none
       call this % update()
        
   end subroutine set_date_with_doy
+
+  !  -- 
+  !   poplutes with day of year and msec ( from 1 to 366) instead of month and day
+  !  ---
+  subroutine set_date_with_doy_msec (this , year , doy, msec_of_day)
+      class ( date_type) :: this
+      integer , optional :: year , doy , msec_of_day
+      integer , dimension(12) :: jmonth 
+      integer, dimension(12) :: last_day_month
+      integer :: i
+      integer , dimension(12) :: day_dum
+      integer :: month(1)
+      integer :: msec_intern
+      integer :: msec_hour, msec_minute
+       
+      if ( present(year) ) this % year = year
+      if ( present(doy) ) this % dayOfYear = doy
+      
+      msec_intern = 0
+      
+      if ( present ( msec_of_day ) ) msec_intern = msec_of_day
+      ! compute hour,minute and second
+      this % hour = floor(msec_intern/(1000.*60.*60.))
+      msec_hour = msec_intern - ( this % hour *60. *60. * 1000)
+      this % minute = floor(msec_hour/(1000. * 60.))
+      msec_minute = msec_hour - ( this % minute * 60. * 1000.)
+      this % second = floor(msec_minute/1000.)
+      this % msec  = msec_minute - ( this % second * 1000.)
+      
+      this % msec_of_day = msec_of_day
+      
+       
+      jmonth = [31,28,31,30,31,30,31,31,30,31,30,31]
+      if  ( modulo ( this % year , 4) == 0 ) jmonth(2) = 29 
+      last_day_month(1) = 31
+       
+      do i = 2 , 12
+         last_day_month (i) = last_day_month (i-1) + jmonth(i)  
+      end do
+      day_dum = doy - last_day_month
+      month = maxloc ( day_dum , mask = day_dum <= 0 )
+      
+      this % month = month(1)
+      this % day = jmonth(month(1)) + day_dum(month(1))
+      
+      call this % update()
+       
+  end subroutine set_date_with_doy_msec
    
   ! -- ----
   !   Sets Julian Day and updates data
@@ -275,6 +328,50 @@ implicit none
   
   end function days_since_proj_time0
   
+  function epoch_time_day ( self , verbose ) result(out)
+      class ( date_type)  :: self
+      real :: out
+      
+      logical, intent(in), optional :: verbose
+      type (date_type)  :: epoch
+      
+      call epoch % set_date(year=1970,day=1,month=1,hour=0,minute=0)
+     
+      out = self%julday - epoch%julday
+      
+      
+       if ( present(verbose)) then
+         print*,' days since 01/01/1970T00:00:00'
+         print*, 'to: '
+         print*, self%  date_string('yy/mm/dd/hh')
+         print*,out
+       endif
+  
+  end function epoch_time_day
+  
+  
+  
+    function epoch_time_sec ( self , verbose ) result(out)
+      class ( date_type)  :: self
+      real :: out
+      
+      logical, intent(in), optional :: verbose
+      type (date_type)  :: epoch
+      
+      call epoch % set_date(year=1970,day=1,month=1,hour=0,minute=0)
+     
+      out = 24.*60.*60. * (self%julday - epoch%julday)
+      
+      
+       if ( present(verbose)) then
+         print*,' days since 01/01/1970T00:00:00'
+         print*, 'to: '
+         print*, self%  date_string('yy/mm/dd/hh')
+         print*,out
+       endif
+  
+  end function epoch_time_sec
+  
 
   !
   !
@@ -313,6 +410,13 @@ implicit none
                            , 1 ,this % hour &
                            , this % minute ) 
                            
+      
+      
+      this % msec_of_day = this % hour * 1000 * 60 * 60 + &
+                           this % minute * 1000 * 60 + &
+                           this % second * 1000 + &
+                           this % msec
+      
                            
       call this % update_from_jd()
       
@@ -325,9 +429,13 @@ implicit none
       this % yyyy = year_s
       this % mm = month_s
       this % dd = day_s
+      this % hh = hour_s
       this % yymmdd =  year_s2d//month_s//day_s
       this % yyyymmdd =  year_s//month_s//day_s
       this % yymmddhh =  year_s2d//month_s//day_s//hour_s
+      
+      this % monthname = monthname ( this % month )
+      
   end subroutine update
   !
   !
@@ -426,7 +534,13 @@ implicit none
          case ('yyyy')
            out = year_s  
          case ('yyyy_doy')
-           out = year_s//'_'//doy_s     
+           out = year_s//'_'//doy_s  
+         case ('yyyy_doy_hhmm')
+           out = year_s//'_'//doy_s//'_'//hour_s//minute_s
+         case ('yyyy_doy.hhmm')
+           out = year_s//'_'//doy_s//'.'//hour_s//minute_s
+         case ('yyyydoyhhmm')
+           out = year_s//doy_s//hour_s//minute_s
          case ( 'mm')
            out =  month_s
          case  ('dd')
@@ -599,6 +713,45 @@ implicit none
       yyyy = 100*(n-49) + yyyy + l
       RETURN
   END SUBROUTINE cdate
+  
+  
+  function monthname ( month ) result(month_str)
+      integer :: month
+      character(10) :: month_str
+  
+   ! --- find month string
+   select case (month)
+    case (1)
+      Month_Str = "january"
+    case (2)
+      Month_Str = "february"
+    case (3)
+      Month_Str = "march"
+    case (4)
+      Month_Str = "april"
+    case (5)
+      Month_Str = "may"
+    case (6)
+      Month_Str = "june"
+    case (7)
+      Month_Str = "july"
+    case (8)
+      Month_Str = "august"
+    case (9)
+      Month_Str = "september"
+    case (10)
+      Month_Str = "october"
+    case (11)
+      Month_Str = "november"
+    case (12)
+      Month_Str = "december"
+    case default
+      
+   end select
+  
+  
+  end function monthname
+  
   
 end module class_time_date
 

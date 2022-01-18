@@ -1,7 +1,7 @@
 module cx_sfc_emissivity_mod
   
  use PIXEL_COMMON_MOD, only: Nav, Geo &
-  , Ch, image, Use_Sea_Ir_Emiss, Ancil_Data_Dir, Sensor, sfc_emiss_option, month
+  , Ch, image, Use_Sea_Ir_Emiss, Ancil_Data_Dir, Sensor, sfc_emiss_option 
  
   use SFC_EMISS, only: &
        read_seebor_emiss
@@ -82,7 +82,7 @@ contains
           !--- force channel 20 read used for desert definition
         if (Sensor%Chan_On_Flag_Default(Chan_Idx) == sym%YES .or. (chan_idx == 20)) then
             call READ_SEEBOR_EMISS( path_sfc , chan_idx, Nav%Lat, Nav%Lon &
-              , Geo%Space_Mask, month, ch(chan_idx)%Sfc_Emiss)   
+              , Geo%Space_Mask, image % time_start % month, ch(chan_idx)%Sfc_Emiss)   
         end if
       end do  
     

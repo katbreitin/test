@@ -29,8 +29,6 @@ module CALIOP_COLLOCATION_MOD
       , Skip_L1b_File_Flag &
       , Geo &
       , Image &
-      , Month &
-      , Day_of_Month &
       , Caliop_Num_Cld_Layers &
       , Caliop_Cod & 
       , Caliop_Cld_Height
@@ -54,19 +52,19 @@ subroutine CALIOP_COLLOCATION(Seg_Idx)
   integer, intent(in):: Seg_Idx
   character(len=1020) :: File_Name_Search
   character(len=1020) :: Caliop_File
-  character(len=4) :: Year_String
-  character(len=3) :: Doy_String
-  character(len=2) :: Month_String
-  character(len=2) :: Day_of_Month_String
-  character(len=4) :: Time_String
-  character(len=2) :: Hour_String
-  character(len=2) :: Minute_String
+  !character(len=4) :: Year_String
+  !character(len=3) :: Doy_String
+  !character(len=2) :: Month_String
+  !character(len=2) :: Day_of_Month_String
+  !character(len=4) :: Time_String
+  !character(len=2) :: Hour_String
+  !character(len=2) :: Minute_String
   character(len=1020), dimension(:), pointer:: Files
   integer(kind=int4) :: Num_Files
   integer(kind=int4) :: Status
   integer(kind=int4) :: Sd_Id
   integer(kind=int4) :: i
-  integer(kind=int4) :: Hour, Minute
+  !integer(kind=int4) :: Hour, Minute
   integer(kind=int4) :: Left_Limit, Right_Limit
   integer(kind=int4), parameter :: N = 20
   integer(kind=int4), dimension (1) :: Start_1d, Stride_1d, Edge_1d
@@ -81,19 +79,21 @@ subroutine CALIOP_COLLOCATION(Seg_Idx)
   !clavrx_IFF_npp_viirs_svm_d20150820_t133328_e134126_c20161208044316.calipso.hdf
   
   ! --- calculate hours and minutes
-  Hour = Image%Start_Time/1000/60/60
-  Minute = Image%Start_Time/1000/60 - Hour * 60
+  !Hour = Image%Start_Time/1000/60/60
+  !Minute = Image%Start_Time/1000/60 - Hour * 60
 
   ! --- create string to search caliop file
-  write(Year_String,fmt="(I4.4)") Image%Start_Year
-  write(Doy_String,fmt="(I3.3)") Image%Start_Doy
-  write(Hour_String,fmt="(I2.2)") Hour
-  write(Month_String,fmt="(I2.2)") Month
-  write(Day_of_Month_String,fmt="(I2.2)") Day_of_Month
-  write(Minute_String,fmt="(I2.2)") Minute
-  Time_String = Hour_String//Minute_String
+  !write(Year_String,fmt="(I4.4)") Image%Start_Year
+  !write(Doy_String,fmt="(I3.3)") Image%Start_Doy
+  !write(Hour_String,fmt="(I2.2)") Hour
+  !write(Month_String,fmt="(I2.2)") Month
+  !write(Day_of_Month_String,fmt="(I2.2)") Day_of_Month
+  !write(Minute_String,fmt="(I2.2)") Minute
+  !Time_String = Hour_String//Minute_String
 
-  File_Name_Search = '*'//Year_String//'_'//Doy_String//'_'//Time_String//'*.calipso.hdf'
+ !-20220115AW File_Name_Search = '*'//Year_String//'_'//Doy_String//'_'//Time_String//'*.calipso.hdf'
+  
+  file_name_search = '*'//image % time_start % date_string('yyyy_doy_hhmm')//'*.calipso.hdf'
 
 ! print *, "In CALIOP FIND"
 ! print *, trim(Caliop_Dir)
@@ -103,25 +103,31 @@ subroutine CALIOP_COLLOCATION(Seg_Idx)
 ! print *, trim(File_Name_Search)," Num_Files = ", Num_Files
 
   if (Num_Files == 0) then
-    File_Name_Search = '*A'//Year_String//Doy_String//'.'//Time_String//'*.calipso.hdf'
+         
+    !File_Name_Search = '*A'//Year_String//Doy_String//'.'//Time_String//'*.calipso.hdf'
+    File_Name_Search = '*A'//image % time_start % date_string('yyyy_doy.hhmm')//'*.calipso.hdf'
     Files => FILE_SEARCH(trim(Caliop_Dir)//'/',trim(File_Name_Search),count=Num_Files)
 !   print *, trim(File_Name_Search)," Num_Files = ", Num_Files
   endif
 
   if (Num_Files == 0) then
-    File_Name_Search = '*A'//Year_String//Doy_String//'_'//Time_String//'*.calipso.hdf'
+    !File_Name_Search = '*A'//Year_String//Doy_String//'_'//Time_String//'*.calipso.hdf'
+    File_Name_Search = '*A'//image % time_start % date_string('yyyy_doy_hhmm')//'*.calipso.hdf'
     Files => FILE_SEARCH(trim(Caliop_Dir)//'/',trim(File_Name_Search),count=Num_Files)
 !   print *, trim(File_Name_Search)," Num_Files = ", Num_Files
   endif
 
   if (Num_Files == 0) then
-    File_Name_Search = '*d'//Year_String//Month_String//Day_of_Month_String//'_t'//Time_String//'*.calipso.hdf'
+    !File_Name_Search = '*d'//Year_String//Month_String//Day_of_Month_String//'_t'//Time_String//'*.calipso.hdf'
+    File_Name_Search = '*d'//image % time_start % date_string('yyyymmdd')//'_t' &
+            //image % time_start % date_string('hhmm')//'*.calipso.hdf'
     Files => FILE_SEARCH(trim(Caliop_Dir)//'/',trim(File_Name_Search),count=Num_Files)
 !   print *, trim(File_Name_Search)," Num_Files = ", Num_Files
   endif
 
   if (Num_Files == 0) then
-    File_Name_Search = '*s'//Year_String//Doy_String//Time_String//'*.calipso.hdf'
+    !File_Name_Search = '*s'//Year_String//Doy_String//Time_String//'*.calipso.hdf'
+    File_Name_Search = '*s'//image % time_start % date_string('yyyydoyhhmm')//'*.calipso.hdf'
     Files => FILE_SEARCH(trim(Caliop_Dir)//'/',trim(File_Name_Search),count=Num_Files)
 !   print *, trim(File_Name_Search)," Num_Files = ", Num_Files
   endif

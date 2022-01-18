@@ -124,7 +124,7 @@ module SENSOR_MOD
      , READ_MODIS &
      , READ_MODIS_SIZE_ATTR &
      , DETERMINE_MODIS_GEOLOCATION_FILE &
-     , READ_MODIS_TIME_ATTR
+     , READ_MODIS_DATE_TIME
 
    use FY2_MOD, only: &
       READ_FY &
@@ -283,7 +283,7 @@ module SENSOR_MOD
       ! - this is only needed/used for AVHRR
       type (AREA_STRUCT), intent(in) :: AREAstr
 
-      integer(kind=int32):: Start_Year_Tmp
+      integer(kind=int4):: Start_Year_Tmp
       integer(kind=int4):: Start_Day_Tmp
       integer(kind=int4):: End_Year_Tmp
       integer(kind=int4):: End_Day_Tmp
@@ -346,6 +346,14 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
+         
+         
+         call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
+               , msec_of_day = Start_Time_Tmp)
+         call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
+               , msec_of_day =  End_Time_Tmp)
+         
+         
          exit
       endif
 
@@ -361,9 +369,22 @@ module SENSOR_MOD
       !----------------------------------------------
       if (index(Sensor%Sensor_Name,'MODIS') > 0) then
 
-         call READ_MODIS_TIME_ATTR(trim(Image%Level1b_Path), trim(Image%Level1b_Name), &
-                            Image%Start_Year, Image%Start_Doy, Image%Start_Time, &
-                            Image%End_Year, Image%End_Doy, Image%End_Time)
+         call READ_MODIS_DATE_TIME(trim(Image%Level1b_Path), trim(Image%Level1b_Name), &
+                            Start_Year_Tmp, Start_Day_Tmp, Start_Time_Tmp, &
+                            End_Year_Tmp, End_Day_Tmp, End_Time_Tmp)
+          
+         Image%Start_Year = Start_Year_Tmp
+         Image%End_Year = End_Year_Tmp
+         Image%Start_Doy = Start_Day_Tmp
+         Image%End_Doy = End_Day_Tmp
+         Image%Start_Time = Start_Time_Tmp
+         Image%End_Time = End_Time_Tmp
+          
+                            
+         call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
+               , msec_of_day = Start_Time_Tmp)
+         call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
+               , msec_of_day =  End_Time_Tmp)                   
   
          exit
       endif
@@ -372,7 +393,7 @@ module SENSOR_MOD
       ! read VIIRS-NOAA time from GMTCO
       !----------------------------------------------
       if (trim(Sensor%Sensor_Name) == 'VIIRS') then
-#ifdef HDF5LIBS
+
          call READ_VIIRS_DATE_TIME(trim(Image%Level1b_Path),trim(Image%Level1b_Name), &
                              Start_Year_Tmp,Start_Day_Tmp,Start_Time_Tmp, &
                              End_Time_Tmp,Orbit_Number_Tmp,Orbit_Identifier, &
@@ -385,11 +406,17 @@ module SENSOR_MOD
  
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
-#else
-         PRINT *, "No HDF5 libraries installed, stopping"
-         stop
-#endif
+
+
+          
+         call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
+               , msec_of_day = Start_Time_Tmp)
+         call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
+               , msec_of_day =  End_Time_Tmp)
+
          exit
+
+
       end if 
       
       if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA-HRES') then
@@ -409,12 +436,15 @@ module SENSOR_MOD
          Image%End_Year = time_obj_nasa_hres(2) % year
          Image%Start_Doy = time_obj_nasa_hres(1) % dayOfYear
          Image%End_Doy = time_obj_nasa_hres(2) % dayOfYear
-         Image%Orbit_Number = 7889887
+         Image%Orbit_Number = 7889887 ! FAKE FAKE
 
          Image%Start_Time = time_obj_nasa_hres(1) % msec_of_day
          Image%End_Time =  time_obj_nasa_hres(2) % msec_of_day
          
-        
+
+         image % time_start = time_obj_nasa_hres(1)
+         image % time_end = time_obj_nasa_hres(2)
+         
          exit
          
       end if 
@@ -423,7 +453,7 @@ module SENSOR_MOD
       ! read VIIRS-NASA time from VGEOM
       !----------------------------------------------
       if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA') then
-#ifdef HDF5LIBS
+
          call READ_VIIRS_NASA_DATE_TIME(trim(Image%Level1b_Path),trim(Image%Level1b_Name), &
                              Start_Year_Tmp,Start_Day_Tmp,Start_Time_Tmp, &
                              End_Time_Tmp,Orbit_Number_Tmp, End_Year_Tmp , End_Day_Tmp)
@@ -435,12 +465,16 @@ module SENSOR_MOD
 
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
+         
+         
+         call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
+               , msec_of_day = Start_Time_Tmp)
+         call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
+               , msec_of_day =  End_Time_Tmp)
+         
 
-#else
-         PRINT *, "No HDF5 libraries installed, stopping"
-         stop
-#endif
-         !exit
+
+         exit
       endif
 
       !----------------------------------------------
@@ -470,6 +504,9 @@ module SENSOR_MOD
          Image%Start_Doy   = doy   
          Image%End_Year  = year
          Image%End_Doy   = doy  
+         
+         image % time_start = time0_obj
+         image % time_end = time1_obj
 
          exit
 
@@ -487,6 +524,12 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
+         
+          call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
+               , msec_of_day = Start_Time_Tmp)
+         call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
+               , msec_of_day =  End_Time_Tmp)
+         
          exit
       endif
 
@@ -503,6 +546,13 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
+         
+         call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
+               , msec_of_day = Start_Time_Tmp)
+         call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
+               , msec_of_day =  End_Time_Tmp)
+         
+         
          exit
       endif
 
@@ -519,6 +569,13 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
+         
+         
+         call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
+               , msec_of_day = Start_Time_Tmp)
+         call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
+               , msec_of_day =  End_Time_Tmp)
+         
          exit
       endif
 
@@ -526,7 +583,7 @@ module SENSOR_MOD
        ! read time from FY3D
        !----------------------------------------------
        if (trim(Sensor%Sensor_Name) == 'MERSI-2') then
-#ifdef HDF5LIBS
+
           call READ_FY3D_DATE_TIME(trim(Image%Level1b_Path),trim(Image%Level1b_Name), &
                               Start_Year_Tmp,Start_Day_Tmp,Start_Time_Tmp, &
                               End_Time_Tmp,Orbit_Number_Tmp, End_Year_Tmp , End_Day_Tmp)
@@ -538,11 +595,14 @@ module SENSOR_MOD
 
           Image%Start_Time = Start_Time_Tmp
           Image%End_Time = End_Time_Tmp
+          
+          
+           call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
+               , msec_of_day = Start_Time_Tmp)
+           call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
+               , msec_of_day =  End_Time_Tmp)
 
-#else
-          PRINT *, "No HDF5 libraries installed, stopping"
-          stop
-#endif
+
          exit
        endif
 
@@ -560,6 +620,13 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
+         
+         
+         call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
+               , msec_of_day = Start_Time_Tmp)
+         call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
+               , msec_of_day =  End_Time_Tmp)
+         
          exit
       endif
 
@@ -587,6 +654,13 @@ module SENSOR_MOD
          second = (AREAstr%img_Time - hour * 10000 - minute * 100) / 100
          Image%Start_Time = ((hour * 60 + minute) * 60 + second) * 1000 !millisec
          Image%End_Time = Image%Start_Time
+         
+         
+         call image % time_start % set_date_with_doy (   1900 + int(AREAstr%img_Date / 1000), AREAstr%img_Date - (Image%Start_Year - 1900) * 1000 &
+               , hour = hour, minute = minute, second = second )
+         call image % time_end % set_date_with_doy (  1900 + int(AREAstr%img_Date / 1000), AREAstr%img_Date - (Image%Start_Year - 1900) * 1000 &
+               , hour = hour, minute = minute, second = second )
+         
 
         endif
 
@@ -615,10 +689,10 @@ module SENSOR_MOD
           read(Start_Sec_Tmp_Str,*) Start_Sec_Tmp
           Start_Msec_Tmp_Str = Start_Year_Mon_Day_HH_MM_Tmp(21:21)
           read(Start_Msec_Tmp_Str,*) Start_Msec_Tmp
-          call abi_time_start % set_date(Start_Year_Tmp, Start_Mon_Tmp, Start_DD_Tmp, Start_HH_Tmp, Start_Min_Tmp, Start_Sec_Tmp)
-          Image%Start_Year = abi_time_start%year
-          Image%Start_Doy = abi_time_start%dayOfYear
-          Image%Start_Time = abi_time_start%msec_of_day !millisec
+          call image % time_start % set_date(Start_Year_Tmp, Start_Mon_Tmp, Start_DD_Tmp, Start_HH_Tmp, Start_Min_Tmp, Start_Sec_Tmp)
+          Image%Start_Year = image % time_start %year
+          Image%Start_Doy = image % time_start %dayOfYear
+          Image%Start_Time = image % time_start %msec_of_day !millisec
 
           !--- Image End
           call READ_NETCDF_GLOBAL_ATTRIBUTE(trim(L1b_Full_File_Name), 'time_coverage_end', End_Year_Mon_Day_HH_MM_Tmp)
@@ -636,10 +710,10 @@ module SENSOR_MOD
           read(End_Sec_Tmp_Str,*) End_Sec_Tmp
           End_Msec_Tmp_Str = End_Year_Mon_Day_HH_MM_Tmp(21:21)
           read(End_Msec_Tmp_Str,*) End_Msec_Tmp
-          call abi_time_end % set_date(End_Year_Tmp, End_Mon_Tmp, End_DD_Tmp, End_HH_Tmp, End_Min_Tmp, End_Sec_Tmp)
-          Image%End_Year = abi_time_end%year
-          Image%End_Doy = abi_time_end%dayOfYear
-          Image%End_Time = abi_time_end%msec_of_day !millisec
+          call image % time_end % set_date(End_Year_Tmp, End_Mon_Tmp, End_DD_Tmp, End_HH_Tmp, End_Min_Tmp, End_Sec_Tmp)
+          Image%End_Year = image % time_end%year
+          Image%End_Doy = image % time_end % dayOfYear
+          Image%End_Time = image % time_end % msec_of_day !millisec
 
         endif
 
