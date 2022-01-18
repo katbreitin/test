@@ -1778,6 +1778,7 @@ module SENSOR_MOD
 
          case default
                 print *, "WMO-ID not appropriate for ISCCP-NG, stopping"
+                print *,' wmo id: ', Sensor%WMO_Id
                 stop
 
          end select

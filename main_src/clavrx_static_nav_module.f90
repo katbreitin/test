@@ -535,7 +535,7 @@ module CLAVRX_STATIC_NAV_MODULE
 
            !--- perform Band-2 Correction (Band 2 = Ch 1 in Clavrx)
            if (Chan_Clavrx_Idx == 1) then 
-             Image_Date = Image%Start_Year + (Image%Start_Doy - 1.0) / 365.25
+             Image_Date = Image% time_start % Year + (Image % time_start % dayOfYear - 1.0) / 365.25
              if (Image_Date < Band2_Correction_Start_Date) then
                Factor = Band2_Correction_Factor
              endif
