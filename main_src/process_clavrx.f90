@@ -1990,7 +1990,7 @@
       if (Number_Of_Temporary_Files > 0) then 
          do Ifile = 1, Number_Of_Temporary_Files
             call MESG("Removing Temporary File: "//trim(Temporary_File_Name(Ifile)))
-            call system("rm "//trim(Temporary_Data_Dir)//trim(Temporary_File_Name(Ifile)))
+            call system("rm -f "//trim(Temporary_Data_Dir)//trim(Temporary_File_Name(Ifile)))
          end do
       endif
       Number_Of_Temporary_Files = 0   !reset for next file

@@ -2008,7 +2008,7 @@ subroutine CREATE_L1G_ARRAYS(dim1,dim2)
 end subroutine CREATE_L1G_ARRAYS
 
 subroutine RESET_L1G_ARRAYS()
-   L1g%WMO_Id = MISSING_VALUE_INT4
+   L1g%WMO_Id = MISSING_VALUE_INT2
    L1g%Layer_Idx = MISSING_VALUE_INT1
    L1g%Sample_Mode = MISSING_VALUE_INT1
 end subroutine RESET_L1G_ARRAYS
