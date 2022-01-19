@@ -228,9 +228,9 @@ subroutine READ_ISCCPNG_DATA(Segment_Number, Error_Status)
    call READ_SINGLE_L1G(File_Prefix, File_Suffix, 'solar_azimuth_angle', Segment_Number, WMO_L1g, Geo%Solaz) 
 
    !--- based Space Mask on Satzen
-   Geo%Space_Mask = sym%YES
+   Geo%Space_Mask = .TRUE.
    where(Geo%Satzen /= MISSING_VALUE_REAL4)
-      Geo%Space_Mask = sym%NO
+      Geo%Space_Mask = .FALSE.
    end where
 
    !--- convert azimuths from L1g to CLAVR-x convention

@@ -2181,7 +2181,7 @@ subroutine COMPUTE_SEGMENT_NWP_CLOUD_PARAMETERS()
       endif
 
       !--- check for space views
-      if (Geo%Space_Mask(Elem_Idx,Line_Idx) == sym%YES) then
+      if (Geo%Space_Mask(Elem_Idx,Line_Idx) ) then
         cycle
       endif
 

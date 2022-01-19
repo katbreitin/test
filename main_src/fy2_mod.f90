@@ -416,7 +416,7 @@ end subroutine READ_FY_INSTR_CONSTANTS
 
     DO j=1, Image%Number_Of_Lines_Read_This_Segment
       DO i=1, Image%Number_Of_Elements
-        if (Geo%Space_Mask(i,j) == sym%NO_SPACE .and. Geo%Solzen(i,j) < 90.0) THEN
+        if ( .not. Geo%Space_Mask(i,j)  .and. Geo%Solzen(i,j) < 90.0) THEN
          
             !Not sure if I need to add 1 here
             index = int(FY_Counts(i,j),kind=int2)
@@ -480,10 +480,10 @@ end subroutine READ_FY_INSTR_CONSTANTS
                 call MGIVSR(imode,elem,line,dlon,dlat,height,&
                             angles,mjd,ierr)
                 
-                Geo%Space_Mask(i,j) = sym%SPACE
+                Geo%Space_Mask(i,j) = .true.
             
                 if (ierr == 0) THEN
-                     Geo%Space_Mask(i,j) = sym%NO_SPACE
+                     Geo%Space_Mask(i,j) = .false.
                      Nav%Lat_1b(i,j) = dlat
                      Nav%Lon_1b(i,j) = dlon
                 endif
@@ -514,7 +514,7 @@ end subroutine READ_FY_INSTR_CONSTANTS
       DO i = 1, Image%Number_Of_Elements
         index = int(FY_Counts(i,j),kind=int2) + 1
         
-        if (Geo%Space_Mask(i,j) == sym%NO_SPACE  .AND. &
+        if ( .not. Geo%Space_Mask(i,j)   .AND. &
            (index <= 1024) .AND. (index >= 1)) THEN 
            
          rad2(i,j) = real(rad_table(chan_num,1,index),kind=real4)/1000.0

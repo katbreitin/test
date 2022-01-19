@@ -547,9 +547,9 @@ subroutine MTSAT_REFLECTANCE_GSICS(Mtsat_Counts, Time_Temp_Since_Launch, Alb_Tem
                                   Ch1_Degrad_Low_2*Time_Temp_Since_Launch**2)/100.0
 
     Alb_Temp = Ch1_Gain_Low * ( Mtsat_Counts - Ch1_Dark_Count)
-    where (Geo%Space_Mask == sym%YES)
-     Alb_Temp = Missing_Value_Real4
-    endwhere
+    where (Geo%Space_Mask )
+      Alb_Temp = Missing_Value_Real4
+    end where
     
 end subroutine MTSAT_REFLECTANCE_GSICS
 
@@ -574,7 +574,7 @@ subroutine MTSAT_REFLECTANCE_PRELAUNCH(Mtsat_Counts, alb_temp)
 
     do j=1, Image%Number_Of_Lines_Read_This_Segment
       do i=1, Image%Number_Of_Elements
-        if (Geo%Space_Mask(i,j) == sym%NO) then
+        if ( .not. Geo%Space_Mask(i,j) ) then
           !  Because MTSAT has two vis calibration type, we need to 
           !  which route it needs to go. calibration.f90 was edited to 
           !  gather the vis calibration type, which is stored in thesat_info
@@ -681,10 +681,10 @@ end subroutine MTSAT_REFLECTANCE_PRELAUNCH
                 call MGIVSR(imode,elem,line,dlon,dlat,height,&
                             angles,mjd,ierr)
                 
-                Geo%Space_Mask(i,j) = sym%YES
+                Geo%Space_Mask(i,j) = .true.
             
                 if (ierr == 0) then
-                     Geo%Space_Mask(i,j) = sym%NO
+                     Geo%Space_Mask(i,j) = .false.
                      Nav%Lat_1b(i,j) = dlat
                      Nav%Lon_1b(i,j) = dlon
                 endif
@@ -742,7 +742,7 @@ end subroutine MTSAT_REFLECTANCE_PRELAUNCH
              if (latitude .LE. -999.0) then  ! -999.99 is MSV nav missing value
                     Nav%Lat_1b(i,j) = Missing_Value_Real4
                     Nav%Lon_1b(i,j) = Missing_Value_Real4
-                    Geo%Space_Mask(i,j) = sym%YES
+                    Geo%Space_Mask(i,j) = .true.
                 else
                     Nav%Lat_1b(i,j) = real(latitude,kind=real4)
                     Nav%Lon_1b(i,j) = real(longitude,kind=real4)
@@ -754,7 +754,7 @@ end subroutine MTSAT_REFLECTANCE_PRELAUNCH
                         Nav%Lon_1b(i,j) = real(longitude,kind=real4) - 360.0
                     endif
                                         
-                    Geo%Space_Mask(i,j) = sym%NO
+                    Geo%Space_Mask(i,j) = .false.
 
                 endif
 
@@ -786,7 +786,7 @@ end subroutine MTSAT_REFLECTANCE_PRELAUNCH
        
        index = int(Mtsat_Counts(i,j),kind=int2) + 1
        
-       if ((Geo%Space_Mask(i,j) == sym%NO) .AND. &
+       if (( .not. Geo%Space_Mask(i,j) ) .AND. &
            (index .LE. 1024) .AND. (index .GE. 1)) then 
        !only do valid counts
           rad2(i,j) = real(rad_table(chan_num,1,index),kind=real4)/1000.0

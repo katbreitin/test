@@ -689,7 +689,7 @@ CONTAINS
           if (latitude .LE. -999.0) then  ! -999.99 is MSV nav missing value
             Nav%Lat_1b(i,j) = Missing_Value_Real4
             Nav%Lon_1b(i,j) = Missing_Value_Real4
-            Geo%Space_Mask(i,j) = sym%SPACE
+            Geo%Space_Mask(i,j) = .TRUE.
           else
             Nav%Lat_1b(i,j) = real(latitude,kind=real4)
             Nav%Lon_1b(i,j) = real(longitude,kind=real4)
@@ -699,7 +699,7 @@ CONTAINS
               Nav%Lon_1b(i,j) = real(longitude,kind=real4) - 360.0
             endif
                                         
-            Geo%Space_Mask(i,j) = sym%NO_SPACE
+            Geo%Space_Mask(i,j) = .FALSE.
 
           endif
         
@@ -726,7 +726,7 @@ CONTAINS
 
     do j = 1, Image%Number_Of_Lines_Read_This_Segment
       do i = 1, Image%Number_Of_Elements
-        if (Geo%Space_Mask(i,j) == sym%NO_SPACE) then
+        if ( .NOT. Geo%Space_Mask(i,j) ) then
           index = int(ABI_Counts(i,j),kind=int2)
           rad2(i,j) = real(rad_table(chan_num,1,index+1),kind=real4)/1000.0
           temp1(i,j) = real(bt_table(chan_num,1,index+1),kind=real4)/100.0                    
@@ -808,7 +808,7 @@ CONTAINS
     do j=1, Image%Number_Of_Lines_Read_This_Segment
       do i=1, Image%Number_Of_Elements
 
-        if (Geo%Space_Mask(i,j) == sym%NO_SPACE .and. Geo%solzen(i,j) < 90.0) THEN
+        if (.NOT. Geo%Space_Mask(i,j)  .and. Geo%solzen(i,j) < 90.0) THEN
 
           index = int(ABI_Counts(i,j),kind=int2)
 

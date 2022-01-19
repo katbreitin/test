@@ -216,7 +216,7 @@ SUBROUTINE Baseline_Cloud_Height_Main()
   INTEGER(KIND=INT4) :: Bad_Pixel_Mask_Chn14         !Chn 14 bad pixel flag
   INTEGER(KIND=INT4) :: Bad_Pixel_Mask_Chn15         !Chn 15 bad pixel flag
   INTEGER(KIND=INT4) :: Bad_Pixel_Mask_Chn16         !Chn 16 bad pixel flag
-  INTEGER(KIND=INT4) :: Space_Mask                   !space view flag
+  LOGICAL :: Space_Mask                   !space view flag
   INTEGER(KIND=INT4) :: Cloud_Mask                   !cloud mask
   INTEGER(KIND=INT4) :: Cloud_Type                   !cloud type
   INTEGER(KIND=INT4) :: Cloud_Phase                  !cloud phase
@@ -601,7 +601,7 @@ SUBROUTINE Baseline_Cloud_Height_Main()
       ! check for valid earth data point, if not, skip to next
       !----------------------------------------------------------------------
       Space_Mask = Geo%Space_Mask(Elem_Idx,Line_Idx)    !sat%space_mask(Elem_Idx,Line_Idx) !space view mask
-      IF (Space_Mask == sym%SPACE) THEN
+      IF (Space_Mask) THEN
             Cloud_Height_QF(Elem_Idx,Line_Idx) = INVALID_CTH_DUE_TO_SPACE_PIX
             CYCLE
       END IF
@@ -1637,7 +1637,7 @@ SUBROUTINE Baseline_Cloud_Height_Main()
            !IF ((sat%bad_pixel_mask(14,Elem_Idx,Line_Idx) == sym%YES) .OR. &
            !     (sat%space_mask(Elem_Idx, Line_Idx) == sym%SPACE))THEN 
            IF ((Bad_Pixel_Mask(Elem_Idx,Line_Idx) == sym%YES) .OR. &
-                (Geo%Space_Mask(Elem_Idx, Line_Idx) == sym%SPACE))THEN 
+                (Geo%Space_Mask(Elem_Idx, Line_Idx) ))THEN 
                  Pc_Lower_Cloud(Elem_Idx,Line_Idx) = MISSING_VALUE_REAL4
                  CYCLE
            ENDIF
@@ -1784,7 +1784,7 @@ SUBROUTINE Baseline_Cloud_Height_Main()
       Element_Loop: DO Elem_Idx = 1, Image%Number_Of_Elements
 
        !IF (sat%space_mask(Elem_Idx,Line_Idx) == sym%NO) THEN
-       IF (Geo%Space_Mask(Elem_Idx,Line_Idx) == sym%NO .and. Bad_Pixel_Mask(Elem_Idx,Line_Idx) == sym%NO) THEN
+       IF ( .NOT. Geo%Space_Mask(Elem_Idx,Line_Idx)  .and. Bad_Pixel_Mask(Elem_Idx,Line_Idx) == sym%NO) THEN
 
             !
             !---nwp longitude cell
@@ -1841,14 +1841,14 @@ SUBROUTINE Baseline_Cloud_Height_Main()
 SUBROUTINE compute_spatial_uniformity(dx, dy, space_mask, data, data_mean, data_max, data_min, data_uni)
 
   INTEGER (kind=int4), intent(in) :: dx, dy
-  INTEGER (kind=int1), intent(in), dimension(:,:) :: space_mask
+  LOGICAL, intent(in), dimension(:,:) :: space_mask
   REAL (kind=real4), intent(in), dimension(:,:) :: data
   REAL (kind=real4), intent(out), dimension(:,:), allocatable :: data_mean, data_max, data_min, data_uni
   INTEGER (kind=int4) :: nx, ny, nx_uni, ny_uni, nsub, astatus
   INTEGER (kind=int4) :: ielem, iline, ielem1, ielem2, iline1, iline2, n_good
   REAL (kind=real4), dimension(:,:), allocatable :: temp
   INTEGER (kind=int4), dimension(:,:), allocatable :: good
-  INTEGER (kind=int1), dimension(:,:), allocatable :: space_mask_temp
+  LOGICAL, dimension(:,:), allocatable :: space_mask_temp
 
   nx = size(data,1)
   ny = size(data,2)
@@ -1878,20 +1878,23 @@ SUBROUTINE compute_spatial_uniformity(dx, dy, space_mask, data, data_mean, data_
       data_min(ielem,iline) = missing_value_real4
       data_uni(ielem,iline) = missing_value_real4
 
-      if (space_mask(ielem,iline) == sym%NO_SPACE .and. &
+      if (.NOT. space_mask(ielem,iline)  .and. &
           data(ielem,iline) /= missing_value_real4) then
 
         ielem1 = max(1,ielem-dx)
         ielem2 = min(nx,ielem+dx)
         nx_uni = (ielem2 - ielem1) + 1
 
-        space_mask_temp = sym%SPACE
+        space_mask_temp = .TRUE.
         temp(1:nx_uni,1:ny_uni) = data(ielem1:ielem2,iline1:iline2)
         space_mask_temp(1:nx_uni,1:ny_uni) = space_mask(ielem1:ielem2,iline1:iline2)
-        n_good = nsub - sum(space_mask_temp)
+        n_good = COUNT(.NOT. space_mask_temp)
 
         if (n_good > 0) then
-          temp = (1 - space_mask_temp)*temp
+            where (space_mask_temp)
+               temp = 0.
+            end where
+         
           data_mean(ielem,iline) =  sum(temp(1:nx_uni,1:ny_uni))/n_good
           data_uni(ielem,iline) = sqrt(max(0.0,(sum((temp(1:nx_uni,1:ny_uni))**2)/n_good - data_mean(ielem,iline)**2)))
           data_max(ielem,iline) = maxval(temp(1:nx_uni,1:ny_uni))

@@ -209,7 +209,7 @@ module LAND_SFC_PROPERTIES_MOD
     INTEGER(kind=int4), intent(in) :: id
     TYPE(land_grid_description), intent(in) :: grid_str
     REAL(kind=real4), dimension(:,:), intent(in) :: lat, lon
-    INTEGER(kind=int1), dimension(:,:), intent(in) :: space_mask
+    LOGICAL , dimension(:,:), intent(in) :: space_mask
     INTEGER(kind=int1), dimension(:,:), intent(out) :: land
     
     INTEGER :: astatus
@@ -218,15 +218,15 @@ module LAND_SFC_PROPERTIES_MOD
     INTEGER :: temp, nx, ny, i, j
     INTEGER(kind=int1), dimension(:,:), allocatable :: land_grid, land_grid_2
     REAL(kind=real4) :: wlon, elon, slat, nlat
-    INTEGER(kind=int1) :: dateline_flg, space_check
+    INTEGER(kind=int1) :: dateline_flg
   
     INTEGER, dimension(2) :: start_2d, stride_2d, edge_2d, &
                            start_2d_2, stride_2d_2, edge_2d_2
  
     INTEGER:: Istatus 
 
-    space_check = minval(space_mask)
-    if (space_check == 1) then
+    
+    if (ALL(space_mask)) then
       land = missing_value_int1
       return
     end if
@@ -266,7 +266,7 @@ module LAND_SFC_PROPERTIES_MOD
       do j = 1, ny
         do i = 1, nx
     
-          if (space_mask(i,j) == sym%NO_SPACE) then
+          if (.not. space_mask(i,j)) then
                 
             ilat = max(1,min(grid_str%num_lat,int(abs(lat(i,j) - grid_str%first_lat)/grid_str%del_lat) + 1))
             ilon = max(1,min(grid_str%num_lon,int(abs(lon(i,j) - grid_str%first_lon)/grid_str%del_lon) + 1))
@@ -331,7 +331,7 @@ module LAND_SFC_PROPERTIES_MOD
       do j = 1, ny
         do i = 1, nx
     
-          if (space_mask(i,j) == sym%NO_SPACE) then
+          if ( .not. space_mask(i,j) ) then
 
             ilat = max(1,min(grid_str%num_lat,int(abs(lat(i,j) - grid_str%first_lat)/grid_str%del_lat) + 1))
             ilon = max(1,min(grid_str%num_lon,int(abs(lon(i,j) - grid_str%first_lon)/grid_str%del_lon) + 1))
@@ -368,7 +368,7 @@ module LAND_SFC_PROPERTIES_MOD
     INTEGER(kind=int4), intent(in) :: id
     TYPE(land_grid_description), intent(in) :: grid_str
     REAL(kind=real4), dimension(:,:), intent(in) :: lat, lon
-    INTEGER(kind=int1), dimension(:,:), intent(in) :: space_mask
+    LOGICAL, dimension(:,:), intent(in) :: space_mask
     INTEGER(kind=int2), dimension(:,:), intent(out) :: land
     
     INTEGER :: astatus
@@ -377,15 +377,15 @@ module LAND_SFC_PROPERTIES_MOD
     INTEGER :: temp, nx, ny, i, j
     INTEGER(kind=int2), dimension(:,:), allocatable :: land_grid, land_grid_2
     REAL(kind=real4) :: wlon, elon, slat, nlat
-    INTEGER(kind=int1) :: dateline_flg, space_check
+    INTEGER(kind=int1) :: dateline_flg
   
     INTEGER, dimension(2) :: start_2d, stride_2d, edge_2d, &
                            start_2d_2, stride_2d_2, edge_2d_2
     INTEGER:: Istatus
 
     ! - executable
-    space_check = minval(space_mask)
-    if (space_check == 1) then
+    
+    if ( ALL( space_mask)) then
       land = missing_value_int2
       return
     end if
@@ -425,7 +425,7 @@ module LAND_SFC_PROPERTIES_MOD
       do j = 1, ny
         do i = 1, nx
     
-          if (space_mask(i,j) == sym%NO_SPACE) then
+          if ( .not. space_mask(i,j) ) then
                 
             ilat = max(1,min(grid_str%num_lat,int(abs(lat(i,j) - grid_str%first_lat)/grid_str%del_lat) + 1))
             ilon = max(1,min(grid_str%num_lon,int(abs(lon(i,j) - grid_str%first_lon)/grid_str%del_lon) + 1))
@@ -489,7 +489,7 @@ module LAND_SFC_PROPERTIES_MOD
       do j = 1, ny
         do i = 1, nx
     
-          if (space_mask(i,j) == sym%NO_SPACE) then
+          if ( .not. space_mask(i,j) ) then
 
             ilat = max(1,min(grid_str%num_lat,int(abs(lat(i,j) - grid_str%first_lat)/grid_str%del_lat) + 1))
             ilon = max(1,min(grid_str%num_lon,int(abs(lon(i,j) - grid_str%first_lon)/grid_str%del_lon) + 1))

@@ -352,7 +352,7 @@ contains
          element_loop1: do Elem_Idx = 1, Image%Number_Of_Elements
             
             if (Bad_Pixel_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle
-            if (Geo%Space_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle
+            if (Geo%Space_Mask(Elem_Idx,Line_Idx) ) cycle
             
             !--- compute viewing zenith bin for Rtm calculation
             Zen_Idx_Rtm(Elem_Idx,Line_Idx) =  &
@@ -571,7 +571,7 @@ contains
       line_loop: do Line_Idx = Line_Idx_Min, Num_Lines + Line_Idx_Min - 1
          element_loop: do Elem_Idx = 1, Image%Number_Of_Elements
             if (Bad_Pixel_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle
-            if (Geo%Space_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle
+            if (Geo%Space_Mask(Elem_Idx,Line_Idx) ) cycle
             
             x_nwp = NWP_PIX%I_Nwp(Elem_Idx,Line_Idx)
             y_nwp = NWP_PIX%J_Nwp(Elem_Idx,Line_Idx)

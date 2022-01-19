@@ -219,44 +219,44 @@ subroutine EXPAND_SPACE_MASK_FOR_USER_LIMITS(Seg_Idx, Space_Mask)
    use CALIOP_COLLOCATION_MOD, only: CALIOP_COLLOCATION
 
    integer(kind=int4), intent(in):: Seg_Idx
-   integer(kind=int1), dimension(:,:), intent(inout):: Space_Mask
+   logical, dimension(:,:), intent(inout):: Space_Mask
 
    !--- check for latitudinal bounds
    where(Nav%Lat_1b == Missing_Value_Real4 .or. Nav%Lon_1b == Missing_Value_Real4)
-        Space_Mask = sym%YES
+        Space_Mask = .true.
    end where
 
    where(isnan(Nav%Lat_1b) .or. isnan(Nav%Lon_1b))
-        Space_Mask = sym%YES
+        Space_Mask = .true.
    end where
 
    !--- check if subset processing is on
    if (Nav%Limit_Flag == sym%YES) then
 
       where(Nav%Lat_1b < Nav%Lat_South_Limit .or. Nav%Lat_1b > Nav%Lat_North_Limit)
-         Space_Mask = sym%YES
+         Space_Mask = .true.
       end where
 
       !--- check for longitudinal bounds including the dateline condition
       if ( Nav%Lon_West_Limit > Nav%Lon_East_Limit) then
          where((Nav%Lon_1b < Nav%Lon_West_Limit .and. Nav%Lon_1b > 0.0) .or. &
              (Nav%Lon_1b > Nav%Lon_East_Limit .and. Nav%Lon_1b < 0.0))
-            Space_Mask = sym%YES
+            Space_Mask =.true.
          end where
       else
          where(Nav%Lon_1b < Nav%Lon_West_Limit .or. Nav%Lon_1b > Nav%Lon_East_Limit)
-            Space_Mask = sym%YES
+            Space_Mask =.true.
          end where
       end if
 
       !--- Satzen limit
       where (Geo%Satzen > Geo%Satzen_Max_Limit .or. Geo%Satzen < Geo%Satzen_Min_Limit)
-         Space_Mask = sym%YES
+         Space_Mask = .true.
       end where
 
       !--- Solzen limit
       where (Geo%Solzen < Geo%Solzen_Min_Limit .or. Geo%Solzen > Geo%Solzen_Max_Limit .or. Geo%Satzen == Missing_Value_Real4)
-         Space_Mask = sym%YES
+         Space_Mask = .true.
       end where
 
    endif
@@ -267,7 +267,7 @@ subroutine EXPAND_SPACE_MASK_FOR_USER_LIMITS(Seg_Idx, Space_Mask)
    end if
 
    !--- test if any valid data, if not, print a warning 
-   if (minval(Space_Mask) == sym%YES) then
+   if (ALL(Space_Mask)) then
       print *, EXE_PROMPT, "WARNING: All Data in Segment are Classified as Space via Spatial Subsetting Logic"
       print*, 'stopping at: ', __FILE__ , __LINE__
     
@@ -425,7 +425,7 @@ subroutine SET_BAD_PIXEL_MASK(Bad_Pixel_Mask,ABI_Use_104um_Flag)
    
 
         !--- set space to bad
-        if (Geo%Space_Mask(Elem_Idx,Line_Idx) == sym%YES) then
+        if (Geo%Space_Mask(Elem_Idx,Line_Idx) ) then
             Bad_Pixel_Mask(Elem_Idx,Line_Idx) = sym%YES
             !print *, "Bad Space"
         endif
@@ -1664,7 +1664,7 @@ subroutine MERGE_NWP_HIRES_ZSFC(Line_Idx_Min,Num_Lines)
     element_loop: do Elem_Idx = Elem_Idx_Min, Elem_Idx_Max
 
       !--- if no, geolocation, set to missing and go to next pixel
-      if (Geo%Space_Mask(Elem_Idx,Line_Idx) == sym%YES) then
+      if (Geo%Space_Mask(Elem_Idx,Line_Idx) ) then
           Sfc%Zsfc(Elem_Idx,Line_Idx) = Missing_Value_Real4
           cycle
       endif
