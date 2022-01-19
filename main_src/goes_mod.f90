@@ -1732,7 +1732,7 @@ subroutine  GET_GOES_NAVIGATION(Segment_Number, Num_Lines_Per_Segment, &
  !--- initialize
  Nav%Lat_1b = Missing_Value_Real4
  Nav%Lon_1b = Missing_Value_Real4
- Geo%Space_Mask = sym%SPACE
+ Geo%Space_Mask = .true.
 
  !-- compute first line in data space for this segment
  First_Line_In_Segment = (Segment_Number-1)*Num_Lines_Per_Segment + 1
@@ -1789,12 +1789,12 @@ subroutine  GET_GOES_NAVIGATION(Segment_Number, Num_Lines_Per_Segment, &
          !--- Convert angles to lat/lon
          CALL LPOINT(NAVstr%instr, 1, Elev, Scan, Dlat, Dlon, Ierr)
 
-         Geo%Space_Mask(Elem_Idx,Line_Idx) = sym%YES
+         Geo%Space_Mask(Elem_Idx,Line_Idx) = .true.
 
          if (Ierr == 0) then
           Nav%Lat_1b(Elem_Idx,Line_Idx) = Dlat / DTOR
           Nav%Lon_1b(Elem_Idx,Line_Idx) = Dlon / DTOR
-          Geo%Space_Mask(Elem_Idx,Line_Idx) = sym%NO
+          Geo%Space_Mask(Elem_Idx,Line_Idx) = .false.
          endif
 
       end do
@@ -3196,7 +3196,7 @@ end subroutine GET_GOES_NAVIGATION
    do Elem_Idx = 1, n
 
 
-    if (Geo%Space_Mask(Elem_Idx,Line_Idx) == sym%NO) then
+    if ( .not. Geo%Space_Mask(Elem_Idx,Line_Idx) ) then
 
 !     Geo%Satzen(Elem_Idx,Line_Idx) = COMPUTE_SENSOR_ZENITH_GEO(satlon,satlat, &
 !                                       Lon_1b(Elem_Idx,Line_Idx),Lat_1b(Elem_Idx,Line_Idx))
@@ -3742,7 +3742,7 @@ element_loop:   Do Elem_Idx = 1, Num_Elements
 line_loop:  DO Line_Idx = 1, Num_Lines
 
    !--- check for valid data
-   if (Geo%Space_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle 
+   if (Geo%Space_Mask(Elem_Idx,Line_Idx)) cycle 
    if (Bad_Pixel_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle 
 
    ELem_Idx_1 = max(1,min(Num_Elements,Elem_Idx - N_box))
@@ -3796,7 +3796,7 @@ element_loop:   Do Elem_Idx = 1, Num_Elements
 line_loop:  DO Line_Idx = 1, Num_Lines
 
    !--- check for valid data
-   if (Geo%Space_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle 
+   if (Geo%Space_Mask(Elem_Idx,Line_Idx) ) cycle 
    if (Bad_Pixel_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle 
    if (Geo%Solzen(Elem_Idx,Line_Idx) > Solzen_Max_Threshold) cycle 
    if (Sfc%Snow(Elem_Idx,Line_Idx) /= sym%NO_SNOW) cycle 

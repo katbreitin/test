@@ -332,10 +332,10 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
   enddo
 
   !--- fill space mask
-  Geo%Space_Mask = sym%SPACE
+  Geo%Space_Mask = .TRUE.
   where((Nav%Lat .ger. -90.0) .and. (Nav%Lat .ler. 90.0) .and. &
         (Nav%Lon .ger. -180.0) .and. (Nav%Lon .ler. 180.0))
-        Geo%Space_Mask = sym%NO_SPACE
+        Geo%Space_Mask = .FALSE.
   endwhere
 
   !--- compute ascending descending flag

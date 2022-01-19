@@ -2326,7 +2326,7 @@ subroutine OPEN_MODIS_WHITE_SKY_SFC_REFLECTANCE_FILES()
         endif
 
         !---- ensure missing values for space scenes
-        where (Geo%Space_Mask == sym%YES) 
+        where (Geo%Space_Mask ) 
                Sfc%Zsfc_Hires = Missing_Value_Real4
                Sfc%Coast = Missing_Value_Int1
                Sfc%Land = Missing_Value_Int1

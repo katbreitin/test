@@ -794,7 +794,7 @@ SUBROUTINE BASELINE_CLOUD_MASK_MAIN(Segment_Number)
                     Array_Width = Array_Left -Array_Right + 1
                     Array_Hgt = Array_Bottom -Array_Top + 1
 
-                    IF (Geo%Space_Mask(Elem_Idx,Line_Idx) == sym%SPACE) THEN
+                    IF (Geo%Space_Mask(Elem_Idx,Line_Idx) ) THEN
                         BT_WV_BT_Window_Corr(Elem_Idx,Line_Idx) = Missing_Value_Real4
                         CYCLE
                     ENDIF
@@ -833,7 +833,7 @@ SUBROUTINE BASELINE_CLOUD_MASK_MAIN(Segment_Number)
          !
          !--- check for space pixel. QF already set to invalid
          !
-         IF (Geo%Space_Mask(Elem_Idx,Line_Idx) == sym%SPACE) THEN
+         IF (Geo%Space_Mask(Elem_Idx,Line_Idx) ) THEN
             CYCLE
          ENDIF
 
@@ -2485,7 +2485,7 @@ END SUBROUTINE Compute_Probably_Cloudy
     Line_Loop: DO Line_Idx=1, Num_Lines
       Element_Loop: DO Elem_Idx = 1, Image%Number_Of_Elements
 
-       IF (Geo%Space_Mask(Elem_Idx,Line_Idx) == sym%NO) THEN
+       IF ( .NOT. Geo%Space_Mask(Elem_Idx,Line_Idx) ) THEN
 
             !
             !---nwp longitude cell
@@ -5194,7 +5194,7 @@ FUNCTION Pearson_Corr(Array_One,Array_Two,Bad_Pixel_One, &
 SUBROUTINE compute_spatial_uniformity(dx, dy, space_mask, data, data_mean, data_max, data_min, data_uni)
                                                                                                            
   INTEGER (kind=int4), intent(in) :: dx, dy
-  INTEGER (kind=int1), intent(in), dimension(:,:) :: space_mask
+  LOGICAL, intent(in), dimension(:,:) :: space_mask
   REAL (kind=real4), intent(in), dimension(:,:) :: data
   REAL (kind=real4), intent(out), dimension(:,:), allocatable :: data_mean, data_max, data_min, data_uni
   INTEGER (kind=int4) :: nx, ny, nsub, nx_uni, ny_uni, astatus
@@ -5227,7 +5227,7 @@ SUBROUTINE compute_spatial_uniformity(dx, dy, space_mask, data, data_mean, data_
       data_uni(ielem,iline) = missing_value_real4
       
       if ((data(ielem,iline) == missing_value_real4) .or. &
-          (space_mask(ielem,iline) == Sym%SPACE)) CYCLE
+          (space_mask(ielem,iline) )) CYCLE
       
       ielem1 = max(1,ielem-dx)
       ielem2 = min(nx,ielem+dx)
@@ -5239,7 +5239,7 @@ SUBROUTINE compute_spatial_uniformity(dx, dy, space_mask, data, data_mean, data_
         do elem_idx=ielem1, ielem2
           
           if ((data(elem_idx,line_idx) == missing_value_real4) .or. &
-              (space_mask(elem_idx,line_idx) == Sym%SPACE)) CYCLE
+              (space_mask(elem_idx,line_idx) )) CYCLE
           
           n_good = n_good + 1
           temp(n_good) = data(elem_idx,line_idx)

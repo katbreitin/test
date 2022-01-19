@@ -351,7 +351,7 @@ contains
             Ch1_Counts = Two_Byte_Temp
             ch(Chan_Idx(Chan_Idx_MSG))%Ref_Toa = Ch1_Slope*(Ch1_Counts-Ch1_Dark_Count)
 !           ch(Chan_Idx(Chan_Idx_MSG))%Ref_Toa = 100.0*((Slope_Sev(Chan_Idx_MSG)*Two_Byte_Temp)+Offset_Sev(Chan_Idx_MSG))/Solar_Const_Sev(Chan_Idx_MSG)
-            where(Geo%Space_Mask == sym%YES .or. Geo%Solzen >= 90.0)
+            where(Geo%Space_Mask  .or. Geo%Solzen >= 90.0)
               ch(Chan_Idx(Chan_Idx_MSG))%Ref_Toa = MISSING_VALUE_REAL4
             end where
         endif 
@@ -361,7 +361,7 @@ contains
             Ch2_Counts = Two_Byte_Temp
             ch(Chan_Idx(Chan_Idx_MSG))%Ref_Toa = Ch2_Slope*(Ch2_Counts-Ch2_Dark_Count)
 !           ch(Chan_Idx(Chan_Idx_MSG))%Ref_Toa = 100.0*((Slope_Sev(Chan_Idx_MSG)*Two_Byte_Temp)+Offset_Sev(Chan_Idx_MSG))/Solar_Const_Sev(Chan_Idx_MSG)
-            where(Geo%Space_Mask == sym%YES .or. Geo%Solzen >= 90.0)
+            where(Geo%Space_Mask  .or. Geo%Solzen >= 90.0)
               ch(Chan_Idx(Chan_Idx_MSG))%Ref_Toa = MISSING_VALUE_REAL4
             end where
         endif 
@@ -371,7 +371,7 @@ contains
             Ch6_Counts = Two_Byte_Temp  !yes, ch3 is ch6 on modis so using ch6_counts which are global
             ch(Chan_Idx(Chan_Idx_MSG))%Ref_Toa = Ch3_Slope*(Ch6_Counts-Ch3_Dark_Count)
 !           ch(Chan_Idx(Chan_Idx_MSG))%Ref_Toa = 100.0*((Slope_Sev(Chan_Idx_MSG)*Two_Byte_Temp)+Offset_Sev(Chan_Idx_MSG))/Solar_Const_Sev(Chan_Idx_MSG)
-            where(Geo%Space_Mask == sym%YES .or. Geo%Solzen >= 90.0)
+            where(Geo%Space_Mask  .or. Geo%Solzen >= 90.0)
               ch(Chan_Idx(Chan_Idx_MSG))%Ref_Toa = MISSING_VALUE_REAL4
             end where
         endif 
@@ -456,7 +456,7 @@ contains
     do Line_Idx=1, Image%Number_Of_Lines_Per_Segment
       do Elem_Idx=1, Image%Number_Of_Elements
             
-        if (Geo%Space_Mask(Elem_Idx,Line_Idx) == sym%SPACE) then
+        if (Geo%Space_Mask(Elem_Idx,Line_Idx) ) then
           cycle
         endif
         
@@ -529,11 +529,11 @@ contains
         if (dlat == -999.0) then  ! -999.0 is MSG nav missing value
           Nav%Lat_1b(i,j) = Missing_Value_Real4
           Nav%Lon_1b(i,j) = Missing_Value_Real4
-          Geo%Space_Mask(i,j) = sym%SPACE
+          Geo%Space_Mask(i,j) = .TRUE.
         else
           Nav%Lat_1b(i,j) = real(dlat,kind=real4)
           Nav%Lon_1b(i,j) = real(dlon,kind=real4)
-          Geo%Space_Mask(i,j) = sym%NO_SPACE
+          Geo%Space_Mask(i,j) = .FALSE.
         end if
          
       end do

@@ -110,7 +110,7 @@ contains
                cycle
             endif
             
-            if (Geo%Space_Mask(Elem_Idx,Line_Idx) == sym%YES) then
+            if (Geo%Space_Mask(Elem_Idx,Line_Idx) ) then
                cycle
             end if
             

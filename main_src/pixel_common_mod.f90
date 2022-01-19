@@ -280,7 +280,8 @@ module PIXEL_COMMON_MOD
      real (kind=real4), dimension(:,:), allocatable:: Lunaz
      real (kind=real4), dimension(:,:), allocatable:: LunRelaz
      real (kind=real4), dimension(:,:), allocatable:: LunFrac
-     integer (kind=int1), dimension(:,:), allocatable:: Space_Mask
+      !integer (kind=int1), dimension(:,:), allocatable:: Space_Mask
+      logical, dimension(:,:), allocatable:: Space_Mask
      double precision:: Moon_Phase_Angle
      real (kind=real4):: Moon_Illum_Frac
      real (kind=real4):: Solzen_Min_Limit
@@ -1800,7 +1801,7 @@ subroutine RESET_GEO_ARRAYS()
   if (allocated(Geo%LunFrac)) Geo%LunFrac = Missing_Value_Real4
   if (allocated(Geo%Scatangle_Lunar)) Geo%Scatangle_Lunar = Missing_Value_Real4
   if (allocated(Geo%Glintzen_Lunar)) Geo%Glintzen_Lunar = Missing_Value_Real4
-  if (allocated(Geo%Space_Mask)) Geo%Space_Mask = sym%NO
+  if (allocated(Geo%Space_Mask)) Geo%Space_Mask = .false.
   Geo%Moon_Phase_Angle = Missing_Value_Real4
   Geo%Moon_Illum_Frac = Missing_Value_Real4
 end subroutine RESET_GEO_ARRAYS

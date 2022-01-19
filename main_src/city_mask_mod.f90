@@ -122,18 +122,18 @@ if (dateline_flg == 0) then
 
    ! --- scale to sensor resolution
    do j = 1, Ny
-     do i = 1, Nx
+      do i = 1, Nx
 
-        if (Geo%Space_Mask(i,j) == sym%NO_SPACE) then
+         if (  Geo%Space_Mask(i,j) ) cycle
 
-           Ilat = max(1,min(Num_Lat,int(abs(Nav%Lat(i,j) - First_Lat)/Res) + 1))
-           Ilon = max(1,min(Num_Lon,int(abs(Nav%Lon(i,j) - First_Lon)/Res) + 1))
-           Ilat_ad = max(1,min((Ilat - Start_2d(2)) + 1,size(CityLights_Read,2)))
-           Ilon_ad = max(1,min((Ilon - Start_2d(1)) + 1,size(CityLights_Read,1)))
-           if (CityLights_Read(Ilon_ad,Ilat_ad) > CITY_LIGHTS_THRESH) &
-                 Sfc%City_Mask(i,j) = 1
-
+         Ilat = max(1,min(Num_Lat,int(abs(Nav%Lat(i,j) - First_Lat)/Res) + 1))
+         Ilon = max(1,min(Num_Lon,int(abs(Nav%Lon(i,j) - First_Lon)/Res) + 1))
+         Ilat_ad = max(1,min((Ilat - Start_2d(2)) + 1,size(CityLights_Read,2)))
+         Ilon_ad = max(1,min((Ilon - Start_2d(1)) + 1,size(CityLights_Read,1)))
+         if (CityLights_Read(Ilon_ad,Ilat_ad) > CITY_LIGHTS_THRESH) then
+            Sfc%City_Mask(i,j) = 1
          end if
+        
 
       end do
    end do
@@ -199,26 +199,25 @@ else ! dateline flag ne 0
 
    ! --- scale to sensor resolution
    do j = 1, Ny
-     do i = 1, Nx
+      do i = 1, Nx
 
-        if (Geo%Space_Mask(i,j) == sym%NO_SPACE) then
+         if (Geo%Space_Mask(i,j) ) cycle
 
-           Ilat = max(1,min(Num_Lat,int(abs(Nav%Lat(i,j) - First_Lat)/Res) + 1))
-           Ilon = max(1,min(Num_Lon,int(abs(Nav%Lon(i,j) - First_Lon)/Res) + 1))
+         Ilat = max(1,min(Num_Lat,int(abs(Nav%Lat(i,j) - First_Lat)/Res) + 1))
+         Ilon = max(1,min(Num_Lon,int(abs(Nav%Lon(i,j) - First_Lon)/Res) + 1))
 
-           if (Nav%Lon(i,j) >= 0.0) then
-              Ilat_ad = max(1,min((Ilat - Start_2d(2)) + 1,size(CityLights_Read,2)))
-              Ilon_ad = max(1,min((Ilon - Start_2d(1)) + 1,size(CityLights_Read,1)))
-              if (CityLights_Read(Ilon_ad,Ilat_ad) > CITY_LIGHTS_THRESH) &
+         if (Nav%Lon(i,j) >= 0.0) then
+            Ilat_ad = max(1,min((Ilat - Start_2d(2)) + 1,size(CityLights_Read,2)))
+            Ilon_ad = max(1,min((Ilon - Start_2d(1)) + 1,size(CityLights_Read,1)))
+            if (CityLights_Read(Ilon_ad,Ilat_ad) > CITY_LIGHTS_THRESH) &
                    Sfc%City_Mask(i,j) = 1
-           else
-              Ilat_ad = max(1,min((Ilat - Start_2d_2(2)) + 1,size(CityLights_Read2,2)))
-              Ilon_ad = max(1,min((Ilon - Start_2d_2(1)) + 1,size(CityLights_Read2,1)))
-              if (CityLights_Read2(Ilon_ad,Ilat_ad) > CITY_LIGHTS_THRESH) &
+         else
+            Ilat_ad = max(1,min((Ilat - Start_2d_2(2)) + 1,size(CityLights_Read2,2)))
+            Ilon_ad = max(1,min((Ilon - Start_2d_2(1)) + 1,size(CityLights_Read2,1)))
+            if (CityLights_Read2(Ilon_ad,Ilat_ad) > CITY_LIGHTS_THRESH) &
                    Sfc%City_Mask(i,j) = 1
-           end if
-
          end if
+
 
       end do
    end do
