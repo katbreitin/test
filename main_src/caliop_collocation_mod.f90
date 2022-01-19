@@ -182,15 +182,15 @@ subroutine CALIOP_COLLOCATION(Seg_Idx)
 
     ! --- set all to SPACE if Missing value
     if (Pixel_Element_Idx(i) == Missing) then
-      Geo%Space_Mask(1:Image%Number_Of_Elements,i) = sym%SPACE
+      Geo%Space_Mask(1:Image%Number_Of_Elements,i) = .true.
       cycle
     endif
 
     ! - avoid going out of array size
     Left_Limit = max(1.,Pixel_Element_Idx(i)-N)
     Right_Limit = min(Pixel_Element_Idx(i)+N,real(Image%Number_Of_Elements))
-    Geo%Space_Mask(1:Left_Limit,i) = sym%SPACE
-    Geo%Space_Mask(Right_Limit:Image%Number_Of_Elements,i) = sym%SPACE
+    Geo%Space_Mask(1:Left_Limit,i) = .TRUE.
+    Geo%Space_Mask(Right_Limit:Image%Number_Of_Elements,i) = .TRUE.
 
     ! --- save caliop data to global variables
     Caliop_Num_Cld_Layers(int(Pixel_Element_Idx(i)+1),i) = Caliop_Num_Cld_Layers_1D(i)
