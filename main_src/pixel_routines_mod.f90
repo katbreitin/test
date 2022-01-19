@@ -268,8 +268,7 @@ subroutine EXPAND_SPACE_MASK_FOR_USER_LIMITS(Seg_Idx, Space_Mask)
 
    !--- test if any valid data, if not, print a warning 
    if (ALL(Space_Mask)) then
-      print *, EXE_PROMPT, "WARNING: All Data in Segment are Classified as Space via Spatial Subsetting Logic"
-
+      print *, EXE_PROMPT, "WARNING: All Data in Segment are Classified as Space 
    endif
 
 end subroutine EXPAND_SPACE_MASK_FOR_USER_LIMITS
