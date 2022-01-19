@@ -1239,7 +1239,6 @@
             
              ! - set surface emissivity
             call  CX_SFC_EMISS_POPULATE_CH
-            
 
             !--- post process dark composite if one read in
             if (Read_Dark_Comp == sym%YES .and. Dark_Composite_Name /= "no_file") then
@@ -1306,7 +1305,7 @@
 
             !--- fill in holes in surface emiss and surface refl with default
             !--- values based on surface type
-             call CX_SFC_EMISS_CORRECT_FOR_SFCTYPE()
+            call CX_SFC_EMISS_CORRECT_FOR_SFCTYPE()
             
             !--- compute desert mask cloud detection
             Sfc%Desert_Mask =  DESERT_MASK_FOR_CLOUD_DETECTION(ch(20)%Sfc_Emiss, Nav%Lat, Sfc%Snow, Sfc%Sfc_Type)
@@ -1539,8 +1538,6 @@
                    Cloud_Fraction_Background = NUCAPS%Cld_Fraction
                endif
               
-             
-
                !--- cloud mask
                if (Use_Aux_Flag == sym%USE_AUX .and. Cloud_Mask_Aux_Read_Flag == sym%YES) then
 
