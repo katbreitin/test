@@ -132,7 +132,7 @@ subroutine compute_transmission_rttov ( &
   opts % rt_ir % addclouds           = .FALSE. ! Don't include cloud effects
   opts % rt_ir % addaerosl           = .FALSE. ! Don't include aerosol effects
 
-  if (minval(Geo%Space_Mask) == sym%NO) then
+  if (ANY( .NOT. Geo%Space_Mask) ) then
     opts % rt_ir % ozone_data          = .TRUE. ! Set the relevant flag to .TRUE.
   else
     opts % rt_ir % ozone_data          = .FALSE. ! Set the relevant flag to .TRUE.
