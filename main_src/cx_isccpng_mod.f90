@@ -51,6 +51,8 @@ private:: CONVERT_WMO
 
 integer,parameter, private:: Num_Layers_L1g = 3
 integer,parameter, private:: Num_Time_L1g = 1
+integer,parameter, private:: Lat_Stride = 1
+integer,parameter, private:: Lon_Stride = 1
 
 contains
 
@@ -96,6 +98,9 @@ subroutine READ_NUMBER_OF_SCANS_ISCCPNG(Nlat,Nlon,Ierror)
        Ierror = 1
        return
    endif
+
+   Nlon = Nlon / Lon_Stride
+   Nlat = Nlat / Lat_Stride
    
    call CLOSE_NETCDF(Ncid)
 
@@ -183,13 +188,13 @@ subroutine READ_ISCCPNG_DATA(Segment_Number, Error_Status)
 
    !--- determine location of segement data in the file
    Nx_Start = 1
-   Nx_End = Nx_Start + Image%Number_Of_Elements - 1
-   Ny_Start = (Segment_Number - 1) * Image%Number_Of_Lines_Per_Segment + 1
-   Ny_End = min(Image%Number_Of_Lines, Ny_Start + Image%Number_of_Lines_Per_Segment - 1)
+   Nx_End = Nx_Start + (Image%Number_Of_Elements/Lon_Stride) - 1
+   Ny_Start = (Segment_Number - 1) * (Image%Number_Of_Lines_Per_Segment/Lat_Stride) + 1
+   Ny_End = min(Image%Number_Of_Lines, Ny_Start + (Image%Number_of_Lines_Per_Segment/Lat_Stride) - 1)
    Image%Number_Of_Lines_Read_This_Segment = Ny_End - Ny_Start + 1
 
    Sds_Start = [1,Ny_Start]
-   Sds_Stride = [1,1]
+   Sds_Stride = [Lon_Stride,Lat_Stride]
    Sds_Count = [Nx_End - Nx_Start + 1, Ny_End - Ny_Start + 1] 
 
    !--- read L1g data and make a field of WMO and Layer for future reads
@@ -234,17 +239,20 @@ subroutine READ_ISCCPNG_DATA(Segment_Number, Error_Status)
    end where
 
    !--- convert azimuths from L1g to CLAVR-x convention
-   ! L1g is clockwise from West
+   ! L1g is clockwise from East
    ! CLAVR-x is clockwise from North
    ! l1g = (clavrx + 90)%360.
-   where(Geo%Sataz /= MISSING_VALUE_REAL4)
-      Geo%Sataz = Geo%Sataz + 90.0
-   end where
+
+!  where(Geo%Sataz /= MISSING_VALUE_REAL4)
+!     Geo%Sataz = mod(Geo%Sataz - 90.0,360.0) 
+!  end where
    where(Geo%Sataz > 180.0) 
       Geo%Sataz = Geo%Sataz - 360.0
    end where
+
+
    where(Geo%Solaz /= MISSING_VALUE_REAL4)
-      Geo%Solaz = Geo%Solaz + 90.0
+      Geo%Solaz = mod(Geo%Solaz - 90.0,360.0)
    end where
    where(Geo%Solaz > 180.0) 
       Geo%Solaz = Geo%Solaz - 360.0
@@ -459,14 +467,24 @@ subroutine READ_WMO_L1G(WMO_Idx,Segment_Number, WMO_L1g)
 
   call OPEN_NETCDF(Image%Level1b_Full_Name,Ncid)
 
+! Nx_Start = 1
+! Nx_End = Nx_Start + Image%Number_Of_Elements - 1
+! Ny_Start = (Segment_Number - 1) * Image%Number_Of_Lines_Per_Segment + 1
+! Ny_End = min(Image%Number_Of_Lines, Ny_Start + Image%Number_of_Lines_Per_Segment - 1)
+
+! Sds_Start = [1,Ny_Start,1,1]
+! Sds_Stride = [1,1,1,1]
+! Sds_Count = [Nx_End - Nx_Start + 1, Ny_End - Ny_Start + 1,Num_Layers_L1g,Num_Time_L1g]
+
   Nx_Start = 1
-  Nx_End = Nx_Start + Image%Number_Of_Elements - 1
-  Ny_Start = (Segment_Number - 1) * Image%Number_Of_Lines_Per_Segment + 1
-  Ny_End = min(Image%Number_Of_Lines, Ny_Start + Image%Number_of_Lines_Per_Segment - 1)
+  Nx_End = Nx_Start + (Image%Number_Of_Elements/Lon_Stride) - 1
+  Ny_Start = (Segment_Number - 1) * (Image%Number_Of_Lines_Per_Segment/Lat_Stride) + 1
+  Ny_End = min(Image%Number_Of_Lines, Ny_Start + (Image%Number_of_Lines_Per_Segment/Lat_Stride) - 1)
+  Image%Number_Of_Lines_Read_This_Segment = Ny_End - Ny_Start + 1
 
   Sds_Start = [1,Ny_Start,1,1]
-  Sds_Stride = [1,1,1,1]
-  Sds_Count = [Nx_End - Nx_Start + 1, Ny_End - Ny_Start + 1,Num_Layers_L1g,Num_Time_L1g]
+  Sds_Stride = [Lon_Stride,Lat_Stride,1,1]
+  Sds_Count = [Nx_End - Nx_Start + 1, Ny_End - Ny_Start + 1,Num_Layers_L1g,Num_Time_L1g] 
 
   allocate(Sds_Data_Temp(Image%Number_Of_Elements, Image%Number_of_Lines_Per_Segment, Num_Layers_L1g, Num_Time_L1g))
 
@@ -494,18 +512,23 @@ subroutine READ_NAV_L1G(Segment_Number)
   integer:: Ncid, Lon_Idx, Lat_Idx
   real, dimension(:), allocatable:: Lon_1d, Lat_1d
 
+  !Nx_Start = 1
+  !Nx_End = Nx_Start + Image%Number_Of_Elements - 1
+  !Ny_Start = (Segment_Number - 1) * Image%Number_Of_Lines_Per_Segment + 1
+  !Ny_End = min(Image%Number_Of_Lines, Ny_Start + Image%Number_of_Lines_Per_Segment - 1)
+
   Nx_Start = 1
-  Nx_End = Nx_Start + Image%Number_Of_Elements - 1
-  Ny_Start = (Segment_Number - 1) * Image%Number_Of_Lines_Per_Segment + 1
-  Ny_End = min(Image%Number_Of_Lines, Ny_Start + Image%Number_of_Lines_Per_Segment - 1)
+  Nx_End = Nx_Start + (Image%Number_Of_Elements/Lon_Stride) - 1
+  Ny_Start = (Segment_Number - 1) * (Image%Number_Of_Lines_Per_Segment/Lat_Stride) + 1
+  Ny_End = min(Image%Number_Of_Lines, Ny_Start + (Image%Number_of_Lines_Per_Segment/Lat_Stride) - 1)
 
   call OPEN_NETCDF(Image%Level1b_Full_Name,Ncid)
 
   allocate(Lon_1d(Image%Number_of_Elements))
-  call READ_AND_UNSCALE_NETCDF_1D(Ncid, [Nx_Start], [1],[Nx_End-Nx_Start+1] , "longitude", Lon_1d)
+  call READ_AND_UNSCALE_NETCDF_1D(Ncid, [Nx_Start], [Lon_Stride],[Nx_End-Nx_Start+1] , "longitude", Lon_1d)
 
   allocate(Lat_1d(Image%Number_of_Lines_Per_Segment))
-  call READ_AND_UNSCALE_NETCDF_1D(Ncid, [Ny_Start], [1],[Ny_End-Ny_Start+1] , "latitude", Lat_1d)
+  call READ_AND_UNSCALE_NETCDF_1D(Ncid, [Ny_Start], [Lat_Stride],[Ny_End-Ny_Start+1] , "latitude", Lat_1d)
 
   do Lon_Idx = 1,Nx_End - Nx_Start + 1
     Nav%Lat_1b(Lon_Idx,1:Ny_End-Ny_Start+1) = Lat_1d
