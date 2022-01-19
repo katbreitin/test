@@ -294,24 +294,31 @@ subroutine READ_ISCCPNG_DATA(Segment_Number, Error_Status)
    end if
    if (Sensor%Chan_On_Flag_Default(20) == sym%Yes) then
       call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_03_80um', Segment_Number, WMO_L1g, Ch(20)%Bt_Toa) 
+      call COMPUTE_RAD_ARRAY( Ch(20)%Bt_Toa,Ch(20)%Rad_Toa,20,MISSING_VALUE_REAL4)
    end if
    if (Sensor%Chan_On_Flag_Default(37) == sym%Yes) then
       call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_06_20um', Segment_Number, WMO_L1g, Ch(37)%Bt_Toa) 
+      call COMPUTE_RAD_ARRAY( Ch(37)%Bt_Toa,Ch(37)%Rad_Toa,37,MISSING_VALUE_REAL4)
    end if
    if (Sensor%Chan_On_Flag_Default(27) == sym%Yes) then
       call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_06_70um', Segment_Number, WMO_L1g, Ch(27)%Bt_Toa) 
+      call COMPUTE_RAD_ARRAY( Ch(27)%Bt_Toa,Ch(27)%Rad_Toa,27,MISSING_VALUE_REAL4)
    end if
    if (Sensor%Chan_On_Flag_Default(28) == sym%Yes) then
       call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_07_30um', Segment_Number, WMO_L1g, Ch(28)%Bt_Toa) 
+      call COMPUTE_RAD_ARRAY( Ch(28)%Bt_Toa,Ch(28)%Rad_Toa,28,MISSING_VALUE_REAL4)
    end if
    if (Sensor%Chan_On_Flag_Default(29) == sym%Yes) then
       call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_08_50um', Segment_Number, WMO_L1g, Ch(29)%Bt_Toa) 
+      call COMPUTE_RAD_ARRAY( Ch(29)%Bt_Toa,Ch(29)%Rad_Toa,29,MISSING_VALUE_REAL4)
    end if
    if (Sensor%Chan_On_Flag_Default(30) == sym%Yes) then
       call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_09_70um', Segment_Number, WMO_L1g, Ch(30)%Bt_Toa) 
+      call COMPUTE_RAD_ARRAY( Ch(30)%Bt_Toa,Ch(30)%Rad_Toa,30,MISSING_VALUE_REAL4)
    end if
    if (Sensor%Chan_On_Flag_Default(38) == sym%Yes) then
       call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_10_40um', Segment_Number, WMO_L1g, Ch(38)%Bt_Toa) 
+      call COMPUTE_RAD_ARRAY( Ch(38)%Bt_Toa,Ch(38)%Rad_Toa,38,MISSING_VALUE_REAL4)
    end if
    if (Sensor%Chan_On_Flag_Default(31) == sym%Yes) then
       call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_11_00um', Segment_Number, WMO_L1g, Ch(31)%Bt_Toa) 
@@ -322,9 +329,11 @@ subroutine READ_ISCCPNG_DATA(Segment_Number, Error_Status)
    end if
    if (Sensor%Chan_On_Flag_Default(32) == sym%Yes) then
       call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_12_00um', Segment_Number, WMO_L1g, Ch(32)%Bt_Toa) 
+      call COMPUTE_RAD_ARRAY( Ch(32)%Bt_Toa,Ch(32)%Rad_Toa,32,MISSING_VALUE_REAL4)
    end if
    if (Sensor%Chan_On_Flag_Default(33) == sym%Yes) then
       call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_13_30um', Segment_Number, WMO_L1g, Ch(33)%Bt_Toa) 
+      call COMPUTE_RAD_ARRAY( Ch(33)%Bt_Toa,Ch(33)%Rad_Toa,33,MISSING_VALUE_REAL4)
    end if
 
    deallocate(WMO_L1g, WMO_Temp)
