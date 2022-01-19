@@ -283,13 +283,13 @@ CONTAINS
   subroutine get_rttov_emiss(lats, lons,space_mask, rttov_path)
       
     REAL(kind=real4), dimension(:,:), intent(in) :: lats, lons
-    INTEGER(kind=int1), dimension(:,:), intent(in) :: space_mask
+    logical, dimension(:,:), intent(in) :: space_mask
     character(len=*), intent(in)  :: rttov_path   ! Path to rttov emis atlas data
     !REAL(kind=real4), dimension(:,:,:), intent(out) :: Emiss1
  
     integer(kind=jpim), parameter :: ioout = 51 ! Output file unit
   
-    INTEGER(kind=int1) :: space_check
+    
     integer:: Elem_Idx, Line_Idx, Chan_Idx
     
     real(kind=real4),    allocatable :: emiss1(:,:,:)
@@ -340,11 +340,11 @@ CONTAINS
     allocate(emissivity_viirs(nchan_viirs*nprof))  
     allocate(emissivity_abi(nchan_abi*nprof))
 
-    space_check = minval(Space_Mask)
-    if (space_check == 1) then
+    
+    if (ALL(Space_mask)) then
       emiss1 = missing_value_real4
           deallocate (emiss1)
-    deallocate(emissivity_modis)
+      deallocate(emissivity_modis)
     deallocate(emissivity_viirs)
     deallocate(emissivity_abi)
     deallocate(profiles)

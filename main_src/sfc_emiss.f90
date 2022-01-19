@@ -175,7 +175,7 @@ end subroutine close_seebor_emiss
       character ( len = 256) :: path
       INTEGER(kind=int4), intent(in) ::  Ichan_modis
       REAL(kind=real4), dimension(:,:), intent(in) :: Lat, Lon
-      INTEGER(kind=int1), dimension(:,:), intent(in) :: Space_Mask
+      LOGICAL, dimension(:,:), intent(in) :: Space_Mask
       integer(kind=int4) , intent(in) :: month
       REAL(kind=real4), dimension(:,:), intent(out) :: Emiss
       
@@ -187,7 +187,7 @@ end subroutine close_seebor_emiss
       INTEGER :: temp, nx, ny, i, j
       REAL(kind=real4), dimension(:,:), allocatable :: Emiss_Grid, Emiss_Grid_2
       REAL(kind=real4) :: wlon, elon, slat, nlat
-      INTEGER(kind=int1) :: dateline_flg, space_check
+      INTEGER(kind=int1) :: dateline_flg
   
       INTEGER, dimension(2) :: start_2d, stride_2d, edge_2d, &
                            start_2d_2, stride_2d_2, edge_2d_2
@@ -214,8 +214,8 @@ end subroutine close_seebor_emiss
          stop
       end if
   
-      space_check = minval(Space_Mask)
-      if (space_check == 1) then
+     
+      if (ALL(space_mask)) then
          emiss = missing_value_real4
          return
       endif
@@ -259,7 +259,7 @@ end subroutine close_seebor_emiss
          do j = 1, ny
             do i = 1, nx
     
-               if (Space_Mask(i,j) == sym%NO_SPACE) then
+               if ( .NOT. Space_Mask(i,j) ) then
 
                   ilat = max(1,min(Num_Lat_Emiss,int(abs(lat(i,j) - First_Lat_Emiss)/Del_Lat_Emiss) + 1))
                   ilon = max(1,min(Num_Lon_Emiss,int(abs(lon(i,j) - First_Lon_Emiss)/Del_Lon_Emiss) + 1))
@@ -337,7 +337,7 @@ end subroutine close_seebor_emiss
          do j = 1, ny
             do i = 1, nx
     
-               if (Space_Mask(i,j) == sym%NO_SPACE) then
+               if ( .NOT. Space_Mask(i,j)) then
 
                ilat = max(1,min(Num_Lat_Emiss,int(abs(lat(i,j) - First_Lat_Emiss)/Del_Lat_Emiss) + 1))
                ilon = max(1,min(Num_Lon_Emiss,int(abs(lon(i,j) - First_Lon_Emiss)/Del_Lon_Emiss) + 1))
