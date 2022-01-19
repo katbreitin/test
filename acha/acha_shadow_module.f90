@@ -142,6 +142,10 @@ subroutine CLOUD_SHADOW_RETR (  &
       integer :: dim_1 , dim_2
       integer :: idx_1 , idx_2
       integer :: k
+      logical :: already_bad_message = .false.
+      
+      ! initialize output
+      shad_arr = 0
       
       dim_1 = size ( shad_arr, 1 )
       dim_2 = size ( shad_arr, 2 )
@@ -168,9 +172,16 @@ subroutine CLOUD_SHADOW_RETR (  &
       !
       long_idx   = maxval (ABS([ii,jj]))
       short_idx  = minval (ABS([ii,jj]))
+      if (long_idx .LT. 1 ) then
+         if ( .not. already_bad_message) then
+            print*,'something not write in Shadow routine: ',__FILE__,' Line: ',__LINE__
+            already_bad_message = .true.
+         end if
+         return
       
+      end if
       ! - this fills all pixel from Lat1 to Lat(i,j)/Lon(i,j)  
-      do k = 1 , long_idx        
+      do k = 1 , long_idx      
          if (abs(ii) == long_idx ) then
             idx_1 = i + sign(k,ii)
             if (idx_1 < 1 .or. idx_1 > dim_1 ) cycle
