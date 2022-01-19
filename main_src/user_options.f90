@@ -90,7 +90,7 @@ module USER_OPTIONS
       , Read_Volcano_Mask &
       , Snow_Data_Dir &
       , Use_Default &
-      , sfc_emiss_option &
+      , Sfc_Emiss_Option &
       , Use_Sea_IR_Emiss &
       , Bayesian_Cloud_Mask_Name &
       , Compress_Flag &

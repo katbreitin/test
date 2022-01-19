@@ -1776,7 +1776,6 @@ module SENSOR_MOD
                 print *, "WMO-ID not appropriate for ISCCP-NG, stopping"
                 print *,' wmo id: ', Sensor%WMO_Id
                 stop
-
          end select
 
          exit test_loop

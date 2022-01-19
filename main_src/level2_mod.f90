@@ -507,7 +507,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Scaling_Type =  0_int1
             Sds_Info(Var_Idx)%Input_Data_Type_HDF =  DFNT_INT16
             Sds_Info(Var_Idx)%Level2_Data_Type_HDF =  DFNT_INT16
-            Sds_Info(Var_Idx)%Level2_Data_Type_NETCDF = NF90_BYTE
+            Sds_Info(Var_Idx)%Level2_Data_Type_NETCDF = NF90_SHORT
             Sds_Info(Var_Idx)%Units = "none"
             if (allocated(L1g%WMO_Id)) Sds_Info(Var_Idx)%Sds_Data_2d_I2 => L1g%WMO_Id
 
@@ -1676,7 +1676,8 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             if (allocated(Pc_Uncertainty2_Aux)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Pc_Uncertainty2_Aux
          case("cld_height_acha")
             Sds_Info(Var_Idx)%Standard_Name = "height_at_cloud_top"
-            Sds_Info(Var_Idx)%Actual_Range = [75.0,20000.0]
+            !Sds_Info(Var_Idx)%Actual_Range = [75.0,20000.0]
+            Sds_Info(Var_Idx)%Actual_Range = [0.0,40000.0]
             Sds_Info(Var_Idx)%Long_Name = "Cloud Top Height from ACHA"
             Sds_Info(Var_Idx)%Units = "m"
             if (allocated(ACHA%Zc)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => ACHA%Zc
@@ -3178,6 +3179,8 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
   ! perform sensor specific modification of level-2 file name
   !-----------------------------------------------------------------------------
 
+  sensor_search: do
+
   !--- ISCCP-NG
   if (index(File_1b_Root,'ISCCP-NG_L1g') > 0) then
      write(Wmo_String,fmt="(I0.3)") WMO_Id_ISCCPNG
@@ -3185,28 +3188,33 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
      ilen = len(trim(file_1b))
      ilen_wmo_id = len('wmo_id')
      File_1b_Root = trim(file_1b(1:ipos)) // trim(file_1b(ipos+ilen_wmo_id+3:ilen-3)) // "_" // Wmo_String
+     exit
   endif
 
   !--- FY4A - shorten name.
   if (File_1b_Root(1:4) == 'FY4A') then
     File_1b_Root = "FY4A_"//File_1b_Root(45:48)//File_1b_Root(49:52)//"_"//File_1b_Root(53:56)//"_"//File_1b_Root(75:79)//".hdf"
+    exit
   endif
 
   !--- goes-r native format - shorten name
   if (File_1b_Root(1:6) == 'OR_ABI') then
      File_1b_Root = File_1b_Root(1:41)
+     exit
   endif
 
   !--- special processing for modis - remove hdf suffix
   l1b_ext = File_1b_Root(len_trim(File_1b_Root)-3:len_trim(File_1b_Root))
   if (trim(l1b_ext) == ".hdf") then
     File_1b_Root = File_1b_Root(1:len_trim(File_1b_Root)-4)
+    exit
   endif
 
   !--- special processing for viirs - remove hdf suffix - this hard coded for
   if (trim(Sensor%Sensor_Name) == 'VIIRS') then
     StrLen = len_trim(File_1b_Root)-34 -7
     File_1b_Root(1:Strlen) = File_1b_Root(7:len_trim(File_1b_Root)-34)
+    exit
   endif
 
   !--- special processing for viirs nasa - remove nc suffix - this hard coded for
@@ -3227,16 +3235,19 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
         File_1b_Root = "j1_fusion"//File_1b_Root(9:len_trim(File_1b_Root)-3)//"_B"//Orbit_Number_String
       endif
     endif
+    exit
   endif
 
   if (trim(Sensor%Sensor_Name) == 'MERSI-2') then
     File_1b_Root = File_1b_Root(1:len_trim(File_1b_Root)-4)
+    exit
   endif
 
   !--- special processing for ahi - remove B01.nc suffix - this hard coded for
   if (trim(Sensor%Sensor_Name) == 'AHI' .OR. trim(Sensor%Sensor_Name) == 'AHI9') then
     StrLen = len_trim(File_1b_Root) - 12 - 4
     File_1b_Root(1:StrLen) = File_1b_Root(4:len_trim(File_1b_Root)-12)
+    exit
   endif
 
   !--- do this for GOES names which are named goesxx_1_year_jday_hour.area
@@ -3259,12 +3270,25 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
         ilen = len(File_1b_Root)
         File_1b_Root = File_1b_Root(1:ipos-1) // "_"//File_1b_Root(ipos+3:ilen)
     endif
+    exit
   endif
 
   !--- add 1km tag for 1km GOES files
   if (index(Sensor%Sensor_Name,'GOES') > 0 .and. Sensor%Spatial_Resolution_Meters == 1000) then
     File_1b_Root = trim(File_1b_Root)//".1km"
+    exit
   endif
+
+  !--- EPS-SG
+  !SGA1-VII-1B-RAD_C_EUMT_20200223000200_G_D_20200103171000_20200103171500_T_N____.nc
+  if (Index(Sensor%Sensor_Name,'METIMAGE') > 0) then
+    File_1b_Root = File_1b_Root(1:len_trim(File_1b_Root) - 11)
+    exit
+  endif
+
+  enddo sensor_search
+
+  !--- additional level2 name modifications
 
   !--- the Domain name for lat/lon subset is set, use it in level2 name
   if (Nav%Limit_Flag /= 0) then
@@ -3280,12 +3304,6 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
   !--- VGAC - remove .nc
   if (Index(Sensor%Sensor_Name,'VGAC') > 0) then
     File_1b_Root = File_1b_Root(1:len_trim(File_1b_Root)-3)
-  endif
-
-  !--- EPS-SG
-  !SGA1-VII-1B-RAD_C_EUMT_20200223000200_G_D_20200103171000_20200103171500_T_N____.nc
-  if (Index(Sensor%Sensor_Name,'METIMAGE') > 0) then
-    File_1b_Root = File_1b_Root(1:len_trim(File_1b_Root) - 11)
   endif
 
   !--- add 'clavrx_' to the file name output
