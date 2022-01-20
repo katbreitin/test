@@ -98,7 +98,8 @@ subroutine CLOUD_SHADOW_RETR (  &
 
                Delta_Lon = -1.0 * sin(Solar_Azi(i,j) * DTOR ) * Distance_km(i,j) * Lon_Spacing_Per_m(i,j)
                Delta_Lat = -1.0 * cos(Solar_Azi(i,j) * DTOR ) * Distance_km(i,j) * Lat_Spacing_Per_m
-                
+               ! Cloud_Shadow  = 0
+             !  print*,'delta_lon,delta_lat: ',delta_lon,delta_lat, Distance_km(i,j), cloud_height(i,j)
                call SHADOW_IND ( Lat_Pc(i,j) + Delta_Lat, Lon_Pc(i,j) + Delta_Lon, Lat, Lon, i, j, Cloud_Shadow) 
               
             end do
@@ -136,7 +137,7 @@ subroutine CLOUD_SHADOW_RETR (  &
       real :: diff_Lat , diff_lon
       real :: delta_Lat_ii , delta_Lat_jj
       real :: delta_lon_ii , delta_lon_jj
-      integer :: long_idx,short_idx
+      integer(kind = 8)  :: long_idx,short_idx
       integer :: short_idx_arr
       
       integer :: dim_1 , dim_2
@@ -154,9 +155,26 @@ subroutine CLOUD_SHADOW_RETR (  &
       delta_lon_ii = Lon(i,j) - Lon(i-1,j)
       delta_Lat_jj = Lat(i,j) - Lat(i,j-1)
       delta_lon_jj = Lon(i,j) - Lon(i,j-1)
+      
+     
+      
      
       diff_Lat = Lat1 - Lat(i,j)
       diff_Lon = lon1 - Lon(i,j) 
+      
+     ! print*,  delta_Lat_ii
+    !  print*,          delta_lon_ii
+    !  print*,         delta_Lat_jj
+   !   print*,          delta_lon_jj
+      
+      
+   !   print*,     Lat(i,j) , Lat(i-1,j)
+!print*,           Lon(i,j) , Lon(i-1,j)
+!print*,           Lat(i,j) , Lat(i,j-1)
+!print*,           Lon(i,j) , Lon(i,j-1)
+       if (  Lat(i,j) .eq. Lat(i-1,j) .and.  Lat(i,j) .eq. Lat(i,j-1) ) return
+      if (  Lon(i,j) .eq. Lon(i-1,j) .and.  Lon(i,j) .eq. Lon(i,j-1) ) return
+    !  print*,lat(i-1:i+1,j-1:j+1)
       
       !     use of these equations:
       ! diff_Lon = ii * delta_lon_ii + jj * delta_lon_jj
@@ -172,10 +190,23 @@ subroutine CLOUD_SHADOW_RETR (  &
       !
       long_idx   = maxval (ABS([ii,jj]))
       short_idx  = minval (ABS([ii,jj]))
-      if (long_idx .LT. 1 ) then
+      
+     !print* , ABS([ii,jj])
+      
+     ! print*,'SHORT IDX: ',short_idx,(short_idx .lt. 1)
+     ! print*,'LONG IDX: ',long_idx , (long_idx .LT. 1)
+      
+      
+     ! print*, diff_Lat,diff_lon, delta_lon_jj,delta_lon_ii, delta_Lat_jj,delta_Lat_ii
+    !  print *,'ii jj: ',ii,jj
+     
+      
+      if ((long_idx .LT. 0) .or. (short_idx .lt. 0)) then
+         print*,'REACHED'
          if ( .not. already_bad_message) then
             print*,'something not write in Shadow routine: ',__FILE__,' Line: ',__LINE__
             already_bad_message = .true.
+            stop
          end if
          return
       
