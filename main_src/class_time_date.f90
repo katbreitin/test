@@ -531,6 +531,8 @@ implicit none
            out = year_s2d//'/'//month_s//'/'//hour_s//minute_s 
          case ('yyyy-mm-dd')
           out =  year_s//'-'//month_s//'-'//day_s     
+         case ('yyyymmdd')
+          out =  year_s//month_s//day_s
          case ('yyyy')
            out = year_s  
          case ('yyyy_doy')
@@ -541,6 +543,8 @@ implicit none
            out = year_s//'_'//doy_s//'.'//hour_s//minute_s
          case ('yyyydoyhhmm')
            out = year_s//doy_s//hour_s//minute_s
+         case ('hhmm')
+           out = hour_s//minute_s
          case ( 'mm')
            out =  month_s
          case  ('dd')
