@@ -1481,6 +1481,13 @@ subroutine FIND_NWP_LEVELS(Lon_Nwp_Idx,Lat_Nwp_Idx)
         NWP%Tropo_Level(Lon_Nwp_Idx,Lat_Nwp_Idx) = 1   !assume top level if no trop found
     endif         
 
+    !--- Necessary as NWP has been showing trop index issues in the INDOEX region in nearly
+    !--- the same grid point location. A trop index of 1 causes issues in downstream
+    !--- subroutines and will cause Met-8 processing to die.
+    if (NWP%Tropo_Level(Lon_Nwp_Idx,Lat_Nwp_Idx) == 1) then
+      NWP%Tropo_Level(Lon_Nwp_Idx,Lat_Nwp_Idx) = 2
+    endif         
+
     !--- store tropause height so when interpolate to pixel level
     NWP%Z_Trop(Lon_Nwp_Idx,Lat_Nwp_Idx) = NWP%Z_Prof(NWP%Tropo_Level(Lon_Nwp_Idx,Lat_Nwp_Idx),Lon_Nwp_Idx,Lat_Nwp_Idx)
 
