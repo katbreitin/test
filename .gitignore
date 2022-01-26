@@ -13,5 +13,7 @@ muri/Release_gfortran/MURI
 file_list*
 level2_list
 clavrxorb
+clavrx_options
+!clavrx_options_example
 !level2_list_example
 !file_list_example
