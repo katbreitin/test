@@ -3181,77 +3181,77 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
 
   sensor_search: do
 
-  !--- ISCCP-NG
-  if (index(File_1b_Root,'ISCCP-NG_L1g') > 0) then
-     write(Wmo_String,fmt="(I0.3)") WMO_Id_ISCCPNG
-     ipos = index(file_1b,"__")
-     ilen = len(trim(file_1b))
-     ilen_wmo_id = len('wmo_id')
-     File_1b_Root = trim(file_1b(1:ipos)) // trim(file_1b(ipos+ilen_wmo_id+3:ilen-3)) // "_" // Wmo_String
-     exit
-  endif
+    !--- ISCCP-NG
+    if (index(File_1b_Root,'ISCCP-NG_L1g') > 0) then
+      write(Wmo_String,fmt="(I0.3)") WMO_Id_ISCCPNG
+      ipos = index(file_1b,"__")
+      ilen = len(trim(file_1b))
+      ilen_wmo_id = len('wmo_id')
+      File_1b_Root = trim(file_1b(1:ipos)) // trim(file_1b(ipos+ilen_wmo_id+3:ilen-3)) // "_" // Wmo_String
+      exit
+    end if
 
-  !--- FY4A - shorten name.
-  if (File_1b_Root(1:4) == 'FY4A') then
-    File_1b_Root = "FY4A_"//File_1b_Root(45:48)//File_1b_Root(49:52)//"_"//File_1b_Root(53:56)//"_"//File_1b_Root(75:79)//".hdf"
-    exit
-  endif
+    !--- FY4A - shorten name.
+    if (File_1b_Root(1:4) == 'FY4A') then
+      File_1b_Root = "FY4A_"//File_1b_Root(45:48)//File_1b_Root(49:52)//"_"//File_1b_Root(53:56)//"_"//File_1b_Root(75:79)//".hdf"
+      exit
+    end if
 
-  !--- goes-r native format - shorten name
-  if (File_1b_Root(1:6) == 'OR_ABI') then
-     File_1b_Root = File_1b_Root(1:41)
-     exit
-  endif
+    !--- goes-r native format - shorten name
+    if (File_1b_Root(1:6) == 'OR_ABI') then
+      File_1b_Root = File_1b_Root(1:41)
+      exit
+    end if
 
-  !--- special processing for modis - remove hdf suffix
-  l1b_ext = File_1b_Root(len_trim(File_1b_Root)-3:len_trim(File_1b_Root))
-  if (trim(l1b_ext) == ".hdf") then
-    File_1b_Root = File_1b_Root(1:len_trim(File_1b_Root)-4)
-    exit
-  endif
+    !--- special processing for modis - remove hdf suffix
+    l1b_ext = File_1b_Root(len_trim(File_1b_Root)-3:len_trim(File_1b_Root))
+    if (trim(l1b_ext) == ".hdf") then
+      File_1b_Root = File_1b_Root(1:len_trim(File_1b_Root)-4)
+      exit
+    end if
 
-  !--- special processing for viirs - remove hdf suffix - this hard coded for
-  if (trim(Sensor%Sensor_Name) == 'VIIRS') then
-    StrLen = len_trim(File_1b_Root)-34 -7
-    File_1b_Root(1:Strlen) = File_1b_Root(7:len_trim(File_1b_Root)-34)
-    exit
-  endif
-
-  !--- special processing for viirs nasa - remove nc suffix - this hard coded for
-  if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA') then
-    write (Orbit_Number_String, fmt='(I0.8)' )  Image%Orbit_Number
-    if (File_1b_Root(1:5) == 'VNP03') then
-      if (.not. Sensor%Fusion_Flag) then
-        File_1b_Root = "snpp_viirs"//File_1b_Root(9:len_trim(File_1b_Root)-3)//"_B"//Orbit_Number_String
-      else
-        File_1b_Root = "snpp_fusion"//File_1b_Root(9:len_trim(File_1b_Root)-3)//"_B"//Orbit_Number_String
-      endif
-    elseif (File_1b_Root(1:5) == 'VGEOM') then 
-        File_1b_Root = "snpp_viirs"//File_1b_Root(11:len_trim(File_1b_Root)-3)//"_B"//Orbit_Number_String
-    elseif (File_1b_Root(1:5) == 'VJ103') then
-      if (.not. Sensor%Fusion_Flag) then
-        File_1b_Root = "j1_viirs"//File_1b_Root(9:len_trim(File_1b_Root)-3)//"_B"//Orbit_Number_String
-      else
-        File_1b_Root = "j1_fusion"//File_1b_Root(9:len_trim(File_1b_Root)-3)//"_B"//Orbit_Number_String
-      endif
+    !--- special processing for viirs - remove hdf suffix - this hard coded for
+    if (trim(Sensor%Sensor_Name) == 'VIIRS') then
+      StrLen = len_trim(File_1b_Root)-34 -7
+      File_1b_Root(1:Strlen) = File_1b_Root(7:len_trim(File_1b_Root)-34)
+      exit
     endif
-    exit
-  endif
 
-  if (trim(Sensor%Sensor_Name) == 'MERSI-2') then
-    File_1b_Root = File_1b_Root(1:len_trim(File_1b_Root)-4)
-    exit
-  endif
+    !--- special processing for viirs nasa - remove nc suffix - this hard coded for
+    if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA') then
+      write (Orbit_Number_String, fmt='(I0.8)' )  Image%Orbit_Number
+      if (File_1b_Root(1:5) == 'VNP03') then
+        if (.not. Sensor%Fusion_Flag) then
+          File_1b_Root = "snpp_viirs"//File_1b_Root(9:len_trim(File_1b_Root)-3)//"_B"//Orbit_Number_String
+        else
+          File_1b_Root = "snpp_fusion"//File_1b_Root(9:len_trim(File_1b_Root)-3)//"_B"//Orbit_Number_String
+        end if
+      else if (File_1b_Root(1:5) == 'VGEOM') then 
+        File_1b_Root = "snpp_viirs"//File_1b_Root(11:len_trim(File_1b_Root)-3)//"_B"//Orbit_Number_String
+      else if (File_1b_Root(1:5) == 'VJ103') then
+        if (.not. Sensor%Fusion_Flag) then
+          File_1b_Root = "j1_viirs"//File_1b_Root(9:len_trim(File_1b_Root)-3)//"_B"//Orbit_Number_String
+        else
+          File_1b_Root = "j1_fusion"//File_1b_Root(9:len_trim(File_1b_Root)-3)//"_B"//Orbit_Number_String
+        end if
+      end if
+      exit
+    end if
 
-  !--- special processing for ahi - remove B01.nc suffix - this hard coded for
-  if (trim(Sensor%Sensor_Name) == 'AHI' .OR. trim(Sensor%Sensor_Name) == 'AHI9') then
-    StrLen = len_trim(File_1b_Root) - 12 - 4
-    File_1b_Root(1:StrLen) = File_1b_Root(4:len_trim(File_1b_Root)-12)
-    exit
-  endif
+    if (trim(Sensor%Sensor_Name) == 'MERSI-2') then
+      File_1b_Root = File_1b_Root(1:len_trim(File_1b_Root)-4)
+      exit
+    end if
 
-  !--- do this for GOES names which are named goesxx_1_year_jday_hour.area
-  if (trim(Sensor%Sensor_Name) == 'GOES-IL-IMAGER' .or.  &
+    !--- special processing for ahi - remove B01.nc suffix - this hard coded for
+    if (trim(Sensor%Sensor_Name) == 'AHI' .OR. trim(Sensor%Sensor_Name) == 'AHI9') then
+      StrLen = len_trim(File_1b_Root) - 12 - 4
+      File_1b_Root(1:StrLen) = File_1b_Root(4:len_trim(File_1b_Root)-12)
+      exit
+    endif
+
+    !--- do this for GOES names which are named goesxx_1_year_jday_hour.area
+    if (trim(Sensor%Sensor_Name) == 'GOES-IL-IMAGER' .or.  &
       trim(Sensor%Sensor_Name) == 'GOES-MP-IMAGER' .or.  &
       trim(Sensor%Sensor_Name) == 'GOES-RU-IMAGER' .or.  &
       trim(Sensor%Sensor_Name) == 'COMS-IMAGER' .or.  &
@@ -3259,32 +3259,34 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
       trim(Sensor%Sensor_Name) == 'FY2-IMAGER' .or.  &
       trim(Sensor%Sensor_Name) == 'SEVIRI') then
 
-    !-- remove area suffix
-    l1b_ext = File_1b_Root(len_trim(File_1b_Root)-3:len_trim(File_1b_Root))
-    if (trim(l1b_ext) == "area") then
-     File_1b_Root = File_1b_Root(1:len_trim(File_1b_Root)-5)
-    endif
-    !-- remove channel number
-    if (trim(l1b_ext) == "area") then
+      !-- remove area suffix
+      l1b_ext = File_1b_Root(len_trim(File_1b_Root)-3:len_trim(File_1b_Root))
+      if (trim(l1b_ext) == "area") then
+        File_1b_Root = File_1b_Root(1:len_trim(File_1b_Root)-5)
+      end if
+      !-- remove channel number
+      if (trim(l1b_ext) == "area") then
         ipos = index(File_1b_Root, "_1_")
         ilen = len(File_1b_Root)
         File_1b_Root = File_1b_Root(1:ipos-1) // "_"//File_1b_Root(ipos+3:ilen)
+      end if
+      exit
+    end if
+
+    !--- add 1km tag for 1km GOES files
+    if (index(Sensor%Sensor_Name,'GOES') > 0 .and. Sensor%Spatial_Resolution_Meters == 1000) then
+      File_1b_Root = trim(File_1b_Root)//".1km"
+      exit
     endif
-    exit
-  endif
 
-  !--- add 1km tag for 1km GOES files
-  if (index(Sensor%Sensor_Name,'GOES') > 0 .and. Sensor%Spatial_Resolution_Meters == 1000) then
-    File_1b_Root = trim(File_1b_Root)//".1km"
+    !--- EPS-SG
+    !SGA1-VII-1B-RAD_C_EUMT_20200223000200_G_D_20200103171000_20200103171500_T_N____.nc
+    if (Index(Sensor%Sensor_Name,'METIMAGE') > 0) then
+      File_1b_Root = File_1b_Root(1:len_trim(File_1b_Root) - 11)
+      exit
+    endif
+  
     exit
-  endif
-
-  !--- EPS-SG
-  !SGA1-VII-1B-RAD_C_EUMT_20200223000200_G_D_20200103171000_20200103171500_T_N____.nc
-  if (Index(Sensor%Sensor_Name,'METIMAGE') > 0) then
-    File_1b_Root = File_1b_Root(1:len_trim(File_1b_Root) - 11)
-    exit
-  endif
 
   enddo sensor_search
 
