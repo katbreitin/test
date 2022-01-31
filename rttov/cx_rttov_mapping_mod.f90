@@ -53,7 +53,9 @@ contains
     if (sensor .eq. 'AVHRR-METOPB') metop_nr = '1'
     if (sensor .eq. 'AVHRR-METOPC') metop_nr = '3'
    
-    
+    if (sensor .eq. 'HIRS-METOPA') metop_nr = '2'
+    if (sensor .eq. 'HIRS-METOPB') metop_nr = '1'
+    if (sensor .eq. 'HIRS-METOPC') metop_nr = '3'
     
     select case(sensor)
     
@@ -202,17 +204,25 @@ contains
                           !  20      23 24 25    27 28   30 31 32 33 34 35 36 
         chn_List(20:36) = [ 19,-1,-1,18,15,14,-1,12,11,-1,9, 8,10, 7, 6, 5, 4 ]
         list = chn_list(chn)
-        sensor_string = 'noaa_'//sensor(10:11)//'_hirs-shifted'
-        read ( sensor(10:10), '(I1)') nr_hirs
-        if ( nr_hirs .eq. 0 ) sensor_string = 'noaa_'//sensor(11:11)//'_hirs-shifted'
-        
         rttov_version_string = '8'
-        if (index(sensor,'AVHRR-METOP')  .gt. 0 ) then
+        ! possible is HIRS-NOAA?? or HIRS-METOP?
+        
+        if ( index(sensor,'HIRS-NOAA') .gt. 0 ) then
+        
+         sensor_string = 'noaa_'//sensor(10:11)//'_hirs-shifted'
+        
+         read ( sensor(10:10), '(I1)') nr_hirs
+         if ( nr_hirs .eq. 0 ) sensor_string = 'noaa_'//sensor(11:11)//'_hirs-shifted'
+        end if
+        
+        if (index(sensor,'HIRS-METOP')  .gt. 0 ) then
           sensor_string = 'metop_'//metop_nr//'_hirs-shifted'
         end if
-        if (index(sensor,'AVHRR-TIROSN') .gt. 0) then 
-          sensor_string = 'noaa_5_hirs-shifted'
+        if (index(sensor,'HIRS-TIROSN') .gt. 0) then 
+          sensor_string = 'noaa_5_hirs'
         end if
+        
+        
         
       else if  (index(sensor,'GOES-') .gt. 0)  then
         rttov_version_string = '8'
@@ -240,7 +250,7 @@ contains
     
     coef_filename = trim(path)//'/rtcoef_rttov12/rttov'//rttov_version_string//'pred54L/rtcoef_'//trim(sensor_string)//'.dat' 
     cld_coef_filename = trim(path)//'cldaer_ir/sccldcoef_'//trim(sensor_string)//'.dat'
-  
+ 
    if ( list .eq. 0) list = -1
     !print*,'Sensor rttov mapping: ',sensor,chn,list
     deallocate(chn_list)
