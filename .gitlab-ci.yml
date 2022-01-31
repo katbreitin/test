@@ -1,0 +1,13 @@
+image: gitlab.ssec.wisc.edu:5555/cphillips/netcdf_hdf_docker
+
+build:
+  stage: build
+  script:
+    - build_ci.sh
+
+
+# run tests using the binary built before
+test:
+  stage: test
+  script:
+    - ./runmytests.sh
