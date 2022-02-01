@@ -211,8 +211,7 @@
       COMPUTE_LUNAR_REFLECTANCE
    
    use DNCOMP_CLAVRX_BRIDGE_MOD, only: &
-      AWG_CLOUD_DNCOMP_ALGORITHM &
-      , set_dcomp_version   
+      AWG_CLOUD_DNCOMP_ALGORITHM
   
    use FILE_TOOLS, only: FILE_TEST, GETLUN
 
@@ -1746,8 +1745,8 @@
              
                if (DCOMP_Mode > 0) then
            
-                  call AWG_CLOUD_DNCOMP_ALGORITHM( Iseg_In = Segment_Number , algorithm_started = dcomp_run)
-                  call SET_DCOMP_VERSION()
+                  call AWG_CLOUD_DNCOMP_ALGORITHM( Iseg_In = Segment_Number , algorithm_started = dcomp_run, version = dcomp_version )
+                 
 
                  !call COMPUTE_SUBPIXEL_MAX_MIN_COD()
                     
