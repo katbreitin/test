@@ -102,7 +102,6 @@ module RT_UTILITIES_MOD
       , Beta_11um_85um_Tropo_Rtm &
       , Beta_11um_67um_Tropo_Rtm &
       , Beta_11um_133um_Tropo_Rtm &
-      , Pixel_Local_Time_Hours &
       , Ancil_Data_Dir  &
       , Pc_Opaque_Cloud &
       , Zc_Opaque_Cloud &

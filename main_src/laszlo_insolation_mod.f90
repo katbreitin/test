@@ -56,7 +56,7 @@ contains
       integer(kind=int4):: Year
       integer(kind=int4):: Month_Local
       integer(kind=int4):: Jday
-      real(kind=real4):: Gmtime
+      real(kind=real4):: Gmtime_hour
       real(kind=real4):: Snowfr
       real(kind=real4):: Cdfrac
       real(kind=real4):: Cldref
@@ -126,7 +126,7 @@ contains
             Glat = Nav%Lat(Elem_Idx,Line_Idx)
             Glon = Nav%Lon(Elem_Idx,Line_Idx)
             
-            Gmtime = Image%Utc_Scan_Time_Hours(Line_Idx)
+            Gmtime_hour = Image%Scan_Time_Ms(Line_Idx) / 60.0 / 60.0/ 1000.0 
             if (Sfc%Snow(Elem_Idx,Line_Idx) /= sym%NO_SNOW) then
                Snowfr = 1.0
             else
@@ -215,7 +215,7 @@ contains
 
 
             call Sasrab(Auxpath, &
-                 Glat, Glon, Year, Month_Local, Jday, Gmtime,  &
+                 Glat, Glon, Year, Month_Local, Jday, Gmtime_hour,  &
                  Snowfr, Cdfrac, Cldref, Clrref, Cmpref, Ozone,        &
                  Pwater, Solmu, Satmu, Relaz_Local, Glint, Isatid,     &
                  Misval, Maxfpr, Maxint, Flxall, Flxclr, Aertau, &

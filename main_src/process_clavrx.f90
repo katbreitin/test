@@ -421,7 +421,6 @@
       , Set_Chan_On_Flag &
       , Set_Solar_Contamination_Mask &
       , Surface_Remote_Sensing &
-      , Convert_Time &
       , Read_MODIS_White_Sky_Albedo &
       , MODIFY_AUX_CLOUD_TYPE
 
@@ -1202,8 +1201,7 @@
 
             endif
    
-            !--- compute time (local and utc) variables for this segment
-            call CONVERT_TIME(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)
+           
 
             if (NWP_PIX%Nwp_Opt /= 0) then
 
