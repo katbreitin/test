@@ -1,0 +1,144 @@
+lut: default
+ancil_dir: /ships19/cloud/scratch/cphillips/clavrx_ancil_data
+temp_dir: ./temp_files/
+verbosity: DEFAULT   #E1 Messaging Control Flag (QUIET = 0,ERROR = 1,MINIMAL = 2,WARNING = 4,DEFAULT = 5,VERBOSE = 9)
+cloud_mask: ECM2   #E1 ALG Mask mode bayesian cloud mask (0=Baseline CM, 1 = ECM1, 2 = ECM2)
+dcomp_alg: 3   #E1 ALG DCOMP
+acha_alg: default #E1 ALG ACHA (off, default or select combinations like 110_120_133)
+ccl_mode: top + base #E1 ALG CCL Mode (0 =off,1=top only,2 = top + base,3 = top + base + lower)
+ccl_type: NOAT #E1 ALG CCL Type = (0=NOAT, 1=ISSCP, 2=NCEP)
+enable_asos: False   #E1 ALG ASOS Mode (0=off, 1=on)
+enable_nlcomp: False   #E1 ALG NLCOMP (0=off, 1=on)
+enable_aerosol: False   #E1 ALG Aerosol (0=off, 1=on)
+enable_output: True #E2 OUTPUT Level-2  file output flag (0= no, 1 = yes)
+output_format: netcdf4   #E2 OUTPUT format flag (0= hdf4, 1 = netcdf4)
+prc_cloud_flag: 1   #E2 PRC Cloud flag  
+scan_lines: 200 #E2 Num scan lines
+enable_sasrab: False  #E2 SASRAB switch on/off SASRAB parameters 
+nwp_model: cfsr   #E2 NWP Nwp Model Option  (0=off, 1=gfs,2=ncep reanalysis,3=cfsr,4= gdas, 5=merra,6=era,7=gfs ait,8=gfs fv3)
+nwp_mode: minimal   #E2 NWP Nwp Mode  (0=minimal, 1=all)
+rtm: pfast #E2 RTM rtm option  (0=crtm,1=pfast, (2=rttov))
+nav_option: l1b   #E2 NAV nav option  (0 =  Use  level-1b,1 = external (future) 2 = Reposnx ( fred nagle): For non-AVHRR, use 0) 
+sfc_emiss: seebor   #E3 0=UMD, 1=RTTOV 2=SEEBOR (3=CRTM not yet installed)
+compress_output: True   #E2 OUT output compression flag (0=no,1=gzip)
+aux_cloud_mask: 2   #E2 MASK read auxilary cloud mask 1b (0 = don't read, 1 = read from 1b and use, 2 = read and save as aux, 3 = read modawg/mvcm, but compute ecm2 type/phase)
+seebor_emiss: True   #E3 SFC seebor emiss flag (0=no, 1=yes) 
+see_emiss: True   #E3 SFC see  emiss flag (0=no, 1=yes) 
+hires_sfc_type: False   #E3 SFC read hires sfc type flag (0=no-8km, 1 = yes-1km) 
+land_mask: True   #E3 SFC read land mask flag (0=no, 1=yes) (goge2_0ll.hdf)
+coast_mask: True   #E3 SFC read coast mask flag (0=no, 1=yes) (coast_mask_xkm.hdf, x = 1 or 8)
+elevation: True   #E3 SFC read surface elevation flag (0=no, 1=yes) (GLOBE_xkm_digelev.hdf, x = 1 or 8)
+volcano: False   #E3 SFC read volcano mask flag (0=no, 1=yes) (volcano_mask_1km.hdf)
+snow_mask: ims #1   #E3 SFC read snow mask flag (0=no, 1 = ims, 2 = GlobSnow)
+dark_composite: False #0   #E3 SFC read dark composite flag (0=no, 1 = yes) only GEO
+avhrr:
+    ref_cal: default #0   #E4 AVHRR-ONLY specific ref_cal_1b flag (0 = use default level1b cal, 1 = recalibrate using PATMOS-x numbers (AVHRR-only))
+    therm_cal: default #0   #E4 AVHRR-ONLY therm_cal_1b flag (0 = use default level1b cal, 1= recalibrate using PATMOS-x numbers (AVHRR-only))
+lrc: True #1   #E5 MASK lrc_flag (0=no,1=yes) 
+smooth_nwp: True   #E5 NWP smooth nwp flag (0=no, 1=yes)   
+process_undetected: False #0   #E5 process_undetected_flag (0=no,1=yes) ( means process all pixels cloudy and cloud-free
+bounds:
+    enable: False
+    lat_north: 15.0
+    lat_south: 5.0
+    lon_west: -100.
+    lon_east: -90.
+    zen_min: 0.0
+    zen_max: 90.0
+    solzen_min: 0.0
+    solzen_max: 180.0
+    name: WI
+sample:
+    mode: average+stats
+    x_stride: 1
+    y_stride: 1
+
+channels:
+    MODIS:
+        1: True
+        2: True
+        3: True
+        4: True
+        5: True
+        6: True
+        7: True
+        8: True
+        9: True
+        10: True
+        11: True
+        12: True
+        13: True
+        14: True
+        15: True
+        16: True
+        17: True
+        18: True
+        19: True
+        20: True
+        20: True
+        21: True
+        22: True
+        23: True
+        24: True
+        25: True
+        26: True
+        27: True
+        28: True
+        29: True
+        30: True
+        31: True
+        32: True
+        33: True
+        33: True
+        34: True
+        35: True
+        36: True
+    AxI:
+        37: True
+        38: True
+    VIIRS:
+        I1: False
+        I2: False
+        I3: False
+        I4: False
+        I5: False
+        DNB: False
+
+new_channels:
+    sensor: avhrr_hirs
+    avhrr_hirs:
+        HIRS_4: True
+        HIRS_5: True
+        HIRS_6: True
+        HIRS_7: True
+        HIRS_9: True
+        HIRS_11: True
+        HIRS_12: True
+        HIRS_14: True
+        HIRS_15: True
+        HIRS_18: True
+        AVHRR_065: True
+        AVHRR_086: True
+        AVHRR_160: True
+        AVHRRHIRS_1100: True
+        AVHRRHIRS_1200: True
+        AVHRRHIRS_0375: True
+
+    ahi:
+        AHI_1: True
+        AHI_2: True
+        AHI_3: True
+        AHI_4: True
+        AHI_5: True
+        AHI_6: True
+        AHI_7: True
+        AHI_8: True
+        AHI_9: True
+        AHI_10: True
+        AHI_11: True
+        AHI_12: True
+        AHI_13: True
+        AHI_14: True
+        AHI_15: True
+        AHI_16: True
+
