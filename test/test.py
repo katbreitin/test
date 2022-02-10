@@ -61,6 +61,11 @@ def test_viirs():
     _run_it(VIIRS_L1)
 
 
+def test_avhrr():
+    AVHRR = Path('/arcdata/polar/noaa/noaa18/2020/2020_01_01_001/avhrr/NSS.GHRR.NN.D20001.S0000.E0143.B7532324.WI')
+    _run_it(AVHRR)
+
+
 def test_fusion():
     FUSION = Path('/ships19/cloud/archive/Satellite_Input/HIRS-FUSION/NN/2020/001/NSS.GHRR.NN.D20001.S0000.E0143.B7532324.WI.fusion.nc')
     AVHRR = Path('/arcdata/polar/noaa/noaa18/2020/2020_01_01_001/avhrr/NSS.GHRR.NN.D20001.S0000.E0143.B7532324.WI')
