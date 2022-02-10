@@ -461,6 +461,7 @@ subroutine CIRA_base_hgt(Zc,Cwp,Cwp_nwp,LCL,CCL,Surf_Elev,Cloud_Geometrical_Thic
        ibin_max = 9
 
        if (Zc_local > 18.0 .or. ibin > ibin_max)    ibin = ibin_max
+       if (ibin < 1) ibin = 1
 
        icwp = 1
        if (CWP_local > regr_coeff(ibin,6,1))  icwp = 2
