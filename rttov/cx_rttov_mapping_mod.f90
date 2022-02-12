@@ -4,7 +4,7 @@ contains
   !
   !
   !
-  function channel_map (sensor,ancil_data_path, chn,coef_filename,cld_coef_filename) result (list)
+  function channel_map (sensor,ancil_data_path, chn,coef_filename,cld_coef_filename,max_satzen) result (list)
 
 #define STRINGIFY(x) x
 
@@ -24,6 +24,7 @@ contains
     character (len = 1) :: metop_nr
     integer :: avhrr_num
     integer :: nr_hirs
+    real :: max_satzen
    
 #ifndef RTTOVPATH
     print*,'RTTOV PATH not set ..stop'
@@ -34,6 +35,7 @@ contains
 
     path = trim(ancil_data_path) // "static/rttov/"
     rttov_version_string = '9'
+    max_satzen = 85.
     ! -- 
     !  the mapping translates one channel infot
     !  RTTOV channel number
@@ -43,7 +45,7 @@ contains
     
     allocate(chn_list(45))
     chn_list = -1
-    
+    list = -1
     
     
     ! metop 
@@ -101,6 +103,18 @@ contains
       chn_list(20:38) = [7,-1,-1,-1,-1,-1,-1,9,10,11,12,14,15,16,-1,-1,-1,8,13]
       list = chn_list(chn)
       sensor_string = 'himawari_9_ahi'  
+    
+    case ('GOES-8','GOES-9')
+      
+      
+      chn_list(20) = 1
+      chn_list(27) = 2
+      chn_list(31) = 3
+      chn_list(32) = 4
+      list = chn_list(chn)
+      sensor_string = 'goes_'//sensor(6:6)//'_imager'
+      rttov_version_string = '7'
+      max_satzen = 75.
       
     case ('GOES-16')
       chn_list = [2,3,1,-1,-1,5,6,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,7,-1,7,-1,-1,-1,4,9,10,11,12,14,15,16,-1,-1,-1,8,13,-1,-1,-1,-1,-1,-1,-1]

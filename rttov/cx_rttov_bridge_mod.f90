@@ -122,6 +122,7 @@ subroutine compute_transmission_rttov ( &
   real, intent(out)  :: taut (:,:)  
   integer :: lll
    real, parameter :: Q_MIXRATIO_TO_PPMV = 1.60771704e+6
+   real :: max_satzen
    
    
   opts % rt_ir % addsolar = .FALSE.
@@ -147,9 +148,9 @@ subroutine compute_transmission_rttov ( &
   opts % config % verbose            = .FALSE.  ! Enable printing of warnings
 
  
-   lll  = channel_map (sensor,ancil_data_path, kban_in , coef_filename,cld_coef_filename)
+   lll  = channel_map (sensor,ancil_data_path, kban_in , coef_filename,cld_coef_filename,max_satzen)
    
-  
+ 
   nprof = size(temp(1,:))
   nlevels = size(temp(:,1))
   
@@ -232,6 +233,8 @@ subroutine compute_transmission_rttov ( &
       chanprof(nch)%prof = j
       chanprof(nch)%chan = channel_list(jch)
       
+      
+      
     ENDDO
   ENDDO
   
@@ -270,7 +273,7 @@ subroutine compute_transmission_rttov ( &
     profiles(iprof) % s2m % v = 0.
     profiles(iprof) % s2m % wfetc = 1000000.
     profiles(iprof) % skin % t = temp(96,iprof) + 5.
-    profiles(iprof) % zenangle = min(theta(iprof),85.29)
+    profiles(iprof) % zenangle = min(theta(iprof),max_satzen)
     profiles(iprof) % azangle = 0.
     profiles(iprof) % latitude = 45.
     profiles(iprof) % longitude = 19.
