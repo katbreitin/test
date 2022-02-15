@@ -502,7 +502,7 @@ contains
               
               call SOLAR_TRANS(rtm_inp % tpw_prof(:, ii_pixel),chan_idx,rtm_inp % sat_bin( ii_pixel),trans_profile, error_status)
              
-              trans_prof_rtm_chn (:,ii_pixel) = Trans_profile ** Gamma_Factor(Chan_Idx)
+              trans_prof_rtm_chn (:,ii_pixel) = Trans_profile 
             end do
             
           
