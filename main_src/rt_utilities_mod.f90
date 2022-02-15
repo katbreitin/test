@@ -128,7 +128,7 @@ module RT_UTILITIES_MOD
        SOLAR_CH20_NU
       
    use RTM_COMMON_MOD, only: &
-       Nlevels_Rtm &
+       NLEVELS_RTM &
       , Rtm &
       , P_Std_Rtm &
       , T_Std_Rtm &
@@ -162,7 +162,7 @@ module RT_UTILITIES_MOD
    public::  GET_PIXEL_NWP_RTM 
            
             
-    integer, parameter, public:: Rtm_Nvzen = 50       
+    integer, parameter, public:: RTM_NVZEN = 50       
 
     integer, parameter :: Chan_Idx_Min = 1
     integer, parameter :: Chan_Idx_Max = 44
@@ -217,8 +217,8 @@ contains
       real:: Opd_Layer
       real:: Trans_Layer
       real:: Trans_Total
-      real :: trans_local (101)
-      real :: t_prof_local(101)
+      real :: trans_local (NLEVELS_RTM)
+      real :: t_prof_local(NLEVELS_RTM)
       
 
       !--- upwelling profiles
@@ -452,7 +452,7 @@ contains
         do y_nwp =1, nwp_size_arr(2)
           if ( rtm(x_nwp,y_nwp) % is_allocated ) then
               
-              do z_nwp =1,50 
+              do z_nwp =1,RTM_NVZEN
                 if ( rtm(x_nwp,y_nwp) % d(z_nwp) % is_allocated )  n_val_pixels = n_val_pixels + 1
               end do  
           end if
@@ -461,11 +461,11 @@ contains
       ! print*,'Number of needed RTTOV/PFAAST Clear-Sky Transmission calculations: ',n_val_pixels
       
       
-      allocate (rtm_inp % p_std( 101,n_val_pixels))
-      allocate (rtm_inp % t_prof( 101,n_val_pixels))
-      allocate (rtm_inp % w_prof( 101,n_val_pixels))
-      allocate (rtm_inp % o_prof( 101,n_val_pixels))
-      allocate (rtm_inp % tpw_prof( 101,n_val_pixels))
+      allocate (rtm_inp % p_std( NLEVELS_RTM,n_val_pixels))
+      allocate (rtm_inp % t_prof( NLEVELS_RTM,n_val_pixels))
+      allocate (rtm_inp % w_prof( NLEVELS_RTM,n_val_pixels))
+      allocate (rtm_inp % o_prof( NLEVELS_RTM,n_val_pixels))
+      allocate (rtm_inp % tpw_prof( NLEVELS_RTM,n_val_pixels))
       allocate (rtm_inp % sat_bin( n_val_pixels))
       
       ! - populate RTTOV input
@@ -473,7 +473,7 @@ contains
       do x_nwp = 1, nwp_size_arr(1)
             do y_nwp =1, nwp_size_arr(2)
               if ( rtm(x_nwp,y_nwp) % is_allocated ) then
-                do z_nwp =1,50 
+                do z_nwp =1,RTM_NVZEN 
                   if ( rtm(x_nwp,y_nwp) % d(z_nwp) % is_allocated ) then
                   
                     n_val_pixels = n_val_pixels + 1
@@ -497,7 +497,7 @@ contains
           select case ( ch(Chan_Idx)%Obs_Type )
           
           case ( SOLAR_OBS_TYPE) 
-            allocate ( trans_prof_rtm_chn (101,n_val_pixels) )
+            allocate ( trans_prof_rtm_chn (NLEVELS_RTM,n_val_pixels) )
             do ii_pixel = 1, n_val_pixels
               
               call SOLAR_TRANS(rtm_inp % tpw_prof(:, ii_pixel),chan_idx,rtm_inp % sat_bin( ii_pixel),trans_profile, error_status)
@@ -529,7 +529,7 @@ contains
           do x_nwp = 1, nwp_size_arr(1)
             do y_nwp =1,nwp_size_arr(2)
               if ( rtm(x_nwp,y_nwp) % is_allocated ) then
-                do z_nwp =1,50 
+                do z_nwp =1,RTM_NVZEN 
                   if ( rtm(x_nwp,y_nwp) % d(z_nwp) % is_allocated ) then
                     ii_pixel = ii_pixel + 1
                     rtm(x_nwp,y_nwp) % d(z_nwp) % ch(chan_idx) % Trans_Atm_Profile &
