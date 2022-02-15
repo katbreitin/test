@@ -3,6 +3,7 @@ from pathlib import Path
 from tempfile import mkdtemp
 from shutil import rmtree
 import subprocess
+import pytest
 
 CLAVRX = Path('../clavrx_bin/clavrxorb').absolute()
 assert CLAVRX.exists(), str(CLAVRX)+' does not exist'
@@ -12,6 +13,9 @@ HERE = Path(__file__).absolute().parent
 
 L2_LIST_CONTENT = "testing\nlatitude\nlongitude\ncloud_probability\n"
 
+TEST_EXTRA = False
+
+extra = pytest.mark.skipif(not TEST_EXTRA, reason="extra test")
 
 def _run_it(main_l1b_file, aux_l1b_files=(), config_override=None):
     main_l1b_file = Path(main_l1b_file)
@@ -108,6 +112,14 @@ def test_g16_conus():
         }}
     
     _run_it(files[0], files[1:], config_override=override)
+
+
+@extra
+def test_process_cloud_off():
+    # Use the avhrr template
+    AVHRR = Path('/arcdata/polar/noaa/noaa18/2020/2020_01_01_001/avhrr/NSS.GHRR.NN.D20001.S0000.E0143.B7532324.WI')
+    override = { 'prc_cloud_flag':0 }
+    _run_it(AVHRR, config_override=override)
 
 
 def test_g17_fd():
