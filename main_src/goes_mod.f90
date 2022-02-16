@@ -1390,8 +1390,8 @@ end subroutine READ_GOES_SNDR
 
    open(unit=1,file=trim(filename),form="unformatted",access="direct",recl=4,status="old",action="read")
 
-        read (unit=1, rec = 1) AREAstr%area_Status
-        read (unit=1, rec = 2) AREAstr%Version_Num
+        read (unit=1, rec = 1, err=404) AREAstr%area_Status
+        read (unit=1, rec = 2, err=404) AREAstr%Version_Num
         if (AREAstr%Version_Num .ne. 4) then
 !          print *, "Area file cannot be read"  ! byte swapping may cause this
 !          AREAstr%swap_bytes = 1
@@ -1550,14 +1550,19 @@ end subroutine READ_GOES_SNDR
         enddo
 
 
-   close(unit=1)
-
    !--- compute scan rate for future use
    Num_Elements_This_image =  int(AREAstr%Num_Elem / Goes_Xstride) + 1
    num_Scans_This_image = AREAstr%Num_Line
    Scan_rate = real((Num_Elements_This_image)/ real(Num_4km_Elem_Goes_Fd/Goes_Xstride)) * &
                real((num_Scans_This_image) / real(Num_4km_Scans_Goes_Fd)) * &
                real(time_for_fd_Scan_goes) / real(num_Scans_This_image)
+    close(unit=1)
+   return
+
+404 close(unit=1)
+    print *, "Error reading GOES Headers. File is probably empty"
+    stop 4
+    
 
  ! print *, "elements = ", Num_Elements_This_image, Num_4km_Elem_Goes_Fd/Goes_Xstride
  ! print *, "lines = ", num_Scans_This_image, Num_4km_Scans_Goes_Fd

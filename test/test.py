@@ -69,6 +69,15 @@ def test_avhrr():
     AVHRR = Path('/arcdata/polar/noaa/noaa18/2020/2020_01_01_001/avhrr/NSS.GHRR.NN.D20001.S0000.E0143.B7532324.WI')
     _run_it(AVHRR)
 
+def test_avhrr_get_goes_header_bug():
+    # This file is empty
+    AVHRR = Path('/arcdata/polar/noaa/noaa18/2022/2022_02_05_036/avhrr/NSS.GHRR.NN.D22036.S1847.E2013.B8614849.GC')
+    try:
+        _run_it(AVHRR)
+        assert False, 'This file should cause a nonzero returncode'
+    except subprocess.CalledProcessError as e:
+        assert e.returncode == 4
+
 
 def test_fusion():
     FUSION = Path('/ships19/cloud/archive/Satellite_Input/HIRS-FUSION/NN/2020/001/NSS.GHRR.NN.D20001.S0000.E0143.B7532324.WI.fusion.nc')
