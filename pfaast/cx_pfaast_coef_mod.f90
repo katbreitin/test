@@ -118,7 +118,7 @@ contains
       case ( 'SEVIRI','MTSAT','VIIRS','FY2','GOES')
          ! - GOES-16-19 is ABI 
          if ( trim(device) .EQ. 'GOES' .and. &
-              (satellite .EQ. '16' .OR. satellite .EQ. '17')) then
+              (satellite .EQ. '16' .OR. satellite .EQ. '17' .OR. satellite .EQ. '18')) then
             call this % read_ahi_abi(device, satellite)
          else 
             call this % read_general ( device, satellite  )
@@ -201,8 +201,10 @@ contains
            !--- Will need more logic when goes-18/19 are online.
            if (sat_num .eq. '16') then
              cfile = 'abixxx101.dat'
-           else
+           else if (sat_num .eq. '17') then
              cfile = 'abi7xxx101.dat'
+           else
+             cfile = 'abi8xxx101.dat'
            endif
         case('AHI9')
            cfile = 'ahi9xxx101.dat'
@@ -217,6 +219,8 @@ contains
       if (sat .eq. 'AHI9' ) then
         call open_files ( cfile, 5, lun_s )
       else if (sat .eq. 'GOES' .and. sat_num .eq. '17') then
+        call open_files ( cfile, 5, lun_s )
+      else if (sat .eq. 'GOES' .and. sat_num .eq. '18') then
         call open_files ( cfile, 5, lun_s )
       else
         call open_files ( cfile, 4, lun_s )

@@ -933,6 +933,9 @@ contains
       case(271) !GOES-17
         Sensor_Name_Rtm = 'GOES-17'
 
+      case(272) !GOES-18
+        Sensor_Name_Rtm = 'GOES-18'
+
       case(706) !NOAA-6
         Sensor_Name_Rtm = 'AVHRR-NOAA06'
 

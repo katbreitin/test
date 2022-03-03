@@ -1285,6 +1285,24 @@ module SENSOR_MOD
         exit test_loop
       endif
 
+      !--- GOES-18 ABI Static Nav Test
+      if (index(Image%Level1b_Name, 'OR_ABI') > 0 .and. INDEX(trim(Image%Level1b_Name), 'G18') > 0 &
+          .AND. .NOT. INDEX(trim(Image%Level1b_Name) , '_HIGH_RES_') > 0  ) then 
+        Sensor%Sensor_Name = 'GOES-RU-IMAGER'
+        Sensor%Platform_Name = 'GOES-18'
+        Sensor%Spatial_Resolution_Meters = 2000
+        Sensor%WMO_Id = 272
+        Sensor%Instr_Const_File = 'goes_18_instr_fake.dat'
+        Sensor%Geo_Sub_Satellite_Longitude = -137.2   ! -137.2 - not projection sub-point
+        Sensor%Geo_Sub_Satellite_Latitude = 0.0
+        call COMPUTE_GOES_RU_STATIC_NAV_FILE_NAME()
+        Image%Static_Nav_Flag = .true.
+        Image%Mixed_Resolution_Flag = .true.
+        Image%Area_Format_Flag = .false.
+        Image%Nc_Format_Flag = .true. !added in to make sure that static nav will run due to HSD test - WCS3
+        ABI_Use_104um_Flag = .false.
+        exit test_loop
+      endif
 
       !--- FY-4a AGRI Test
       if (index(Image%Level1b_Name, 'FY4A') > 0) then
@@ -2691,7 +2709,7 @@ module SENSOR_MOD
          Sensor%Num_Chan_Sensor = 16
          if (.not. allocated(Sensor%CLAVRx_Chan_Map)) allocate(Sensor%Clavrx_Chan_Map(Sensor%Num_Chan_Sensor))
          Sensor%CLAVRx_Chan_Map = (/3,4,1,2,6,7,20,37,27,28,29,30,38,31,32,33/)
-      case(270:271) !-- abi
+      case(270:273) !-- abi
          Sensor%Num_Chan_Sensor = 16
          if (.not. allocated(Sensor%CLAVRx_Chan_Map)) allocate(Sensor%Clavrx_Chan_Map(Sensor%Num_Chan_Sensor))
          Sensor%CLAVRx_Chan_Map = (/3,1,2,26,6,7,20,37,27,28,29,30,38,31,32,33/)
