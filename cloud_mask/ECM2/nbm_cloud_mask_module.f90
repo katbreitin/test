@@ -370,6 +370,15 @@ MODULE ECM2_CLOUD_MASK_MODULE
              CASE('logzopa')
                  if (Input%Zopa > 0.0) Value_Dim = alog10(Input%Zopa)
                  if (Input%Zopa < 0.0 .and. Input%Zopa /= MISSING_VALUE_REAL4) Value_Dim = 1.0
+             CASE('logrefl065')
+                 if (Input%Ref_063um > 0.0) Value_Dim = alog10(Input%Ref_063um)
+                 if (Input%Ref_063um < 0.0 .and. Input%Ref_063um /= MISSING_VALUE_REAL4) Value_Dim = -2.0
+             CASE('logrefl138')
+                 if (Input%Ref_138um > 0.0) Value_Dim = alog10(Input%Ref_138um)
+                 if (Input%Ref_138um < 0.0 .and. Input%Ref_138um /= MISSING_VALUE_REAL4) Value_Dim = -2.0
+             CASE('logrefl160')
+                 if (Input%Ref_160um > 0.0) Value_Dim = alog10(Input%Ref_160um)
+                 if (Input%Ref_160um < 0.0 .and. Input%Ref_160um /= MISSING_VALUE_REAL4) Value_Dim = -2.0
              CASE('bt10')
                  Value_Dim = Input%Bt_10um
                  if (Input%Chan_On_10um == 0) Value_Dim = MISSING_VALUE_REAL4
