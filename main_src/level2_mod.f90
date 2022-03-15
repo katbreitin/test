@@ -1656,6 +1656,12 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Long_Name = "Effective Cloud Top Pressure from ACHA"
             Sds_Info(Var_Idx)%Units = "hPa"
             if (allocated(ACHA%Pc_Eff)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => ACHA%Pc_Eff
+         case("cld_press_lower_acha")
+            Sds_Info(Var_Idx)%Standard_Name = "air_pressure_at_effective_cloud_top_lower_layer"
+            Sds_Info(Var_Idx)%Actual_Range = [50.0,1100.0]
+            Sds_Info(Var_Idx)%Long_Name = "Effective Cloud Top Pressure for lower layer from ACHA"
+            Sds_Info(Var_Idx)%Units = "hPa"
+            if (allocated(ACHA%Lower_Pc)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => ACHA%Lower_Pc
          case("cld_press_uncer_acha")
             Sds_Info(Var_Idx)%Standard_Name = "cld_press_uncer_acha"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,1000.0]
