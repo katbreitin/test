@@ -89,8 +89,8 @@ module SEVIRI_MOD
   integer(kind=int4), public, parameter:: Seviri_Xstride = 1
   integer(kind=int4), private, parameter:: Num_3km_Scans_Fd = 3712
   integer(kind=int4), private, parameter:: Num_3km_Elem_fd = 3712
-  integer(kind=int4), private, parameter:: TIME_FOR_FD_SCAN = 900000 !milliseconds (15min)
-  real, private, save:: Scan_rate    !scan rate in millsec / line
+  integer(kind=int4), private, parameter:: TIME_FOR_FD_SCAN = 900000 !milliseconds (15min)  !CHECK THIS
+  real, private, save:: Scan_Rate    !scan rate in millsec / line
   integer(kind=int4), private, parameter:: Seviri_Byte_Shift = 0
   integer, dimension(11), parameter, private:: Chan_Idx=[1,2,6,20,27,28,29,30,31,32,33]
 
@@ -509,22 +509,21 @@ contains
       ! convert from eumetsat coordinate space if necessary 
       if (AREAstr%north_bound == 1) line = AREAstr%Num_Line - line + 1
       
-      do i=1, xsize
+      do i= 1, xsize
         elem = (i - 1)*(xstride) + xstart
         ! convert to eumetsat coordinate space if necessary
         if (AREAstr%west_vis_pixel == 1) elem = AREAstr%Num_Elem - elem + 1 
 
-
         CALL fgf_to_earth(FGF_TYPE,        &
-                            DBLE(elem),      &
-                            DBLE(line),      &
-                            DBLE(CFAC_MSG),  &
-                            DBLE(COFF_MSG),  &
-                            DBLE(LFAC_MSG),  &
-                            DBLE(LOFF_MSG),  &
-                            SUB_LON_MSG,     &
-                            dlon,            &
-                            dlat)
+                          DBLE(elem),      &
+                          DBLE(line),      &
+                          DBLE(CFAC_MSG),  &
+                          DBLE(COFF_MSG),  &
+                          DBLE(LFAC_MSG),  &
+                          DBLE(LOFF_MSG),  &
+                          SUB_LON_MSG,     &
+                          dlon,            &
+                          dlat)
 
         if (dlat == -999.0) then  ! -999.0 is MSG nav missing value
           Nav%Lat_1b(i,j) = Missing_Value_Real4
