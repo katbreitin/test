@@ -1158,6 +1158,8 @@ contains
          filename  = 'ecm2_lut_avhrr_default.nc' 
       case ( 'MTSAT-IMAGER')
           filename  = 'ecm2_lut_mtsat2_default.nc'
+      case ( 'SEVIRI')
+          filename  = 'ecm2_lut_seviri_default.nc'
       case default 
          call MESG("sensor "//TRIM(SensorName)//" does not have ECM2 LUT:  Inform andrew.heidinger@noaa.gov")
          stop 
@@ -1373,8 +1375,9 @@ contains
          endif
       enddo
 
-      if ((Sensor%WMO_Id == 270  .or. Sensor%WMO_Id == 271) .and. ACHA%Mode == 'baseline') then
-         call MESG( "Running Baseline Cloud Height for GOES-16/17 ",level = verb_lev % DEFAULT)
+      !if ((Sensor%WMO_Id == 270  .or. Sensor%WMO_Id == 271) .and. ACHA%Mode == 'baseline') then
+      if (ACHA%Mode == 'baseline') then
+         call MESG( "Running AWG Baseline Cloud Height ",level = verb_lev % DEFAULT)
          Mode_Idx = -1
       endif
 
