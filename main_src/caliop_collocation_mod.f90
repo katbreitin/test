@@ -142,7 +142,7 @@ subroutine CALIOP_COLLOCATION(Seg_Idx)
   do i = 1, Edge_1d(1)
 
     ! --- set all to SPACE if Missing value
-    if (Pixel_Element_Idx(i) == Missing) then
+    if (Pixel_Element_Idx(i) == Missing .or. Pixel_Element_Idx(i) .lt. 0) then
       Geo%Space_Mask(1:Image%Number_Of_Elements,i) = .true.
       cycle
     endif
