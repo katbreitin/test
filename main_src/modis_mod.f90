@@ -71,13 +71,9 @@ module MODIS_MOD
                 
         use cx_date_time_tools_mod,only: julian         
  
-        use PLANCK_MOD , only: &
-                convert_radiance &
-                , compute_bt_array
+        use PLANCK_MOD , only: CONVERT_RADIANCE, COMPUTE_BT_ARRAY
 
-        use VIEWING_GEOMETRY_MOD, only: &
-                glint_angle &
-                , scattering_angle
+        use VIEWING_GEOMETRY_MOD, only: GLINT_ANGLE, SCATTERING_ANGLE
  
         use FILE_TOOLS, only: &
                 file_search
