@@ -29,6 +29,8 @@ module CALIOP_COLLOCATION_MOD
       , Skip_L1b_File_Flag &
       , Geo &
       , Image &
+      , Ch &
+      , Sensor &
       , Caliop_Num_Cld_Layers &
       , Caliop_Cod & 
       , Caliop_Cld_Height
@@ -36,6 +38,10 @@ module CALIOP_COLLOCATION_MOD
   use CONSTANTS_MOD, only: &
         int4 &
       , real4 &
+      , Nchan_Clavrx &
+      , SOLAR_OBS_TYPE &
+      , THERMAL_OBS_TYPE &
+      , MIXED_OBS_TYPE &
       , Sym
 
   implicit none
@@ -56,7 +62,7 @@ subroutine CALIOP_COLLOCATION(Seg_Idx)
   integer(kind=int4) :: Num_Files
   integer(kind=int4) :: Status
   integer(kind=int4) :: Sd_Id
-  integer(kind=int4) :: i
+  integer(kind=int4) :: i, Chan_I
   integer(kind=int4) :: Left_Limit, Right_Limit
   integer(kind=int4), parameter :: N = 20
   integer(kind=int4), dimension (1) :: Start_1d, Stride_1d, Edge_1d
@@ -144,6 +150,21 @@ subroutine CALIOP_COLLOCATION(Seg_Idx)
     ! --- set all to SPACE if Missing value
     if (Pixel_Element_Idx(i) == Missing .or. Pixel_Element_Idx(i) .lt. 0) then
       Geo%Space_Mask(1:Image%Number_Of_Elements,i) = .true.
+      ! - loop through the channels and set them to missing
+      do Chan_I = 1, Nchan_Clavrx
+         if (Sensor%Chan_On_Flag_Default(Chan_I) .eq. sym%YES) then
+            ! - Ref
+            if (ch(Chan_I)%Obs_Type == SOLAR_OBS_TYPE) then
+               ch(Chan_I)%Ref_Toa(:,i) = Missing
+            endif
+            ! - BT
+            if (ch(Chan_I)%Obs_Type == THERMAL_OBS_TYPE .or. &
+                ch(Chan_I)%Obs_Type == MIXED_OBS_TYPE) then
+               ch(Chan_I)%Rad_Toa(:,i) = Missing
+               ch(Chan_I)%Bt_Toa(:,i) = Missing
+            endif
+         endif
+      enddo
       cycle
     endif
 
@@ -153,6 +174,25 @@ subroutine CALIOP_COLLOCATION(Seg_Idx)
     Geo%Space_Mask(1:Left_Limit,i) = .TRUE.
     Geo%Space_Mask(Right_Limit:Image%Number_Of_Elements,i) = .TRUE.
 
+    ! - loop through the channels and set them to missing
+    do Chan_I = 1, Nchan_Clavrx
+       if (Sensor%Chan_On_Flag_Default(Chan_I) .eq. sym%YES) then
+          ! - Ref
+          if (ch(Chan_I)%Obs_Type == SOLAR_OBS_TYPE) then
+             ch(Chan_I)%Ref_Toa(1:Left_Limit,i) = Missing
+             ch(Chan_I)%Ref_Toa(Right_Limit:Image%Number_Of_Elements,i) = Missing
+          endif
+          ! - BT
+          if (ch(Chan_I)%Obs_Type == THERMAL_OBS_TYPE .or. &
+              ch(Chan_I)%Obs_Type == MIXED_OBS_TYPE) then
+             ch(Chan_I)%Rad_Toa(1:Left_Limit,i) = Missing
+             ch(Chan_I)%Rad_Toa(Right_Limit:Image%Number_Of_Elements,i) = Missing
+             ch(Chan_I)%Bt_Toa(1:Left_Limit,i) = Missing
+             ch(Chan_I)%Bt_Toa(Right_Limit:Image%Number_Of_Elements,i) = Missing
+          endif
+       endif
+    enddo
+             
     ! --- save caliop data to global variables
     Caliop_Num_Cld_Layers(int(Pixel_Element_Idx(i)+1),i) = Caliop_Num_Cld_Layers_1D(i)
     Caliop_Cod(int(Pixel_Element_Idx(i)+1),i) = Caliop_Cod_1D(i)
