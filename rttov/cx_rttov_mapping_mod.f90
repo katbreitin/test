@@ -115,6 +115,35 @@ contains
       sensor_string = 'goes_'//sensor(6:6)//'_imager'
       rttov_version_string = '7'
       max_satzen = 75.
+   
+   
+    case ('GOES-10','GOES-11')
+      
+      
+      chn_list(20) = 1
+      chn_list(27) = 2
+      chn_list(31) = 3
+      chn_list(32) = 4
+      list = chn_list(chn)
+      sensor_string = 'goes_'//sensor(6:7)//'_imager'
+      rttov_version_string = '8'
+      max_satzen = 75.
+   
+     
+    case ('GOES-12','GOES-13','GOES-14','GOES-15')
+      
+      
+      chn_list(20) = 1
+      chn_list(27) = 2
+      chn_list(31) = 3
+      chn_list(33) = 4
+      
+      list = chn_list(chn)
+      sensor_string = 'goes_'//sensor(6:7)//'_imager'
+      rttov_version_string = '8'
+      max_satzen = 75.
+     
+     
       
     case ('GOES-16')
       chn_list = [2,3,1,-1,-1,5,6,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,7,-1,7,-1,-1,-1,4,9,10,11,12,14,15,16,-1,-1,-1,8,13,-1,-1,-1,-1,-1,-1,-1]
@@ -269,13 +298,13 @@ contains
     
     coef_filename = trim(path)//'/rtcoef_rttov12/rttov'//rttov_version_string//'pred54L/rtcoef_'//trim(sensor_string)//'.dat' 
     cld_coef_filename = trim(path)//'cldaer_ir/sccldcoef_'//trim(sensor_string)//'.dat'
- 
+
    if ( list .eq. 0) list = -1
     !print*,'Sensor rttov mapping: ',sensor,chn,list
     deallocate(chn_list)
     
-    
-   
+   if (rttov_version_string .eq. '7') max_satzen = 75.
+   if (rttov_version_string .eq. '8') max_satzen = 75.
 
 end function channel_map 
 
