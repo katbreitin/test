@@ -307,6 +307,8 @@ contains
    !  Called in process_clavrx
    !      CHANGED to RTTOV Sep 2020
    !
+   !   This is called in 
+   !
    !
    !====================================================================
    subroutine GET_PIXEL_NWP_RTM(Line_Idx_Min,Num_Lines)
@@ -333,7 +335,7 @@ contains
       integer :: n_val_pixels
       integer :: ii_pixel
       real :: geo_2way_term
-      integer :: cnt
+      
       
       real, dimension(NLevels_Rtm) ::  &
                     T_Prof_Rtm, &
@@ -342,8 +344,29 @@ contains
                      Ozmr_Prof_Rtm, &
                      Tpw_Prof_Rtm
       
-   
-      cnt = 0
+      
+      
+      logical, allocatable :: is_valid_pixel(:,:)
+      
+      
+      ! ===================   EXECUTABLE START ======================================
+      
+      allocate ( is_valid_pixel (1:Image%Number_Of_Elements,Line_Idx_Min: (Num_Lines + Line_Idx_Min - 1))) 
+      ! make a check if we have at least one pixel which is not bad or space
+      is_valid_pixel = Bad_Pixel_Mask .NE. sym%YES .and. .not. Geo%Space_Mask 
+      
+    
+      
+      if ( .not. ANY ( is_valid_pixel)) then 
+         print*,'only bad pixels at RTM entree point ...'
+         
+         return
+      
+      end if
+      
+      
+      
+      
       ! - find RTM pixels from NWP and allocate rtm (lon,lat) % d (zen) )
       !  these pixels are the used for RTTOV
       !--- loop over pixels in segment
@@ -352,7 +375,7 @@ contains
             
             if (Bad_Pixel_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle
             if (Geo%Space_Mask(Elem_Idx,Line_Idx) ) cycle
-            
+           
             !--- compute viewing zenith bin for Rtm calculation
             Zen_Idx_Rtm(Elem_Idx,Line_Idx) =  &
               max(1,min(Rtm_Nvzen,ceiling(Geo%Coszen(Elem_Idx,Line_Idx)/Rtm_Vza_Binsize)))
@@ -448,18 +471,30 @@ contains
       rtm_inp % ancil_path = trim(Ancil_Data_Dir)
       n_val_pixels = 0 ! counter
       nwp_size_arr = shape(rtm)
+     
       do x_nwp = 1, nwp_size_arr(1)
         do y_nwp =1, nwp_size_arr(2)
           if ( rtm(x_nwp,y_nwp) % is_allocated ) then
-              
+             
               do z_nwp =1,RTM_NVZEN
                 if ( rtm(x_nwp,y_nwp) % d(z_nwp) % is_allocated )  n_val_pixels = n_val_pixels + 1
               end do  
+             
           end if
         end do
       end do
       ! print*,'Number of needed RTTOV/PFAAST Clear-Sky Transmission calculations: ',n_val_pixels
       
+      ! - useless in n_val_pixels is 0
+      
+      if ( n_val_pixels .eq. 0) then
+         print*, 'Number of needed RTM pixels is ZERO ...'
+         print*, ' check file and line ', __FILE__, __LINE__
+         print*, ' this is an error this should not appear'
+         print*,'please inform andi.walther@ssec.wisc.edu'
+         stop
+      
+      end if
       
       allocate (rtm_inp % p_std( NLEVELS_RTM,n_val_pixels))
       allocate (rtm_inp % t_prof( NLEVELS_RTM,n_val_pixels))
