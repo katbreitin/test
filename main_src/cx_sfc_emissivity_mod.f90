@@ -23,6 +23,8 @@ module cx_sfc_emissivity_mod
   
   use CX_SEA_IR_EMISS_MOD, only: GET_SEGMENT_SEA_IR_EMISS
   
+  use CLAVRX_MESSAGE_MOD, only: MESG, VERB_LEV
+  
   implicit none
   private
   public:: cx_sfc_emiss_populate_ch
@@ -61,10 +63,10 @@ contains
     select case(sfc_emiss_option)
   
     case(ETsfc_emiss_use_option_UMD)
-      if (first_run) print*,ETsfc_emiss_use_option_UMD,'SFC EMISS UMD'
+      if (first_run) call MESG('SFC EMISS UMD',  level = verb_lev % DEFAULT)
   
     case(ETsfc_emiss_use_option_RTTOV)
-      if (first_run) print*,ETsfc_emiss_use_option_RTTOV,'SFC EMISS RTTOV'
+      if (first_run) call MESG('SFC EMISS RTTOV',  level = verb_lev % DEFAULT) 
 #ifdef LIBRTTOV   
       rttov_path = trim(Ancil_Data_Dir) // "static/rttov/"
       call GET_RTTOV_EMISS(Nav%Lat, Nav%Lon, Geo%Space_Mask, rttov_path)  
@@ -73,7 +75,7 @@ contains
       stop
 #endif
     case(ETsfc_emiss_use_option_SEEBOR)
-      if (first_run)  print*,ETsfc_emiss_use_option_SEEBOR, 'SFC EMISS SEEBOR'
+      if (first_run) call MESG('SFC EMISS SEEBOR',  level = verb_lev % DEFAULT) 
       path_sfc = trim(Ancil_Data_Dir)//"static/sfc_data"
     
       do Chan_Idx = 20, Nchan_Clavrx
@@ -91,7 +93,7 @@ contains
       stop 'CRTM is not yet installed'
   
     case default
-      print*,' Surface emissivity option is wrongly set'
+      call MESG(' Surface emissivity option is wrongly set',  level = verb_lev % DEFAULT) 
     end select
      
    ! print*,allocated(Ch(20)%Sfc_Emiss),maxval(Ch(31)%Sfc_Emiss)

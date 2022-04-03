@@ -99,6 +99,8 @@ module PIXEL_ROUTINES_MOD
  
  use ECM2_CLOUD_MASK_CLAVRX_BRIDGE, only: COMPUTE_TYPE_FROM_PHASE
  
+ use CLAVRX_MESSAGE_MOD, only: MESG, verb_lev
+ 
 !use RT_UTILITIES_MOD, only: COMPUTE_CLEAR_SKY_SCATTER
 
  implicit none
@@ -745,8 +747,10 @@ end subroutine QUALITY_CONTROL_ANCILLARY_DATA
             tsfc_onechannel = .false.
   end if
     
-  if ( first_segment) write(*,*) 'tsfc_onechannel = ',  tsfc_onechannel
-  
+  if ( first_segment)  then
+    if (tsfc_onechannel)  call MESG ('tsfc_onechannel TRUE', level = verb_lev %DEFAULT)
+    if ( .not. tsfc_onechannel)  call MESG ('tsfc_onechannel FALSE', level = verb_lev %DEFAULT)
+  end if
   !--- initialize
   Tsfc_Retrieved = Missing_Value_Real4
   Trad_Retrieved = Missing_Value_Real4
@@ -759,7 +763,7 @@ end subroutine QUALITY_CONTROL_ANCILLARY_DATA
     end if
     
   else if (tsfc_onechannel) then
-    if ( first_segment)  print*, 'LST Retrieval with single channel method '
+    if ( first_segment)  call MESG ('LST Retrieval with single channel method ', level = verb_lev %DEFAULT)
     !--- if no ch31, abort
     if (Sensor%Chan_On_Flag_Default(31) == sym%NO) then
       return 
