@@ -180,7 +180,6 @@ CONTAINS
     nprof=dim1*dim2 
     
     !write(*,*) 'init dimesions: ',Image%Number_Of_Elements, Image%Number_Of_Lines_Per_Segment , nprof
-    print*,'ATLAS TYPE IR For emis RTTOV: ',atlas_type_ir
     
 
     call rttov_setup_emis_atlas(   &
