@@ -62,6 +62,8 @@ module SEVIRI_MOD
   use FILE_TOOLS,only:getlun
   
   use VIEWING_GEOMETRY_MOD,only: possol
+  
+  use CLAVRX_MESSAGE_MOD, only: mesg, verb_lev
 
   implicit none
   private
@@ -149,7 +151,7 @@ contains
 
     open(unit=Instr_Const_lun,file=trim(Instr_Const_file),status="old",position="rewind",action="read",iostat=ios0)
 
-    print *, "opening ", trim(Instr_Const_file)
+    call MESG ( "Error opening MSG constants file "//trim(Instr_Const_file), level=Verb_Lev%WARNING)
     erstat = 0
     if (ios0 /= 0) then
       erstat = 19

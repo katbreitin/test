@@ -89,6 +89,9 @@ use CALIBRATION_CONSTANTS_MOD, only: &
       , glint_angle &
       , scattering_angle &
       , possol
+      
+    use CLAVRX_MESSAGE_MOD, only: mesg, verb_lev   
+      
    implicit none
    private
 
@@ -3502,7 +3505,7 @@ subroutine READ_DARK_COMPOSITE_COUNTS(Segment_Number,Xstride,Dark_Composite_File
 
    !--- check to see if a dark composite file exists for this image
    if (trim(Dark_Composite_Filename) == "no_file" .and. Segment_Number == 1) then
-          print *, "No Dark Composite Available for this Image"
+          call MESG( "No Dark Composite Available for this Image",level=verb_lev % DEFAULT )
           return
    endif
 
