@@ -491,7 +491,7 @@ ifdef rttov_libs
 cx_sfc_emissivity_mod.o:cx_sfc_emissivity_mod.f90  cx_rttov_sfc_emiss.o clavrx_message_mod.o
 	$(fc) -c $(fflags) $(cppflags) $(cpp) $(fflags_clavr) -I$(RTTOV_DIR)  $(LIB_RTTOV_FLAG)  cx_sfc_emissivity_mod.f90
   
-cx_rtm_mod.o:cx_rtm_mod.f90 nwp_common_mod.o cx_rttov_bridge_mod.o
+cx_rtm_mod.o:cx_rtm_mod.f90 nwp_common_mod.o cx_rttov_bridge_mod.o clavrx_message_mod.o
 	$(fc) -c $(fflags) $(cppflags) $(cpp) -I$(RTTOV_DIR)  $(LIB_RTTOV_FLAG)  cx_rtm_mod.f90
   
 else
@@ -541,7 +541,7 @@ comp_asc_des_level2b.o: comp_asc_des_level2b.f90 constants_mod.o cx_hdf4_mod.o h
 drive_subset_level2b.o: drive_subset_level2b.f90 constants_mod.o cx_hdf4_mod.o hdf.o level2b_mod.o
 file_tools.o: file_tools.f90
 foul.o: foul.f90
-goes_mod.o: goes_mod.f90 pixel_common_mod.o viewing_geometry_mod.o cx_date_time_tools_mod.o avhrr_mod.o file_tools.o cx_spatial_metrics_mod.o
+goes_mod.o: goes_mod.f90 pixel_common_mod.o viewing_geometry_mod.o cx_date_time_tools_mod.o avhrr_mod.o file_tools.o cx_spatial_metrics_mod.o clavrx_message_mod.o 
 abi_mod.o: abi_mod.f90 pixel_common_mod.o goes_mod.o file_tools.o viewing_geometry_mod.o cx_real_boolean_mod.o
 Compare_Float_Numbers.o: Compare_Float_Numbers.f90 constants_mod.o
 gfs_hdf_mod.o: gfs_hdf_mod.f90 constants_mod.o  cx_science_tools_mod.o nwp_common_mod.o hdf.o clavrx_message_mod.o cx_hdf4_mod.o
@@ -583,7 +583,7 @@ sapf_read_mod.o: sapf_read_mod.f90 hdf.o constants_mod.o pixel_common_mod.o file
 	$(fc) -c $(fflags) $(cppflags) $(cpp) $(CLAVRX_ID_FLAG) $(netcdflibs) sapf_read_mod.f90
 planck_mod.o: planck_mod.f90 constants_mod.o calibration_constants_mod.o pixel_common_mod.o
 avhrr_reposition_mod.o: avhrr_reposition_mod.f90 constants_mod.o cx_date_time_tools_mod.o pixel_common_mod.o reposnx.o
-seviri_mod.o: seviri_mod.f90 pixel_common_mod.o constants_mod.o numerical_routines_mod.o goes_mod.o viewing_geometry_mod.o
+seviri_mod.o: seviri_mod.f90 pixel_common_mod.o constants_mod.o numerical_routines_mod.o goes_mod.o viewing_geometry_mod.o clavrx_message_mod.o
 oca_mod.o: oca_mod.f90 hdf.o constants_mod.o pixel_common_mod.o file_tools.o
 sfc_emiss.o: sfc_emiss.f90 constants_mod.o numerical_routines_mod.o
 	$(fc) -c $(fflags) $(cppflags) $(cpp) $(CLAVRX_ID_FLAG) $(netcdflibs)  sfc_emiss.f90
