@@ -514,6 +514,8 @@
        SET_ABI_USE_104um_FLAG
 
    use CX_VGAC_MOD, only:
+
+   use cleanup, only: cleanup_tempdir
    
    implicit none 
   
@@ -637,7 +639,7 @@
       end do
     end if
     
-    
+
    call MESG( '<----------  Start of CLAVRXORB ----------> $Id: process_clavrx.f90 4129 2021-04-19 19:30:41Z heidinger $' &
       , level = verb_lev % DEFAULT , color = 4 ) 
    write(string,*)"Compiled on ",__DATE__//' '//__TIME__
@@ -669,6 +671,20 @@
 
    !--- make directory for temporary files created during this run
    call system("mkdir "//trim(Temporary_Data_Dir))
+   ! SIGTERM
+   CALL SIGNAL(12, cleanup_tempdir, ierror)
+   if(ierror .ne. 0) then
+     print*, 'Error setting up SIGTERM handler'
+     stop 124
+   endif
+   ! SIGINT
+   CALL SIGNAL(2, cleanup_tempdir, ierror)
+   if(ierror .ne. 0) then
+     print*, 'Error setting up SIGINT handler'
+     stop 125
+   endif
+
+    
 
    !*************************************************************************
    ! Marker: Open high spatial resolution ancillary data files
