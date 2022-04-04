@@ -303,9 +303,10 @@ contains
       integer::ios0
       integer::erstat
       integer:: Default_Lun
-      real:: Rand_Number
-      character(len=7):: Rand_String
+      integer:: PID
+      character(len=7):: Pid_String
       character(len=1020):: Temporary_Data_Dir_Root
+      character(len=1020):: hostname
       integer:: String_Length
       character(len=1):: Last_Char
       
@@ -330,7 +331,7 @@ contains
       read(unit=Default_Lun,fmt="(a)") Temporary_Data_Dir_Root
       read(unit=Default_Lun,fmt=*) Expert_Mode
 
-      !--- add a random number suffix to Temporary_Data_Dir
+      !--- add the PID to Temporary_Data_Dir
       string_length = len_trim(Temporary_Data_Dir_Root)
       last_char = Temporary_Data_Dir_Root(string_length:string_length)
 
@@ -338,10 +339,10 @@ contains
         Temporary_Data_Dir_Root = Temporary_Data_Dir_Root(1:string_length-1)
       endif
 
-      call INIT_RANDOM_SEED()
-      call random_number(Rand_Number)
-      write(Rand_String,'(I7.7)' ) int(10.0e06 * Rand_Number)
-      Temporary_Data_Dir = trim(Temporary_Data_Dir_Root) // '_' // trim(Rand_String) // '/'
+      call HOSTNM(hostname)
+      PID = getpid()
+      write(Pid_String,'(I7.7)' ) pid
+      Temporary_Data_Dir = trim(Temporary_Data_Dir_Root) // '_' // trim(hostname) // '_' // trim(Pid_String) // '/'
 
       !--- check expert mode, if 0 return
       if ( Expert_Mode  == 0 )  then
