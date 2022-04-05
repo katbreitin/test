@@ -21,7 +21,8 @@ def _run_it(main_l1b_file, aux_l1b_files=(), config_override=None):
     main_l1b_file = Path(main_l1b_file)
     tmpdir = Path(mkdtemp(dir=HERE))
     try:
-        out_dir = tmpdir
+        out_dir = tmpdir / 'out'
+        out_dir.mkdir()
         l1b_links = []
         for f in aux_l1b_files:
             f = Path(f)
@@ -50,6 +51,7 @@ def _run_it(main_l1b_file, aux_l1b_files=(), config_override=None):
                             config[k][k2] = v2
                 else:
                     config[k] = v
+        config['temp_dir'] = str(out_dir / 'temp_dir')
         options_file_content = build_options_file(config)
         file_list_content = build_file_list(out_dir, [main_l1b_link])
         level2_list_content = L2_LIST_CONTENT
