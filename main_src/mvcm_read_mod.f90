@@ -209,7 +209,29 @@ module MVCM_READ_MOD
 
   endif
 
-  !--- SIPS IFF MODIS Level1b
+  !--- SIPS AHI GEO
+  if (index(Image%Level1b_Name,'HS_H08') == 1) then
+    !0        1         2         3         4
+    !12345678901234567890123456789012345678901234567890
+    !HS_H08_20160502_0200_B01_FLDK_R10_S0110.DAT
+    !MVCMGEO.HIM08.20160502.0200_ahi_v1_0_3_REFERENCE_FD.nc
+    Search_String = 'MVCMGEO.HIM08.'//Image%Level1b_Name(8:15)//'.'//Image%Level1b_Name(17:20)//'*.nc'
+
+    Files => FILE_SEARCH(trim(Image%Level1b_Path),trim(Search_String),count=Num_Files)
+
+    if (Num_Files == 0 .or. Num_Files > 1) then
+        print *, EXE_PROMPT, MVCM_PROMPT, "MVCM File Not Found, "
+        return
+    endif
+
+    Image%Auxiliary_Cloud_Mask_File_Name = Files(1)
+
+    if (Seg_Idx == 1) &
+       print *, EXE_PROMPT, MVCM_PROMPT, "SIPS HIM08 MVCM File Found, ", &
+            trim(Image%Auxiliary_Cloud_Mask_File_Name)
+
+  endif
+
 
   
   Files => null() 

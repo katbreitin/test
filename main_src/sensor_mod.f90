@@ -2603,6 +2603,12 @@ module SENSOR_MOD
                call READ_AHI_DATA (Segment_Number, trim(Image%Level1b_Name), Ierror_Level1b)
             end if
 
+            !--- read auxillary cloud mask
+            if (Use_Aux_Flag /= sym%NO_AUX) then
+               call DETERMINE_MVCM_NAME(Segment_Number)
+               call READ_MVCM_DATA(Segment_Number)
+            endif
+
          end select
 
          !--- IFF data (all sensors same format)
