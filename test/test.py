@@ -91,7 +91,7 @@ def test_pgroup_bug():
             os.execv(str(CLAVRX),['clavrxorb'])
         else:
             pid,ws = os.wait()
-            rc = os.waitstatus_to_exitcode(ws)
+            rc = ws >> 8
             assert rc != 125
     finally:
         rmtree(tmpdir)
