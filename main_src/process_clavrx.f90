@@ -615,6 +615,7 @@
 
    !real, parameter, dimension(3):: Dnb_Coef = [-0.373685,0.977945,-0.000261637]
    real, parameter, dimension(3):: Dnb_Coef = [-0.118767,0.962452,-0.000144502]
+   integer*8, parameter :: SIG_ERR = -1
 
 
    !***********************************************************************
@@ -673,13 +674,13 @@
    call system("mkdir "//trim(Temporary_Data_Dir))
    ! SIGTERM
    CALL SIGNAL(12, cleanup_tempdir, ierror)
-   if(ierror .ne. 0) then
+   if(ierror .eq. SIG_ERR) then
      print*, 'Error setting up SIGTERM handler'
      stop 124
    endif
    ! SIGINT
    CALL SIGNAL(2, cleanup_tempdir, ierror)
-   if(ierror .ne. 0) then
+   if(ierror .eq. SIG_ERR) then
      print*, 'Error setting up SIGINT handler'
      stop 125
    endif
