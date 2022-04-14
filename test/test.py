@@ -4,6 +4,8 @@ from tempfile import mkdtemp
 from shutil import rmtree
 import subprocess
 import pytest
+import signal
+import os
 
 CLAVRX = Path('../clavrx_bin/clavrxorb').absolute()
 assert CLAVRX.exists(), str(CLAVRX)+' does not exist'
@@ -56,6 +58,41 @@ def _run_it(main_l1b_file, aux_l1b_files=(), config_override=None):
         file_list_content = build_file_list(out_dir, [main_l1b_link])
         level2_list_content = L2_LIST_CONTENT
         run_clavrx(CLAVRX, file_list_content, options_file_content, level2_list_content, debug=False, log=False)
+    finally:
+        rmtree(tmpdir)
+
+def test_pgroup_bug():
+    main_l1b_file = Path('./dummy')
+    tmpdir = Path(mkdtemp(dir=HERE))
+    out_dir = tmpdir / 'out'
+    out_dir.mkdir()
+    try:
+        config = get_config()
+        config['temp_dir'] = str(out_dir / 'temp_dir')
+        options_file_content = build_options_file(config)
+        file_list_content = build_file_list(out_dir, [main_l1b_file])
+        options_file_path = tmpdir / 'clavrx_options'
+        with open(options_file_path,'w') as fp:
+            fp.write(options_file_content)
+        # Skip level2_list so the process ends early
+        # This test is for a bug that causes fast failures
+        #level2_list_content = L2_LIST_CONTENT
+        #with open(tmpdir / 'level2_list', 'w') as fp:
+            #fp.write(level2_list_content)
+        file_list_path = tmpdir / 'file_list'
+        with open(file_list_path, 'w') as fp:
+            fp.write(file_list_content)
+        # this returns immediately, and we need to keep the shell alive
+        if os.fork() == 0:
+            # child
+            # ignore SIGINT
+            signal.signal(2, signal.SIG_IGN)
+            os.chdir(tmpdir)
+            os.execv(str(CLAVRX),['clavrxorb'])
+        else:
+            pid,ws = os.wait()
+            rc = os.waitstatus_to_exitcode(ws)
+            assert rc != 125
     finally:
         rmtree(tmpdir)
 
