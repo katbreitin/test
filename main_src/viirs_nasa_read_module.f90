@@ -1091,7 +1091,7 @@ subroutine DETERMINE_VIIRS_NASA_FILE(Path_In,File_In,File_Type_In,File_Out)
       !VNP02MOD.A2014036.1154.001.2017300062642.uwssec.nc
       !VNP03DNB.A2014036.1154.001.2017300063048.uwssec.nc
       !VNP02DNB.A2014036.1154.001.2017300062642.uwssec.nc
-         Search_String = trim(File_Type_In)//trim(File_In(9:22))//'*.uwssec.nc'
+         Search_String = trim(File_Type_In)//trim(File_In(9:22))//'*.nc'
       endif
 
       Files => FILE_SEARCH(trim(Path_In),trim(Search_String),count=Num_Files)
