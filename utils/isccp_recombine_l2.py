@@ -6,16 +6,16 @@ import warnings
 import sys
 
 WMO_ID_MAPPING = {
-    'goes-16':152,
-    'goes-16':270,
-    'goes-17':664,
-    'goes-17':271,
-    'himawari-8':167,
-    'himawari-8':173,
-    'meteosat-8':684,
-    'meteosat-8':55,
-    'meteosat-11':305,
-    'meteosat-11':70
+    152:'goes-16',
+    270:'goes-16',
+    664:'goes-17',
+    271:'goes-17',
+    167:'himawari-8',
+    173:'himawari-8',
+    684:'meteosat-8',
+    55:'meteosat-8',
+    305:'meteosat-11',
+    70:'meteosat-11'
 }
 
 def setup_dataset(orig, fname):
@@ -50,11 +50,7 @@ def prepare_inputs(l2_files):
     netcdfs = {}
     for f in l2_files:
         wmo_id = int(f.name.split('.')[0].split('_')[-1])
-        for name,id in WMO_ID_MAPPING.items():
-            if id == wmo_id:
-                break
-        else:
-            raise KeyError(wmo_id)
+        name = WMO_ID_MAPPING[wmo_id]
         netcdfs[name] = netCDF4.Dataset(f)
         netcdfs[name].set_auto_maskandscale(False)
     orig = netcdfs[name]
@@ -136,9 +132,9 @@ def validate_args(args):
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('out_file')
-    parser.add_argument('wmo_file')
-    parser.add_argument('l2_files', nargs='+')
+    parser.add_argument('out_file', help='path to output netcdf')
+    parser.add_argument('wmo_file', help='path to l1g wmo_id file')
+    parser.add_argument('l2_files', nargs='+', help='paths to individual l2 files from each satellite')
     args = parser.parse_args()
 
     out_file, wmo_file, l2_files = validate_args(args)
