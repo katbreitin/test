@@ -358,8 +358,8 @@ contains
     
       
       if ( .not. ANY ( is_valid_pixel)) then 
-         print*,'only bad pixels at RTM entree point ...'
-         
+        
+         !call MESG('only bad pixels at RTM entree point ...',level = verb_lev %DEFAULT)
          return
       
       end if

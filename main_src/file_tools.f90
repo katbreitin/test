@@ -17,7 +17,10 @@
 !-----------------------------------------------------------------------------------------------------------------------
 
 module file_tools
+  use pixel_common_mod, only: Temporary_Data_Dir
+
   implicit none
+
 
   private
 
@@ -29,6 +32,7 @@ module file_tools
   public :: get_lun
   public :: file_nr_lines
   public :: uncompress_file
+
   
 
 contains
@@ -164,10 +168,10 @@ contains
       integer :: lun
       character(len=8) :: date
       character(len=20) :: time
-      character(len=200) :: unique_dummy_file
+      character(len=2048) :: unique_dummy_file
       
       call date_and_time(date = date, time=time)
-      unique_dummy_file = 'fort.file_search_dummy_'//trim(time)  
+      unique_dummy_file = trim(Temporary_Data_Dir)//'/fort.file_search_dummy_'//trim(time)  
 
       call system ( 'rm -f '//trim(unique_dummy_file))
       lun = getlun()

@@ -3032,7 +3032,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
              
              
          case default
-            print *, "Unknown Level2 Variable ==> ", trim(Sds_Info(Var_Idx)%Sds_Name)
+            call MESG ( "Unknown Level2 Variable ==> "//trim(Sds_Info(Var_Idx)%Sds_Name), level=verb_lev % ERROR )
                
       end select
    enddo

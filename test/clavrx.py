@@ -56,9 +56,13 @@ def run_clavrx(clavrx, file_list_content, options_file_content, level2_list_cont
             if log:
                 with open(tmpdir / 'clavrx.log','wb') as stdout:
                     with open(tmpdir / 'clavrx.err','wb') as stderr:
+                        tmpdir.chmod(0o555)
                         p = run([clavrx], cwd=tmpdir, stdout=stdout, stderr=stderr)
+                        tmpdir.chmod(0o755)
             else:
+                tmpdir.chmod(0o555)
                 p = run([clavrx], cwd=tmpdir)
+                tmpdir.chmod(0o755)
             p.check_returncode()
         except Exception:
             crash()
