@@ -239,24 +239,22 @@ subroutine READ_ISCCPNG_DATA(Segment_Number, Error_Status)
    end where
 
    !--- convert azimuths from L1g to CLAVR-x convention
-   ! L1g is clockwise from East
    ! CLAVR-x is clockwise from North
-   ! l1g = (clavrx + 90)%360.
+   ! (old) L1g is clockwise from East
+   ! (old) l1g = (clavrx + 90)%360.
 
-!  where(Geo%Sataz /= MISSING_VALUE_REAL4)
-!     Geo%Sataz = mod(Geo%Sataz - 90.0,360.0) 
+   !--- transform not needed for demo 03/23
+!  where(Geo%Sataz > 180.0) 
+!     Geo%Sataz = Geo%Sataz - 360.0
 !  end where
-   where(Geo%Sataz > 180.0) 
-      Geo%Sataz = Geo%Sataz - 360.0
-   end where
 
 
-   where(Geo%Solaz /= MISSING_VALUE_REAL4)
-      Geo%Solaz = mod(Geo%Solaz - 90.0,360.0)
-   end where
-   where(Geo%Solaz > 180.0) 
-      Geo%Solaz = Geo%Solaz - 360.0
-   end where
+!  where(Geo%Solaz /= MISSING_VALUE_REAL4)
+!     Geo%Solaz = mod(Geo%Solaz - 90.0,360.0)
+!  end where
+!  where(Geo%Solaz > 180.0) 
+!     Geo%Solaz = Geo%Solaz - 360.0
+!  end where
 
    !--- make Relaz and Glint and Scattering angles here
    Geo%Relaz = RELATIVE_AZIMUTH (Geo%Solaz, Geo%Sataz)
@@ -317,7 +315,7 @@ subroutine READ_ISCCPNG_DATA(Segment_Number, Error_Status)
       call COMPUTE_RAD_ARRAY( Ch(28)%Bt_Toa,Ch(28)%Rad_Toa,28,MISSING_VALUE_REAL4)
    end if
    if (Sensor%Chan_On_Flag_Default(29) == sym%Yes) then
-      call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_08_50um', Segment_Number, WMO_L1g, Ch(29)%Bt_Toa) 
+      call READ_LAYERED_L1G(File_Prefix, File_Suffix, 'temp_08_60um', Segment_Number, WMO_L1g, Ch(29)%Bt_Toa) 
       call COMPUTE_RAD_ARRAY( Ch(29)%Bt_Toa,Ch(29)%Rad_Toa,29,MISSING_VALUE_REAL4)
    end if
    if (Sensor%Chan_On_Flag_Default(30) == sym%Yes) then

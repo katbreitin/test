@@ -1160,6 +1160,10 @@ contains
           filename  = 'ecm2_lut_mtsat2_default.nc'
       case ( 'SEVIRI')
           filename  = 'ecm2_lut_seviri_default.nc'
+      case ( 'GOES-MP-IMAGER')
+          filename  = 'ecm2_lut_goesmp_src-abhi_default.nc'
+      case ( 'GOES-IL-IMAGER')
+          filename  = 'ecm2_lut_goesil_src-abhi_default.nc'
       case default 
          call MESG("sensor "//TRIM(SensorName)//" does not have ECM2 LUT:  Inform andrew.heidinger@noaa.gov")
          stop 

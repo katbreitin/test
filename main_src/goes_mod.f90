@@ -107,7 +107,7 @@ use CALIBRATION_CONSTANTS_MOD, only: &
          DARK_COMPOSITE_CLOUD_MASK
 
 
-   integer(kind=int4), public, parameter:: Goes_Xstride = 1    ! goes is oversampled by 50% in x
+   integer(kind=int4), public, parameter:: Goes_Xstride = 2    ! goes is oversampled by 50% in x
    integer(kind=int4), public, parameter:: Goes_Sndr_Xstride = 1
    integer(kind=int4), private, parameter:: Num_4km_Scans_Goes_Fd = 2704 
    integer(kind=int4), private, parameter:: Num_4km_Elem_Goes_Fd = 5200 
