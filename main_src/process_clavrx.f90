@@ -673,13 +673,9 @@
    !--- make directory for temporary files created during this run
    call system("mkdir "//trim(Temporary_Data_Dir))
    ! SIGTERM
-<<<<<<< HEAD
-   CALL SIGNAL(12, cleanup_tempdir, ierror)
-   if(ierror .eq. SIG_ERR) then
-=======
+
    CALL SIGNAL(15, cleanup_tempdir, ierror)
    if(ierror .ne. 0) then
->>>>>>> 9ef6b90 (changed signal SIUGTERM from 12 to 15 which seemed to work on all machines)
      print*, 'Error setting up SIGTERM handler'
      stop 124
    endif
