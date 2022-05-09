@@ -200,6 +200,9 @@ module AWG_CLOUD_HEIGHT
   -5.2, -5.4, -5.4, -5.5, -5.6, -6.8, -7.8, &
   -4.6, -4.9, -4.9, -5.0, -5.1, -6.2, -7.1/), (/nts,ntcs/))
 
+  !--- Change to fixed lapse rate.
+  real, private, parameter:: LAPSE_RATE_OCEAN = -9.8
+
 !----- old 5/2016
 !  real, private, dimension(nts,ntcs), parameter:: ocean_lapse_rate_table = reshape ((/ &
 !                          -7.3, -7.2, -7.3, -7.4, -7.4, -6.8, -6.2, &
@@ -449,6 +452,9 @@ module AWG_CLOUD_HEIGHT
 
   real(kind=real4):: Zc_Thick
 
+  !--- Needed for change back to baseline inversion logic.
+  integer(kind=int1), allocatable, dimension(:,:,:):: Inver_Prof_RTM
+
 !-----------------------------------------------------------------------
 ! BEGIN EXECUTABLE CODE
 !-----------------------------------------------------------------------
@@ -551,6 +557,9 @@ module AWG_CLOUD_HEIGHT
   allocate(Sx_Simple(Num_Param_Simple,Num_Param_Simple))
   allocate(AKM_Simple(Num_Param_Simple,Num_Param_Simple))
 
+  !--- Allocate array for baseline inversion change.
+  allocate(Inver_Prof_RTM(Input%Number_of_Elements,Input%Number_of_Lines,size(ACHA_RTM_NWP%P_Prof)))
+
   !--- set convergence criterion
   Convergence_Criteria = (Num_Param - 1.0) / 5.0
   Convergence_Criteria_Simple = (Num_Param_Simple - 1.0) / 5.0
@@ -571,6 +580,8 @@ module AWG_CLOUD_HEIGHT
   Output%Qf = MISSING_VALUE_integer1  !0_int1
   Meta_Data_Flags = 0_int1
   Output%Inversion_Flag = 0_int1
+  Inver_Prof_RTM = 0_int1
+
   if (Input%Chan_On_038um == Symbol%YES) Output%Ec_038um = MISSING_VALUE_REAL4
   if (Input%Chan_On_067um == Symbol%YES) Output%Ec_067um = MISSING_VALUE_REAL4
   if (Input%Chan_On_085um == Symbol%YES) Output%Ec_085um = MISSING_VALUE_REAL4
@@ -1108,17 +1119,20 @@ module AWG_CLOUD_HEIGHT
 
  !----------------------------------------------------------------
  ! Determine the level of the highest inversion (0=if none)
+ ! Changes for baseline inversion.
  !----------------------------------------------------------------
  call DETERMINE_INVERSION_CHARACTERISTICS(ACHA_RTM_NWP, &
                                           Symbol%YES, &
                                           Symbol%NO,  &
                                           Input%Surface_Air_Temperature(Elem_Idx,Line_Idx),&
                                           Input%Surface_Elevation(Elem_Idx,Line_Idx),      &
+                                          Input%Surface_Pressure(Elem_Idx,Line_Idx),      &
                                           Inver_Top_Level_RTM,    &
                                           Inver_Base_Level_RTM,   & 
                                           Inver_Top_Height,       &
                                           Inver_Base_Height,      & 
                                           Inver_Strength, &
+                                          Inver_Prof_RTM(Elem_Idx,Line_Idx,:), &
                                           Dump_Diag,  &
                                           Lun_Iter_Dump)
 
@@ -1325,7 +1339,8 @@ end do pass_loop
 !---------------------------------------------------------------------------
 
 !-- perform conversion of Tc to Zc and Pc
-call CONVERT_TC_TO_PC_AND_ZC(Input,Symbol,Cloud_Type_Temp,Output)
+!--- Changes for baseline inversion.
+call CONVERT_TC_TO_PC_AND_ZC(Input,Symbol,Cloud_Type_Temp,Inver_Prof_RTM,Output)
 
 !--- compute cloud emissivity in each channel used
 call COMPUTE_SPECTRAL_CLOUD_EMISSIVITY(Input,Symbol,Output)
@@ -1370,6 +1385,9 @@ deallocate(x_Ap_Simple)
 deallocate(Sa_Simple)
 deallocate(Sa_Inv_Simple)
 deallocate(Sx_Simple)
+
+! Deallocate 3D-VARR arrays for baseline inversion change.
+deallocate(Inver_Prof_RTM)
 
 !---close single pixel dump output
 if (Lun_Prof_Dump > 0) close(unit=Lun_Prof_Dump)
@@ -1813,17 +1831,20 @@ end subroutine  DETERMINE_ACHA_MODE_BASED_ON_CHANNELS
  !
  ! Output - via module-wide variables
  ! Inver_Prof_RTM - level flags (0/1) if inversion present
+ ! Changes for baseline inversion.
  !--------------------------------------------------------------------------
  subroutine DETERMINE_INVERSION_CHARACTERISTICS(ACHA_RTM_NWP, &
                                                 Symbol_Yes,               &
                                                 Symbol_No,                &
                                                 Sfc_Air_Temp,             &
                                                 Sfc_Height,               &
+                                                Sfc_Pressure,             &
                                                 Top_Lev_Idx,            &
-                                                Base_Lev_Idx,           & 
+                                                Base_Lev_Idx,           &
                                                 Inversion_Top_Height,     &
                                                 Inversion_Base_Height,    & 
                                                 Inversion_Strength, &
+                                                Inver_Prof_RTM, &
                                                 Dump_Diag, &
                                                 Lun_Iter_Dump)
 
@@ -1834,6 +1855,7 @@ end subroutine  DETERMINE_ACHA_MODE_BASED_ON_CHANNELS
    integer :: Sfc_Level
    real, intent(in):: Sfc_Air_Temp
    real, intent(in):: Sfc_Height
+   real, intent(in):: Sfc_Pressure
    real, intent(out):: Inversion_Top_Height
    real, intent(out):: Inversion_Base_Height
    integer, intent(out):: Top_Lev_Idx
@@ -1844,7 +1866,7 @@ end subroutine  DETERMINE_ACHA_MODE_BASED_ON_CHANNELS
    integer:: k
    real:: Inversion_Top_Temperature
    real:: Inversion_Base_Temperature
-   integer, dimension(size(ACHA_RTM_NWP%P_Prof)):: Inver_Prof_RTM
+   integer(kind=int1), dimension(size(ACHA_RTM_NWP%P_Prof)), intent(out):: Inver_Prof_RTM
 
    Inver_Prof_RTM = Symbol_NO
    Tropo_Level = ACHA_RTM_NWP%Tropo_Level
@@ -1852,7 +1874,8 @@ end subroutine  DETERMINE_ACHA_MODE_BASED_ON_CHANNELS
 
    do k = Sfc_Level, Tropo_Level, -1
 
-      if (ACHA_RTM_NWP%P_Prof(k) >= MIN_P_INVERSION) then
+      if (ACHA_RTM_NWP%P_Prof(k) >= MIN_P_INVERSION .and. &
+         ACHA_RTM_NWP%P_Prof(k-1) <= Sfc_Pressure - DELTA_PSFC_INVERSION) then
 
          if (ACHA_RTM_NWP%T_Prof(k-1) - ACHA_RTM_NWP%T_Prof(k) > DELTA_T_LAYER_INVERSION) then
             Inver_Prof_RTM(k-1:k) = Symbol_YES
@@ -3249,6 +3272,7 @@ subroutine  DETERMINE_NUMBER_OF_CHANNELS(Acha_Mode_Flag, Num_Obs)
 end subroutine  DETERMINE_NUMBER_OF_CHANNELS
 !-------------------------------------------------------
 !---  for low clouds over water, force fixed lapse rate estimate of height
+!--- changes for baseline inversion.
 !-------------------------------------------------------
 subroutine COMPUTE_HEIGHT_FROM_LAPSE_RATE(ACHA_RTM_NWP, &
                                           Snow_Class, &
@@ -3257,6 +3281,7 @@ subroutine COMPUTE_HEIGHT_FROM_LAPSE_RATE(ACHA_RTM_NWP, &
                                           Surface_Temperature, & 
                                           Surface_Elevation, &
                                           Max_Delta_T_Inversion, &
+                                          Inver_Prof_RTM, &
                                           Tc, &
                                           Zc, &
                                           Pc, &
@@ -3265,11 +3290,13 @@ subroutine COMPUTE_HEIGHT_FROM_LAPSE_RATE(ACHA_RTM_NWP, &
  integer(kind=int1), intent(in):: Snow_Class, Surface_Type, Cloud_Type
  real, intent(in):: Surface_Temperature, Surface_Elevation, &
                     Tc, Max_Delta_T_Inversion
- real, intent(out):: Zc, Pc
+ integer(kind=int1), dimension(size(ACHA_RTM_NWP%P_Prof)), intent(in):: Inver_Prof_RTM
+ real, intent(inout):: Zc, Pc
  integer(kind=int1), intent(out):: Inversion_Flag
 
  real:: Delta_Cld_Temp_Sfc_Temp, Lapse_Rate, R4_Dummy
  integer:: Lev_Idx
+ real:: Zc_Adj
 
  Delta_Cld_Temp_Sfc_Temp = Surface_Temperature - Tc
  Lapse_Rate = MISSING_VALUE_REAL4
@@ -3282,24 +3309,22 @@ subroutine COMPUTE_HEIGHT_FROM_LAPSE_RATE(ACHA_RTM_NWP, &
  if ((Cloud_Type == Symbol%WATER_TYPE) .or. &
      (Cloud_Type == Symbol%FOG_TYPE) .or. &
      (Cloud_Type == Symbol%SUPERCOOLED_TYPE)) then
-
-     if (Delta_Cld_Temp_Sfc_Temp <  MAX_DELTA_T_INVERSION) then
+   if (Surface_Type == Symbol%WATER_SFC) then
+     !The level check is no longer needed as levels are constrained
+     if (maxval(Inver_Prof_RTM) > 0) then
+     !if (maxval(Inver_Prof_RTM(Inver_Top_Level_RTM:Max_Inv_Level_RTM)) > 0) then
 
        !-- select lapse rate  (k/km)
-       if (Surface_Type == Symbol%WATER_SFC) then 
-           Lapse_Rate = EMPIRICAL_LAPSE_RATE(Surface_Temperature,Tc, 0)
-       else
-           Lapse_Rate = EMPIRICAL_LAPSE_RATE(Surface_Temperature,Tc, 1)
-       endif
-
-       !--- constrain lapse rate to be with -2 and -10 K/km
-       Lapse_Rate = min(-2.0,max(-10.0,Lapse_Rate))
+       Lapse_Rate = LAPSE_RATE_OCEAN !-9.8 !EMPIRICAL_LAPSE_RATE(Surface_Temperature,Tc, 0)
 
        !--- convert lapse rate to K/m
        Lapse_Rate = Lapse_Rate / 1000.0  !(K/m)
 
        !-- compute height
-       Zc = -1.0*Delta_Cld_Temp_Sfc_Temp/Lapse_Rate + Surface_Elevation
+       Zc_Adj = -1.0*Delta_Cld_Temp_Sfc_Temp/Lapse_Rate + Surface_Elevation
+
+       if (Zc_Adj < Zc) Zc = Zc_Adj
+       !if (Zc_Adj < Zc .and. Zc_Adj >= 0) Zc = Zc_Adj
 
        !--- Some negative cloud heights are observed because of bad height
        !--- NWP profiles.
@@ -3313,6 +3338,7 @@ subroutine COMPUTE_HEIGHT_FROM_LAPSE_RATE(ACHA_RTM_NWP, &
        Inversion_Flag = 1_int1
 
      endif
+   endif
   endif
 end subroutine COMPUTE_HEIGHT_FROM_LAPSE_RATE
 
@@ -3930,13 +3956,16 @@ end subroutine MODIFY_TC_AP
 ! Input:
 !
 ! Output:
+!
+! Changes for baseline inversion.
 !----------------------------------------------------------------------
-subroutine CONVERT_TC_TO_PC_AND_ZC(Input,Symbol_In,Cloud_Type,Output)
+subroutine CONVERT_TC_TO_PC_AND_ZC(Input,Symbol_In,Cloud_Type,Inver_Prof_RTM,Output)
   type(acha_input_struct), intent(inout) :: Input
   type(acha_symbol_struct), intent(in) :: Symbol_In
   integer (kind=int1), intent(in), dimension(:,:):: Cloud_Type
   type(acha_output_struct), intent(inout) :: Output
   type(acha_rtm_nwp_struct) :: ACHA_RTM_NWP
+  integer(kind=int1),intent(in), dimension(:,:,:):: Inver_Prof_RTM
   integer:: Elem_Idx, Line_Idx,Dummy_Flag
   real:: T_Tropo, Z_Tropo, P_Tropo
   integer:: Lev_Idx,Ierror,NWP_Profile_Inversion_Flag
@@ -3986,6 +4015,7 @@ subroutine CONVERT_TC_TO_PC_AND_ZC(Input,Symbol_In,Cloud_Type,Output)
                                      Input%Surface_Temperature(Elem_Idx,Line_Idx), &
                                      Input%Surface_Elevation(Elem_Idx,Line_Idx), &
                                      MAX_DELTA_T_INVERSION, &
+                                     Inver_Prof_RTM(Elem_Idx,Line_Idx,:), &
                                      Output%Tc_Eff(Elem_Idx,Line_Idx), &
                                      Output%Zc_Eff(Elem_Idx,Line_Idx), &
                                      Output%Pc_Eff(Elem_Idx,Line_Idx), &
@@ -4001,6 +4031,7 @@ subroutine CONVERT_TC_TO_PC_AND_ZC(Input,Symbol_In,Cloud_Type,Output)
                                      Input%Surface_Temperature(Elem_Idx,Line_Idx), &
                                      Input%Surface_Elevation(Elem_Idx,Line_Idx), &
                                      MAX_DELTA_T_INVERSION, &
+                                     Inver_Prof_RTM(Elem_Idx,Line_Idx,:), &
                                      Output%Tc(Elem_Idx,Line_Idx), &
                                      Output%Zc(Elem_Idx,Line_Idx), &
                                      Output%Pc(Elem_Idx,Line_Idx), &
