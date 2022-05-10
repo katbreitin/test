@@ -513,7 +513,9 @@ CONTAINS
         Ch(Chan_Idx)%Obs_Type /= THERMAL_OBS_TYPE) cycle
 
       if (Sensor%Chan_On_Flag_Default(Chan_Idx) == sym%YES) then
-        Ch(Chan_Idx)%Sfc_Emiss=emiss1(:,:,Chan_Idx)
+        where(emiss1(:,:,Chan_Idx) .ge. 0)
+            Ch(Chan_Idx)%Sfc_Emiss=emiss1(:,:,Chan_Idx)
+        end where
       end if
     end do
  
