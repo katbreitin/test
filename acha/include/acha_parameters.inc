@@ -53,19 +53,6 @@
  logical, private, parameter :: CONSTRAIN_ICE_PROB= .false.     !whether or not to allow acha to modify ice_prob_ap
  logical, private, parameter :: BINARY_ICE_PROB= .false.        !whether to use 0/1 ice_prob_ap
 
- !---- GOES-R BASELINE-ish
- !logical, private, parameter:: FULL_RETRIEVAL = .false.
- !logical, private, parameter:: USE_LINEAR_IN_OPD_EMISSION = .false.
- !integer(kind=int4), parameter, private:: MULTI_LAYER_LOGIC_Flag = 0
- !logical, private, parameter :: USE_CIRRUS_FLAG = .false. 
- !logical, private, parameter :: USE_LAPSE_RATE_FLAG = .true.  
- !logical, private, parameter :: USE_LOWER_INTERP_FLAG = .true.  
- !logical, private, parameter :: USE_LRC_FLAG = .true.
- !integer, parameter, private:: Cloud_Type_Forced = -1 ! -1 = not used, 0-10 use this type
- !logical, private, parameter :: USE_SOUNDER_VALUES = .false.
- !integer, private, parameter :: USE_TYPE_FLAG = 0
- !real, private, parameter:: ICE_EXTINCTION_TUNING_FACTOR = 1.0
-
  !------------------------------------------------------------
  ! ACHA parameters
  !------------------------------------------------------------
@@ -169,8 +156,6 @@ real(kind=real4), parameter, private:: Tc_Ap_Uncer_Cirrus_Default = 30.0  !!    
  real(kind=real4), parameter, private:: Tau_Ap_Overlap_Type = 0.9 !2.0           !apriori estimate of tau for multilayer cloud type
 
  !--- specify calibration  errors
-!--> real(kind=real4), parameter, private:: T110um_120um_Cal_Uncer = 1.0  !BASELINE V5
-!--> real(kind=real4), parameter, private:: T110um_133um_Cal_Uncer = 2.0 !BASELINE V5
  real(kind=real4), parameter, private:: T110um_Cal_Uncer = 1.0
  real(kind=real4), parameter, private:: T110um_038um_Cal_Uncer = 1.0
  real(kind=real4), parameter, private:: T110um_062um_Cal_Uncer = 1.0
@@ -203,18 +188,6 @@ real(kind=real4), parameter, private:: Tc_Ap_Uncer_Cirrus_Default = 30.0  !!    
  !--- cirrus apriori for ice cloud temperature relative to tropopause
  !---- computed in 10 deg lat bands.  First bin is -90 to -80
  integer, parameter, private:: num_lat_cirrus_ap = 18
-
-!--- old
-!real(kind=real4), dimension(num_lat_cirrus_ap), private, parameter:: &
-!   TC_CIRRUS_MEAN_LAT_VECTOR = (/  &
-!     17.1184, 16.8644, 14.4241, 15.7231, 14.6659, 17.5565, &
-!     27.6142, 17.9770, 13.5127, 16.2466, 22.4699, 24.6992, &
-!     18.7324, 18.3266, 15.2087, 14.8122, 18.0353, 19.9059/)
-!real(kind=real4), dimension(num_lat_cirrus_ap), private, parameter:: &
-!   TC_CIRRUS_STDDEV_LAT_VECTOR = (/  &
-!     9.58205, 10.7957, 9.96308, 9.75967, 9.11487, 11.3290, &
-!     18.0040, 16.2742, 14.0061, 15.0945, 13.7971, 14.6018, &
-!     15.5322, 14.5822, 11.3727, 9.90263, 11.5416, 11.9146/)
 
 !--- akh 10/2020
  real(kind=real4), dimension(num_lat_cirrus_ap), private, parameter:: &

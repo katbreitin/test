@@ -736,10 +736,6 @@ IF (Input%Solzen < Lut(1)%Rut_Solzen_Thresh .and. Input%Ref_063um .ne. MISSING_V
                              Mask_Thresh%Rut_Clear_Prob_Clear_Thresh(Output%Sfc_Idx))
 ENDIF
 
-!--- apply uniformity
-!IF (Output%Cld_Mask_Bayes == symbol%CLEAR .and. (Output%TUT == 1 .or. Output%RUT == 1)) &
-!       Output%Cld_Mask_Bayes = symbol%PROB_CLEAR
-
 
 !----------------------------------------------------------------------------------
 !--- set some flags to control processing - Lets move this to a subroutine

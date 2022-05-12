@@ -165,13 +165,7 @@
   
   use CX_REAL_BOOLEAN_MOD 
   
-   use CONSTANTS_MOD !, only: &
-      !  int4, real4 &
-      !  , int1, int2 &
-      !   , missing_value_int4 &
-      !   , sym, DTOR &
-      !  ,  MODIS_ALB_0_86_SDS_NAME &
-      !  ,  MODIS_ALB_0_66_SDS_NAME
+   use CONSTANTS_MOD 
       
    use CX_DATE_TIME_TOOLS_MOD, only: &
       LEAP_YEAR_FCT &
@@ -295,9 +289,6 @@
     , NUCAPS &
     , CLDMASK &
     , NWP_PIX &
-    !, Diag_Pix_Array_1 &
-    !, Diag_Pix_Array_2 &
-    !, Diag_Pix_Array_3 &
       ! - routines
     , Destroy_Pixel_Arrays &
     , Create_Pixel_Arrays &
@@ -613,7 +604,6 @@
    integer :: narg,cptArg
    character(len=30) :: arg_name
 
-   !real, parameter, dimension(3):: Dnb_Coef = [-0.373685,0.977945,-0.000261637]
    real, parameter, dimension(3):: Dnb_Coef = [-0.118767,0.962452,-0.000144502]
    integer*8, parameter :: SIG_ERR = -1
 
@@ -914,12 +904,6 @@
       !*************************************************************************
       ! Marker:  READ IN SENSOR-SPECIFIC CONSTANTS
       !*************************************************************************
-
-      !if (Sensor%Wmo_Id == 271) call SET_ABI_USE_104um_FLAG(ABI_Use_104um_Flag, File_Number)
-
-      !--- DEBUG ONLY 
-      !ABI_Use_104um_Flag = .true.
-      !--- DEBUG ONLY 
 
       !*************************************************************************
       ! Marker:  Open non-static high spatial resolution ancillary data
