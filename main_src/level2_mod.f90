@@ -2400,7 +2400,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
          case("cloud_transmission_0_65um_nom")
             Sds_Info(Var_Idx)%Standard_Name = "cloud_transmission_0_65um_nom"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,1.0]
-            Sds_Info(Var_Idx)%Long_Name = "cloud albedo at 0.65 microns nominal from DCOMP"
+            Sds_Info(Var_Idx)%Long_Name = "cloud transmission at 0.65 microns nominal from DCOMP"
             Sds_Info(Var_Idx)%Units = "none"
             if (allocated(Cloud_063um_Transmission_Solar)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Cloud_063um_Transmission_Solar
 
