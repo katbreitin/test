@@ -230,13 +230,15 @@ contains
       ! - wmo sensor id
       dcomp_input % sensor_wmo_id = sensor % wmo_id
       dcomp_input % sun_earth_dist = sun_earth_distance
-            
+
+      dcomp_input % gas_coeff(:) % is_set = .false.
       ! - all reflectance channels
       do i = 1, 19 
         if ( dcomp_input % is_channel_on (i)) then
           dcomp_input % chn(i) %  refl  => ch(i)%ref_toa
           dcomp_input % chn(i) % alb_sfc => ch(i) % sfc_ref_white_sky
           dcomp_input % gas_coeff(i) % d = solar_rtm % tau_h2o_coef(i,:)
+          dcomp_input % gas_coeff(i) % is_set = .true.
         end if     
       end do  
       
@@ -340,7 +342,7 @@ contains
           call dcomp_input % check_input (debug_mode)
             
           call mesg ('DCOMP starts in Bridge',level = 9)
-            
+
           call dcomp_array_loop ( dcomp_input , dncomp_output , debug_mode_user = debug_mode)
             
           call mesg ('DCOMP ends in Bridge',level = 9)
