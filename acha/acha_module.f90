@@ -1256,9 +1256,6 @@ if (FULL_RETRIEVAL) then
   call SAVE_X_2_OUTPUT(Elem_Idx,Line_Idx,Symbol,Cloud_Type,Fail_Flag(Elem_Idx,Line_Idx), &
                   x,x_ap,Sa,Sx,AKM,Meta_Data_Flags,Output)
 
-  !--- null profile pointers each time 
-  call NULL_PIX_POINTERS(Input, ACHA_RTM_NWP)
-
   !--- set output packed quality flags
   call SET_OUTPUT_PACKED_QF(Output,Elem_Idx,Line_Idx)
 
@@ -2274,71 +2271,45 @@ subroutine NULL_PIX_POINTERS(Input, ACHA_RTM_NWP)
 
    ACHA_RTM_NWP%Z_Prof => NULL() 
 
-   if (Input%Chan_On_038um == Symbol%YES) then
      ACHA_RTM_NWP%Atm_Rad_Prof_038um =>  NULL()
      ACHA_RTM_NWP%Atm_Trans_Prof_038um =>  NULL()
      ACHA_RTM_NWP%Black_Body_Rad_Prof_038um => NULL()
-   endif
-   if (Input%Chan_On_062um == Symbol%YES) then
      ACHA_RTM_NWP%Atm_Rad_Prof_062um =>  NULL()
      ACHA_RTM_NWP%Atm_Trans_Prof_062um =>  NULL()
      ACHA_RTM_NWP%Black_Body_Rad_Prof_062um => NULL()
-   endif
-   if (Input%Chan_On_067um == Symbol%YES) then
      ACHA_RTM_NWP%Atm_Rad_Prof_067um =>  NULL()
      ACHA_RTM_NWP%Atm_Trans_Prof_067um =>  NULL()
      ACHA_RTM_NWP%Black_Body_Rad_Prof_067um => NULL()
-   endif
-   if (Input%Chan_On_073um == Symbol%YES) then
      ACHA_RTM_NWP%Atm_Rad_Prof_073um =>  NULL()
      ACHA_RTM_NWP%Atm_Trans_Prof_073um =>  NULL()
      ACHA_RTM_NWP%Black_Body_Rad_Prof_073um => NULL()
-   endif
-   if (Input%Chan_On_085um == Symbol%YES) then
      ACHA_RTM_NWP%Atm_Rad_Prof_085um =>  NULL()
      ACHA_RTM_NWP%Atm_Trans_Prof_085um =>  NULL()
      ACHA_RTM_NWP%Black_Body_Rad_Prof_085um => NULL()
-   endif
-   if (Input%Chan_On_097um == Symbol%YES) then
      ACHA_RTM_NWP%Atm_Rad_Prof_097um =>  NULL()
      ACHA_RTM_NWP%Atm_Trans_Prof_097um =>  NULL()
      ACHA_RTM_NWP%Black_Body_Rad_Prof_097um => NULL()
-   endif
-   if (Input%Chan_On_104um == Symbol%YES) then
       ACHA_RTM_NWP%Atm_Rad_Prof_104um => NULL()
       ACHA_RTM_NWP%Atm_Trans_Prof_104um => NULL()
       ACHA_RTM_NWP%Black_Body_Rad_Prof_104um => NULL()
-   endif
-   if (Input%Chan_On_110um == Symbol%YES) then
       ACHA_RTM_NWP%Atm_Rad_Prof_110um => NULL()
       ACHA_RTM_NWP%Atm_Trans_Prof_110um => NULL()
       ACHA_RTM_NWP%Black_Body_Rad_Prof_110um => NULL()
-   endif
-   if (Input%Chan_On_120um == Symbol%YES) then
       ACHA_RTM_NWP%Atm_Rad_Prof_120um => NULL()
       ACHA_RTM_NWP%Atm_Trans_Prof_120um => NULL()
       ACHA_RTM_NWP%Black_Body_Rad_Prof_120um => NULL()
-   endif
-   if (Input%Chan_On_133um == Symbol%YES) then
       ACHA_RTM_NWP%Atm_Rad_Prof_133um => NULL()
       ACHA_RTM_NWP%Atm_Trans_Prof_133um => NULL()
       ACHA_RTM_NWP%Black_Body_Rad_Prof_133um => NULL()
-   endif
-   if (Input%Chan_On_136um == Symbol%YES) then
       ACHA_RTM_NWP%Atm_Rad_Prof_136um => NULL()
       ACHA_RTM_NWP%Atm_Trans_Prof_136um => NULL()
       ACHA_RTM_NWP%Black_Body_Rad_Prof_136um => NULL()
-   endif
-   if (Input%Chan_On_139um == Symbol%YES) then
       ACHA_RTM_NWP%Atm_Rad_Prof_139um => NULL()
       ACHA_RTM_NWP%Atm_Trans_Prof_139um => NULL()
       ACHA_RTM_NWP%Black_Body_Rad_Prof_139um => NULL()
-   endif
-   if (Input%Chan_On_142um == Symbol%YES) then
       ACHA_RTM_NWP%Atm_Rad_Prof_142um => NULL()
       ACHA_RTM_NWP%Atm_Trans_Prof_142um => NULL()
       ACHA_RTM_NWP%Black_Body_Rad_Prof_142um => NULL()
-   endif
  
 end subroutine NULL_PIX_POINTERS
 !====================================================================
