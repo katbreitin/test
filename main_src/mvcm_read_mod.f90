@@ -232,6 +232,29 @@ module MVCM_READ_MOD
 
   endif
 
+  !--- SIPS ABI GEO
+  if (index(Image%Level1b_Name,'OR_ABI') == 1) then
+    !0        1         2         3         4
+    !12345678901234567890123456789012345678901234567890
+    !OR_ABI-L1b-RadF-M6C01_G16_s20213651900205_e20213651909513_c20213651909561.nc
+    !MVCMGEO.G16ABI.2021365.1900_abi_v1_0_0_REFERENCE_FD.nc
+    Search_String = 'MVCMGEO.G*'//Image%Level1b_Name(28:34)//'.'//Image%Level1b_Name(35:38)//'*.nc'
+
+    Files => FILE_SEARCH(trim(Image%Level1b_Path),trim(Search_String),count=Num_Files)
+
+    if (Num_Files == 0 .or. Num_Files > 1) then
+        print *, EXE_PROMPT, MVCM_PROMPT, "MVCM File Not Found, "
+        return
+    endif
+
+    Image%Auxiliary_Cloud_Mask_File_Name = Files(1)
+
+    if (Seg_Idx == 1) &
+       print *, EXE_PROMPT, MVCM_PROMPT, "SIPS ABI MVCM File Found, ", &
+            trim(Image%Auxiliary_Cloud_Mask_File_Name)
+
+  endif
+
 
   
   Files => null() 

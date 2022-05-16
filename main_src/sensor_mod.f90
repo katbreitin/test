@@ -2480,10 +2480,19 @@ module SENSOR_MOD
                !--- read auxillary cloud mask and cloud type
                if (Use_Aux_Flag /= sym%NO_AUX) then
 
-                  call DETERMINE_SAPF_NAME(Segment_Number)
-                  call READ_SAPF_DATA(Segment_Number)
+                  if (Use_Aux_Flag == sym%USE_AUX_MODAWG ) then
+                     !--- read MVCM cloud mask
+                     call DETERMINE_MVCM_NAME(Segment_Number)
+                     call READ_MVCM_DATA(Segment_Number)
+                  else
+                     call DETERMINE_SAPF_NAME(Segment_Number)
+                     call READ_SAPF_DATA(Segment_Number)
+                  endif
 
                end if
+
+
+
             else 
                print*,'read abi is to installed stopping'
                stop
