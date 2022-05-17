@@ -3,7 +3,7 @@
 ! MODULE name: NBM_CLOUD_MASK
 ! 
 ! Routines for the determination of the naive Bayesian cloud mask
-! Version 2.0
+! Version 2.1
 !
 ! Authors: Andrew Heidinger, NOAA/NESDIS
 !          Andi Walther, CIMSS
@@ -66,7 +66,7 @@ MODULE ECM2_CLOUD_MASK_MODULE
  INCLUDE 'nbm_cloud_mask.inc'
 
  !--- string to control on-screen prompts
- CHARACTER(*), PARAMETER, PRIVATE :: EXE_PROMPT_CM = "Naive Bayesian Cloud Mask Version 2.0 >> "
+ CHARACTER(*), PARAMETER, PRIVATE :: EXE_PROMPT_CM = "Naive Bayesian Cloud Mask Version 2.1 >> "
 
 
  CONTAINS
@@ -78,7 +78,7 @@ MODULE ECM2_CLOUD_MASK_MODULE
 !====================================================================
  SUBROUTINE SET_ECM2_CLOUD_MASK_VERSION(Cloud_Mask_Version)
    CHARACTER(len=*), INTENT(OUT):: Cloud_Mask_Version
-   Cloud_Mask_Version = "$Id: nbm_cloud_mask_MODULE.f90 3030 2019-09-31 23:02:31Z heidinger $"
+   Cloud_Mask_Version = "v2.1"
  END SUBROUTINE SET_ECM2_CLOUD_MASK_VERSION
 
 

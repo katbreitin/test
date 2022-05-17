@@ -2317,7 +2317,7 @@ end subroutine NULL_PIX_POINTERS
 !====================================================================
 subroutine SET_ACHA_VERSION(Acha_Version)
    character(len=*):: Acha_Version
-   Acha_Version = "$Id: acha_module.f90 4105 2021-03-12 13:56:43Z heidinger $"
+   Acha_Version = "v1.0"
 end subroutine SET_ACHA_VERSION
 !====================================================================
 ! 
