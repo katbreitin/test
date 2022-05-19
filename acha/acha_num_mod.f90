@@ -921,6 +921,8 @@ subroutine KD_TREE_INTERP_2pred(Mask_In,Mask_Out,pred_var1,pred_var2,Num_Element
 
         ! perform tree search for each query index
         do i = 1,n_query
+           !!! fix because index sometimes gets = 0 or above limit Denis B. 2022-05-18 !!!
+           if (ind_query(i) .le. 0 .or. ind_query(i) .gt. 2750000) cycle 
            query_vec(1) = predictor_1(ind_query(i))
            query_vec(2) = predictor_2(ind_query(i))
 
