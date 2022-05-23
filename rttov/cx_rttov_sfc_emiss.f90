@@ -84,7 +84,6 @@ module cx_rttov_sfc_emiss
   integer(kind=jpim), parameter :: nchan_modis = 16  ! Number of channels per profile
   integer(kind=jpim), parameter :: nchan_viirs  = 2 ! Number of channels per profile
   integer(kind=jpim), parameter :: nchan_abi = 2 ! Number of channels per profile
-  !integer(kind=jpim), parameter :: nchan_clavrx = 48 ! Number of channels per profile for claverx
 
   integer(kind=jpim), parameter :: chn_list_modis(nchan_modis) = &
                                     (/1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16/)
@@ -108,7 +107,6 @@ module cx_rttov_sfc_emiss
   TYPE(rttov_chanprof),    POINTER :: chanprof_viirs(:)    => NULL() ! Input channel/profile list
   TYPE(rttov_chanprof),    POINTER :: chanprof_abi(:)    => NULL() ! Input channel/profile list
  
-  !real(kind=jprb),    allocatable :: emiss(:,:,:)
   real*4,    allocatable :: emiss(:,:,:)
 
   type(rttov_emis_atlas_data)       :: atlas
@@ -149,8 +147,6 @@ CONTAINS
 #include "rttov_setup_emis_atlas.interface"
 
 !-----------------------------------------------------------------------------------
-!-----------------------------------------------------------------------------------
-
 ! set input 
 !-----------------------------------------------------------------------------------
    atlas_path=trim(rttov_path)//'emis_data/'
@@ -179,19 +175,14 @@ CONTAINS
 
     nprof=dim1*dim2 
     
-    !write(*,*) 'init dimesions: ',Image%Number_Of_Elements, Image%Number_Of_Lines_Per_Segment , nprof
-    
-
     call rttov_setup_emis_atlas(   &
                     err,               &
                     opts,              &
                     imonth,            &
                     atlas_type_ir,     &  ! IR atlas
                     atlas,             &
-                    atlas_id = atlasid, 	       &  ! To select CAMEL climatology atlas
+                    atlas_id = atlasid,&  ! To select CAMEL climatology atlas
                     path = atlas_path)
-                    !ir_atlas_read_std = .TRUE., &
-                    !ir_atlas_ang_corr = do_angcorr)
       IF (err /= errorstatus_success) THEN
           WRITE(*,*) 'error initialising emissivity atlas'
           CALL rttov_exit(err)
@@ -284,7 +275,6 @@ CONTAINS
     REAL(kind=real4), dimension(:,:), intent(in) :: lats, lons
     logical, dimension(:,:), intent(in) :: space_mask
     character(len=*), intent(in)  :: rttov_path   ! Path to rttov emis atlas data
-    !REAL(kind=real4), dimension(:,:,:), intent(out) :: Emiss1
  
     integer(kind=jpim), parameter :: ioout = 51 ! Output file unit
   
@@ -295,19 +285,10 @@ CONTAINS
    
     logical(kind=jplm) :: do_angcorr, single_instrument
 
-    !real(kind=jprb),    allocatable :: emiss(:,:,:)
-    !integer(kind=jpim),    allocatable :: snf(:)
-    !integer(kind=jpim), allocatable :: sfct(:)
-
 #include "rttov_skipcommentline.interface"
 #include "rttov_get_emis.interface"
 
     !-----------------------------------------------------------------------------------
-    !-----------------------------------------------------------------------------------
-
-    ! Open file for output
-    ! open(ioout, file='output_camel_clim_atlas.ascii', form='formatted', status='replace', action='write')
-
     ! set input 
     !-----------------------------------------------------------------------------------
     
@@ -342,11 +323,11 @@ CONTAINS
     
     if (ALL(Space_mask)) then
       emiss1 = missing_value_real4
-          deallocate (emiss1)
+      deallocate (emiss1)
       deallocate(emissivity_modis)
-    deallocate(emissivity_viirs)
-    deallocate(emissivity_abi)
-    deallocate(profiles)
+      deallocate(emissivity_viirs)
+      deallocate(emissivity_abi)
+      deallocate(profiles)
       return
     end if
       
@@ -354,34 +335,20 @@ CONTAINS
     do Elem_Idx = 1, Image%Number_Of_Elements 
       do Line_Idx = 1, Image%Number_Of_Lines_Per_Segment
         k=k+1
-        !if (Bad_Pixel_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle 
          
         profiles(k)%latitude=dble(lats(Elem_Idx,Line_Idx))
         
         profiles(k)%longitude=dble(lons(Elem_Idx,Line_Idx))
-	      profiles(k)%skin%surftype =0  ! land
+        profiles(k)%skin%surftype =0  ! land
         profiles(k)%skin%snow_fraction = 0.         
-	 
-	     ! if (Sfc%Land(Elem_Idx,Line_Idx) /= sym%Land ) profiles(k)%skin%surftype =1
-	      if (Sfc%Snow(Elem_Idx,Line_Idx) == sym%SNOW) profiles(k)%skin%snow_fraction = 1.	 
-	
-	      if (Sfc%Sfc_Type(Elem_Idx,Line_Idx) == 0 ) then
-            !profiles(k)%skin%surftype =1	 ! sea
-            
-        end if
-	    end do
+
+        if (Sfc%Snow(Elem_Idx,Line_Idx) == sym%SNOW) profiles(k)%skin%snow_fraction = 1. 
+
+      end do
     end do
               
    ! initialize output matrix
     emiss1=0.
-    
-    
-    !k = 3100
-    
-    !print*, profiles(k)%latitude
-    !print*, profiles(k)%longitude
-    !print*,profiles(k)%skin%surftype
-    !print*,profiles(k)%skin%snow_fraction
     
     !    
     !----------------------------
@@ -395,9 +362,6 @@ CONTAINS
                   coefs_modis,                       &
                   atlas,                             &
                   emissivity_modis(:))
-                  !emis_std = emis_std_modis)
-                  !emis_flag_modis)
-    
  
     
     if (err /= errorstatus_success) then
@@ -411,17 +375,15 @@ CONTAINS
     call rttov_get_emis(                           &
                   err,                               &
                   opts,                              &
-                 chanprof_viirs,                    &
+                  chanprof_viirs,                    &
                   profiles,                          &
                   coefs_viirs,                       &
                   atlas,                             &
                   emissivity_viirs(:))         
-                  !emis_std =emis_std_viirs)
-                  !emis_flag_viirs)
     IF (err /= errorstatus_success) THEN
                WRITE(*,*) 'error reading viirs emissivity atlas'
                CALL rttov_exit(err)
-	  END IF      
+    END IF      
 
     !----------------------------
     ! Retrieve values from atlas for ABI
@@ -434,76 +396,42 @@ CONTAINS
                   coefs_abi,                         &
                   atlas,                             &
                   emissivity_abi(:))
-                  !emis_std = emis_std_abi)
-                  !emis_flag_abi)
     IF (err /= errorstatus_success) THEN
                   WRITE(*,*) 'error reading abi emissivity atlas'
                   CALL rttov_exit(err) 
-	  ENDIF	  
+    ENDIF
 
 
-! Write out emissivity data
-      !write(ioout,'(a,l1)') 'Init for angular correction? ', do_angcorr
-      !write(ioout,'(a,l1)') 'Init for single inst? ', single_instrument     
-      !do k =1, nprof
-      !  write(ioout,'(a,i8)') 'Profile ',k
-      !  write(ioout,'(a)') ' Chan  Emissivity  Standard Dev  Flag'
-      !  do Chan_Idx = 1, nchan_modis
-      !    lo = (k-1)*nchan_modis
-      !       write(ioout,'(i5,f11.4)') chn_list_modis(Chan_Idx), emissivity_modis(lo+Chan_Idx)
-      !  enddo
-      !  do Chan_Idx = 1, nchan_abi
-      !    lo = (k-1)*nchan_abi
-      !       write(ioout,'(i5,f11.4)') chn_list_abi(Chan_Idx), emissivity_abi(lo+Chan_Idx)
-      !  enddo
-      !  do Chan_Idx = 1, nchan_viirs
-      !    lo = (k-1)*nchan_viirs
-      !       write(ioout,'(i5,f11.4)') chn_list_viirs(Chan_Idx), emissivity_viirs(lo+Chan_Idx)
-      !  enddo
-      !enddo
        
 ! creating claverx emissivity 
 !--------------------------------    
 
 
-    ! print* 
     k=0
     do Elem_Idx = 1, Image%Number_Of_Elements 
       do Line_Idx = 1, Image%Number_Of_Lines_Per_Segment
-        !print*
-        !print*,'===================   ======='
+
         k=k+1
-         ! print*, profiles(k)%latitude
-   ! print*, profiles(k)%longitude
-   ! print*,profiles(k)%skin%surftype
-   ! print*,profiles(k)%skin%snow_fraction
     
         do Chan_Idx = 1, 6
           lo = (k-1)*nchan_modis
-	        !write(*,*) Elem_Idx,Line_Idx,k, Chan_Idx, lo
-          !emiss(k,1,Chan_Idx+19)=(emissivity_modis(lo+Chan_Idx))
           emiss1(Elem_Idx,Line_Idx,Chan_Idx+19)=(emissivity_modis(lo+Chan_Idx))
         end do
         
         do Chan_Idx = 7, nchan_modis
           lo = (k-1)*nchan_modis
-          !emiss(k,1,Chan_Idx+20)=(emissivity_modis(lo+Chan_Idx))
           emiss1(Elem_Idx,Line_Idx,Chan_Idx+20)=(emissivity_modis(lo+Chan_Idx))
         end do
         
         do Chan_Idx = 1, nchan_abi
              lo = (k-1)*nchan_abi
-             !emiss(k,1,Chan_Idx+36)=emissivity_abi(lo+Chan_Idx)
              emiss1(Elem_Idx,Line_Idx,Chan_Idx+36)=emissivity_abi(lo+Chan_Idx)
         end do
 
         do Chan_Idx = 1, nchan_viirs
              lo = (k-1)*nchan_viirs
-             !emiss(k,1,Chan_Idx+41)=emissivity_viirs(lo+Chan_Idx)
              emiss1(Elem_Idx,Line_Idx,Chan_Idx+41)=emissivity_viirs(lo+Chan_Idx)
         end do
-        ! print*,k
-        !  print*,emiss1(Elem_Idx,Line_Idx,:)
  
       end do
     end do
@@ -517,25 +445,11 @@ CONTAINS
       end if
     end do
  
-                 		     
-    ! do Elem_Idx = 1, Image%Number_Of_Elements 
-    !    do Line_Idx = 1, Image%Number_Of_Lines_Per_Segment
-    !       do Chan_Idx = 1, nchan_clavrx     	 
-     	         !write(ioout,*) Elem_Idx,Line_Idx,Chan_Idx,Ch(Chan_Idx)%Sfc_Emiss(Elem_Idx,Line_Idx)
-    !      enddo
-    !   enddo
-    ! enddo		     
-
-! Close the output file
-! close(ioout)
-  
     deallocate (emiss1)
     deallocate(emissivity_modis)
     deallocate(emissivity_viirs)
     deallocate(emissivity_abi)
     deallocate(profiles)
-    
-   
     
   end subroutine get_rttov_emiss
 

@@ -95,9 +95,6 @@ contains
     case default
       call MESG(' Surface emissivity option is wrongly set',  level = verb_lev % DEFAULT) 
     end select
-     
-   ! print*,allocated(Ch(20)%Sfc_Emiss),maxval(Ch(31)%Sfc_Emiss)
-   ! print*,allocated(Ch(31)%Sfc_Emiss)
    
     first_run = .false.
   
@@ -109,8 +106,6 @@ contains
   subroutine cx_sfc_emiss_correct_for_sfctype
     integer :: Line_Idx_Min_Segment
     
-    !if ( sfc_emiss_option .NE. ETsfc_emiss_use_option_RTTOV) then
-     
       !  now file all non-land pixels
       Line_Idx_Min_Segment = 1
       call GET_PIXEL_SFC_EMISS_FROM_SFC_TYPE(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment) 
