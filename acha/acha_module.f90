@@ -502,6 +502,7 @@ module AWG_CLOUD_HEIGHT
 
   !--- allocate array for cirrus temperature
   allocate(Fail_Flag(Input%Number_of_Elements,Input%Number_of_Lines))
+  Fail_Flag(:,:) = Symbol%YES
   allocate(Converged_Flag(Input%Number_of_Elements,Input%Number_of_Lines))
   allocate(Temperature_Cirrus(Input%Number_of_Elements,Input%Number_of_Lines))
 
