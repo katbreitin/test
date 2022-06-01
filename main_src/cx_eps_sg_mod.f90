@@ -146,7 +146,7 @@ subroutine READ_EPS_SG_DATE_TIME(File_Name,Start_Year,Start_Doy,Start_Time,&
    integer :: Start_Month, Start_Day, Start_Hour, Start_Minute, Start_Sec
    integer :: End_Month, End_Day, End_Hour, End_Minute, End_Sec
    integer :: Start_Msec, End_Msec
-
+   integer :: resloc, tempstrlen
 
    ! --- read start time
    call READ_NETCDF_GLOBAL_ATTRIBUTE(File_Name, 'sensing_start_time_utc', String_Tmp)
@@ -154,7 +154,19 @@ subroutine READ_EPS_SG_DATE_TIME(File_Name,Start_Year,Start_Doy,Start_Time,&
    read(String_Tmp(1:4), fmt="(I4)") Start_Year
    read(String_Tmp(6:7), fmt="(I2)") Start_Month
    read(String_Tmp(9:10), fmt="(I2)") Start_Day
+ 
+!+++++++++++++++++++++++++ new 
+   resloc = index(File_Name, 'W_')
+   tempstrlen = len('W_xx-eumetsat-darmstadt,SAT,SGA1-VII-1B-RAD_C_EUMT_20191001043852_G_D_')
+   read(File_Name(resloc+tempstrlen:resloc+tempstrlen+3), fmt="(I4)") Start_Year
+   read(File_Name(resloc+tempstrlen+4:resloc+tempstrlen+5), fmt="(I2)") Start_Month
+   read(File_Name(resloc+tempstrlen+6:resloc+tempstrlen+7), fmt="(I2)") Start_Day
+!+++++++++++++++++++++++++
 
+   !Start_Month
+   !Start_Day
+!print *, 'eps time ',File_Name, 'result ',resloc, String_Tmp, Start_Year,Start_Month,Start_Day
+!stop
    !--- compute day of year
    call JULIAN (Start_Day, Start_Month, Start_Year, Start_Doy)
 
@@ -163,12 +175,26 @@ subroutine READ_EPS_SG_DATE_TIME(File_Name,Start_Year,Start_Doy,Start_Time,&
    read(String_Tmp(18:19), fmt="(I2)") Start_Sec
    read(String_Tmp(21:23), fmt="(I3)") Start_Msec
 
+   read(File_Name(resloc+tempstrlen+8:resloc+tempstrlen+9), fmt="(I2)") Start_Hour
+   read(File_Name(resloc+tempstrlen+10:resloc+tempstrlen+11), fmt="(I2)") Start_Minute
+   read(File_Name(resloc+tempstrlen+12:resloc+tempstrlen+13), fmt="(I2)") Start_Sec
+   Start_Msec = 0
+
    ! --- read end time
    call READ_NETCDF_GLOBAL_ATTRIBUTE(File_Name, 'sensing_end_time_utc', String_Tmp)
 
    read(String_Tmp(1:4), fmt="(I4)") End_Year
    read(String_Tmp(6:7), fmt="(I2)") End_Month
    read(String_Tmp(9:10), fmt="(I2)") End_Day
+
+!+++++++++++++++++++++++++ new 
+   read(File_Name(resloc+tempstrlen+15:resloc+tempstrlen+18), fmt="(I4)") End_Year
+   read(File_Name(resloc+tempstrlen+19:resloc+tempstrlen+20), fmt="(I2)") End_Month
+   read(File_Name(resloc+tempstrlen+21:resloc+tempstrlen+22), fmt="(I2)") End_Day
+!+++++++++++++++++++++++++
+
+   !Start_Month
+   !Start_Day
 
    !--- compute day of year
    call JULIAN (End_Day, End_Month, End_Year, End_Doy)
@@ -178,10 +204,17 @@ subroutine READ_EPS_SG_DATE_TIME(File_Name,Start_Year,Start_Doy,Start_Time,&
    read(String_Tmp(18:19), fmt="(I2)") End_Sec
    read(String_Tmp(21:23), fmt="(I3)") End_Msec
 
+   read(File_Name(resloc+tempstrlen+23:resloc+tempstrlen+24), fmt="(I2)") End_Hour
+   read(File_Name(resloc+tempstrlen+25:resloc+tempstrlen+26), fmt="(I2)") End_Minute
+   read(File_Name(resloc+tempstrlen+27:resloc+tempstrlen+28), fmt="(I2)") End_Sec
+   End_Msec = 0
    
    ! --- Calculate start and end time
    Start_Time = ((Start_Hour * 60 + Start_Minute) * 60 + Start_Sec) * 1000 + Start_Msec
    End_Time = ((End_Hour * 60 + End_Minute) * 60 + End_Sec) * 1000 + End_Msec
+
+print *, 'eps time ',File_Name, Start_Year,Start_Month,Start_Day,End_Year,End_Month,End_Day
+print *, 'eps time ',Start_Hour, Start_Minute,Start_Sec,End_Hour,End_Minute,End_Sec
 
 end subroutine READ_EPS_SG_DATE_TIME
 
@@ -341,8 +374,8 @@ subroutine READ_EPS_SG_DATA(Segment_Number, Error_Status)
   call GET_GROUP_ID(Ncid_Eps_Sg, 'data', Group_Id1)
   call GET_GROUP_ID(Group_Id1, 'calibration_data', Group_Id2)
   call READ_AND_UNSCALE_NETCDF_1D(Group_Id2, [1], [1], [Num_Sol_Ch], &
-                  "integrated_solar_irradiance", Ch_Aver_Sol_Irrad)
-
+!                  "integrated_solar_irradiance", Ch_Aver_Sol_Irrad)
+                  "Band_averaged_solar_irradiance", Ch_Aver_Sol_Irrad)
 
   !--- allocate a temporary array to hold 2d data
   allocate(Sds_Data_2d(Sds_Count_2d(1),Sds_Count_2d(2)))
@@ -524,8 +557,9 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
   integer :: kk_alt, kk_act
   integer :: i_zone_alt, i_zone_act
   integer, parameter :: num_pix_alt = 24
-  integer, parameter :: num_scans = 175
-  integer, parameter :: num_lines = num_pix_alt * num_scans
+!  integer, parameter :: num_scans = 35 !175
+  integer :: num_scans
+  !integer, parameter :: num_lines = num_pix_alt * num_scans
   integer, parameter :: num_elem = 3144
   
   integer, parameter :: zone_size_act = 8
@@ -556,14 +590,29 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
   real:: this_x, this_y,  this_z
   real :: phi, p, e_strich
   integer :: xx, yy
-  
+ 
+  integer, dimension(2):: Dim_2d 
   
   
   if ( this % is_calculated ) return
+
+  Dim_2d = -1
+  call GET_GROUP_ID(Ncid_Eps_Sg, 'data', Group_Id1)
+  call GET_GROUP_ID(Group_Id1, 'measurement_data', Group_Id2)
+
+   call READ_NETCDF_DIMENSION_2D(Group_Id2,'delta_lat_N_dem', Dim_2d)
+
+   num_scans = Dim_2d(2)/24
+!print *, 'Dim_2d ',Dim_2d, num_scans
+!stop
+   ! status = nf90_inq_varid(group_id1, trim('num_scans'), nc_var_id)
+   ! call read_netcdf_attribute_real(gropu_id1, nc_var_id, 'CFAC', attr)
  
-  n_x = num_scans * 4
-  n_y = 394
-  
+  n_x = 394 !140 !num_scans * 4
+  n_y = num_scans * 4 !394
+ 
+  !n_x = num_scans * 4
+  !n_y = 394 
   
   start2d = [1,1]
   stride2d = [1,1]
@@ -604,7 +653,7 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
   this % solar_zenith = MISSING_VALUE_REAL4
 
   ! --- get group id
-  call GET_GROUP_ID(Ncid_Eps_Sg, 'data', Group_Id1)
+!  call GET_GROUP_ID(Ncid_Eps_Sg, 'data', Group_Id1)
   call GET_GROUP_ID(Group_Id1, 'measurement_data', Group_Id2)
   
   ! --- navigation  
