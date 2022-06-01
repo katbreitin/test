@@ -903,6 +903,13 @@ contains
          res = lb-1
       endif
 
+      !another fix by YL, could be wrong
+      if (res < li) res = li
+      
+      if (abs(ui-li) .gt. 10000) then
+         if (ui-res == 1) res = res-200
+      endif
+
     end function select_on_coordinate_value
 
     subroutine select_on_coordinate(v,ind,c,k,li,ui)
