@@ -2481,14 +2481,16 @@ subroutine COMPUTE_TEMPERATURE_CIRRUS(Cld_Type, &
            Cld_Type == Symbol%OVERLAP_TYPE) .and. &
            Temperature_Cloud < 250.0 .and. &
            Temperature_Cloud /= Missing .and. &
+           Lat /= Missing .and. Lon /= Missing .and. &
            Emissivity_Cloud >= Emissivity_Thresh)
       Mask1 = 1_int1
    end where
 
    !---- make target mask
    Mask2 = 0_int1
-   where( Cld_Type == Symbol%CIRRUS_TYPE .or. &
-          Cld_Type == Symbol%OVERLAP_TYPE) 
+   where((Cld_Type == Symbol%CIRRUS_TYPE .or. &
+          Cld_Type == Symbol%OVERLAP_TYPE) .and. &
+          Lat /= Missing .and. Lon /= Missing)
       Mask2 = 1_int1
    end where
 
@@ -2588,6 +2590,7 @@ subroutine COMPUTE_TEMPERATURE_CIRRUS_LRC(Cld_Type, &
            Jlrc > 0 .and. &
            Temperature_Cloud < 250.0 .and. &
            Temperature_Cloud /= Missing .and. &
+           Lat /= Missing .and. Lon /= Missing .and. &
            (Emissivity_Cloud >= 0.8 .or. &
            Ec_LRC >= Emissivity_Thresh))
       Mask1 = 1_int1
@@ -2595,8 +2598,9 @@ subroutine COMPUTE_TEMPERATURE_CIRRUS_LRC(Cld_Type, &
 
    !---- make target mask
    Mask2 = 0_int1
-   where( Cld_Type == Symbol%CIRRUS_TYPE .or. &
-          Cld_Type == Symbol%OVERLAP_TYPE) 
+   where((Cld_Type == Symbol%CIRRUS_TYPE .or. &
+          Cld_Type == Symbol%OVERLAP_TYPE) .and. &
+          Lat /= Missing .and. Lon /= Missing) 
       Mask2 = 1_int1
    end where
 
@@ -2667,9 +2671,10 @@ subroutine COMPUTE_LOWER_CLOUD_TEMPERATURE(Cld_Type, &
 !         Mask2 = 1_int1
 !  end where
 
-   where(Cld_Type == Symbol%CIRRUS_TYPE .or. &
+   where((Cld_Type == Symbol%CIRRUS_TYPE .or. &
          Cld_Type == Symbol%OPAQUE_ICE_TYPE .or.  &
-         Cld_Type == Symbol%OVERLAP_TYPE)
+         Cld_Type == Symbol%OVERLAP_TYPE) .and. &
+         Lat /= Missing .and. Lon /= Missing)
           Mask2 = 1_int1
    end where
 
@@ -2689,6 +2694,7 @@ subroutine COMPUTE_LOWER_CLOUD_TEMPERATURE(Cld_Type, &
    Mask1 = 0_int1
    where( (Cld_Type == Symbol%FOG_TYPE .or. &
               Cld_Type == Symbol%WATER_TYPE) .and.  &
+              Lat /= Missing .and. Lon /= Missing .and. &
               Cloud_Temperature /= Missing)
              Mask1 = 1_int1
    end where
