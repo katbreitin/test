@@ -754,12 +754,14 @@
             Erstat = 8
             call MESG( "ERROR: Problem reading orbit names from control file" &
                , level = verb_lev % QUIET , color = 1 ) 
+            call cleanup_tempdir()
             stop 8
          else
             !-- end of orbits
             if (File_Number == 1) then
                call MESG( "ERROR: No orbits to process, stopping" , level = verb_lev % QUIET , color = 1 ) 
-               stop
+               call cleanup_tempdir()
+               stop 404
             endif
             exit
          endif
