@@ -188,6 +188,15 @@ subroutine SETUP_LEVEL2_SDS_INFO()
       Sds_Info(Var_Idx)%Add_Offset = 1.0
       Sds_Info(Var_Idx)%Actual_Range = [0,0]
 
+      Sds_Info(Var_Idx)%Sds_Data_1d_I1 => null()
+      Sds_Info(Var_Idx)%Sds_Data_1d_I4 => null()
+      Sds_Info(Var_Idx)%Sds_Data_1d_R4 => null()
+      Sds_Info(Var_Idx)%Sds_Data_2d_I1 => null()
+      Sds_Info(Var_Idx)%Sds_Data_2d_I2 => null()
+      Sds_Info(Var_Idx)%Sds_Data_2d_I4 => null()
+      Sds_Info(Var_Idx)%Sds_Data_2d_R4 => null()
+      Sds_Info(Var_Idx)%Sds_Data_3d_I1 => null()
+
       select case (trim(Sds_Info(Var_Idx)%Sds_Name))
         
          !----------------------------------------------------------------------------------------------------
