@@ -146,21 +146,20 @@ subroutine READ_EPS_SG_DATE_TIME(File_Name,Start_Year,Start_Doy,Start_Time,&
    integer :: Start_Month, Start_Day, Start_Hour, Start_Minute, Start_Sec
    integer :: End_Month, End_Day, End_Hour, End_Minute, End_Sec
    integer :: Start_Msec, End_Msec
-   integer :: resloc, tempstrlen
+   !integer :: resloc, tempstrlen
 
    ! --- read start time
    call READ_NETCDF_GLOBAL_ATTRIBUTE(File_Name, 'sensing_start_time_utc', String_Tmp)
-
    read(String_Tmp(1:4), fmt="(I4)") Start_Year
    read(String_Tmp(6:7), fmt="(I2)") Start_Month
    read(String_Tmp(9:10), fmt="(I2)") Start_Day
  
 !+++++++++++++++++++++++++ new 
-   resloc = index(File_Name, 'W_')
-   tempstrlen = len('W_xx-eumetsat-darmstadt,SAT,SGA1-VII-1B-RAD_C_EUMT_20191001043852_G_D_')
-   read(File_Name(resloc+tempstrlen:resloc+tempstrlen+3), fmt="(I4)") Start_Year
-   read(File_Name(resloc+tempstrlen+4:resloc+tempstrlen+5), fmt="(I2)") Start_Month
-   read(File_Name(resloc+tempstrlen+6:resloc+tempstrlen+7), fmt="(I2)") Start_Day
+   !resloc = index(File_Name, 'W_')
+   !tempstrlen = len('W_xx-eumetsat-darmstadt,SAT,SGA1-VII-1B-RAD_C_EUMT_20191001043852_G_D_')
+   !read(File_Name(resloc+tempstrlen:resloc+tempstrlen+3), fmt="(I4)") Start_Year
+   !read(File_Name(resloc+tempstrlen+4:resloc+tempstrlen+5), fmt="(I2)") Start_Month
+   !read(File_Name(resloc+tempstrlen+6:resloc+tempstrlen+7), fmt="(I2)") Start_Day
 !+++++++++++++++++++++++++
 
    !Start_Month
@@ -175,10 +174,10 @@ subroutine READ_EPS_SG_DATE_TIME(File_Name,Start_Year,Start_Doy,Start_Time,&
    read(String_Tmp(18:19), fmt="(I2)") Start_Sec
    read(String_Tmp(21:23), fmt="(I3)") Start_Msec
 
-   read(File_Name(resloc+tempstrlen+8:resloc+tempstrlen+9), fmt="(I2)") Start_Hour
-   read(File_Name(resloc+tempstrlen+10:resloc+tempstrlen+11), fmt="(I2)") Start_Minute
-   read(File_Name(resloc+tempstrlen+12:resloc+tempstrlen+13), fmt="(I2)") Start_Sec
-   Start_Msec = 0
+   !read(File_Name(resloc+tempstrlen+8:resloc+tempstrlen+9), fmt="(I2)") Start_Hour
+   !read(File_Name(resloc+tempstrlen+10:resloc+tempstrlen+11), fmt="(I2)") Start_Minute
+   !read(File_Name(resloc+tempstrlen+12:resloc+tempstrlen+13), fmt="(I2)") Start_Sec
+   !Start_Msec = 0
 
    ! --- read end time
    call READ_NETCDF_GLOBAL_ATTRIBUTE(File_Name, 'sensing_end_time_utc', String_Tmp)
@@ -188,9 +187,9 @@ subroutine READ_EPS_SG_DATE_TIME(File_Name,Start_Year,Start_Doy,Start_Time,&
    read(String_Tmp(9:10), fmt="(I2)") End_Day
 
 !+++++++++++++++++++++++++ new 
-   read(File_Name(resloc+tempstrlen+15:resloc+tempstrlen+18), fmt="(I4)") End_Year
-   read(File_Name(resloc+tempstrlen+19:resloc+tempstrlen+20), fmt="(I2)") End_Month
-   read(File_Name(resloc+tempstrlen+21:resloc+tempstrlen+22), fmt="(I2)") End_Day
+   !read(File_Name(resloc+tempstrlen+15:resloc+tempstrlen+18), fmt="(I4)") End_Year
+   !read(File_Name(resloc+tempstrlen+19:resloc+tempstrlen+20), fmt="(I2)") End_Month
+   !read(File_Name(resloc+tempstrlen+21:resloc+tempstrlen+22), fmt="(I2)") End_Day
 !+++++++++++++++++++++++++
 
    !Start_Month
@@ -204,17 +203,15 @@ subroutine READ_EPS_SG_DATE_TIME(File_Name,Start_Year,Start_Doy,Start_Time,&
    read(String_Tmp(18:19), fmt="(I2)") End_Sec
    read(String_Tmp(21:23), fmt="(I3)") End_Msec
 
-   read(File_Name(resloc+tempstrlen+23:resloc+tempstrlen+24), fmt="(I2)") End_Hour
-   read(File_Name(resloc+tempstrlen+25:resloc+tempstrlen+26), fmt="(I2)") End_Minute
-   read(File_Name(resloc+tempstrlen+27:resloc+tempstrlen+28), fmt="(I2)") End_Sec
-   End_Msec = 0
+   !read(File_Name(resloc+tempstrlen+23:resloc+tempstrlen+24), fmt="(I2)") End_Hour
+   !read(File_Name(resloc+tempstrlen+25:resloc+tempstrlen+26), fmt="(I2)") End_Minute
+   !read(File_Name(resloc+tempstrlen+27:resloc+tempstrlen+28), fmt="(I2)") End_Sec
+   !End_Msec = 0
    
    ! --- Calculate start and end time
    Start_Time = ((Start_Hour * 60 + Start_Minute) * 60 + Start_Sec) * 1000 + Start_Msec
    End_Time = ((End_Hour * 60 + End_Minute) * 60 + End_Sec) * 1000 + End_Msec
 
-print *, 'eps time ',File_Name, Start_Year,Start_Month,Start_Day,End_Year,End_Month,End_Day
-print *, 'eps time ',Start_Hour, Start_Minute,Start_Sec,End_Hour,End_Minute,End_Sec
 
 end subroutine READ_EPS_SG_DATE_TIME
 
