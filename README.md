@@ -22,3 +22,11 @@
     file_list_example: an example file list file needed by clavrxorb
 
 
+## Testing
+
+Requres py.test
+
+`test.sh` simply runs `py.test` in the `test/` directory.
+
+Sample output from select tests are saved for each release at `/ships19/cloud/archive/clavrx_test_data/version_granules`
+
