@@ -465,6 +465,7 @@ pixel_common_mod.o: pixel_common_mod.f90 constants_mod.o class_time_date.o
 caliop_collocation_mod.o: caliop_collocation_mod.f90 pixel_common_mod.o file_tools.o clavrx_message_mod.o cx_hdf4_mod.o
 cx_spatial_metrics_mod.o: cx_spatial_metrics_mod.f90 constants_mod.o numerical_routines_mod.o pixel_common_mod.o cx_real_boolean_mod.o numerical_routines_mod.o acha_clavrx_bridge_module.o
 pixel_routines_mod.o: pixel_routines_mod.f90 constants_mod.o numerical_routines_mod.o pixel_common_mod.o nwp_common_mod.o planck_mod.o algorithm_constants_mod.o land_sfc_properties_mod.o surface_properties_mod.o calibration_constants_mod.o viewing_geometry_mod.o caliop_collocation_mod.o nbm_cloud_mask_clavrx_bridge_module.o clavrx_message_mod.o
+	$(fc) -c $(fflags) $(cppflags) $(cpp) -fno-finite-math-only pixel_routines_mod.f90
 clavrx_olr_mod.o: clavrx_olr_mod.f90 constants_mod.o pixel_common_mod.o algorithm_constants_mod.o
 clavrx_sst_mod.o: clavrx_sst_mod.f90 constants_mod.o pixel_common_mod.o
 calibration_constants_mod.o: calibration_constants_mod.f90 constants_mod.o 

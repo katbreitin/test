@@ -1569,9 +1569,6 @@ contains
                         ch(Chan_Idx)%Rad_Toa_Clear(Elem_Idx,Line_Idx),  &
                         Rtm(Lon_Idx,Lat_Idx)%d(Zen_Idx)%ch(Chan_Idx)%Rad_BB_Cloud_Profile(Lev_Bnd))
 
-               !if (isnan(ch(Chan_Idx)%Emiss_Tropo(Elem_Idx,Line_Idx))) then
-               !   print *, "Nan in emiss_tropo ", chan_idx, ch(Chan_Idx)%Rad_Toa_Clear(Elem_Idx,Line_Idx)
-               !endif
             end if
          end select
       end do
