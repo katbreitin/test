@@ -342,11 +342,11 @@ CONTAINS
     
     if (ALL(Space_mask)) then
       emiss1 = missing_value_real4
-          deallocate (emiss1)
+      deallocate (emiss1)
       deallocate(emissivity_modis)
-    deallocate(emissivity_viirs)
-    deallocate(emissivity_abi)
-    deallocate(profiles)
+      deallocate(emissivity_viirs)
+      deallocate(emissivity_abi)
+      deallocate(profiles)
       return
     end if
       
@@ -354,7 +354,7 @@ CONTAINS
     do Elem_Idx = 1, Image%Number_Of_Elements 
       do Line_Idx = 1, Image%Number_Of_Lines_Per_Segment
         k=k+1
-        !if (Bad_Pixel_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle 
+        if (space_mask(Elem_Idx,Line_Idx)) cycle 
          
         profiles(k)%latitude=dble(lats(Elem_Idx,Line_Idx))
         
@@ -513,11 +513,13 @@ CONTAINS
         Ch(Chan_Idx)%Obs_Type /= THERMAL_OBS_TYPE) cycle
 
       if (Sensor%Chan_On_Flag_Default(Chan_Idx) == sym%YES) then
-        Ch(Chan_Idx)%Sfc_Emiss=emiss1(:,:,Chan_Idx)
+         where ( .not. space_mask )
+            Ch(Chan_Idx)%Sfc_Emiss=emiss1(:,:,Chan_Idx)
+         end where   
       end if
     end do
  
-                 		     
+            		     
     ! do Elem_Idx = 1, Image%Number_Of_Elements 
     !    do Line_Idx = 1, Image%Number_Of_Lines_Per_Segment
     !       do Chan_Idx = 1, nchan_clavrx     	 
