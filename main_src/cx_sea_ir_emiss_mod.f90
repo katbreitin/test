@@ -81,7 +81,7 @@
 module CX_SEA_IR_EMISS_MOD
   use CALIBRATION_CONSTANTS_MOD, only: Planck_Nu
   use CONSTANTS_MOD
-  use PIXEL_COMMON_MOD, only: Image, Ch, Geo, Sensor, Sfc, NWP_PIX, Ancil_Data_Dir, Use_Sea_IR_Emiss, Bad_Pixel_Mask
+  use PIXEL_COMMON_MOD, only: Image, Ch, Geo, Sensor, Sfc, NWP_PIX, Ancil_Data_Dir, emiss_sea_option, Bad_Pixel_Mask
   use FILE_TOOLS,only:
   use CX_NETCDF4_MOD
   use CLAVRX_MESSAGE_MOD
@@ -194,14 +194,14 @@ module CX_SEA_IR_EMISS_MOD
    !------------------------------------------------------------------------------
    ! read in data
    !------------------------------------------------------------------------------
-   Use_Sea_IR_Emiss = 1
+   emiss_sea_option = 1
    File_Name_Full = trim(Ancil_Data_Dir)//"/static/sfc_data/"//trim(Sea_Ir_Emiss_Table_Name)
    call OPEN_NETCDF(trim(File_Name_Full), Ncid_Sea_Emiss)
    if (Ncid_Sea_Emiss < 0) then 
-     call MESG("Error opening Sea_IR_Emiss file, default will be used; file = " &
+      call MESG("Error opening Sea_IR_Emiss file, default will be used; file = " &
                //trim(File_Name_Full), level=Verb_Lev%WARNING)
-     Use_Sea_IR_Emiss = 0
-     return
+      emiss_sea_option = 0
+      return
    endif
 
    !---------------------------------------------------------------------------
@@ -360,7 +360,7 @@ subroutine FORGET_SEA_IR_EMISS()
    if ( allocated (Temp_Table) )    deallocate(Temp_Table)
    if ( allocated (Sea_IR_Emiss_Table) )  deallocate(Sea_IR_Emiss_Table)
 
-   Use_Sea_IR_Emiss = 0
+   emiss_sea_option = 0
    
    init_status % is_set = .false.
 

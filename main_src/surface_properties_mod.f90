@@ -59,7 +59,8 @@ public:: SETUP_UMD_PROPS,  &
          GET_PIXEL_SFC_EMISS_FROM_SFC_TYPE, &
          GET_PIXEL_SFC_REFL_FROM_SFC_TYPE, &
          COMPUTE_BINARY_LAND_COAST_MASKS, &
-         COMPUTE_COAST_MASK_FROM_LAND_MASK
+         COMPUTE_COAST_MASK_FROM_LAND_MASK, &
+         GET_UMD_EMISS
 
 integer, parameter, public:: ntype_sfc=14
 real(kind=real4), dimension(0:ntype_sfc-1), public,save:: Ch1_Sfc_Alb_Umd
@@ -397,6 +398,46 @@ subroutine GET_PIXEL_SFC_REFL_FROM_SFC_TYPE()
 
 end subroutine GET_PIXEL_SFC_REFL_FROM_SFC_TYPE
 
+
+subroutine GET_UMD_EMISS (mask)
+   integer:: j1, j2
+  integer:: i, j
+  logical, intent(in) :: mask(:,:)
+  
+   j1 = 1
+   j2 = Image%Number_Of_Lines_Read_This_Segment
+
+   j_loop:  do j = j1,j1+j2-1
+      i_loop:    do i = 1,Image%Number_Of_Elements 
+         !print*,i,j
+         if (  mask(i,j)) cycle
+         !print*,j,i,Sfc%Sfc_Type(i,j),Ch31_Sfc_Emiss_Umd(Sfc%Sfc_Type(i,j))
+          if (Sensor%Chan_On_Flag_Default(20)==sym%YES) Ch(20)%Sfc_Emiss(i,j) = Ch20_Sfc_Emiss_Umd(Sfc%Sfc_Type(i,j))
+          if (Sensor%Chan_On_Flag_Default(21)==sym%YES) Ch(21)%Sfc_Emiss(i,j) = Ch20_Sfc_Emiss_Umd(Sfc%Sfc_Type(i,j))
+          if (Sensor%Chan_On_Flag_Default(22)==sym%YES) Ch(22)%Sfc_Emiss(i,j) = Ch20_Sfc_Emiss_Umd(Sfc%Sfc_Type(i,j))
+          if (Sensor%Chan_On_Flag_Default(23)==sym%YES) Ch(23)%Sfc_Emiss(i,j) = Ch20_Sfc_Emiss_Umd(Sfc%Sfc_Type(i,j))
+          if (Sensor%Chan_On_Flag_Default(24)==sym%YES) Ch(24)%Sfc_Emiss(i,j) = Ch20_Sfc_Emiss_Umd(Sfc%Sfc_Type(i,j))
+          if (Sensor%Chan_On_Flag_Default(25)==sym%YES) Ch(25)%Sfc_Emiss(i,j) = Ch20_Sfc_Emiss_Umd(Sfc%Sfc_Type(i,j))
+          if (Sensor%Chan_On_Flag_Default(27)==sym%YES) Ch(27)%Sfc_Emiss(i,j) = Ch27_Sfc_Emiss_Umd(Sfc%Sfc_Type(i,j))
+          if (Sensor%Chan_On_Flag_Default(28)==sym%YES) Ch(28)%Sfc_Emiss(i,j) = Ch28_Sfc_Emiss_Umd(Sfc%Sfc_Type(i,j))
+          if (Sensor%Chan_On_Flag_Default(29)==sym%YES) Ch(29)%Sfc_Emiss(i,j) = Ch29_Sfc_Emiss_Umd(Sfc%Sfc_Type(i,j))
+          if (Sensor%Chan_On_Flag_Default(31)==sym%YES) Ch(31)%Sfc_Emiss(i,j) = Ch31_Sfc_Emiss_Umd(Sfc%Sfc_Type(i,j))
+          if (Sensor%Chan_On_Flag_Default(32)==sym%YES) Ch(32)%Sfc_Emiss(i,j) = Ch32_Sfc_Emiss_Umd(Sfc%Sfc_Type(i,j))
+          if (Sensor%Chan_On_Flag_Default(33)==sym%YES) Ch(33)%Sfc_Emiss(i,j) = Ch33_Sfc_Emiss_Umd(Sfc%Sfc_Type(i,j))
+          if (Sensor%Chan_On_Flag_Default(34)==sym%YES) Ch(34)%Sfc_Emiss(i,j) = Ch33_Sfc_Emiss_Umd(Sfc%Sfc_Type(i,j))
+          if (Sensor%Chan_On_Flag_Default(35)==sym%YES) Ch(35)%Sfc_Emiss(i,j) = Ch33_Sfc_Emiss_Umd(Sfc%Sfc_Type(i,j))
+          if (Sensor%Chan_On_Flag_Default(36)==sym%YES) Ch(36)%Sfc_Emiss(i,j) = Ch33_Sfc_Emiss_Umd(Sfc%Sfc_Type(i,j))
+          !--- Faked 38 from 31
+          if (Sensor%Chan_On_Flag_Default(31)==sym%YES) Ch(31)%Sfc_Emiss(i,j) = Ch38_Sfc_Emiss_Umd(Sfc%Sfc_Type(i,j))
+        
+      end do i_loop
+   end do   j_loop
+      
+      
+      
+END
+
+
 !-----------------------------------------------------------------------
 ! If no sfc emiss data base read in, base it on the surface type.
 ! also derive surface reflectance from surface emissivity
@@ -405,7 +446,8 @@ end subroutine GET_PIXEL_SFC_REFL_FROM_SFC_TYPE
 subroutine GET_PIXEL_SFC_EMISS_FROM_SFC_TYPE(j1,j2)
   integer, intent(in):: j1, j2
   integer:: i, j
- 
+ print*,'should not be here'
+ stop
   j_loop:  do j = j1,j1+j2-1
 
     i_loop:    do i = 1,Image%Number_Of_Elements
@@ -417,7 +459,7 @@ subroutine GET_PIXEL_SFC_EMISS_FROM_SFC_TYPE(j1,j2)
  
       !--- based on surface type, assign surface emissivities if seebor not used
       !--- if the Sfc_Type is missing, treat pixel as bad
-      if (sfc_emiss_option == 4) then
+      if (emiss_land_option == 4) then
         if (Sfc%Sfc_Type(i,j) >= 0 .and. Sfc%Sfc_Type(i,j) < 15) then     !limits depend on Sfc_Type
           if (Sensor%Chan_On_Flag_Default(20)==sym%YES) Ch(20)%Sfc_Emiss(i,j) = Ch20_Sfc_Emiss_Umd(Sfc%Sfc_Type(i,j))
           if (Sensor%Chan_On_Flag_Default(21)==sym%YES) Ch(21)%Sfc_Emiss(i,j) = Ch20_Sfc_Emiss_Umd(Sfc%Sfc_Type(i,j))

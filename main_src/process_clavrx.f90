@@ -307,8 +307,7 @@
     , dir_level2 &
     , Temporary_Data_Dir &
     , Use_Sst_Anal &
-    , Use_Sea_IR_Emiss &
-    , Use_Land_IR_Emiss &
+    , emiss_sea_option &
     , Use_ABI_Dust &
     , OiSst_Data_Dir &
     , Gdas_Data_Dir &
@@ -461,10 +460,7 @@
       SET_SENSOR_CHANNEL_MAPPING
    
    use SFC_EMISS, only: close_seebor_emiss
-#ifdef LIBRTTOV    
-    use CX_RTTOV_SFC_EMISS, only: &
-        destroy_rttov_emiss
-#endif   
+
     use SIMPLE_COD_065um_MOD,only: &
     compute_simple_solar_cod_065um 
     
@@ -487,7 +483,8 @@
     , update_configuration
   
    use CX_SFC_EMISSIVITY_MOD, only: &
-    cx_sfc_emiss_populate_ch &
+    cx_sfc_emiss_populate_land &
+    , cx_sfc_emiss_populate_sea &
     , cx_sfc_emiss_correct_for_sfctype
   
    ! obviously unused modules    
@@ -1253,7 +1250,8 @@
             call MAP_ANCIL_DATA_TO_PIXEL_GRID()
             
              ! - set surface emissivity
-            call  CX_SFC_EMISS_POPULATE_CH
+            call  CX_SFC_EMISS_POPULATE_LAND
+            call  CX_SFC_EMISS_POPULATE_SEA
 
             !--- post process dark composite if one read in
             if (Read_Dark_Comp == sym%YES .and. Dark_Composite_Name /= "no_file") then
@@ -1320,7 +1318,7 @@
 
             !--- fill in holes in surface emiss and surface refl with default
             !--- values based on surface type
-            call CX_SFC_EMISS_CORRECT_FOR_SFCTYPE()
+            !  call CX_SFC_EMISS_CORRECT_FOR_SFCTYPE()
             
             !--- compute desert mask cloud detection
             Sfc%Desert_Mask =  DESERT_MASK_FOR_CLOUD_DETECTION(ch(20)%Sfc_Emiss, Nav%Lat, Sfc%Snow, Sfc%Sfc_Type)
@@ -2050,7 +2048,7 @@
    if (Volcano_Mask_Id > 0)  call CLOSE_LAND_SFC_HDF(Volcano_Mask_Id)
    if (Surface_Elev_Id > 0)  call CLOSE_LAND_SFC_HDF(Surface_Elev_Id)
    if (Snow_Mask_Id > 0)  call CLOSE_LAND_SFC_HDF(Snow_Mask_Id)
-   if (Use_Sea_Ir_Emiss == sym%YES) call FORGET_SEA_IR_EMISS()
+   !if (Use_Sea_Ir_Emiss == sym%YES) call FORGET_SEA_IR_EMISS()
    if (Use_ABI_Dust == sym%YES) call FORGET_ABI_DUST()
 
    !--- remove directory for temporary files

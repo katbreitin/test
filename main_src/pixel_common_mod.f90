@@ -664,8 +664,8 @@ module PIXEL_COMMON_MOD
   integer,public, save:: Y_Sample_Offset
 
   logical,public, save:: Use_Iband
-  integer,public, save:: sfc_emiss_option
-  integer,public, save:: Use_Sea_IR_Emiss
+  integer,public, save:: emiss_land_option
+  integer,public, save:: emiss_sea_option
   integer,public, save:: Use_ABI_Dust
   integer,public, save:: Use_Sc_Prob
   integer,public, save:: Read_Volcano_Mask

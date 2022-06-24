@@ -90,8 +90,8 @@ module USER_OPTIONS
       , Read_Volcano_Mask &
       , Snow_Data_Dir &
       , Use_Default &
-      , Sfc_Emiss_Option &
-      , Use_Sea_IR_Emiss &
+      , emiss_land_option &
+      , emiss_sea_option &
       , Bayesian_Cloud_Mask_Name &
       , Compress_Flag &
       , Cloud_Mask_Mode &
@@ -244,8 +244,8 @@ contains
       Compress_Flag = 1 
       Use_Aux_Flag = 0 
       bayesian_cloud_mask_name = 'default'
-      sfc_emiss_option = 1 
-      Use_Sea_IR_Emiss = 1 
+      emiss_land_option = 1 
+      emiss_sea_option = 1 
       Read_Hires_Sfc_Type = 1 
       Read_Land_Mask = 1
       Read_Coast_Mask = 1
@@ -395,8 +395,8 @@ contains
           return
       end if 
       
-      read(unit=Default_Lun,fmt=*) sfc_emiss_option
-      read(unit=Default_Lun,fmt=*) Use_Sea_IR_Emiss
+      read(unit=Default_Lun,fmt=*) emiss_land_option
+      read(unit=Default_Lun,fmt=*) emiss_sea_option
       read(unit=Default_Lun,fmt=*) Read_Hires_Sfc_Type
       read(unit=Default_Lun,fmt=*) Read_Land_Mask
       read(unit=Default_Lun,fmt=*) Read_Coast_Mask
