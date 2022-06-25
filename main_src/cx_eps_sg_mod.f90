@@ -348,10 +348,12 @@ subroutine READ_EPS_SG_DATA(Segment_Number, Error_Status)
 
 
   !--- make sure lat/lon are within the limits
-  where(Nav%Lon_1b <= -180.0 .or. Nav%Lon_1b >= 180.0)  
+!  where(Nav%Lon_1b <= -180.0 .or. Nav%Lon_1b >= 180.0)  
+  where(Nav%Lon_1b < -180.0 .or. Nav%Lon_1b > 180.0)  
      Nav%Lon_1b = MISSING_VALUE_REAL4
   end where
-  where(Nav%Lat_1b <= -90.0 .or. Nav%Lat_1b >= 90.0)
+!  where(Nav%Lat_1b <= -90.0 .or. Nav%Lat_1b >= 90.0)
+  where(Nav%Lat_1b < -90.0 .or. Nav%Lat_1b > 90.0)
      Nav%Lat_1b = MISSING_VALUE_REAL4
   end where
 
