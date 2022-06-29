@@ -1,8 +1,8 @@
 fc=gfortran
 FC77=gfortran
 
-fflags = -O2  -ffast-math -funroll-loops -fno-range-check -ffree-line-length-200
-fflags_pfast = -O2  -ffast-math -funroll-loops -ffixed-form -fno-automatic
+fflags = -O2  -ffast-math -funroll-loops -fno-range-check -ffree-line-length-200 -fallow-argument-mismatch -fallow-invalid-boz
+fflags_pfast = -O2  -ffast-math -funroll-loops -ffixed-form -fno-automatic -fallow-invalid-boz
 fflags_sasrab_f77 = -O2  -ffast-math -funroll-loops -ffixed-form -fno-automatic
 fflags_sasrab_f90 = -O2  -ffast-math -funroll-loops -fno-automatic
 ldflags = -O2 
