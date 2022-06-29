@@ -449,7 +449,7 @@ subroutine READ_EPS_SG_DATA(Segment_Number, Error_Status)
     Sds_Data_1d = Sds_Data_1d - MSEC_PER_DAY
   end where
 
-  Time_Msec_Day = (mod(long(Sds_Data_1d), Microsec_Per_Day)) * 1000
+  Time_Msec_Day = (mod(int(Sds_Data_1d), Microsec_Per_Day)) * 1000
   Image%Scan_Time_Ms(1:Sds_Count_2d(2)) = (/(Time_Msec_Day((k - 1) /24 + 1), k=1, Sds_Count_2d(2))/)
 
   !--- special case last segment
