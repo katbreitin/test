@@ -50,7 +50,7 @@ ARCH=gfortran
 
 
 COMP=gfortran
-ifneq ($(ARCH), $(filter $(ARCH), ifort ifort-debug ifort-profile gfortran gfortran-debug gfortran-debug-andy gfortran-strict ifort-trace gfortran-profile gfortran-cspp))
+ifneq ($(ARCH), $(filter $(ARCH), ifort ifort-debug ifort-profile gfortran gfortran-debug gfortran-debug-andy gfortran-strict ifort-trace gfortran-profile gfortran-cspp gfortran10))
 $(error ARCH $(ARCH) not a existing build in ../build/arch) 
 endif 
 ifeq ($(ARCH), $(filter $(ARCH), ifort ifort-debug ifort-profile ifort-trace))
