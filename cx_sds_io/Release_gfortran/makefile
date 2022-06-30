@@ -7,7 +7,7 @@
 RM := rm -rf
 
 GF_VERSION := $(shell gfortran -dumpversion)
-VERSION := 10
+VERSION := 9
 fflags1= -O2
 
 
