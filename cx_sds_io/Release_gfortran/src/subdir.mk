@@ -29,8 +29,7 @@ OBJS += \
 # Each subdirectory must supply rules for building sources it contributes
 src/%.o: ../src/%.f90
 	@echo 'Building file: $<'
-	@echo $(VERSION)
-	@echo $(GF_VERSION)
+	@echo $(sort $(GF_VERSION) $(VERSION))  
 	@echo 'Invoking: GNU Fortran Compiler'
 	gfortran $(fflags1) -I"${HDF4_PATH}/include" -I"${HDF5_PATH}/include/" -I"${NETCDF_PATH}//include/" -O2  -c -o "$@" "$<"
 	@echo 'Finished building: $<'

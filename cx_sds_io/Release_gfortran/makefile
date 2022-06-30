@@ -7,11 +7,17 @@
 RM := rm -rf
 
 GF_VERSION := $(shell gfortran -dumpversion)
-VERSION := 10.
+VERSION := 10
 fflags1= -O2
-ifeq ($(VERSION),$(firstword $(sort $(VERSION) $(GF_VERSION))))
+
+
+ifeq ($(shell test $(GF_VERSION) -gt $(VERSION); echo $$?),0)
 fflags1 += -fallow-argument-mismatch 
 endif
+
+#ifeq ($(VERSION),$(firstword $(sort $(GF_VERSION) $(VERSION))))
+#fflags1 += -fallow-argument-mismatch 
+#endif
 
 # All of the sources participating in the build are defined here
 -include sources.mk

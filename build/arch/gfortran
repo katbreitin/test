@@ -4,9 +4,9 @@ FC77=gfortran
 fflags = -O2  -ffast-math -funroll-loops -fno-range-check -ffree-line-length-200 
 fflags_pfast = -O2  -ffast-math -funroll-loops -ffixed-form -fno-automatic 
 GF_VERSION := $(shell gfortran -dumpversion)
-VERSION := 10.
+VERSION := 10
 
-ifeq ($(VERSION),$(firstword $(sort $(VERSION) $(GF_VERSION))))
+ifeq ($(shell test $(GF_VERSION) -gt $(VERSION); echo $$?),0)
 fflags += -fallow-argument-mismatch -fallow-invalid-boz
 fflags_pfast += -fallow-invalid-boz
 endif
