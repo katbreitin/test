@@ -6,7 +6,7 @@ fflags_pfast = -O2  -ffast-math -funroll-loops -ffixed-form -fno-automatic
 GF_VERSION := $(shell gfortran -dumpversion)
 VERSION := 10.
 
-ifeq ($(VERSION),$(firstword $(sort $(GF_VERSION) $(VERSION))))
+ifeq ($(VERSION),$(firstword $(sort $(VERSION) $(GF_VERSION))))
 fflags += -fallow-argument-mismatch -fallow-invalid-boz
 fflags_pfast += -fallow-invalid-boz
 endif

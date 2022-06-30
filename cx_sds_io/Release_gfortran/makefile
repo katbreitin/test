@@ -9,7 +9,7 @@ RM := rm -rf
 GF_VERSION := $(shell gfortran -dumpversion)
 VERSION := 10.
 fflags1= -O2
-ifeq ($(VERSION),$(firstword $(sort $(GF_VERSION) $(VERSION))))
+ifeq ($(VERSION),$(firstword $(sort $(VERSION) $(GF_VERSION))))
 fflags1 += -fallow-argument-mismatch 
 endif
 
