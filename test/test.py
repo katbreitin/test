@@ -42,6 +42,8 @@ L2_LIST_CONTENT = '\n'.join(['testing',*get_all_l2_variables()])
 
 TEST_EXTRA = False
 
+DEFAULT_MODE=None
+
 extra = pytest.mark.skipif(not TEST_EXTRA, reason="extra test")
 
 save_funcs = []
@@ -50,7 +52,7 @@ def save(func):
     return func
 
 
-def _run_it(main_l1b_file, aux_l1b_files=(), config_override=None, out_dir=None):
+def _run_it(main_l1b_file, aux_l1b_files=(), config_override=None, out_dir=None, mode=DEFAULT_MODE):
     """
     Run clavrx case
 
@@ -99,7 +101,22 @@ def _run_it(main_l1b_file, aux_l1b_files=(), config_override=None, out_dir=None)
         options_file_content = build_options_file(config)
         file_list_content = build_file_list(out_dir, [main_l1b_link])
         level2_list_content = L2_LIST_CONTENT
-        run_clavrx(CLAVRX, file_list_content, options_file_content, level2_list_content, debug=False, log=False)
+        options_file_path = tmpdir / 'clavrx_options'
+        with open(options_file_path,'w') as fp:
+            fp.write(options_file_content)
+        level2_list_content = L2_LIST_CONTENT
+        with open(tmpdir / 'level2_list', 'w') as fp:
+            fp.write(level2_list_content)
+        file_list_path = tmpdir / 'file_list'
+        with open(file_list_path, 'w') as fp:
+            fp.write(file_list_content)
+        if mode=='perf':
+            p = subprocess.run(['perf','record','-F99','-g',CLAVRX], cwd=tmpdir)
+        elif mode=='valgrind'
+            p = subprocess.run(['valgrind','--suppressions='+str(Path('suppressions').absolute()), CLAVRX], cwd=tmpdir)
+        else:
+            p = subprocess.run([CLAVRX], cwd=tmpdir)
+        assert p.returncode == 0
     finally:
         rmtree(tmpdir)
 
@@ -156,6 +173,21 @@ def test_nasa_viirs(out_dir=None):
     extra = set(ROOT.glob('*A2019003.1700*'))
     extra.remove(vnp03)
     _run_it(vnp03, extra, out_dir=out_dir)
+
+@extra
+def test_nasa_viirs_rttov_slow(out_dir=None):
+    ROOT = Path('/ships19/cloud/archive/clavrx_test_data/viirs/nasa')
+    vnp03 = ROOT / 'VNP03MOD.A2019003.1700.002.2021102031552.nc'
+    extra = set(ROOT.glob('*A2019003.1700*'))
+    extra.remove(vnp03)
+    config_override = {
+        #'acha_alg':'off',
+        #'dcomp_alg':0,
+        #'prc_cloud_flag':0,
+        'rtm':'rttov',
+        'sfc_emiss':'rttov',
+    }
+    _run_it(vnp03, extra, config_override=config_override, out_dir=out_dir)
 
 
 
