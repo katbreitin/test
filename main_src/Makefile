@@ -776,7 +776,7 @@ geos_transform_pix.o: geos_transform_pix.c
 ################################ Misc. Targets #################################
 
 all_plus:
-ifeq ($(ARCH),$(filter $(ARCH), gfortran gfortran-strict gfortran-debug gfortran-profile ))
+ifeq ($(ARCH),$(filter $(ARCH), gfortran gfortran-strict gfortran-debug gfortran-profile gfortran10 ))
 all_plus:  dcomp_gfortran muri_gfortran all
 else
 all_plus: dcomp_ifort muri_ifort all
