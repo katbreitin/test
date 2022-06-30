@@ -7,11 +7,13 @@
 RM := rm -rf
 
 GF_VERSION := $(shell gfortran -dumpversion)
-VERSION := 9
+VERSION := 9.
 fflags1= -O2
 
+GF_VERSION_MAJ = $(firstword $(subst ., ,$(GF_VERSION)))
 
-ifeq ($(shell test $(GF_VERSION) -gt $(VERSION); echo $$?),0)
+
+ifeq ($(shell test $(GF_VERSION_MAJ) -gt 9; echo $$?),0)
 fflags1 += -fallow-argument-mismatch 
 endif
 
