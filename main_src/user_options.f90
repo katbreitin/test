@@ -113,7 +113,9 @@ module USER_OPTIONS
       , Elem_Abs_Idx_ACHA_Dump &
       , Line_Abs_Idx_ACHA_Dump &
       , Use_Iband &
-      , WMO_Id_ISCCPNG
+      , WMO_Id_ISCCPNG &
+      , GFS_GRIB_Flag &
+      , GFS_GRIB_Type
       
    use CONSTANTS_MOD, only: &
       Sym &
@@ -232,7 +234,9 @@ contains
       CCL%Mode = 1
       CCL%Type = 0
       ASOS%Mode = 0_int1
-      Nlcomp_Mode = 1            
+      Nlcomp_Mode = 1
+      GFS_GRIB_Flag = .false.
+      GFS_GRIB_Type = 0
       Level2_File_Flag = 1
       Output_Format_Flag = 0
       Cld_Flag = 1
@@ -503,6 +507,8 @@ contains
       integer :: i
       integer :: Temp_Scans_Arg !--- temporary integer for number of scanlines
       integer :: iargc
+      logical :: e
+      character(len=2) :: string_2
 
       temp_string = '.'  !--- temporary string to search for in angle commandline
 
@@ -572,7 +578,19 @@ contains
           therm_Cal_1b = sym%YES
         elseif(trim(fargv) == "-no_Therm_Cal_1b") then
           therm_Cal_1b = sym%NO
-        
+
+        ! Read GFS output from GRIB-format files (rather than HDF-format)
+        elseif (trim(fargv) == "-gfs_grib") then
+          GFS_GRIB_Flag = .true.
+          call getarg(i+1,junk)
+          read(junk,'(i4)', iostat=Temp_Scans_Arg) GFS_GRIB_Type
+          e = ( Temp_Scans_Arg /= 0 )
+          if(.not.e) e = ( GFS_GRIB_Type < 1 )
+          if (e) then
+            print *, "gfs_grib_type must be an integer greater than 1."
+            stop 1
+          endif
+
         !Change Nav type
         elseif(trim(fargv) == "-l1bnav") then
           nav_opt = 0
@@ -712,9 +730,17 @@ contains
   
       !--- default ancillary data directory
       Ancil_Data_Dir = trim(Data_Base_Path)
-      Gfs_Data_Dir = trim(Data_Base_Path)//'/dynamic/gfs/'
-      if (NWP_PIX%Nwp_Opt == 8) Gfs_Data_Dir = trim(Data_Base_Path)//'/dynamic/gfs_fv3/'
-      if (NWP_PIX%Nwp_Opt == 7) Gfs_Data_Dir = trim(Data_Base_Path)//'/dynamic/gfs_ait/'
+      if(GFS_GRIB_flag) then
+        call MESG ("GFS data will be read from GRIB-format input", &
+             level = verb_lev%DEFAULT)
+        write (string_2,'(i2)') GFS_GRIB_Type
+        call MESG ("GRIB type is "//string_2,level = verb_lev%DEFAULT)
+        Gfs_Data_Dir = trim(Data_Base_Path)//'/dynamic/gfs_grib/'
+      else
+        Gfs_Data_Dir = trim(Data_Base_Path)//'/dynamic/gfs/'
+        if (NWP_PIX%Nwp_Opt == 8) Gfs_Data_Dir = trim(Data_Base_Path)//'/dynamic/gfs_fv3/'
+        if (NWP_PIX%Nwp_Opt == 7) Gfs_Data_Dir = trim(Data_Base_Path)//'/dynamic/gfs_ait/'
+      endif
       Ncep_Data_Dir = trim(Data_Base_Path)//'/dynamic/ncep-reanalysis/'
       Cfsr_Data_Dir = trim(Data_Base_Path)//'/dynamic/cfsr/'
       Merra_Data_Dir = trim(Data_Base_Path)//'/dynamic/merra/'
@@ -876,6 +902,10 @@ contains
 
       print *,"  -gfs_nwp"
       print *, "  Use GFS data for NWP dataset. "
+      print *," "
+
+      print *,"  -gfs_grib (gfs_grib_type)"
+      print *, "  Read GRIB-format GFS output (according to the GRIB type)"
       print *," "
   
       print *,"  -ncep_nwp"

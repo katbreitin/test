@@ -655,6 +655,8 @@ module PIXEL_COMMON_MOD
   integer,public, save:: Therm_cal_1b
   integer,public, save:: Nav_Opt       !0=level1b,1=clevernav,2=reposnx
   integer,public, save:: Output_Format_Flag
+  logical,public, save:: GFS_GRIB_Flag
+  integer,public, save:: GFS_GRIB_Type
   integer,public, save:: Level2_File_Flag
   integer,public, save:: Use_Sst_Anal
   logical,public, save:: Use_IR_Cloud_Type_Flag
