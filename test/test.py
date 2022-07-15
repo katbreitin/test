@@ -28,7 +28,7 @@ HERE = Path(__file__).absolute().parent
 
 def get_all_l2_variables():
     l2_variables = set()
-    pattern = re.compile('.*case\([\'"](\w+)[\'"]\).*')
+    pattern = re.compile(r'.*case\([\'"](\w+)[\'"]\).*')
     with open(HERE / '../main_src/level2_mod.f90') as fp:
         for line in fp:
             if 'case("' in line:
@@ -60,6 +60,8 @@ def _run_it(main_l1b_file, aux_l1b_files=(), config_override=None, out_dir=None,
     aux_l1b_files :: list of files that will get linked next to the primary file in a temp dir
     config_override :: dict of clavrx options to override the defaults (see options/default_options.yml)
     out_dir :: directory to persist output the l2 file (default is a temporary directory which is removed)
+    
+    returns a string containing the contents of the clavrx_options file
     """
     main_l1b_file = Path(main_l1b_file)
     tmpdir = Path(mkdtemp(dir=HERE))
@@ -80,11 +82,11 @@ def _run_it(main_l1b_file, aux_l1b_files=(), config_override=None, out_dir=None,
         main_l1b_link = tmpdir / main_l1b_file.name
         main_l1b_link.symlink_to(main_l1b_file)
 
-        print()
-        args = ['ls','-l',str(tmpdir)]
-        print(' '.join(args))
-        subprocess.run(args)
-        print()
+        #print()
+        #args = ['ls','-l',str(tmpdir)]
+        #print(' '.join(args))
+        #subprocess.run(args)
+        #print()
 
         config = get_config()
         if config_override is not None:
@@ -112,11 +114,12 @@ def _run_it(main_l1b_file, aux_l1b_files=(), config_override=None, out_dir=None,
             fp.write(file_list_content)
         if mode=='perf':
             p = subprocess.run(['perf','record','-F99','-g',CLAVRX], cwd=tmpdir)
-        elif mode=='valgrind'
+        elif mode=='valgrind':
             p = subprocess.run(['valgrind','--suppressions='+str(Path('suppressions').absolute()), CLAVRX], cwd=tmpdir)
         else:
             p = subprocess.run([CLAVRX], cwd=tmpdir)
         assert p.returncode == 0
+        return options_file_content
     finally:
         rmtree(tmpdir)
 
@@ -164,7 +167,7 @@ def test_noaa_viirs(out_dir=None):
     VIIRS_L1 = ROOT / 'GMTCO_npp_d20220221_t2356569_e0002373_b53481_c20220222005748538034_oebc_ops.h5'
     aux = set(ROOT.glob('*npp_d20220221_t2356569_e0002373*'))
     aux.remove(VIIRS_L1)
-    _run_it(VIIRS_L1, aux, out_dir=out_dir)
+    return _run_it(VIIRS_L1, aux, out_dir=out_dir)
 
 @save
 def test_nasa_viirs(out_dir=None):
@@ -172,7 +175,7 @@ def test_nasa_viirs(out_dir=None):
     vnp03 = ROOT / 'VNP03MOD.A2019003.1700.002.2021102031552.nc'
     extra = set(ROOT.glob('*A2019003.1700*'))
     extra.remove(vnp03)
-    _run_it(vnp03, extra, out_dir=out_dir)
+    return _run_it(vnp03, extra, out_dir=out_dir)
 
 @extra
 def test_nasa_viirs_rttov_slow(out_dir=None):
@@ -187,23 +190,23 @@ def test_nasa_viirs_rttov_slow(out_dir=None):
         'rtm':'rttov',
         'sfc_emiss':'rttov',
     }
-    _run_it(vnp03, extra, config_override=config_override, out_dir=out_dir)
+    return _run_it(vnp03, extra, config_override=config_override, out_dir=out_dir)
 
 
 
 @save
 def test_avhrr(out_dir=None):
     AVHRR = Path('/arcdata/polar/noaa/noaa18/2020/2020_01_01_001/avhrr/NSS.GHRR.NN.D20001.S0000.E0143.B7532324.WI')
-    _run_it(AVHRR, out_dir=out_dir)
+    return _run_it(AVHRR, out_dir=out_dir)
 
 def test_avhrr_get_goes_header_bug():
     # This file is empty
     AVHRR = Path('/arcdata/polar/noaa/noaa18/2022/2022_02_05_036/avhrr/NSS.GHRR.NN.D22036.S1847.E2013.B8614849.GC')
     try:
-        _run_it(AVHRR)
+        return _run_it(AVHRR)
         assert False, 'This file should cause a nonzero returncode'
-    except subprocess.CalledProcessError as e:
-        assert e.returncode == 4
+    except AssertionError as e:
+        pass
 
 
 @save
@@ -211,7 +214,7 @@ def test_fusion(out_dir=None):
     FUSION = Path('/ships19/cloud/archive/Satellite_Input/HIRS-FUSION/NN/2020/001/NSS.GHRR.NN.D20001.S0000.E0143.B7532324.WI.fusion.nc')
     AVHRR = Path('/arcdata/polar/noaa/noaa18/2020/2020_01_01_001/avhrr/NSS.GHRR.NN.D20001.S0000.E0143.B7532324.WI')
     override = {'lut':'ecm2_lut_avhrr123_hirs_common_chs.nc'}
-    _run_it(FUSION, [AVHRR], config_override=override, out_dir=out_dir)
+    return _run_it(FUSION, [AVHRR], config_override=override, out_dir=out_dir)
 
 
 @save
@@ -231,7 +234,7 @@ def test_g16_fd(out_dir=None):
         'name': 'SUB'
         }}
     
-    _run_it(files[0], files[1:], config_override=override, out_dir=out_dir)
+    return _run_it(files[0], files[1:], config_override=override, out_dir=out_dir)
 
 @save
 def test_g16_conus(out_dir=None):
@@ -250,7 +253,7 @@ def test_g16_conus(out_dir=None):
         'name': 'SUB'
         }}
     
-    _run_it(files[0], files[1:], config_override=override, out_dir=out_dir)
+    return _run_it(files[0], files[1:], config_override=override, out_dir=out_dir)
 
 
 @extra
@@ -258,7 +261,7 @@ def test_process_cloud_off():
     # Use the avhrr template
     AVHRR = Path('/arcdata/polar/noaa/noaa18/2020/2020_01_01_001/avhrr/NSS.GHRR.NN.D20001.S0000.E0143.B7532324.WI')
     override = { 'prc_cloud_flag':0 }
-    _run_it(AVHRR, config_override=override)
+    return _run_it(AVHRR, config_override=override)
 
 
 @save
@@ -278,11 +281,10 @@ def test_g17_fd(out_dir=None):
         'name': 'SUB'
         }}
     
-    _run_it(files[0], files[1:], config_override=override, out_dir=out_dir)
+    return _run_it(files[0], files[1:], config_override=override, out_dir=out_dir)
 
 
-@save
-def test_g17_conus(out_dir=None):
+def _g17_conus(out_dir=None, sfc_emiss='seebor', rtm='pfast', see_emiss=True):
     ROOT = Path('/arcdata/goes/grb/goes17/2020/2020_05_02_123/abi/L1b/RadC/')
     files = [next(ROOT.glob(f'OR_ABI-L1b-RadC-M6C{i:02d}_G17_s2020123222117*.nc')) for i in range(1,17)]
     override = {'bounds':{
@@ -296,10 +298,26 @@ def test_g17_conus(out_dir=None):
         'solzen_min': 0.0,
         'solzen_max': 180.0,
         'name': 'SUB'
-        }}
+        },
+        'sfc_emiss':sfc_emiss,
+        'see_emiss':see_emiss,
+        'rtm':rtm
+    }
     
-    _run_it(files[0], files[1:], config_override=override, out_dir=out_dir)
+    return _run_it(files[0], files[1:], config_override=override, out_dir=out_dir)
 
+for rtm in ['pfast','rttov']:
+    for sfc_emiss in ['umd','rttov','seebor']:
+        for see_emiss in [False, True]:
+            if see_emiss:
+                see_emiss_str = 'IRseaemis'
+            else:
+                see_emiss_str = 'IRseaemis'
+            exec(f"""
+@save
+def test_g17_conus_{rtm}_{sfc_emiss}_{see_emiss_str}(out_dir=None):
+    return _g17_conus(out_dir=out_dir, rtm='{rtm}', sfc_emiss='{sfc_emiss}', see_emiss={see_emiss})
+            """)
 
 @save
 def test_h8_fd_dat(out_dir=None):
@@ -318,6 +336,6 @@ def test_h8_fd_dat(out_dir=None):
         'name': 'SUB'
         }}
     
-    _run_it(files[0], files[1:], config_override=override, out_dir=out_dir)
+    return _run_it(files[0], files[1:], config_override=override, out_dir=out_dir)
 
 

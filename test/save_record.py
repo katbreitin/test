@@ -13,7 +13,9 @@ def main(version):
         else:
             output_dir.mkdir(exist_ok=True,parents=True)
             print(output_dir)
-            func(out_dir=output_dir)
+            clavrx_options = func(out_dir=output_dir)
+            with open(output_dir / 'clavrx_options','w') as fp:
+                fp.write(clavrx_options)
 
 if __name__ == '__main__':
     import argparse
