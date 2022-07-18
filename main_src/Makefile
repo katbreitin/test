@@ -85,6 +85,10 @@ ifdef libhim_libs
      LIB_HIM_FLAG = -DLIBHIM
 endif
 
+ifdef degrib_libs
+     DEGRIB_FLAG = -DDEGRIB
+endif
+
 #  RTTOV
 ifdef rttov_libs
 ldflags_hdf5_rttov=-L$(HDF5_PATH)/lib -lhdf5hl_fortran -lhdf5_hl -lhdf5_fortran -lhdf5 -lz 
@@ -329,12 +333,15 @@ ifdef libhim_libs
      CLAVRX_OBJ_FILES += ahi_hsd_reader.o
 endif
 
+ifdef degrib_libs
+     CLAVRX_OBJ_FILES += grib_reader_mod.o
+endif
+
 ifdef RTTOV_LIBS
      CLAVRX_OBJ_FILES +=  \
                         cx_rttov_mapping_mod.o \
                  cx_rttov_sfc_emiss.o \
                    cx_rttov_bridge_mod.o 
-     
 
 endif
 
@@ -343,12 +350,12 @@ endif
 clavrxorb: $(clavrxorb_objs) bindir
 ifdef hdf5libs
    ifdef nlcomplibs
-	   $(fc) $(ldflags) -o ../clavrx_bin/clavrxorb $(CLAVRX_OBJ_FILES) cx_readh5dataset.o viirs_clavrx_bridge.o viirs_read_mod.o viirs_nasa_read_module.o fy3d_read_module.o $(netcdflibs) ${hdf5libs} $(hdflibs) ${hdf5links} ${dncomplibs} ${dncomplinks} ${nlcomplibs} ${nlcomplinks} ${muri_libs}  ${murilinks} ${libhim_libs} ${libhim}  $(ldflags_hdf5_rttov) ${RTTOV_LIBS}
+	   $(fc) $(ldflags) -o ../clavrx_bin/clavrxorb $(CLAVRX_OBJ_FILES) cx_readh5dataset.o viirs_clavrx_bridge.o viirs_read_mod.o viirs_nasa_read_module.o fy3d_read_module.o $(netcdflibs) $(hdf5libs) $(hdflibs) $(hdf5links) $(dncomplibs) $(dncomplinks) $(nlcomplibs) $(nlcomplinks) $(muri_libs)  $(murilinks) $(libhim_libs) $(libhim) $(degrib_libs) $(degriblinks) $(ldflags_hdf5_rttov) $(RTTOV_LIBS)
    else
-	   $(fc) $(ldflags) -o ../clavrx_bin/clavrxorb $(CLAVRX_OBJ_FILES) cx_readh5dataset.o viirs_clavrx_bridge.o viirs_read_mod.o viirs_nasa_read_module.o fy3d_read_module.o $(netcdflibs) ${hdf5libs} $(hdflibs) ${hdf5links} ${dncomplibs} ${dncomplinks} ${muri_libs} ${murilinks} ${libhim_libs} ${libhim}  $(ldflags_hdf5_rttov) ${RTTOV_LIBS}
+	   $(fc) $(ldflags) -o ../clavrx_bin/clavrxorb $(CLAVRX_OBJ_FILES) cx_readh5dataset.o viirs_clavrx_bridge.o viirs_read_mod.o viirs_nasa_read_module.o fy3d_read_module.o $(netcdflibs) $(hdf5libs) $(hdflibs) $(hdf5links) $(dncomplibs) $(dncomplinks) $(muri_libs) $(murilinks) $(libhim_libs) $(libhim) $(degrib_libs) $(degriblinks) $(ldflags_hdf5_rttov) $(RTTOV_LIBS)
    endif   
 else
-	$(fc) $(ldflags) -o ../clavrx_bin/clavrxorb $(CLAVRX_OBJ_FILES) $(netcdflibs) $(hdflibs) ${dncomplibs} ${dncomplinks}  ${muri_libs}  ${murilinks} ${libhim_libs} ${libhim}  $(ldflags_hdf5_rttov) ${RTTOV_LIBS}
+	$(fc) $(ldflags) -o ../clavrx_bin/clavrxorb $(CLAVRX_OBJ_FILES) $(netcdflibs) $(hdflibs) $(dncomplibs) $(dncomplinks) $(muri_libs) $(murilinks) $(libhim_libs) $(libhim) $(degrib_libs) $(degriblinks) $(ldflags_hdf5_rttov) $(RTTOV_LIBS)
 endif
 
 comp_asc_des_level2b: $(comp_asc_des_level2b_objs) bindir
@@ -505,6 +512,13 @@ cx_rtm_mod.o:cx_rtm_mod.f90 nwp_common_mod.o
   
 endif
 
+ifdef degrib_libs
+grib_reader_mod.o:
+	$(fc) -c $(fflags) $(cppflags) $(cpp) ${degrib_libs} grib_reader_mod.f90
+gfs_hdf_mod.o: gfs_hdf_mod.f90 constants_mod.o pixel_common_mod.o cx_science_tools_mod.o nwp_common_mod.o hdf.o clavrx_message_mod.o cx_hdf4_mod.o grib_reader_mod.o
+else
+gfs_hdf_mod.o: gfs_hdf_mod.f90 constants_mod.o pixel_common_mod.o cx_science_tools_mod.o nwp_common_mod.o hdf.o clavrx_message_mod.o cx_hdf4_mod.o
+endif
 
 kdtree2.o : kdtree2.f90
 cx_atmospheric_correction_vis_mod.o: cx_atmospheric_correction_vis_mod.f90 pixel_common_mod.o surface_properties_mod.o
@@ -548,7 +562,6 @@ foul.o: foul.f90
 goes_mod.o: goes_mod.f90 pixel_common_mod.o viewing_geometry_mod.o cx_date_time_tools_mod.o avhrr_mod.o file_tools.o cx_spatial_metrics_mod.o clavrx_message_mod.o 
 abi_mod.o: abi_mod.f90 pixel_common_mod.o goes_mod.o file_tools.o viewing_geometry_mod.o cx_real_boolean_mod.o
 Compare_Float_Numbers.o: Compare_Float_Numbers.f90 constants_mod.o
-gfs_hdf_mod.o: gfs_hdf_mod.f90 constants_mod.o  cx_science_tools_mod.o nwp_common_mod.o hdf.o clavrx_message_mod.o cx_hdf4_mod.o
 globsnow_read_routines.o: globsnow_read_routines.f90 constants_mod.o hdf.o cx_date_time_tools_mod.o file_tools.o
 hdf.o: hdf.f90
 hirs_fusion_mod.o:hirs_fusion_mod.f90 
@@ -699,6 +712,10 @@ endif
 
 ifdef libhim_libs
      sub_routine += ahi_hsd_reader.o
+endif
+
+ifdef degrib_libs
+     sub_routine += grib_reader_mod.o
 endif
 
 process_clavrx.o: process_clavrx.f90 $(sub_routine)

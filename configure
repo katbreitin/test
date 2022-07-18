@@ -75,13 +75,16 @@ my %opt = (
             dncomp_ifort => '../cx_dncomp/Release_ifort/',
             muri_ifort => '../muri/Release_ifort/',
             cx_sds_io_ifort => '../cx_sds_io/Release_ifort/',
+            libhim_ifort => '',
             hdf4_gcc => '${SSEC_HDF4_LIB}/../',
             hdf5_gcc => '${SSEC_HDF5_LIB}/../',
             rttov_path => @rttov_path_default,
+            degrib_path => '${SSEC_ECCODES_LIB}/../',
             netcdf_gcc => '${SSEC_NETCDF4_LIB}/../',
             dncomp_gcc => '../cx_dncomp/Release_gfortran/',
             muri_gcc => '../muri/Release_gfortran/',
             cx_sds_io_gcc => '../cx_sds_io/Release_gfortran/',
+            libhim_gcc => '',
             rttov => '../rttov/',
            
           );
@@ -98,6 +101,7 @@ GetOptions(
    'hdf4_gcc=s',
    'hdf5_gcc=s',
    'rttov_path=s',
+   'degrib_path=s',
    'netcdf_gcc=s',
    'dncomp_gcc=s',
    'cx_sds_io_gcc=s',
@@ -164,6 +168,7 @@ open (CONFIG, '>> ',@outfile) or die "Could not open file '@outfile' $!)\n";
    print CONFIG "export LIBHIM_PATH = $opt{libhim_gcc}\n";
    print CONFIG "export RTTOV_DIR = ../rttov/\n";
    print CONFIG "export RTTOV_PATH = $opt{rttov_path}\n";
+   print CONFIG "export DEGRIB_PATH = $opt{degrib_path}\n";
    print CONFIG "else\n";
    print CONFIG "export CX_DATA_IO=$opt{cx_sds_io_ifort}\n";
    print CONFIG "export DNCOMP=$opt{dncomp_ifort}\n";
@@ -174,6 +179,7 @@ open (CONFIG, '>> ',@outfile) or die "Could not open file '@outfile' $!)\n";
    print CONFIG "export LIBHIM_PATH = $opt{libhim_ifort}\n";
    print CONFIG "export RTTOV_DIR = ../rttov/\n";
    print CONFIG "export RTTOV_PATH = $opt{rttov_path}\n";
+   print CONFIG "export DEGRIB_PATH = $opt{degrib_path}\n";
    print CONFIG "endif\n";
    
    
@@ -243,6 +249,10 @@ Command line options:
          Path to the directory where Libhimawari library is located for ifort compiles
 --libhim_gcc=<directory>
          Path to the directory where Libhimawari library is located for gcc compiles
+--degrib_path=<directory>
+         Path to the directory which contains the include and lib subdirectories
+         for software that decodes GRIB-format ancillary files (e.g., ecCodes).
+         Default is the root path SSEC global variable of eccodes library SSEC_ECCODES_LIB / ../.
                     
 HELP
    exit;

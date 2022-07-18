@@ -38,3 +38,8 @@ ifdef LIBHIM_PATH
     libhim_libs=-I$(LIBHIM_PATH)/include -I$(LIBHIM_PATH)/src
     libhim=-lstdc++ $(LIBHIM_PATH)/src/libHimawari.a 
 endif
+
+ifdef DEGRIB_PATH
+    degrib_libs=-L$(DEGRIB_PATH)/lib -I$(DEGRIB_PATH)/include
+    degriblinks=-leccodes_f90 -leccodes_memfs -leccodes
+endif

@@ -587,7 +587,8 @@ contains
           e = ( Temp_Scans_Arg /= 0 )
           if(.not.e) e = ( GFS_GRIB_Type < 1 )
           if (e) then
-            print *, "gfs_grib_type must be an integer greater than 1."
+            print *, 'Command-line argument usage: "... -gfs_grib gfs_grib_type ..."'
+            print *, "  gfs_grib_type must be an integer greater than 1."
             stop 1
           endif
 
