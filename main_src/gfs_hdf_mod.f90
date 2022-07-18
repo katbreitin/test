@@ -48,6 +48,8 @@ module GFS_HDF_MOD
 
   use CLAVRX_MESSAGE_MOD, only: mesg, verb_lev
 
+  use PIXEL_COMMON_MOD, only: GFS_GRIB_Flag, GFS_GRIB_Type
+
   implicit none
   private
   public:: READ_GFS_DATA
@@ -87,6 +89,7 @@ module GFS_HDF_MOD
     integer :: idx_3h
     integer :: shft
     logical :: bad_time_edges
+    character(len=10) :: date_str_t
     
     ! init
     shft = 0.  
@@ -94,6 +97,15 @@ module GFS_HDF_MOD
     !- determine mid time
     t_mid = time_mid (t0,t1)
     ! call t_mid % print_data()
+
+    if (GFS_GRIB_Flag) then
+       select case (nwp_type)
+       case (3, 4, 5, 6, 7)
+          print *, 'GRIB-format input not supported for NWP model option ',  &
+               nwp_type
+          stop 1
+       end select
+    end if
        
     ! - case for all nwp types
     select case (nwp_type)
@@ -101,9 +113,16 @@ module GFS_HDF_MOD
     case(1)    !GFS
         shft = -2
         t_bef = t_mid % next_6h(shft-1)
-        file1 = "gfs."//t_bef % date_string('yymmddhh')//"_F012.hdf"
         t_aft = t_mid % next_6h(shft)
-        file2 = "gfs."//t_aft % date_string('yymmddhh')//"_F012.hdf"
+        if (GFS_GRIB_Flag) then
+           date_str_t = t_bef%date_string('yyyymmddhh')
+           file1 = "gfs."//date_str_t(1:8)//'.t'//date_str_t(9:10)//'z.pgrb2f12'
+           date_str_t = t_aft%date_string('yyyymmddhh')
+           file2 = "gfs."//date_str_t(1:8)//'.t'//date_str_t(9:10)//'z.pgrb2f12'
+        else
+           file1 = "gfs."//t_bef % date_string('yymmddhh')//"_F012.hdf"
+           file2 = "gfs."//t_aft % date_string('yymmddhh')//"_F012.hdf"
+        end if
         
     case(3)    !CFSR
         shft = -1
@@ -172,10 +191,18 @@ module GFS_HDF_MOD
          
     case(8)    !GFS FV3
         shft = -2
+
         t_bef = t_mid % next_6h(shft-1)
-        file1 = "gfs."//t_bef % date_string('yymmddhh')//"_F012.hdf"
         t_aft = t_mid % next_6h(shft)
-        file2 = "gfs."//t_aft % date_string('yymmddhh')//"_F012.hdf"
+        if (GFS_GRIB_Flag) then
+           date_str_t = t_bef%date_string('yyyymmddhh')
+           file1 = "gfs."//date_str_t(1:8)//'.t'//date_str_t(9:10)//'z.pgrb2f12'
+           date_str_t = t_aft%date_string('yyyymmddhh')
+           file2 = "gfs."//date_str_t(1:8)//'.t'//date_str_t(9:10)//'z.pgrb2f12'
+        else
+           file1 = "gfs."//t_bef % date_string('yymmddhh')//"_F012.hdf"
+           file2 = "gfs."//t_aft % date_string('yymmddhh')//"_F012.hdf"
+        end if
  
     case default
 
@@ -232,6 +259,12 @@ module GFS_HDF_MOD
                            Nwp_Path,   &
                            Ierror_Nwp)
 
+#if defined(DEGRIB)
+    use grib_reader_mod, only: grib, grib_read
+#endif  /* end:DEGRIB */
+
+    implicit none
+
 !-------------------------------------------------------------
 !   Local declarations
 !-------------------------------------------------------------
@@ -271,12 +304,18 @@ module GFS_HDF_MOD
     integer, dimension(Sds_Rank_3d):: Sds_Start_3d, Sds_Stride_3d, Sds_Edges_3d
 
     character(len=1024) :: string_msg
+
+#if defined(DEGRIB)
+    type(grib) :: grib_id_1, grib_id_2
+#endif  /* end:DEGRIB */
     
     type(date_type) :: t0, t1
     
     !-- check Nwp_Data_Type
-    if (Nwp_Data_Type /= 1 .and. Nwp_Data_Type /= 3 .and. Nwp_Data_Type /=4 .and. Nwp_Data_Type /=5 .and. Nwp_Data_Type /=6 .and. Nwp_Data_Type /=7 &
-       .and. Nwp_Data_Type /= 8) then
+    if (Nwp_Data_Type /= 1 .and. Nwp_Data_Type /= 3 .and.  &
+        Nwp_Data_Type /= 4 .and. Nwp_Data_Type /= 5 .and.  &
+        Nwp_Data_Type /= 6 .and. Nwp_Data_Type /= 7 .and.  &
+        Nwp_Data_Type /= 8) then
        print *, EXE_PROMPT, MODULE_PROMPT, " ERROR: unsupported NWP data in GFS read module, stopping"
        stop 
     endif
@@ -331,7 +370,189 @@ module GFS_HDF_MOD
        Nwp_Name_After = Nwp_Name_Before
     endif
 
-    call MESG("GFS/CFSR NWP HDF files read in successfully",level=Verb_Lev%VERBOSE)
+    call MESG("GFS/CFSR NWP files successfully found", level=Verb_Lev%VERBOSE)
+
+    if (GFS_GRIB_Flag) then
+#if defined(DEGRIB)
+      call grib_open(trim(Nwp_Name_Before), grib_id_1)
+      call grib_open(trim(Nwp_Name_After), grib_id_2)
+
+      call get_global_attribute(grib_id_1, "NUMBER OF PRESSURE LEVELS",  &
+           Nlevels, GFS_GRIB_Type)
+      call get_global_attribute(grib_id_1, "NUMBER OF O3MR LEVELS",  &
+           Nlevels_o3mr, GFS_GRIB_Type)  ! unused
+      call get_global_attribute(grib_id_1, "NUMBER OF RH LEVELS",  &
+           Nlevels_rh, GFS_GRIB_Type)  ! unused
+      call get_global_attribute(grib_id_1, "NUMBER OF CLWMR LEVELS",  &
+           Nlevels_clwmr, GFS_GRIB_Type)  ! unused
+      call get_global_attribute(grib_id_1, "NUMBER OF LATITUDES",  &
+           Nlat_Gfs, GFS_GRIB_Type)
+      call get_global_attribute(grib_id_1, "NUMBER OF LONGITUDES",  &
+           Nlon_Gfs, GFS_GRIB_Type)
+      call get_global_attribute(grib_id_1, "LATITUDE RESOLUTION",  &
+           Dlat_Gfs, GFS_GRIB_Type)
+      call get_global_attribute(grib_id_1, "LONGITUDE RESOLUTION",  &
+           Dlon_Gfs, GFS_GRIB_Type)
+      call get_global_attribute(grib_id_1, "FIRST LATITUDE",  &
+           lat1_Gfs, GFS_GRIB_Type)
+      call get_global_attribute(grib_id_1, "FIRST LONGITUDE",  &
+           lon1_Gfs, GFS_GRIB_Type)
+
+      !--- set reformat gfs flag
+      REFORMAT_GFS_ZXY = 0
+      array_order_1 = 'zxy'
+
+      call init_common_items
+
+      !------------------------------------------------------------------
+      !   Read data from the first file
+      !------------------------------------------------------------------
+
+      !--- read in standard levels from first file
+      call grib_read(grib_id_1, "pressure levels", NWP%P_Std)
+
+      !--- read in two dimensional arrays
+      !- surface temperature
+      call grib_read(grib_id_1, "surface temperature", Temp2d_Nwp_1)
+      call grib_read(grib_id_2, "surface temperature", Temp2d_Nwp_2)
+      call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Tmpsfc)
+
+      !- surface height
+      call grib_read(grib_id_1, "surface height", Temp2d_Nwp_1)
+      call grib_read(grib_id_2, "surface height", Temp2d_Nwp_2)
+      call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Zsfc)
+
+      !- land mask
+      allocate(Temp_2D_Real(Nlon_Gfs, Nlat_Gfs))
+      call grib_read(grib_id_1, "land mask", Temp2d_Nwp_1)
+      call grib_read(grib_id_2, "land mask", Temp2d_Nwp_2)
+      call INTERPOLATE_2D(t_weight, Missing_Nwp, Temp_2D_Real)
+      NWP%Land = int(Temp_2D_Real, kind=int1)
+      deallocate(Temp_2D_Real)
+
+      !- ice mask
+      call grib_read(grib_id_1, "ice fraction", Temp2d_Nwp_1)
+      call grib_read(grib_id_2, "ice fraction", Temp2d_Nwp_2)
+      call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Sea_Ice_Frac)
+
+      !- msl pressure
+      call grib_read(grib_id_1, "MSL pressure", Temp2d_Nwp_1)
+      call grib_read(grib_id_2, "MSL pressure", Temp2d_Nwp_2)
+      call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Pmsl)
+
+      !- surface pressure
+      call grib_read(grib_id_1, "surface pressure", Temp2d_Nwp_1)
+      call grib_read(grib_id_2, "surface pressure", Temp2d_Nwp_2)
+      call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Psfc)
+
+      !- air temperature
+      call grib_read(grib_id_1, "temperature at sigma=0.995", Temp2d_Nwp_1)
+      call grib_read(grib_id_2, "temperature at sigma=0.995", Temp2d_Nwp_2)
+      call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Tmpair)
+
+      !- air humidity
+      call grib_read(grib_id_1, "rh at sigma=0.995", Temp2d_Nwp_1)
+      call grib_read(grib_id_2, "rh at sigma=0.995", Temp2d_Nwp_2)
+      call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Rhsfc)
+
+      !- water equivalent snow depth
+      call grib_read(grib_id_1, "water equivalent snow depth", Temp2d_Nwp_1)
+      call grib_read(grib_id_2, "water equivalent snow depth", Temp2d_Nwp_2)
+      call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Weasd)
+
+      !- TPW
+      call grib_read(grib_id_1, "total precipitable water", Temp2d_Nwp_1)
+      call grib_read(grib_id_2, "total precipitable water", Temp2d_Nwp_2)
+      call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Tpw)
+
+      !- tropopause temperature
+      call grib_read(grib_id_1, "tropopause temperature", Temp2d_Nwp_1)
+      call grib_read(grib_id_2, "tropopause temperature", Temp2d_Nwp_2)
+      call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%T_Trop)
+
+      !- tropopause pressure
+      call grib_read(grib_id_1, "tropopause pressure", Temp2d_Nwp_1)
+      call grib_read(grib_id_2, "tropopause pressure", Temp2d_Nwp_2)
+      call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%P_Trop)
+
+      !- wind direction
+      call grib_read(grib_id_1, "u-wind at sigma=0.995", Temp2d_Nwp_1)
+      call grib_read(grib_id_2, "u-wind at sigma=0.995", Temp2d_Nwp_2)
+      call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%U_Wnd_10m)
+
+      !- wind speed
+      call grib_read(grib_id_1, "v-wind at sigma=0.995", Temp2d_Nwp_1)
+      call grib_read(grib_id_2, "v-wind at sigma=0.995", Temp2d_Nwp_2)
+      call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%V_Wnd_10m)
+
+      !- total ozone
+      call grib_read(grib_id_1, "total ozone", Temp2d_Nwp_1)
+      call grib_read(grib_id_2, "total ozone", Temp2d_Nwp_2)
+      call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Ozone)
+
+      !--- read in three dimensional arrays
+
+      !- temperature
+      call grib_read(grib_id_1, "temperature", Temp3d_Nwp_1, array_order_1)
+      call grib_read(grib_id_2, "temperature", Temp3d_Nwp_2, array_order_1)
+      call INTERPOLATE_3D(t_weight, Missing_Nwp, NWP%T_Prof)
+
+      !- height
+      call grib_read(grib_id_1, "height", Temp3d_Nwp_1, array_order_1)
+      call grib_read(grib_id_2, "height", Temp3d_Nwp_2, array_order_1)
+      call INTERPOLATE_3D(t_weight, Missing_Nwp, NWP%Z_Prof)
+
+      !- humidity
+      call grib_read(grib_id_1, "rh", Temp3d_Nwp_1, array_order_1)
+      call grib_read(grib_id_2, "rh", Temp3d_Nwp_2, array_order_1)
+      call INTERPOLATE_3D(t_weight, Missing_Nwp, NWP%Rh_Prof)
+
+      !- wind direction
+      call grib_read(grib_id_1, "u-wind", Temp3d_Nwp_1, array_order_1)
+      call grib_read(grib_id_2, "u-wind", Temp3d_Nwp_2, array_order_1)
+      call INTERPOLATE_3D(t_weight, Missing_Nwp, NWP%U_Wnd_Prof)
+
+      !- wind speed
+      call grib_read(grib_id_1, "v-wind", Temp3d_Nwp_1, array_order_1)
+      call grib_read(grib_id_2, "v-wind", Temp3d_Nwp_2, array_order_1)
+      call INTERPOLATE_3D(t_weight, Missing_Nwp, NWP%V_Wnd_Prof)
+
+      !- ozone
+      call grib_read(grib_id_1, "o3mr", Temp3d_Nwp_1, array_order_1)
+      call grib_read(grib_id_2, "o3mr", Temp3d_Nwp_2, array_order_1)
+      call INTERPOLATE_3D(t_weight, Missing_Nwp, NWP%Ozone_Prof)
+
+      !- cloud liquid water mixing ratio
+      call grib_read(grib_id_1, "clwmr", Temp3d_Nwp_1, array_order_1)
+      call grib_read(grib_id_2, "clwmr", Temp3d_Nwp_2, array_order_1)
+      call INTERPOLATE_3D(t_weight, Missing_Nwp, NWP%Clwmr_Prof)
+
+      if (Nwp_Data_Type == 1) then
+         !- cape
+         call grib_read(grib_id_1, "cape", Temp2d_Nwp_1)
+         call grib_read(grib_id_2, "cape", Temp2d_Nwp_2)
+         call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%CAPE)
+      end if
+
+      if (Nwp_Data_Type == 8) then
+         !- freezing level height
+         call grib_read(grib_id_1, "freezing level", Temp2d_Nwp_1)
+         call grib_read(grib_id_2, "freezing level", Temp2d_Nwp_2)
+         call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Freezing_lev_hgt)
+
+         !- ic cloud mixing ratio
+         call grib_read(grib_id_1, "icmr", Temp3d_Nwp_1, array_order_1)
+         call grib_read(grib_id_2, "icmr", Temp3d_Nwp_2, array_order_1)
+         call INTERPOLATE_3D(t_weight, Missing_Nwp, NWP%Icmr_Prof)
+      end if
+
+      ! --- close files
+      call grib_close(grib_id_1)
+      call grib_close(grib_id_2)
+#endif  /* end:DEGRIB */
+
+    else
+
 !--------------------------------------------------------------
 ! open before file and read contents from file data before this time
 !--------------------------------------------------------------
@@ -400,22 +621,7 @@ module GFS_HDF_MOD
       Sds_Edges_3d = (/ Nlon_Gfs, Nlat_Gfs, Nlevels /)    
     endif
 
-    !---- store dimensions in public variables
-    NWP%Nlevels = Nlevels
-    NWP%Nlat = Nlat_Gfs
-    NWP%Nlon = Nlon_Gfs
-
-    !---- specific to GFS grid
-    lat1_Nwp = lat1_Gfs
-    lon1_Nwp = lon1_Gfs
-    Dlon_Nwp = Dlon_Gfs
-    Dlat_Nwp = sign(Dlat_Gfs,-1.0*lat1_Gfs)
-
-    !-----------------------------------------------------------------
-    ! allocate NWP arrays
-    !-----------------------------------------------------------------
-    call CREATE_NWP_ARRAYS()
-    call INITIALIZE_NWP_ARRAYS()
+    call init_common_items
 
 !------------------------------------------------------------------
 !   Read data from the first file
@@ -602,34 +808,38 @@ module GFS_HDF_MOD
                       Sds_Edges_3d, Temp3d_Nwp_2) + Istatus
     call INTERPOLATE_3D(t_weight, Missing_Nwp, NWP%Clwmr_Prof)
 
-    !- cape
-  if (Nwp_Data_Type == 1) then
-    Istatus = HDF_SDS_READER(Sd_Id_1,"cape", Sds_Start_2d, Sds_Stride_2d, &
-                      Sds_Edges_2d, Temp2d_Nwp_1) + Istatus
-    Istatus = HDF_SDS_READER(Sd_Id_2,"cape", Sds_Start_2d, Sds_Stride_2d, &
-                      Sds_Edges_2d, Temp2d_Nwp_2) + Istatus
-    call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%CAPE)
-  endif
+    if (Nwp_Data_Type == 1) then
+       !- cape
+       Istatus = HDF_SDS_READER(Sd_Id_1, "cape", Sds_Start_2d, Sds_Stride_2d,  &
+            Sds_Edges_2d, Temp2d_Nwp_1) + Istatus
+       Istatus = HDF_SDS_READER(Sd_Id_2, "cape", Sds_Start_2d, Sds_Stride_2d,  &
+            Sds_Edges_2d, Temp2d_Nwp_2) + Istatus
+       call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%CAPE)
+    end if
 
-  if (Nwp_Data_Type == 8) then
-    !- freezing level height
-    Istatus = HDF_SDS_READER(Sd_Id_1,"freezing level",Sds_Start_2d, Sds_Stride_2d, &
-                      Sds_Edges_2d, Temp2d_Nwp_1) + Istatus
-    Istatus = HDF_SDS_READER(Sd_Id_2,"freezing level",Sds_Start_2d, Sds_Stride_2d, &
-                      Sds_Edges_2d, Temp2d_Nwp_2) + Istatus
-    call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Freezing_lev_hgt)
+    if (Nwp_Data_Type == 8) then
+       !- freezing level height
+       Istatus = HDF_SDS_READER(Sd_Id_1, "freezing level", Sds_Start_2d,  &
+            Sds_Stride_2d, Sds_Edges_2d, Temp2d_Nwp_1) + Istatus
+       Istatus = HDF_SDS_READER(Sd_Id_2, "freezing level", Sds_Start_2d,  &
+            Sds_Stride_2d, Sds_Edges_2d, Temp2d_Nwp_2) + Istatus
+       call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Freezing_lev_hgt)
 
-    !- ic cloud mixing ratio
-    Istatus = HDF_SDS_READER(Sd_Id_1,"icmr", Sds_Start_3d, Sds_Stride_3d, &
-                      Sds_Edges_3d, Temp3d_Nwp_1) + Istatus
-    Istatus = HDF_SDS_READER(Sd_Id_2,"icmr", Sds_Start_3d, Sds_Stride_3d, &
-                      Sds_Edges_3d, Temp3d_Nwp_2) + Istatus
-    call INTERPOLATE_3D(t_weight, Missing_Nwp, NWP%Icmr_Prof)
-  endif
- 
+       !- ic cloud mixing ratio
+       Istatus = HDF_SDS_READER(Sd_Id_1, "icmr", Sds_Start_3d, Sds_Stride_3d,  &
+            Sds_Edges_3d, Temp3d_Nwp_1) + Istatus
+       Istatus = HDF_SDS_READER(Sd_Id_2, "icmr", Sds_Start_3d, Sds_Stride_3d,  &
+            Sds_Edges_3d, Temp3d_Nwp_2) + Istatus
+       call INTERPOLATE_3D(t_weight, Missing_Nwp, NWP%Icmr_Prof)
+    end if
+
     ! --- close files
-    Istatus = CLOSE_FILE_HDF_READ(Sd_Id_1,trim(Nwp_Name_Before))
-    Istatus = CLOSE_FILE_HDF_READ(Sd_Id_2,trim(Nwp_Name_After))
+    Istatus = CLOSE_FILE_HDF_READ(Sd_Id_1, trim(Nwp_Name_Before))
+    Istatus = CLOSE_FILE_HDF_READ(Sd_Id_2, trim(Nwp_Name_After))
+ end if
+
+ call MESG("GFS/CFSR NWP output files read in successfully",  &
+      level=Verb_Lev%VERBOSE)
 
 !----------------------------------------------------------------------------------
 ! modify gfs fields as warranted for use in CLAVR-x
@@ -719,7 +929,31 @@ do i = 1, NWP%Nlon
  enddo
 enddo
 
- end subroutine READ_GFS_DATA
+contains
+
+  subroutine init_common_items
+
+    !---- store dimensions in public variables
+    NWP%Nlevels = Nlevels
+    NWP%Nlat = Nlat_Gfs
+    NWP%Nlon = Nlon_Gfs
+
+    !---- specific to GFS grid
+    lat1_Nwp = lat1_Gfs
+    lon1_Nwp = lon1_Gfs
+    Dlon_Nwp = Dlon_Gfs
+    Dlat_Nwp = sign(Dlat_Gfs,-1.0*lat1_Gfs)
+
+    !-----------------------------------------------------------------
+    ! allocate NWP arrays
+    !-----------------------------------------------------------------
+    call CREATE_NWP_ARRAYS()
+    call INITIALIZE_NWP_ARRAYS()
+
+  end subroutine init_common_items
+
+end subroutine READ_GFS_DATA
+
 
 !------------------------------------------------------------------------------------
 !
