@@ -150,7 +150,10 @@ chdir (' ../../');
 # Help.
 usage() if $opt{help};
 
-
+my $degrib_path_final = "";
+if (-d $opt{degrib_path}) {
+    $degrib_path_final = $opt{degrib_path};
+}
 
 open (CONFIG, '>> ',@outfile) or die "Could not open file '@outfile' $!)\n";
    print CONFIG '# This file was generated on ' . localtime() . " by $ENV{USER}",
@@ -168,7 +171,7 @@ open (CONFIG, '>> ',@outfile) or die "Could not open file '@outfile' $!)\n";
    print CONFIG "export LIBHIM_PATH = $opt{libhim_gcc}\n";
    print CONFIG "export RTTOV_DIR = ../rttov/\n";
    print CONFIG "export RTTOV_PATH = $opt{rttov_path}\n";
-   print CONFIG "export DEGRIB_PATH = $opt{degrib_path}\n";
+   print CONFIG "export DEGRIB_PATH = ${degrib_path_final}\n";
    print CONFIG "else\n";
    print CONFIG "export CX_DATA_IO=$opt{cx_sds_io_ifort}\n";
    print CONFIG "export DNCOMP=$opt{dncomp_ifort}\n";
@@ -179,7 +182,7 @@ open (CONFIG, '>> ',@outfile) or die "Could not open file '@outfile' $!)\n";
    print CONFIG "export LIBHIM_PATH = $opt{libhim_ifort}\n";
    print CONFIG "export RTTOV_DIR = ../rttov/\n";
    print CONFIG "export RTTOV_PATH = $opt{rttov_path}\n";
-   print CONFIG "export DEGRIB_PATH = $opt{degrib_path}\n";
+   print CONFIG "export DEGRIB_PATH = ${degrib_path_final}\n";
    print CONFIG "endif\n";
    
    
@@ -252,7 +255,9 @@ Command line options:
 --degrib_path=<directory>
          Path to the directory which contains the include and lib subdirectories
          for software that decodes GRIB-format ancillary files (e.g., ecCodes).
-         Default is the root path SSEC global variable of eccodes library SSEC_ECCODES_LIB / ../.
+	 (NOTE: feature will be deactivated if the given path does not exist)
+         Default is the root path SSEC global variable of eccodes library
+         SSEC_ECCODES_LIB / ../
                     
 HELP
    exit;
