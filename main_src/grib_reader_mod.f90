@@ -557,7 +557,7 @@ module grib_reader_module
         short_name = 't'
         tropopause = .true.
       case ('tropopause pressure', 'pres_trop', 'pressure')
-        short_name = 'pres'
+        short_name = 'trpp'
         tropopause = .true.
       case ('water equivalent snow depth', 'sdwe',  &
             'water equivalent of accumulated snow depth')
@@ -611,7 +611,7 @@ module grib_reader_module
       case ('pwat')
         ! FIX: convert pwat from [mm] to [cm] for GFS only (not CFSR)
         where (data < missing_gfs) data = data*mm_to_cm
-      case ('pres')
+      case ('trpp')
         ! convert P_trop from [Pa] to [hPa]
         where (data < missing_gfs) data = data*Pa_to_hPa
       case ('orog')
