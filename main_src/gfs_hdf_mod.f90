@@ -89,7 +89,7 @@ module GFS_HDF_MOD
     integer :: idx_3h
     integer :: shft
     logical :: bad_time_edges
-    character(len=10) :: date_str_t
+    character(len=12) :: date_str_t
     
     ! init
     shft = 0.  
@@ -115,9 +115,9 @@ module GFS_HDF_MOD
         t_bef = t_mid % next_6h(shft-1)
         t_aft = t_mid % next_6h(shft)
         if (GFS_GRIB_Flag) then
-           date_str_t = t_bef%date_string('yyyymmddhh')
+           date_str_t = t_bef%date_string('yyyymmddhhmm')
            file1 = "gfs."//date_str_t(1:8)//'.t'//date_str_t(9:10)//'z.pgrb2f12'
-           date_str_t = t_aft%date_string('yyyymmddhh')
+           date_str_t = t_aft%date_string('yyyymmddhhmm')
            file2 = "gfs."//date_str_t(1:8)//'.t'//date_str_t(9:10)//'z.pgrb2f12'
         else
            file1 = "gfs."//t_bef % date_string('yymmddhh')//"_F012.hdf"
@@ -195,9 +195,9 @@ module GFS_HDF_MOD
         t_bef = t_mid % next_6h(shft-1)
         t_aft = t_mid % next_6h(shft)
         if (GFS_GRIB_Flag) then
-           date_str_t = t_bef%date_string('yyyymmddhh')
+           date_str_t = t_bef%date_string('yyyymmddhhmm')
            file1 = "gfs."//date_str_t(1:8)//'.t'//date_str_t(9:10)//'z.pgrb2f12'
-           date_str_t = t_aft%date_string('yyyymmddhh')
+           date_str_t = t_aft%date_string('yyyymmddhhmm')
            file2 = "gfs."//date_str_t(1:8)//'.t'//date_str_t(9:10)//'z.pgrb2f12'
         else
            file1 = "gfs."//t_bef % date_string('yymmddhh')//"_F012.hdf"
@@ -260,7 +260,10 @@ module GFS_HDF_MOD
                            Ierror_Nwp)
 
 #if defined(DEGRIB)
-    use grib_reader_mod, only: grib, grib_read
+    use grib_reader_module, only: grib, grib_read, grib_open,  &
+         get_global_attribute, grib_close
+!^ For GRIB-format debugging:
+!^    use grib_reader_module, only: grib_info
 #endif  /* end:DEGRIB */
 
     implicit none
@@ -282,6 +285,11 @@ module GFS_HDF_MOD
     !   Local variables
     character (len=1020) :: Nwp_Name_Before
     character (len=1020) :: Nwp_Name_After
+
+!^ For GRIB-format debugging:
+!^    character(len=128), allocatable, dimension(:) :: gribinfo_shortName,  &
+!^         gribinfo_nameECMF, gribinfo_units
+!^    integer :: gribinfo_n
     
     character (len=3)   :: array_order_1, array_order_2 
     
@@ -376,6 +384,20 @@ module GFS_HDF_MOD
 #if defined(DEGRIB)
       call grib_open(trim(Nwp_Name_Before), grib_id_1)
       call grib_open(trim(Nwp_Name_After), grib_id_2)
+
+!^ For GRIB-format debugging: Obtain and display a list of fields in this
+!^                             GRIB-format input file
+!^      call grib_info(grib_id_1, N=gribinfo_n)  ! Get dimension value
+!^      allocate(gribinfo_shortName(gribinfo_n),  &
+!^           gribinfo_nameECMF(gribinfo_n), gribinfo_units(gribinfo_n))
+!^      call grib_info(grib_id_1, gribinfo_shortName, gribinfo_nameECMF,  &
+!^           gribinfo_units)
+!^      do i=1,gribinfo_n
+!^         print *, i, trim(gribinfo_shortName(i)), ' ',  &
+!^              trim(gribinfo_nameECMF(i)), ' ',  &
+!^              trim(gribinfo_units(i))
+!^      end do
+!^      deallocate(gribinfo_shortName, gribinfo_nameECMF, gribinfo_units)
 
       call get_global_attribute(grib_id_1, "NUMBER OF PRESSURE LEVELS",  &
            Nlevels, GFS_GRIB_Type)
