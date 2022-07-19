@@ -139,7 +139,7 @@ CLAVRX_ID_FLAG = -DISCLAVRX
 
 #Compilation rule for f90 files
 .f90.o:
-	$(fc) -c $(fflags) $(cppflags) $(cppflags_vcld) $(fflags_clavr) $(CLAVRX_ID_FLAG) $(LIB_HIM_FLAG) $(LIB_RTTOV_FLAG) $(cpp) $<
+	$(fc) -c $(fflags) $(cppflags) $(cppflags_vcld) $(fflags_clavr) $(CLAVRX_ID_FLAG) $(LIB_HIM_FLAG) $(LIB_RTTOV_FLAG) $(DEGRIB_FLAG) $(cpp) $<
 
 #Compilation rule for F files (needed for AIX compilation)
 .F.o:
