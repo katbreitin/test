@@ -279,10 +279,11 @@ module grib_reader_module
 ! OUTPUT: 
 !    data (real, 2D array) - Unscaled 2-D array of data from a GRIB-file
 
-  subroutine grib_read_layer_int(grib_id, short_name, data, pressure_level)
+  subroutine grib_read_layer_int(grib_id, short_name, data, pressure_level,  &
+       short_name_aux)
 
     use eccodes, only: codes_index_select, codes_new_from_index, codes_get,  &
-         codes_get_size, codes_release
+         codes_get_size, codes_release, CODES_SUCCESS
 
     implicit none
 
@@ -290,8 +291,9 @@ module grib_reader_module
     character(len=*), intent(IN) :: short_name
     real, dimension(:,:), intent(OUT) :: data
     integer, intent(IN) :: pressure_level
+    character(len=*), intent(IN), optional :: short_name_aux
 
-    integer :: idx
+    integer :: idx, istatus
     integer :: igrib  ! id of the message loaded in memory
     integer :: numberOfColumns, numberOfRows
     integer :: numPoints
@@ -306,7 +308,24 @@ module grib_reader_module
          pressure_level)
 
     ! Create a new handle from an index after having selected the key values
-    call codes_new_from_index(idx, igrib)
+    call codes_new_from_index(idx, igrib, istatus)
+    if (istatus /= CODES_SUCCESS) then
+       print *, 'WARNING: requested field not found in GRIB file:'
+       print *, '      ', trim(short_name)
+       if (present(short_name_aux)) then
+          print *, 'Trying to extract an equivalent field: ',  &
+               trim(short_name_aux)
+          idx = grib_id%idx_shortName
+          call codes_index_select(idx, 'shortName', short_name_aux)
+          call codes_index_select(idx, 'scaledValueOfFirstFixedSurface',  &
+               pressure_level)
+          call codes_new_from_index(idx, igrib, istatus)
+          if (istatus /= CODES_SUCCESS) then
+             print *, 'FATAL ERROR: requested field not found in GRIB file'
+             stop 1
+          end if
+       end if
+    end if
 
     call codes_get(igrib,'Ni', numberOfColumns)
     call codes_get(igrib,'Nj', numberOfRows)
@@ -329,19 +348,20 @@ module grib_reader_module
     deallocate(values)
   end subroutine grib_read_layer_int
 
-  subroutine grib_read_layer_str(grib_id, short_name, data, level_type)
+  subroutine grib_read_layer_str(grib_id, short_name, data, level_type,  &
+       short_name_aux)
 
     use eccodes, only: codes_index_select, codes_new_from_index, codes_get,  &
-         codes_get_size, codes_release
+         codes_get_size, codes_release, CODES_SUCCESS
 
     implicit none
 
     type(grib), intent(IN) :: grib_id
     character(len=*), intent(IN) :: short_name
     real, dimension(:,:), intent(OUT) :: data
-    character(len=*), intent(IN), optional :: level_type
+    character(len=*), intent(IN), optional :: level_type, short_name_aux
 
-    integer :: idx
+    integer :: idx, istatus
     integer :: igrib  ! id of the message loaded in memory
     integer :: numberOfColumns, numberOfRows
     integer :: numPoints
@@ -357,7 +377,32 @@ module grib_reader_module
     end if
 
     ! Create a new handle from an index after having selected the key values
-    call codes_new_from_index(idx, igrib)
+    call codes_new_from_index(idx, igrib, istatus)
+    if (istatus /= CODES_SUCCESS) then
+       print *, 'WARNING: requested field not found in GRIB file:'
+       if (present(level_type)) then
+          print *, '      ', trim(short_name), ' ', trim(level_type)
+       else
+          print *, '      ', trim(short_name)
+       end if
+       if (present(short_name_aux)) then
+          print *, 'Trying to extract an equivalent field: ',  &
+               trim(short_name_aux)
+          if (present(level_type)) then
+             idx = grib_id%idx_shortName_tOL
+             call codes_index_select(idx, 'shortName', short_name_aux)
+             call codes_index_select(idx, 'typeOfLevel', level_type)
+          else
+             idx = grib_id%idx_shortName
+             call codes_index_select(idx, 'shortName', short_name_aux)
+          end if
+          call codes_new_from_index(idx, igrib, istatus)
+          if (istatus /= CODES_SUCCESS) then
+             print *, 'FATAL ERROR: requested field not found in GRIB file'
+             stop 1
+          end if
+       end if
+    end if
 
     call codes_get(igrib, 'Ni', numberOfColumns)
     call codes_get(igrib, 'Nj', numberOfRows)
@@ -511,8 +556,8 @@ module grib_reader_module
     real, dimension(:,:), intent(OUT) :: data  ! unit scaled 2d-array
 
     integer :: idx  ! id of an index created from a file
-    character(len=20) :: short_name
-    logical :: sigma, surface, tropopause, user_level, level
+    character(len=20) :: short_name, short_name_aux
+    logical :: sigma, surface, tropopause, user_level, level, aux
     character(len=20) :: level_type
 
     sigma = .false.
@@ -521,6 +566,7 @@ module grib_reader_module
     user_level = .false.
     level = .false.
 
+    aux = .false.
     select case (to_lower(key_name))
       case ('sp', 'surface pressure', 'surface_air_pressure')
         short_name = 'sp'
@@ -557,8 +603,9 @@ module grib_reader_module
         short_name = 't'
         tropopause = .true.
       case ('tropopause pressure', 'pres_trop', 'pressure')
-        short_name = 'trpp'
-        tropopause = .true.
+         short_name = 'pres'
+         aux = .true.; short_name_aux = 'trpp'
+         tropopause = .true.
       case ('water equivalent snow depth', 'sdwe',  &
             'water equivalent of accumulated snow depth')
         short_name = 'sdwe'
@@ -573,16 +620,6 @@ module grib_reader_module
         stop 1
     end select
 
-    ! create an index from a grib file using some keys
-    if (tropopause .or. surface .or. sigma .or. user_level) then
-      idx = grib_id%idx_shortName_tOL
-    else
-      idx = grib_id%idx_shortName
-    end if
-
-    ! Select the message subset with key==value
-    call codes_index_select(idx, 'shortName', short_name)
-
     if (surface) then
       level_type = 'surface'
       level = .true.
@@ -595,9 +632,19 @@ module grib_reader_module
     end if
 
     if (level) then
-      call grib_read_layer(grib_id, short_name, data, level_type)
+       if (.not. aux) then
+          call grib_read_layer(grib_id, short_name, data, level_type)
+       else
+          call grib_read_layer(grib_id, short_name, data, level_type,  &
+               short_name_aux)
+       end if
     else
-      call grib_read_layer(grib_id, short_name, data)
+       if (.not. aux) then
+          call grib_read_layer(grib_id, short_name, data)
+       else
+          call grib_read_layer(grib_id, short_name, data,  &
+               short_name_aux=short_name_aux)
+       end if
     end if
 
     ! do unit conversions here
@@ -611,7 +658,7 @@ module grib_reader_module
       case ('pwat')
         ! FIX: convert pwat from [mm] to [cm] for GFS only (not CFSR)
         where (data < missing_gfs) data = data*mm_to_cm
-      case ('trpp')
+      case ('pres', 'trpp')
         ! convert P_trop from [Pa] to [hPa]
         where (data < missing_gfs) data = data*Pa_to_hPa
       case ('orog')
