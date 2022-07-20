@@ -571,6 +571,10 @@ module GFS_HDF_MOD
       ! --- close files
       call grib_close(grib_id_1)
       call grib_close(grib_id_2)
+#else
+      print *, 'ERROR: this executable was compiled without de-GRIB support,'
+      print *, '       and so cannot ingest GRIB-format files.'
+      stop 1
 #endif  /* end:DEGRIB */
 
     else
