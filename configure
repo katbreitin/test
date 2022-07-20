@@ -64,29 +64,25 @@ print  "@rttov_path_default\n\n";
 }
 
 
-
-
-
 # Default values for command-line options.
 my %opt = (
-            hdf4_ifort => '${SSEC_HDF4_LIB}/../',
-            hdf5_ifort => '${SSEC_HDF5_LIB}/../',
-            netcdf_ifort => '${SSEC_NETCDF4_LIB}/../',
+            hdf4_ifort => $ENV{'SSEC_HDF4_LIB'}.'/../',
+            hdf5_ifort => $ENV{'SSEC_HDF5_LIB'}.'/../',
+            netcdf_ifort => $ENV{'SSEC_NETCDF4_LIB'}.'/../',
             dncomp_ifort => '../cx_dncomp/Release_ifort/',
             muri_ifort => '../muri/Release_ifort/',
             cx_sds_io_ifort => '../cx_sds_io/Release_ifort/',
             libhim_ifort => '',
-            hdf4_gcc => '${SSEC_HDF4_LIB}/../',
-            hdf5_gcc => '${SSEC_HDF5_LIB}/../',
+            hdf4_gcc => $ENV{'SSEC_HDF4_LIB'}.'/../',
+            hdf5_gcc => $ENV{'SSEC_HDF5_LIB'}.'/../',
             rttov_path => @rttov_path_default,
-            degrib_path => '${SSEC_ECCODES_LIB}/../',
-            netcdf_gcc => '${SSEC_NETCDF4_LIB}/../',
+            degrib_path => $ENV{'SSEC_ECCODES_LIB'}.'/../',
+            netcdf_gcc => $ENV{'SSEC_NETCDF4_LIB'}.'/../',
             dncomp_gcc => '../cx_dncomp/Release_gfortran/',
             muri_gcc => '../muri/Release_gfortran/',
             cx_sds_io_gcc => '../cx_sds_io/Release_gfortran/',
             libhim_gcc => '',
-            rttov => '../rttov/',
-           
+            rttov => '../rttov/'
           );
 
 my @sargv = @ARGV;
@@ -106,6 +102,7 @@ GetOptions(
    'dncomp_gcc=s',
    'cx_sds_io_gcc=s',
    'libhim_gcc=s',
+   'degrib',
    'help'
 ) or die "Error parsing command-line options!\n";
 
@@ -151,8 +148,10 @@ chdir (' ../../');
 usage() if $opt{help};
 
 my $degrib_path_final = "";
-if (-d $opt{degrib_path}) {
-    $degrib_path_final = $opt{degrib_path};
+if ($opt{degrib}) {
+   if (-d $opt{degrib_path}) {
+       $degrib_path_final = $opt{degrib_path};
+   }
 }
 
 open (CONFIG, '>> ',@outfile) or die "Could not open file '@outfile' $!)\n";
@@ -252,6 +251,9 @@ Command line options:
          Path to the directory where Libhimawari library is located for ifort compiles
 --libhim_gcc=<directory>
          Path to the directory where Libhimawari library is located for gcc compiles
+--degrib
+         Enables decoding of GRIB-format ancillary files (--degrib-path may
+         also need to be set).
 --degrib_path=<directory>
          Path to the directory which contains the include and lib subdirectories
          for software that decodes GRIB-format ancillary files (e.g., ecCodes).
