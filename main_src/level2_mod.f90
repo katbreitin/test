@@ -4933,7 +4933,7 @@ end subroutine WRITE_SDS_NETCDF
       if (index(Sds_Info(Var_Idx)%Sds_Name, 'refl_sfc_white_sky_') == 1 .and. &
           index(Sds_Info(Var_Idx)%Sds_Name, '_nom') >0) then 
          Sds_Info(Var_Idx)%Actual_Range = [-20.0,100.0]
-         Sds_Info(Var_Idx)%Level2_Data_Type_HDF = DFNT_INT8
+         Sds_Info(Var_Idx)%Level2_Data_Type_HDF = DFNT_INT16
          Sds_Info(Var_Idx)%Units =  "%"
          Sds_Info(Var_Idx)%Standard_Name =  "white_sky_surface_reflectance"
          Sds_Info(Var_Idx)%Long_Name =  "surface reflectance for white skies at nominal wavelength of"
