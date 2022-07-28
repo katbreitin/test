@@ -665,7 +665,8 @@ subroutine OPAQUE_CLOUD_HEIGHT(ABI_Use_104um_Flag)
       Sfc_Level_Idx =   rtm(Nwp_Lon_Idx,Nwp_Lat_Idx)%Sfc_Level
 
       !--- restrict levels to consider
-      Level_Idx_Start = Tropo_Level_Idx
+   !   Level_Idx_Start = Tropo_Level_Idx
+      Level_Idx_Start = 1
       Level_Idx_End = Sfc_Level_Idx
 
       call GET_INTERP_PROFILES(ABI_Use_104um_Flag, Nwp_Lon_Idx,Nwp_Lat_Idx, &
@@ -700,48 +701,47 @@ subroutine OPAQUE_CLOUD_HEIGHT(ABI_Use_104um_Flag)
 
       Solution_Found = .false.
 
-!--- top down
-      level_loop: do Level_Idx = Level_Idx_Start, Level_Idx_End
-          if (Rad_BB_Cloud_Profile(Level_Idx) >  Rad_Toa) then
-            Pc_Opaque_Cloud(Elem_Idx,Line_Idx) = P_Std_Rtm(Level_Idx - 1)
-            Zc_Opaque_Cloud(Elem_Idx,Line_Idx) = Z_Prof(Level_Idx - 1)
-            Tc_Opaque_Cloud(Elem_Idx,Line_Idx) = T_Prof(Level_Idx - 1)
-            Solution_Found = .true.
-            exit
-          endif
-      enddo Level_Loop
-
-!--- bottom up
-!     level_loop: do Level_Idx = Level_Idx_End, Level_Idx_Start+1, -1
-
-!         print *, "looking ", Level_Idx, Rad_BB_Cloud_Profile(Level_Idx), Rad_BB_Cloud_Profile(Level_Idx+1)
-!         if ((Rad_BB_Cloud_Profile(Level_Idx-1) > Rad_Toa) .and.  &
-!             (Rad_BB_Cloud_Profile(Level_Idx) < Rad_Toa)) then
-!             Solution_Found = .true.
-!         endif
-!         if ((Rad_BB_Cloud_Profile(Level_Idx-1) < Rad_Toa) .and.   &
-!             (Rad_BB_Cloud_Profile(Level_Idx) > Rad_Toa)) then
-!             Solution_Found = .true.
-!         endif
-
-!         if (Solution_Found) then
-!           dRad  = Rad_BB_Cloud_Profile(Level_Idx) - Rad_BB_Cloud_Profile(Level_Idx-1)
-!           if (dRad .ner. 0.00) then
-!             Slope = (P_Std_Rtm(Level_Idx) - P_Std_Rtm(Level_Idx-1)) / dRad 
-!             Pc_Opaque_Cloud(Elem_Idx,Line_Idx)  =  P_Std_Rtm(Level_Idx-1) + Slope * (Rad_Toa - Rad_BB_Cloud_Profile(Level_Idx-1))
-!             Slope = (Z_Prof(Level_Idx) - Z_Prof(Level_Idx-1)) / dRad 
-!             Zc_Opaque_Cloud(Elem_Idx,Line_Idx)  =  Z_Prof(Level_Idx-1) + Slope * (Rad_Toa - Rad_BB_Cloud_Profile(Level_Idx-1))
-!             Slope = (T_Prof(Level_Idx) - T_Prof(Level_Idx-1)) / dRad 
-!             Tc_Opaque_Cloud(Elem_Idx,Line_Idx)  =  T_Prof(Level_Idx-1) + Slope * (Rad_Toa - Rad_BB_Cloud_Profile(Level_Idx-1))
-!            else
-!             Pc_Opaque_Cloud(Elem_Idx,Line_Idx) = P_Std_Rtm(Level_Idx-1)
-!             Zc_Opaque_Cloud(Elem_Idx,Line_Idx) = Z_Prof(Level_Idx-1)
-!             Tc_Opaque_Cloud(Elem_Idx,Line_Idx) = T_Prof(Level_Idx-1)
-!           endif 
+      !--- top down
+!     level_loop: do Level_Idx = Level_Idx_Start, Level_Idx_End
+!         if (Rad_BB_Cloud_Profile(Level_Idx) >  Rad_Toa) then
+!           Pc_Opaque_Cloud(Elem_Idx,Line_Idx) = P_Std_Rtm(Level_Idx - 1)
+!           Zc_Opaque_Cloud(Elem_Idx,Line_Idx) = Z_Prof(Level_Idx - 1)
+!           Tc_Opaque_Cloud(Elem_Idx,Line_Idx) = T_Prof(Level_Idx - 1)
+!           Solution_Found = .true.
 !           exit
 !         endif
-
 !     enddo Level_Loop
+ 
+      !--- bottom up
+      level_loop: do Level_Idx = Level_Idx_End, Level_Idx_Start+1, -1
+
+          if ((Rad_BB_Cloud_Profile(Level_Idx-1) > Rad_Toa) .and.  &
+              (Rad_BB_Cloud_Profile(Level_Idx) < Rad_Toa)) then
+              Solution_Found = .true.
+          endif
+          if ((Rad_BB_Cloud_Profile(Level_Idx-1) < Rad_Toa) .and.   &
+              (Rad_BB_Cloud_Profile(Level_Idx) > Rad_Toa)) then
+              Solution_Found = .true.
+          endif
+
+          if (Solution_Found) then
+            dRad  = Rad_BB_Cloud_Profile(Level_Idx) - Rad_BB_Cloud_Profile(Level_Idx-1)
+            if (dRad .ner. 0.00) then
+              Slope = (P_Std_Rtm(Level_Idx) - P_Std_Rtm(Level_Idx-1)) / dRad 
+              Pc_Opaque_Cloud(Elem_Idx,Line_Idx)  =  P_Std_Rtm(Level_Idx-1) + Slope * (Rad_Toa - Rad_BB_Cloud_Profile(Level_Idx-1))
+              Slope = (Z_Prof(Level_Idx) - Z_Prof(Level_Idx-1)) / dRad 
+              Zc_Opaque_Cloud(Elem_Idx,Line_Idx)  =  Z_Prof(Level_Idx-1) + Slope * (Rad_Toa - Rad_BB_Cloud_Profile(Level_Idx-1))
+              Slope = (T_Prof(Level_Idx) - T_Prof(Level_Idx-1)) / dRad 
+              Tc_Opaque_Cloud(Elem_Idx,Line_Idx)  =  T_Prof(Level_Idx-1) + Slope * (Rad_Toa - Rad_BB_Cloud_Profile(Level_Idx-1))
+             else
+              Pc_Opaque_Cloud(Elem_Idx,Line_Idx) = P_Std_Rtm(Level_Idx-1)
+              Zc_Opaque_Cloud(Elem_Idx,Line_Idx) = Z_Prof(Level_Idx-1)
+              Tc_Opaque_Cloud(Elem_Idx,Line_Idx) = T_Prof(Level_Idx-1)
+            endif 
+            exit
+          endif
+
+      enddo Level_Loop
 
 
       if (.not. Solution_Found) then
@@ -830,7 +830,7 @@ subroutine GET_INTERP_PROFILES(ABI_Use_104um_Flag, Nwp_Lon_Idx,Nwp_Lat_Idx, &
      Sfc_Level_Idx_1 = Sfc_Level_Idx
      Sfc_Level_Idx_2 = rtm(Nwp_Lon_Idx_x,Nwp_Lat_Idx)%Sfc_Level
      Sfc_Level_Idx_3 = rtm(Nwp_Lon_Idx,Nwp_Lat_Idx_x)%Sfc_Level
-     Sfc_Level_Idx_4 =rtm(Nwp_Lon_Idx_x,Nwp_Lat_Idx_x)%Sfc_Level
+     Sfc_Level_Idx_4 = rtm(Nwp_Lon_Idx_x,Nwp_Lat_Idx_x)%Sfc_Level
 
      if (ABI_Use_104um_Flag) then
        Rad_BB_Cloud_Profile_1 => rtm(Nwp_Lon_Idx,Nwp_Lat_Idx)%d(Vza_Rtm_Idx_1)%ch(31)%Rad_BB_Cloud_Profile(:) 
@@ -870,11 +870,11 @@ subroutine GET_INTERP_PROFILES(ABI_Use_104um_Flag, Nwp_Lon_Idx,Nwp_Lat_Idx, &
         call INTERPOLATE_PROFILE(Z_Prof_1,Z_Prof_2,Z_Prof_3,Z_Prof_4,NWP_Lon_Fac,NWP_Lat_Fac,Z_Prof)
         call INTERPOLATE_PROFILE(T_Prof_1,T_Prof_2,T_Prof_3,T_Prof_4,NWP_Lon_Fac,NWP_Lat_Fac,T_Prof)
         Tsfc = INTERPOLATE_NWP(T_Prof_1(Sfc_Level_Idx_1),T_Prof_2(Sfc_Level_Idx_2),T_Prof_3(Sfc_Level_Idx_3),&
-                               T_Prof_4(Sfc_Level_Idx_3),NWP_Lon_Fac,NWP_Lat_Fac)
+                               T_Prof_4(Sfc_Level_Idx_4),NWP_Lon_Fac,NWP_Lat_Fac)
         Zsfc = INTERPOLATE_NWP(Z_Prof_1(Sfc_Level_Idx_1),Z_Prof_2(Sfc_Level_Idx_2),Z_Prof_3(Sfc_Level_Idx_3),&
-                               Z_Prof_4(Sfc_Level_Idx_3),NWP_Lon_Fac,NWP_Lat_Fac)
+                               Z_Prof_4(Sfc_Level_Idx_4),NWP_Lon_Fac,NWP_Lat_Fac)
         Psfc = INTERPOLATE_NWP(P_Std_Rtm(Sfc_Level_Idx_1),P_Std_Rtm(Sfc_Level_Idx_2),P_Std_Rtm(Sfc_Level_Idx_3),&
-                               P_Std_Rtm(Sfc_Level_Idx_3),NWP_Lon_Fac,NWP_Lat_Fac)
+                               P_Std_Rtm(Sfc_Level_Idx_4),NWP_Lon_Fac,NWP_Lat_Fac)
         
    else  !if not, use the nearest nwp grid cell
         if (ABI_Use_104um_Flag) then
