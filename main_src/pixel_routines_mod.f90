@@ -40,7 +40,7 @@ module PIXEL_ROUTINES_MOD
  use CONSTANTS_MOD, only: &
   missing_value_real4 &
     , sym , int1, int2, exe_prompt  &
-    , real4, missing_value_int1, int4, mixed_obs_type, NChan_Clavrx, SOLAR_OBS_TYPE &
+    , real4, missing_value_int1, missing_value_int2, int4, mixed_obs_type, NChan_Clavrx, SOLAR_OBS_TYPE &
     , THERMAL_OBS_TYPE, PI, terminator_reflectance_sol_zen_thresh, DTOR
  
  use ALGORITHM_CONSTANTS_MOD,only: glint_zen_thresh, Ref_Sfc_White_Sky_Water
@@ -1401,7 +1401,9 @@ subroutine READ_MODIS_WHITE_SKY_ALBEDO(modis_alb_id,modis_alb_str,Ref_Sfc_White_
     CALL READ_LAND_SFC_HDF(modis_alb_id, modis_alb_str, Nav%Lat, &
                           Nav%Lon, Geo%Space_Mask, raw)
                        
-    Ref_Sfc_White_Sky = 0.1* raw
+    where(raw /= Missing_Value_Int2)
+        Ref_Sfc_White_Sky = 0.1* raw
+    endwhere
 
 !---->    Ref_Sfc_White_Sky = 1.10*Ref_Sfc_White_Sky   !EMPIRICAL ADJUSTMENT
 
