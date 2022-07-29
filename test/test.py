@@ -114,6 +114,8 @@ def _run_it(main_l1b_file, aux_l1b_files=(), config_override=None, out_dir=None,
             fp.write(file_list_content)
         if mode=='perf':
             p = subprocess.run(['perf','record','-F99','-g',CLAVRX], cwd=tmpdir)
+        elif mode=='gdb':
+            p = subprocess.run(['gdb',CLAVRX], cwd=tmpdir)
         elif mode=='valgrind':
             p = subprocess.run(['valgrind','--suppressions='+str(Path('suppressions').absolute()), CLAVRX], cwd=tmpdir)
         else:
