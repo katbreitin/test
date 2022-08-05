@@ -694,24 +694,8 @@ subroutine OPAQUE_CLOUD_HEIGHT(ABI_Use_104um_Flag)
            cycle
       endif
 
-      !--- loop through levels
-!     Pc_Opaque_Cloud(Elem_Idx,Line_Idx) = Psfc
-!     Zc_Opaque_Cloud(Elem_Idx,Line_Idx) = Zsfc
-!     Tc_Opaque_Cloud(Elem_Idx,Line_Idx) = Tsfc
-
       Solution_Found = .false.
 
-      !--- top down
-!     level_loop: do Level_Idx = Level_Idx_Start, Level_Idx_End
-!         if (Rad_BB_Cloud_Profile(Level_Idx) >  Rad_Toa) then
-!           Pc_Opaque_Cloud(Elem_Idx,Line_Idx) = P_Std_Rtm(Level_Idx - 1)
-!           Zc_Opaque_Cloud(Elem_Idx,Line_Idx) = Z_Prof(Level_Idx - 1)
-!           Tc_Opaque_Cloud(Elem_Idx,Line_Idx) = T_Prof(Level_Idx - 1)
-!           Solution_Found = .true.
-!           exit
-!         endif
-!     enddo Level_Loop
- 
       !--- bottom up
       level_loop: do Level_Idx = Level_Idx_End, Level_Idx_Start+1, -1
 
