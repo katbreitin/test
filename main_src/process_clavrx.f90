@@ -1577,7 +1577,7 @@
 
                !--- Dust Mask
                if (Use_ABI_Dust == sym%YES) then
-                  if (Sensor%WMO_Id == 270 .or. Sensor%WMO_Id == 271) then
+                  if (Sensor%WMO_Id == 270 .or. Sensor%WMO_Id == 271 .or. Sensor%WMO_Id == 272) then
                     CLDMASK%Dust_Mask = sym%NO
                     call GET_SEGMENT_ABI_DUST_PROB() 
                   endif
@@ -1927,7 +1927,6 @@
       call MESG ( "Finished Processing All Orbital Segments")
       call MESG ( " ")
 
-   
       !*************************************************************************
       !   Marker: Close output pixel-level files
       !*************************************************************************
@@ -1948,6 +1947,7 @@
             call MESG("DESTROY RTTOV_EMIS ")
        endif
 #endif      
+
       !*************************************************************************
       !Marker: Deallocate remaining arrays
       !*************************************************************************

@@ -1223,7 +1223,7 @@ subroutine CREATE_PIXEL_ARRAYS()
 
         case default
 
-           print *, "CLAVR-x: Arrays not allocated for unknown channel = ",idx 
+         print *, "CLAVR-x: Arrays not allocated for unknown channel = ",idx 
 
         end select
 
@@ -1487,7 +1487,7 @@ subroutine DESTROY_PIXEL_ARRAYS()
   call DESTROY_NUCAPS_ARRAYS()
   call DESTROY_CALIOP_ARRAYS()
   call DESTROY_L1G_ARRAYS()
-
+ 
   deallocate(Sst_Anal)
   deallocate(Sst_Anal_Err)
   deallocate(Sst_Anal_Cice)
@@ -1495,7 +1495,6 @@ subroutine DESTROY_PIXEL_ARRAYS()
 
   deallocate(Solar_Contamination_Mask)
  
-
   !--- nwp and rtm indices
   if (allocated(Zen_Idx_Rtm)) deallocate(Zen_Idx_Rtm)
 
