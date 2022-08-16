@@ -355,6 +355,8 @@ MODULE ECM2_CLOUD_MASK_MODULE
          SELECT CASE(trim(Dim_Name))
              CASE('tsfc')
                  Value_Dim = Input%Sfc_Temp
+             CASE('tpw')
+                 Value_Dim = Input%Path_Tpw
              CASE('dtsfcbt11')
                  Value_Dim = Input%Sfc_Temp - Input%Bt_11um
              CASE('etropo10')
@@ -365,6 +367,8 @@ MODULE ECM2_CLOUD_MASK_MODULE
                  Value_Dim = Input%Topa
              CASE('zopa')
                  Value_Dim = Input%Zopa
+             CASE('dzopasfc')
+                 Value_Dim = Input%Zopa - Input%Zsfc
              CASE('dtsfcopa')
                  Value_Dim = Input%Sfc_Temp - Input%Topa
              CASE('logzopa')

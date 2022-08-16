@@ -1507,6 +1507,7 @@ subroutine MODIFY_LAND_CLASS_WITH_NDVI(Line_Idx_Min,Num_Lines)
   if (Sensor%WMO_ID == 174) return
   if (Sensor%WMO_ID == 270) return
   if (Sensor%WMO_ID == 271) return
+  if (Sensor%WMO_ID == 272) return
   if (Sensor%WMO_ID == 530) return
 
   Elem_Idx_Min = 1
