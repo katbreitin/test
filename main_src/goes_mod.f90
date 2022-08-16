@@ -1396,8 +1396,6 @@ end subroutine READ_GOES_SNDR
         read (unit=1, rec = 1, err=404) AREAstr%area_Status
         read (unit=1, rec = 2, err=404) AREAstr%Version_Num
         if (AREAstr%Version_Num .ne. 4) then
-!          print *, "Area file cannot be read"  ! byte swapping may cause this
-!          AREAstr%swap_bytes = 1
            return
         endif
         read (unit=1, rec = 3) AREAstr%Sat_Id_Num

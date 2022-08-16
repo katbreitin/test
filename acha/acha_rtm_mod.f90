@@ -1368,19 +1368,19 @@ subroutine  COMPUTE_CLEAR_SKY_TERMS(Acha_Mode_Flag, Zc, Zs, Ts, Hght_Prof,  &
   integer, intent(in):: Chan_Idx_038um, Chan_Idx_062um, Chan_Idx_067um, Chan_Idx_073um, &
                         Chan_Idx_085um, Chan_Idx_097um, Chan_Idx_104um, Chan_Idx_110um, Chan_Idx_120um, &
                         Chan_Idx_133um, Chan_Idx_136um, Chan_Idx_139um, Chan_Idx_142um
-  real, intent(in), dimension(:):: Atm_Rad_Prof_038um, Atm_Trans_Prof_038um
-  real, intent(in), dimension(:):: Atm_Rad_Prof_062um, Atm_Trans_Prof_062um
-  real, intent(in), dimension(:):: Atm_Rad_Prof_067um, Atm_Trans_Prof_067um
-  real, intent(in), dimension(:):: Atm_Rad_Prof_073um, Atm_Trans_Prof_073um
-  real, intent(in), dimension(:):: Atm_Rad_Prof_085um, Atm_Trans_Prof_085um
-  real, intent(in), dimension(:):: Atm_Rad_Prof_097um, Atm_Trans_Prof_097um
-  real, intent(in), dimension(:):: Atm_Rad_Prof_104um, Atm_Trans_Prof_104um
-  real, intent(in), dimension(:):: Atm_Rad_Prof_110um, Atm_Trans_Prof_110um
-  real, intent(in), dimension(:):: Atm_Rad_Prof_120um, Atm_Trans_Prof_120um
-  real, intent(in), dimension(:):: Atm_Rad_Prof_133um, Atm_Trans_Prof_133um
-  real, intent(in), dimension(:):: Atm_Rad_Prof_136um, Atm_Trans_Prof_136um
-  real, intent(in), dimension(:):: Atm_Rad_Prof_139um, Atm_Trans_Prof_139um
-  real, intent(in), dimension(:):: Atm_Rad_Prof_142um, Atm_Trans_Prof_142um
+  real, intent(in), pointer, dimension(:):: Atm_Rad_Prof_038um, Atm_Trans_Prof_038um
+  real, intent(in), pointer, dimension(:):: Atm_Rad_Prof_062um, Atm_Trans_Prof_062um
+  real, intent(in), pointer, dimension(:):: Atm_Rad_Prof_067um, Atm_Trans_Prof_067um
+  real, intent(in), pointer, dimension(:):: Atm_Rad_Prof_073um, Atm_Trans_Prof_073um
+  real, intent(in), pointer, dimension(:):: Atm_Rad_Prof_085um, Atm_Trans_Prof_085um
+  real, intent(in), pointer, dimension(:):: Atm_Rad_Prof_097um, Atm_Trans_Prof_097um
+  real, intent(in), pointer, dimension(:):: Atm_Rad_Prof_104um, Atm_Trans_Prof_104um
+  real, intent(in), pointer, dimension(:):: Atm_Rad_Prof_110um, Atm_Trans_Prof_110um
+  real, intent(in), pointer, dimension(:):: Atm_Rad_Prof_120um, Atm_Trans_Prof_120um
+  real, intent(in), pointer, dimension(:):: Atm_Rad_Prof_133um, Atm_Trans_Prof_133um
+  real, intent(in), pointer, dimension(:):: Atm_Rad_Prof_136um, Atm_Trans_Prof_136um
+  real, intent(in), pointer, dimension(:):: Atm_Rad_Prof_139um, Atm_Trans_Prof_139um
+  real, intent(in), pointer, dimension(:):: Atm_Rad_Prof_142um, Atm_Trans_Prof_142um
   real, intent(in):: Emiss_Sfc_038um, Emiss_Sfc_062um, Emiss_Sfc_067um, &
                      Emiss_Sfc_073um, Emiss_Sfc_085um, Emiss_Sfc_097um, Emiss_Sfc_104um, &
                      Emiss_Sfc_110um, Emiss_Sfc_120um, Emiss_Sfc_133um, &

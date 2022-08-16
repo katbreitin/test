@@ -146,9 +146,6 @@ module PIXEL_COMMON_MOD
 
   use CLASS_TIME_DATE, only: &
       date_type
-  
-!-- can not use this module due to Makefile precedence issues
-! use CLAVRX_MESSAGE_MOD, only: MESG, VERB_LEV
 
   implicit none
   private
@@ -280,7 +277,6 @@ module PIXEL_COMMON_MOD
      real (kind=real4), dimension(:,:), allocatable:: Lunaz
      real (kind=real4), dimension(:,:), allocatable:: LunRelaz
      real (kind=real4), dimension(:,:), allocatable:: LunFrac
-      !integer (kind=int1), dimension(:,:), allocatable:: Space_Mask
       logical, dimension(:,:), allocatable:: Space_Mask
      double precision:: Moon_Phase_Angle
      real (kind=real4):: Moon_Illum_Frac
@@ -922,12 +918,6 @@ module PIXEL_COMMON_MOD
   !--- pixel level cloud props
 
      !--- direct heights
-!    real (kind=real4), dimension(:,:), allocatable, public, save, target:: Pc_EM
-!    real (kind=real4), dimension(:,:), allocatable, public, save, target:: Tc_EM
-!    real (kind=real4), dimension(:,:), allocatable, public, save, target:: Zc_EM
-!    real (kind=real4), dimension(:,:), allocatable, public, save, target:: Ec_EM
-!    real (kind=real4), dimension(:,:), allocatable, public, save, target:: N_EM
-!    real (kind=real4), dimension(:,:), allocatable, public, save, target:: Res_EM
      real (kind=real4), dimension(:,:), allocatable, public, save, target:: Pc_H2O
      real (kind=real4), dimension(:,:), allocatable, public, save, target:: Tc_H2O
      real (kind=real4), dimension(:,:), allocatable, public, save, target:: Zc_H2O
@@ -1235,9 +1225,6 @@ subroutine CREATE_PIXEL_ARRAYS()
 
          print *, "CLAVR-x: Arrays not allocated for unknown channel = ",idx 
 
-!--- can not use clavrx_message_mod in this routine
-!          call MESG ("Arrays not allocated for unknown channel = ",idx) 
-
         end select
 
       endif
@@ -1335,7 +1322,6 @@ subroutine CREATE_PIXEL_ARRAYS()
   call  CREATE_REF_CHANNEL_ARRAYS(dim1, dim2)
   call  CREATE_THERM_CHANNEL_ARRAYS(dim1, dim2)
   call  CREATE_EXTRA_CHANNEL_ARRAYS(dim1, dim2)
-! call  CREATE_LUNAR_ARRAYS(dim1, dim2)
   call  CREATE_BTD_ARRAYS(dim1, dim2)
   call  CREATE_ACHA_ARRAYS(dim1, dim2)
   call  CREATE_BASE_ARRAYS(dim1, dim2)
@@ -1483,7 +1469,6 @@ subroutine DESTROY_PIXEL_ARRAYS()
   call DESTROY_REF_CHANNEL_ARRAYS()
   call DESTROY_THERM_CHANNEL_ARRAYS()
   call DESTROY_EXTRA_CHANNEL_ARRAYS()
-! call DESTROY_LUNAR_ARRAYS()
   call DESTROY_BTD_ARRAYS()
   call DESTROY_ACHA_ARRAYS()
   call DESTROY_BASE_ARRAYS()
@@ -3311,12 +3296,6 @@ subroutine CREATE_CLOUD_PROD_ARRAYS(dim1,dim2)
   allocate(Zc_Opaque_Cloud(dim1,dim2))
   allocate(Tc_Opaque_Cloud(dim1,dim2))
   if (Cld_Flag == sym%YES) then
-!   allocate(Pc_EM(dim1,dim2))
-!   allocate(Tc_EM(dim1,dim2))
-!   allocate(Zc_EM(dim1,dim2))
-!   allocate(Ec_EM(dim1,dim2))
-!   allocate(N_EM(dim1,dim2))
-!   allocate(Res_EM(dim1,dim2))
     allocate(Pc_H2O(dim1,dim2))
     allocate(Tc_H2O(dim1,dim2))
     allocate(Zc_H2O(dim1,dim2))
@@ -3344,12 +3323,6 @@ subroutine RESET_CLOUD_PROD_ARRAYS()
   Zc_Opaque_Cloud = Missing_Value_Real4
   Tc_Opaque_Cloud = Missing_Value_Real4
   if (Cld_Flag == sym%YES) then
-!    Pc_EM = Missing_Value_Real4
-!    Tc_EM = Missing_Value_Real4
-!    Zc_EM = Missing_Value_Real4
-!    Ec_EM = Missing_Value_Real4
-!    N_EM = Missing_Value_Real4
-!    Res_EM = Missing_Value_Real4
      Pc_H2O = Missing_Value_Real4
      Tc_H2O = Missing_Value_Real4
      Zc_H2O = Missing_Value_Real4
@@ -3377,12 +3350,6 @@ subroutine DESTROY_CLOUD_PROD_ARRAYS()
   deallocate(Zc_Opaque_Cloud)
   deallocate(Tc_Opaque_Cloud)
   if (Cld_Flag == sym%YES) then
-!    deallocate(Pc_EM)
-!    deallocate(Tc_EM)
-!    deallocate(Zc_EM)
-!    deallocate(Ec_EM)
-!    deallocate(N_EM)
-!    deallocate(Res_EM)
      deallocate(Pc_H2O)
      deallocate(Tc_H2O)
      deallocate(Zc_H2O)

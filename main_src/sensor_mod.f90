@@ -7,7 +7,7 @@
 !
 ! PURPOSE: This module houses routines that apply to multiple sensors
 !
-! DESCRIPTION: 
+! DESCRIPTION:
 !
 ! AUTHORS:
 !  Andrew Heidinger, Andrew.Heidinger@noaa.gov
@@ -23,7 +23,7 @@
 ! SUPPORT TO USERS.
 !
 ! NOTES:
-! 
+!
 ! Routines in this module and their purpose:
 !
 !  the routines are called from process_clavrx.f90 in this order
@@ -34,7 +34,7 @@
 !      READ_INSTR_CONSTANTS()
 !      READ_LEVEL1B_DATA()
 !       ...
-!       ... 
+!       ...
 ! end loop
 !--------------------------------------------------------------------------------------
 module SENSOR_MOD
@@ -67,8 +67,8 @@ module SENSOR_MOD
       , cloud_mask_aux_read_flag &
       , WMO_Id_ISCCPNG
 
-      
-   use CALIBRATION_CONSTANTS_MOD,only: &  
+
+   use CALIBRATION_CONSTANTS_MOD,only: &
       planck_a1,planck_a2 &
       , goes_input_time &
       , goes_epoch_time &
@@ -77,9 +77,9 @@ module SENSOR_MOD
       , ew_ch20 &
       , solar_ch20_nu &
       , planck_nu
-   
+
    use ALGORITHM_CONSTANTS_MOD,only:
-   
+
    use CONSTANTS_MOD,only:  &
       real4 &
       , int1 &
@@ -92,9 +92,6 @@ module SENSOR_MOD
       , DTOR &
       , EXE_PROMPT
    
-   use FILE_TOOLS,only: &
-      get_lun
-   
    use AVHRR_MOD,only: &
       assign_avhrr_sat_id_num_internal &
       , define_1b_data &
@@ -102,7 +99,7 @@ module SENSOR_MOD
       , read_avhrr_instr_constants &
       , read_avhrr_level1b_data &
       , read_avhrr_level1b_header
-   
+
    use GOES_MOD, only: &
          area_struct &
          , gvar_nav &
@@ -116,7 +113,7 @@ module SENSOR_MOD
          , read_goes_instr_constants &
          , read_goes_sndr &
          , read_goes_sndr_instr_constants
-   
+
    use MODIS_MOD, only : &
        DETERMINE_MODIS_CLOUD_MASK_FILE &
      , DETERMINE_MODIS_CLOUD_PRODUCT_FILE &
@@ -132,7 +129,7 @@ module SENSOR_MOD
 
    use FY4_MOD, only: &
       READ_FY4_INSTR_CONSTANTS &
-    , READ_FY4_DATE_TIME & 
+    , READ_FY4_DATE_TIME &
     , READ_FY4_LEVEL1B_DATA
 
    use ABI_MOD, only: &
@@ -144,53 +141,53 @@ module SENSOR_MOD
     read_coms &
     , read_coms_instr_constants &
     , read_navigation_block_coms
-   
+
    use HIRS_FUSION_MOD,only: READ_FUSION_HIRS_INSTR_CONSTANTS, &
                              READ_HIRS_DATA, &
                              REPLACE_AVHRR_WITH_HIRS
-   
+
    use IFF_CLAVRX_BRIDGE , only : &
       READ_IFF_DATA &
       , READ_IFF_VIIRS_INSTR_CONSTANTS &
       , READ_IFF_AVHRR_INSTR_CONSTANTS &
       , READ_IFF_DATE_TIME &
       , GET_IFF_DIMS_BRIDGE
-      
+
    use MTSAT_MOD, only: &
       mtsat_xstride &
       , calibrate_mtsat_dark_composite &
       , read_mtsat &
       , read_mtsat_instr_constants &
       , read_navigation_block_mtsat_fy
-   
+
    use SEVIRI_MOD, only: &
       seviri_xstride &
       , calibrate_seviri_dark_composite &
       , read_msg_instr_constants &
       , read_navigation_block_seviri &
       , read_seviri
-   
+
 
    use VIIRS_CLAVRX_BRIDGE , only : &
        READ_VIIRS_DATE_TIME &
        , READ_VIIRS_DATA &
        , GET_NUMBER_OF_SCANS_FROM_VIIRS_BRIDGE &
        , READ_VIIRS_INSTR_CONSTANTS
-       
+
    use AHI_CLAVRX_BRIDGE, only: &
       read_ahi_data
-   
+
    use VIIRS_NASA_READ_MODULE, only : &
        READ_VIIRS_NASA_DATE_TIME &
        , READ_VIIRS_NASA_DATA &
        , READ_NUMBER_OF_SCANS_VIIRS_NASA &
        , CHECK_IF_FUSION &
        , READ_FUSION_INSTR_CONSTANTS
-   
+
    use VIIRS_NASA_HRES_READ_MOD, only : &
       READ_VIIRS_NASA_HRES_DATA &
       , viirs_nasa_hres_config_type
-        
+
    use FY3D_READ_MODULE, only : &
        READ_FY3D_DATA &
        , READ_FY3D_DATE_TIME &
@@ -200,12 +197,12 @@ module SENSOR_MOD
    use CLAVRX_MESSAGE_MOD,only: &
       mesg &
       , verb_lev
-   
+
    use MVCM_READ_MOD, only: &
       determine_mvcm_name &
       ,read_mvcm_data
-   
-   use SAPF_READ_MOD, only: DETERMINE_SAPF_NAME, READ_SAPF_DATA 
+
+   use SAPF_READ_MOD, only: DETERMINE_SAPF_NAME, READ_SAPF_DATA
 
    use AHI_MOD
 
@@ -233,30 +230,30 @@ module SENSOR_MOD
    use CX_NETCDF4_MOD, only: &
       READ_NETCDF_GLOBAL_ATTRIBUTE &
       , READ_NETCDF_DIMENSION
-   
+
     use iso_fortran_env
-   
+
    implicit none
 
    private
-   public :: SET_DATA_DATE_AND_TIME   
+   public :: SET_DATA_DATE_AND_TIME
    public :: READ_INSTR_CONSTANTS
    public :: DETECT_SENSOR_FROM_FILE
    public :: SET_FILE_DIMENSIONS
-   public :: READ_LEVEL1B_DATA 
+   public :: READ_LEVEL1B_DATA
    public :: OUTPUT_SENSOR_TO_SCREEN
    public :: OUTPUT_IMAGE_TO_SCREEN
    public :: OUTPUT_PROCESSING_LIMITS_TO_SCREEN
    public :: SET_SENSOR_CHANNEL_MAPPING
    private :: COMPUTE_GOES_RU_STATIC_NAV_FILE_NAME
 
-   
+
 
    character(24), parameter, private :: MODULE_PROMPT = " SENSOR_MODULE: "
    character(38) :: Orbit_Identifier
-  
+
    character (len = 3), private :: string_3
-   
+
    character (len = 6), private :: string_6
    character (len = 7), private :: string_7
    character (len = 30), private :: string_30
@@ -269,13 +266,13 @@ module SENSOR_MOD
    subroutine SET_DATA_DATE_AND_TIME(AREAstr)
 
       use class_time_date, only: date_type
-      
+
       use CX_READ_AHI_MOD, only: &
          ahi_time_from_filename, &
          ahi_hcast_time_from_filename
-      
+
       type ( date_type ) :: time0_obj, time1_obj
-      
+
       ! - this is only needed/used for AVHRR
       type (AREA_STRUCT), intent(in) :: AREAstr
 
@@ -323,12 +320,12 @@ module SENSOR_MOD
       integer(kind=int4):: End_Min_Tmp
       integer(kind=int4):: End_Sec_Tmp
       integer(kind=int4):: End_Msec_Tmp
-      
+
       type(date_type) :: time_obj_nasa_hres(2)
       character(len=15) :: time_identifier
       integer :: yyyy,doy1,hour1,minu
 
-      sensor_search: do 
+      sensor_search: do
 
       !----------------------------------------------
       ! --- ISCCP-NG L1g files
@@ -342,14 +339,14 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
-         
-         
+
+
          call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
                , msec_of_day = Start_Time_Tmp)
          call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
                , msec_of_day =  End_Time_Tmp)
-         
-         
+
+
          exit
       endif
 
@@ -368,20 +365,20 @@ module SENSOR_MOD
          call READ_MODIS_DATE_TIME(trim(Image%Level1b_Path), trim(Image%Level1b_Name), &
                             Start_Year_Tmp, Start_Day_Tmp, Start_Time_Tmp, &
                             End_Year_Tmp, End_Day_Tmp, End_Time_Tmp)
-          
+
          Image%Start_Year = Start_Year_Tmp
          Image%End_Year = End_Year_Tmp
          Image%Start_Doy = Start_Day_Tmp
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
-          
-                            
+
+
          call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
                , msec_of_day = Start_Time_Tmp)
          call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
-               , msec_of_day =  End_Time_Tmp)                   
-  
+               , msec_of_day =  End_Time_Tmp)
+
          exit
       endif
 
@@ -399,12 +396,12 @@ module SENSOR_MOD
          Image%Start_Doy = Start_Day_Tmp
          Image%End_Doy = End_Day_Tmp
          Image%Orbit_Number = Orbit_Number_Tmp
- 
+
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
 
 
-          
+
          call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
                , msec_of_day = Start_Time_Tmp)
          call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
@@ -413,21 +410,21 @@ module SENSOR_MOD
          exit
 
 
-      end if 
-      
+      end if
+
       if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA-HRES') then
-         
+
          time_identifier = Image%Level1b_Name(9:23)
-         
+
          read(time_identifier(3:6),'(i4)') yyyy
          read(time_identifier(7:9),'(i3)') doy1
          read(time_identifier(11:12),'(i2)') hour1
          read(time_identifier(13:14),'(i2)') minu
-           
+
          call time_obj_nasa_hres(1) % set_date_with_doy(yyyy,doy1,hour1,minu)
          time_obj_nasa_hres(2) = time_obj_nasa_hres(1)
          call time_obj_nasa_hres(2) % add_time(minute=6)
-           
+
          Image%Start_Year = time_obj_nasa_hres(1) % year
          Image%End_Year = time_obj_nasa_hres(2) % year
          Image%Start_Doy = time_obj_nasa_hres(1) % dayOfYear
@@ -436,15 +433,15 @@ module SENSOR_MOD
 
          Image%Start_Time = time_obj_nasa_hres(1) % msec_of_day
          Image%End_Time =  time_obj_nasa_hres(2) % msec_of_day
-         
+
 
          image % time_start = time_obj_nasa_hres(1)
          image % time_end = time_obj_nasa_hres(2)
-         
+
          exit
-         
-      end if 
-       
+
+      end if
+
       !----------------------------------------------
       ! read VIIRS-NASA time from VGEOM
       !----------------------------------------------
@@ -461,53 +458,53 @@ module SENSOR_MOD
 
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
-         
-         
+
+
          call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
                , msec_of_day = Start_Time_Tmp)
          call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
                , msec_of_day =  End_Time_Tmp)
-         
+
 
 
          exit
       endif
 
       !----------------------------------------------
-      ! 
+      !
       !----------------------------------------------
       !if (index(Sensor%Sensor_Name,'AHI') > 0 .OR. index(Sensor%Sensor_Name,'AHI9') > 0) then
       if (index(Sensor%Sensor_Name,'AHI') > 0) then
-         
-         
+
+
          ! Needed since HCAST native is not named the same - WCS3
-         IF ((Image%DB_Flag) .AND. (Image%Nc_Format_Flag .EQV. .false.)) THEN 
+         IF ((Image%DB_Flag) .AND. (Image%Nc_Format_Flag .EQV. .false.)) THEN
             call ahi_hcast_time_from_filename( trim(Image%Level1b_Name) , &
                                                 time0_obj, time1_obj )
          else
-         
+
             call ahi_time_from_filename ( trim(Image%Level1b_Name) , &
                                           time0_obj, time1_obj )
          endif
-        
+
          call time0_obj % get_date ( year =  year &
                                , doy = doy  &
                                , msec_of_day = Image%Start_Time  )
-         
-         call time1_obj % get_date ( msec_of_day = Image%End_Time  )                                                
+
+         call time1_obj % get_date ( msec_of_day = Image%End_Time  )
 
          Image%Start_Year  = year
-         Image%Start_Doy   = doy   
+         Image%Start_Doy   = doy
          Image%End_Year  = year
-         Image%End_Doy   = doy  
-         
+         Image%End_Doy   = doy
+
          image % time_start = time0_obj
          image % time_end = time1_obj
 
          exit
 
       endif
-      
+
       !----------------------------------------------
       ! --- VIIRS Subsampled files
       !----------------------------------------------
@@ -520,12 +517,12 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
-         
+
           call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
                , msec_of_day = Start_Time_Tmp)
          call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
                , msec_of_day =  End_Time_Tmp)
-         
+
          exit
       endif
 
@@ -542,13 +539,13 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
-         
+
          call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
                , msec_of_day = Start_Time_Tmp)
          call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
                , msec_of_day =  End_Time_Tmp)
-         
-         
+
+
          exit
       endif
 
@@ -565,13 +562,13 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
-         
-         
+
+
          call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
                , msec_of_day = Start_Time_Tmp)
          call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
                , msec_of_day =  End_Time_Tmp)
-         
+
          exit
       endif
 
@@ -591,8 +588,8 @@ module SENSOR_MOD
 
           Image%Start_Time = Start_Time_Tmp
           Image%End_Time = End_Time_Tmp
-          
-          
+
+
            call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
                , msec_of_day = Start_Time_Tmp)
            call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
@@ -616,13 +613,13 @@ module SENSOR_MOD
          Image%End_Doy = End_Day_Tmp
          Image%Start_Time = Start_Time_Tmp
          Image%End_Time = End_Time_Tmp
-         
-         
+
+
          call image % time_start % set_date_with_doy_msec (  Start_Year_Tmp, Start_Day_Tmp &
                , msec_of_day = Start_Time_Tmp)
          call image % time_end % set_date_with_doy_msec (  End_Year_Tmp, End_Day_Tmp &
                , msec_of_day =  End_Time_Tmp)
-         
+
          exit
       endif
 
@@ -645,25 +642,25 @@ module SENSOR_MOD
          Image%End_Year = Image%Start_Year
          Image%Start_Doy = AREAstr%img_Date - (Image%Start_Year - 1900) * 1000
          Image%End_Doy = Image%Start_Doy
-         hour = AREAstr%img_Time / 10000 
+         hour = AREAstr%img_Time / 10000
          minute = (AREAstr%img_Time - hour * 10000) / 100
          second = (AREAstr%img_Time - hour * 10000 - minute * 100) / 100
          Image%Start_Time = ((hour * 60 + minute) * 60 + second) * 1000 !millisec
          Image%End_Time = Image%Start_Time
-         
-         
+
+
          call image % time_start % set_date_with_doy (   1900 + int(AREAstr%img_Date / 1000), AREAstr%img_Date - (Image%Start_Year - 1900) * 1000 &
                , hour = hour, minute = minute, second = second )
          call image % time_end % set_date_with_doy (  1900 + int(AREAstr%img_Date / 1000), AREAstr%img_Date - (Image%Start_Year - 1900) * 1000 &
                , hour = hour, minute = minute, second = second )
-         
+
 
         endif
 
         if (.not. Image%Area_Format_Flag) then
 
           Image%Mixed_Resolution_Flag = .true.
-          Image%Static_Nav_Flag = .true. 
+          Image%Static_Nav_Flag = .true.
 
           !--- check if GOES ABI static navigation.
           !--- 2018-05-14T18:30:40.5Z
@@ -714,7 +711,7 @@ module SENSOR_MOD
         endif
 
         exit
- 
+
       end if
 
       print *, "Sensor not found in time, stopping"
@@ -752,7 +749,7 @@ module SENSOR_MOD
       call mesg ( "Satellite = "//trim(Sensor%Platform_Name), level = verb_lev % DEFAULT)
       call mesg ( "Sensor = "//trim(Sensor%Sensor_Name), level = verb_lev % DEFAULT)
 
-      write(string_3,'(i3)' ) Sensor%WMO_ID 
+      write(string_3,'(i3)' ) Sensor%WMO_ID
       call mesg ( "Spacecraft WMO number = "//trim(string_3) , level = verb_lev % DEFAULT)
 
       write ( string_6,'(i6)')   Sensor%Spatial_Resolution_Meters
@@ -778,7 +775,7 @@ module SENSOR_MOD
 
          write ( string_3,'(i3)')   AVHRR_AAPP_FLAG
          call mesg ( "AVHRR AAPP Flag = "//string_3, level = verb_lev % DEFAULT)
-    
+
       end if
 
    end subroutine OUTPUT_SENSOR_TO_SCREEN
@@ -949,7 +946,7 @@ module SENSOR_MOD
             call READ_FUSION_HIRS_INSTR_CONSTANTS(trim(Ancil_Data_Dir)//"static/clavrx_constant_files/"//trim('hirs_18_instr.dat'))
          endif
          if (index(trim(Sensor%Instr_Const_File),'avhrr_19_instr.dat') > 0) then
-            call READ_FUSION_HIRS_INSTR_CONSTANTS(trim(Ancil_Data_Dir)//"static/clavrx_constant_files/"//trim('hirs_19_instr.dat'))            
+            call READ_FUSION_HIRS_INSTR_CONSTANTS(trim(Ancil_Data_Dir)//"static/clavrx_constant_files/"//trim('hirs_19_instr.dat'))
          endif
          if (index(trim(Sensor%Instr_Const_File),'avhrr_2_instr.dat') > 0) then
             call READ_FUSION_HIRS_INSTR_CONSTANTS(trim(Ancil_Data_Dir)//"static/clavrx_constant_files/"//trim('hirs_2_instr.dat'))
@@ -967,11 +964,11 @@ module SENSOR_MOD
    !  output is sesnorname and platform name
    !
    !
-   !   AVHRR 
+   !   AVHRR
    !        sensors:  AVHRR-1, AVHRR-2, AVHRR-3
    !        platforms: NOAA-5 - NOAA-19, METOP-A - METOP-C
    !        spatial_resolution:  1.1, 4
-   !  
+   !
    !   GOES
    !        sensors:   GOES-IL-IMAGER, GOES-MP-IMAGER, GOES-IP-SOUNDER
    !        platforms: GOES-8 - GOES-15
@@ -981,7 +978,7 @@ module SENSOR_MOD
    !        sensors:  SEVIRI
    !        platform:  Meteosat-8 - Meteosat-11
    !        spatial_resolution:  3
-   ! 
+   !
    !   MTSAT
    !        sensors:  MTSAT-IMAGER
    !        platform:  MTSAT-1R, MTSAT-2
@@ -1001,7 +998,7 @@ module SENSOR_MOD
    !        sensors:  VIIRS, VIIRS-NASA, VIIRS-IFF
    !        platform:  SNPP
    !        spatial_resolution:  0.75
-   !        
+   !
    !
    !  Output: The sensor structure which is global does not appear as an argument
    !--------------------------------------------------------------------------------------------------
@@ -1038,13 +1035,18 @@ module SENSOR_MOD
       Image%DB_Flag = .false.
 
       !-------------------------------------------------------------------------
+      !-- Initialize AREAstr Structure
+      !-------------------------------------------------------------------------
+      AREAstr%Version_Num = 1
+
+      !-------------------------------------------------------------------------
       !-- Loop through tests for each file type, if not found assume avhrr
       !-------------------------------------------------------------------------
       Ierror = sym%NO
       ifound = sym%NO
 
       test_loop: do while (ifound == sym%NO)
-      
+
       !--- HIMAWARI-8 AHI Test
       if (index(Image%Level1b_Name, 'HS_H08') > 0) then
 
@@ -1058,21 +1060,21 @@ module SENSOR_MOD
         Static_Nav_File = 'himawari_central_ahi_fulldisk_static_nav.nc'
         Image%Area_Format_Flag = .false.
         Image%Nc_Format_Flag = .false.
-              
+
         !Done for netCDF files - WCS3
         if (index(Image%Level1b_Name, '.nc') > 1) then
             Image%Nc_Format_Flag = .true.
             call READ_NETCDF_DIMENSION(trim(Image%Level1b_Full_Name), 'x', Image%Number_Of_Elements)
             call READ_NETCDF_DIMENSION(trim(Image%Level1b_Full_Name), 'y', Image%Number_Of_Lines)
         endif
-        
+
         !Done for HSD files - WCS3
         if (index(Image%Level1b_Name, '.nc') < 1) then
 #ifdef LIBHIM
             Image%Nc_Format_Flag = .false.
-            !For HSD, we will always do static nav. Because of that, we don't need 
-            ! Image%Number_Of_Elements and Image%Number_Of_Lines. These are determined 
-            ! in DETERMINE_BOUNDS_STATIC_NAV for a given segment of data 
+            !For HSD, we will always do static nav. Because of that, we don't need
+            ! Image%Number_Of_Elements and Image%Number_Of_Lines. These are determined
+            ! in DETERMINE_BOUNDS_STATIC_NAV for a given segment of data
 #else
             call MESG( "LibHimawari not installed. Cannot process HSD. Stopping", level = verb_lev % ERROR , color = 4 )
             stop
@@ -1083,7 +1085,7 @@ module SENSOR_MOD
 
         Image%Mixed_Resolution_Flag = .true.
         Image%Static_Nav_Flag = .true.
-        
+
         exit test_loop
 
       endif
@@ -1100,21 +1102,21 @@ module SENSOR_MOD
         Static_Nav_File = 'himawari_central_ahi_fulldisk_static_nav.nc'
         Image%Area_Format_Flag = .false.
         Image%Nc_Format_Flag = .false.
-              
+
         !Done for netCDF files - WCS3
         if (index(Image%Level1b_Name, '.nc') > 1) then
             Image%Nc_Format_Flag = .true.
             call READ_NETCDF_DIMENSION(trim(Image%Level1b_Full_Name), 'x', Image%Number_Of_Elements)
             call READ_NETCDF_DIMENSION(trim(Image%Level1b_Full_Name), 'y', Image%Number_Of_Lines)
         endif
-        
+
         !Done for HSD files - WCS3
         if (index(Image%Level1b_Name, '.nc') < 1) then
 #ifdef LIBHIM
             Image%Nc_Format_Flag = .false.
-            !For HSD, we will always do static nav. Because of that, we don't need 
-            ! Image%Number_Of_Elements and Image%Number_Of_Lines. These are determined 
-            ! in DETERMINE_BOUNDS_STATIC_NAV for a given segment of data 
+            !For HSD, we will always do static nav. Because of that, we don't need
+            ! Image%Number_Of_Elements and Image%Number_Of_Lines. These are determined
+            ! in DETERMINE_BOUNDS_STATIC_NAV for a given segment of data
 #else
             call MESG( "LibHimawari not installed. Cannot process HSD. Stopping", level = verb_lev % ERROR , color = 4 )
             stop
@@ -1122,10 +1124,10 @@ module SENSOR_MOD
 
         endif
         !END - WCS3
-                
+
         Image%Mixed_Resolution_Flag = .true.
         Image%Static_Nav_Flag = .true.
-        
+
         exit test_loop
       endif
 
@@ -1172,9 +1174,9 @@ module SENSOR_MOD
         Image%Static_Nav_Flag = .true.
         Image%Nc_Format_Flag = .false.
         call MESG( "HCAST DATA", level = verb_lev % ERROR , color = 4 )
-            !For HSD, we will always do static nav. Because of that, we don't need 
-            ! Image%Number_Of_Elements and Image%Number_Of_Lines. These are determined 
-            ! in DETERMINE_BOUNDS_STATIC_NAV for a given segment of data 
+            !For HSD, we will always do static nav. Because of that, we don't need
+            ! Image%Number_Of_Elements and Image%Number_Of_Lines. These are determined
+            ! in DETERMINE_BOUNDS_STATIC_NAV for a given segment of data
 #else
         call MESG( "LibHimawari not installed. Cannot process HSD. Stopping", level = verb_lev % ERROR , color = 4 )
             stop
@@ -1204,9 +1206,9 @@ module SENSOR_MOD
         ABI_Use_104um_Flag = .false.
         exit test_loop
       endif
-      
-      
-      
+
+
+
             !--- GOES-16 ABI Static Nav Test FD HIGH RES processing
       if (index(Image%Level1b_Name, 'OR_ABI-L1b-RadC') > 0 .AND. INDEX(trim(Image%Level1b_Name), 'G16') > 0 &
           .AND. INDEX(trim(Image%Level1b_Name) , '_HIGH_RES_') > 0 ) then
@@ -1221,11 +1223,11 @@ module SENSOR_MOD
         Image%Static_Nav_Flag = .true.
         Image%Mixed_Resolution_Flag = .true.
         Image%Area_Format_Flag = .false.
-        Image%Nc_Format_Flag = .true. 
+        Image%Nc_Format_Flag = .true.
         exit test_loop
       endif
-      
-      
+
+
                   !--- GOES-16 ABI Static Nav Test FD HIGH RES processing
       if (index(Image%Level1b_Name, 'OR_ABI-L1b-RadF') > 0 .AND. INDEX(trim(Image%Level1b_Name), 'G16') > 0 &
           .AND. INDEX(trim(Image%Level1b_Name) , '_HIGH_RES_') > 0 ) then
@@ -1240,16 +1242,16 @@ module SENSOR_MOD
         Image%Static_Nav_Flag = .true.
         Image%Mixed_Resolution_Flag = .true.
         Image%Area_Format_Flag = .false.
-        Image%Nc_Format_Flag = .true. 
+        Image%Nc_Format_Flag = .true.
         Image%Number_Of_Lines = 21696
         Image%Number_Of_Elements = 21696
         exit test_loop
       endif
-      
+
 
       !--- GOES-17 ABI Static Nav Test
       if (index(Image%Level1b_Name, 'OR_ABI') > 0 .and. INDEX(trim(Image%Level1b_Name), 'G17') > 0 &
-          .AND. .NOT. INDEX(trim(Image%Level1b_Name) , '_HIGH_RES_') > 0  ) then 
+          .AND. .NOT. INDEX(trim(Image%Level1b_Name) , '_HIGH_RES_') > 0  ) then
         Sensor%Sensor_Name = 'GOES-RU-IMAGER'
         Sensor%Platform_Name = 'GOES-17'
         Sensor%Spatial_Resolution_Meters = 2000
@@ -1265,7 +1267,7 @@ module SENSOR_MOD
         ABI_Use_104um_Flag = .false.
         exit test_loop
       endif
-      
+
          !--- GOES-17 ABI Static Nav Test
       if (index(Image%Level1b_Name, 'OR_ABI') > 0 .and. INDEX(trim(Image%Level1b_Name), 'G17') > 0  &
           .AND. INDEX(trim(Image%Level1b_Name) , '_HIGH_RES_') > 0 ) then
@@ -1287,7 +1289,7 @@ module SENSOR_MOD
 
       !--- GOES-18 ABI Static Nav Test
       if (index(Image%Level1b_Name, 'OR_ABI') > 0 .and. INDEX(trim(Image%Level1b_Name), 'G18') > 0 &
-          .AND. .NOT. INDEX(trim(Image%Level1b_Name) , '_HIGH_RES_') > 0  ) then 
+          .AND. .NOT. INDEX(trim(Image%Level1b_Name) , '_HIGH_RES_') > 0  ) then
         Sensor%Sensor_Name = 'GOES-RU-IMAGER'
         Sensor%Platform_Name = 'GOES-18'
         Sensor%Spatial_Resolution_Meters = 2000
@@ -1314,14 +1316,14 @@ module SENSOR_MOD
         Sensor%Geo_Sub_Satellite_Longitude = 105.0
         Sensor%Geo_Sub_Satellite_Latitude = 0.0
         Static_Nav_File = 'fy4_static_nav_fulldisk.nc'
-        call READ_NETCDF_GLOBAL_ATTRIBUTE(trim(Image%Level1b_Full_Name),'RegWidth', Image%Number_Of_Elements) 
-        call READ_NETCDF_GLOBAL_ATTRIBUTE(trim(Image%Level1b_Full_Name),'RegLength', Image%Number_Of_Lines) 
+        call READ_NETCDF_GLOBAL_ATTRIBUTE(trim(Image%Level1b_Full_Name),'RegWidth', Image%Number_Of_Elements)
+        call READ_NETCDF_GLOBAL_ATTRIBUTE(trim(Image%Level1b_Full_Name),'RegLength', Image%Number_Of_Lines)
         Image%Area_Format_Flag = .false.
         Image%Mixed_Resolution_Flag = .false.
         Image%Static_Nav_Flag = .true.
         exit test_loop
       endif
-      
+
       !--- MODIS Test
       if (index(Image%Level1b_Name, 'MYD021KM') > 0) then
         Sensor%Sensor_Name = 'MODIS'
@@ -1409,12 +1411,12 @@ module SENSOR_MOD
 
          !--- based on McIdas Id, set sensor struc parameters
          select case(AREAstr%Sat_Id_Num)
- 
+
             !test for SEVIRI
             case (51:53,354)
                Sensor%Sensor_Name = 'SEVIRI'
                Sensor%Spatial_Resolution_Meters = 3000
-              
+
                if (AREAstr%Sat_Id_Num == 51) then
                   Sensor%Platform_Name = 'Meteosat-8'
                   Sensor%WMO_Id = 55
@@ -1625,7 +1627,7 @@ module SENSOR_MOD
       endif
 
       !---  VIIRS SNPP
-      if (index(Image%Level1b_Name, 'GMTCO_npp') > 0) then 
+      if (index(Image%Level1b_Name, 'GMTCO_npp') > 0) then
          Sensor%Sensor_Name = 'VIIRS'
          Sensor%Spatial_Resolution_Meters = 750
          Sensor%Platform_Name = 'SNPP'
@@ -1634,7 +1636,7 @@ module SENSOR_MOD
          exit test_loop
       endif
 
-      !--- NPP/JPSS IFF 
+      !--- NPP/JPSS IFF
       if (index(Image%Level1b_Name, 'IFFSDR_npp') > 0 .or. &
           index(Image%Level1b_Name, 'IFFSVM_npp') > 0 .or. &
           index(Image%Level1b_Name, 'IFF_npp') > 0) then
@@ -1663,8 +1665,8 @@ module SENSOR_MOD
          Sensor%Instr_Const_File = 'viirs_npp_instr.dat'
          exit test_loop
       endif
-      
-      
+
+
             !---  VIIRS-NASA SNPP HIGH RES
       if (index(Image%Level1b_Name, 'VNP02MOD') > 0 .and. &
           index(Image%Level1b_Name, 'highres') > 0) then
@@ -1674,11 +1676,11 @@ module SENSOR_MOD
          Sensor%WMO_Id = 224
          ! - check if it is FUSION
          Sensor%Fusion_Flag = .false.
-        
+
          Sensor%Instr_Const_File = 'viirs_npp_instr.dat'
          exit test_loop
       endif
-           
+
       !---  VIIRS NOAA-20 (JPSS-1)
       if (index(Image%Level1b_Name, 'GMTCO_j01') > 0) then
          Sensor%Sensor_Name = 'VIIRS'
@@ -1707,7 +1709,7 @@ module SENSOR_MOD
       endif
 
       !---  VGAC NOAA-20
-      if (index(Image%Level1b_Name, 'VGAC_VJ1') > 0) then 
+      if (index(Image%Level1b_Name, 'VGAC_VJ1') > 0) then
          Sensor%Sensor_Name = 'VGAC'
          Sensor%Spatial_Resolution_Meters = 3900
          Sensor%Platform_Name = 'NOAA-20'
@@ -1953,7 +1955,7 @@ module SENSOR_MOD
 
       endif
 
-      
+
       !-------------------------------------------------------------------------------
       !---if sensor not detected, assume AVHRR
       !-------------------------------------------------------------------------------
@@ -1971,16 +1973,16 @@ module SENSOR_MOD
       else
          Sensor%Spatial_Resolution_Meters = 1000
       endif
-      
+
       if ( AVHRR_Fusion_Flag) then
          sensor % sensor_name = 'AVHRR-FUSION'
-      end if 
-     
+      end if
+
       ifound = sym%YES   ! force exit need to develop logic for setting Ierror
 
       enddo test_loop
 
-      
+
       !---------------------------------------------------------------------------------
       ! Set sub-satellite point for geostationary satellites that are Areafiles
       !---------------------------------------------------------------------------------
@@ -2042,22 +2044,22 @@ module SENSOR_MOD
     if (AREAstr%Version_Num == 4) then                          !begin valid Areafile test
 
       select case(AREAstr%Sat_Id_Num)
- 
+
             !test for SEVIRI
             case (51:53,354)
                ! Read the satellite sub longitude point from the AREA file.
                call READ_NAVIGATION_BLOCK_SEVIRI(trim(Level1b_Full_Name), AREAstr, NAVstr)
-               Sensor%Geo_Sub_Satellite_Latitude = NAVstr%sublat 
+               Sensor%Geo_Sub_Satellite_Latitude = NAVstr%sublat
                Sensor%Geo_Sub_Satellite_Longitude = NAVstr%sublon
                ! Override the above for the operational sub satellite longitudes.
                ! Longitude of actual Sub-Satellite Point for Met-8 when it was operational.  For Met-8 Indian
                ! Ocean service, the subpoint from the AREA file is used.
-               if (AREAstr%Sat_Id_Num == 51 .AND. Year_temp < 2016 ) Sensor%Geo_Sub_Satellite_Longitude = -3.477996 
+               if (AREAstr%Sat_Id_Num == 51 .AND. Year_temp < 2016 ) Sensor%Geo_Sub_Satellite_Longitude = -3.477996
                if (AREAstr%Sat_Id_Num == 52 ) Sensor%Geo_Sub_Satellite_Longitude = -0.159799     ! Longitude of actual Sub-Satellite Point for Met-9
                if (AREAstr%Sat_Id_Num == 53 ) Sensor%Geo_Sub_Satellite_Longitude = 0.06          ! Longitude of actual Sub-Satellite Point for Met-10
                if (AREAstr%Sat_Id_Num == 354 ) Sensor%Geo_Sub_Satellite_Longitude = 0.26         ! Longitude of actual Sub-Satellite Point for Met-11
                AREAstr%Cal_Offset = AREAstr%reserved(3)
-                    
+
             !test for MTSAT
             case (84,85)
                !This is needed to determine type of navigation
@@ -2065,7 +2067,7 @@ module SENSOR_MOD
                call READ_NAVIGATION_BLOCK_MTSAT_FY(trim(Level1b_Full_Name), AREAstr, NAVstr)
                Sensor%Geo_Sub_Satellite_Latitude = NAVstr%sublat
                Sensor%Geo_Sub_Satellite_Longitude = NAVstr%sublon
-          
+
             !WCS3 - FY2-D AREA files have the subsat lat/lon flipped. Fix here
             !        Fix with McIDAS-X is fixed.
             case (36, 37)
@@ -2073,21 +2075,21 @@ module SENSOR_MOD
                !as Nav coefficents specific to FY2D/E. They are stored in
                ! the same manner as MTSAT, hence using the same routine
                call READ_NAVIGATION_BLOCK_MTSAT_FY(trim(Level1b_Full_Name), AREAstr, NAVstr)
-               
+
                !Some data from BOM has subpoints flipped, so need to fix that
                IF (NAVstr%sublat .GT. 10.0) THEN
-                    Lat_temp = NAVstr%sublon                   
+                    Lat_temp = NAVstr%sublon
                     Lon_temp = NAVstr%sublat
-                    
+
                     NAVstr%sublon = Lon_temp
                     NAVstr%sublat = Lat_temp
-               
+
                endif
-               
-               
+
+
                Sensor%Geo_Sub_Satellite_Latitude = NAVstr%sublat
                Sensor%Geo_Sub_Satellite_Longitude = NAVstr%sublon
- 
+
             !test for COMS
             case (250)
                !This is needed to determine type of navigation
@@ -2108,7 +2110,7 @@ module SENSOR_MOD
 
                !--- There will need to be hard coded values for AREA file
                !--- sub_lon calculations. Currently, the AREA file contains
-               !--- -75.0.  It should be -75.2. 
+               !--- -75.0.  It should be -75.2.
 
                if ((NAVstr%sublon <= -75.) .AND. (NAVstr%sublon > -80.)) then
                  Sensor%Geo_Sub_Satellite_Latitude = NAVstr%sublat
@@ -2118,7 +2120,7 @@ module SENSOR_MOD
                  Sensor%Geo_Sub_Satellite_Latitude = NAVstr%sublat
                  Sensor%Geo_Sub_Satellite_Longitude = NAVstr%sublon
                endif
-   
+
             !test for GOES Imagers or Sounders
             case (70:79,180:185)
 
@@ -2140,10 +2142,10 @@ module SENSOR_MOD
     endif
 
    end subroutine DETERMINE_GEO_SUB_SATELLITE_POSITION
-   
+
    !---------------------------------------------------------------------------------------------
    ! Determine the number of elements (Image%Number_Of_Elements) and Number of Scans (Image%Number_Of_Lines)
-   ! expected.  Also, 
+   ! expected.  Also,
    !
    !    the output will be written in global Image structure
    !---------------------------------------------------------------------------------------------
@@ -2151,8 +2153,8 @@ module SENSOR_MOD
 
       use CX_READ_AHI_MOD, only : AHI_SEGMENT_INFORMATION_REGION, AHI_CONFIG_TYPE
       use file_tools
-      
-                                                               
+
+
       character(len=*), intent(in) :: Level1b_Full_Name
       type (AREA_STRUCT), intent(in) :: AREAstr ! AVHRR only
       integer(kind=int4), intent(out) :: Nrec_Avhrr_Header ! AVHRR only
@@ -2162,17 +2164,17 @@ module SENSOR_MOD
       integer(kind=int4) :: Nword_Clavr_Start
       integer(kind=int4) :: Ierror_Nscans
       CHARACTER(len=1020) :: Dir_File
-      
+
       type ( Ahi_Config_Type ) :: Ahi_Config
       integer :: Offset(2), count(2)
       integer :: cc
       logical :: rel_path = .TRUE.
       character(len=1024), dimension(1) :: file_v03img
       character(len=15) :: time_identifier
-      
+
       Ierror = sym%NO
 
-      do 
+      do
 
       if (index(Image%Level1b_Name,'ISCCP-NG') > 0) then
          call READ_NUMBER_OF_SCANS_ISCCPNG(Image%Number_Of_Lines, Image%Number_Of_Elements, Ierror)
@@ -2183,15 +2185,15 @@ module SENSOR_MOD
          call READ_MODIS_SIZE_ATTR(trim(Level1b_Full_Name),Image%Number_Of_Elements,Image%Number_Of_Lines)
          exit
       endif
-   
+
       if (trim(Sensor%Sensor_Name) == 'MODIS-MAC') then
          Image%Number_Of_Elements =  11
          Image%Number_Of_Lines = 2030
          exit
       endif
-      
+
       if ( trim(Sensor%Sensor_Name) == 'AHI') then
-     
+
          if (Image%Static_Nav_Flag) then
             call SETUP_READ_LEVEL1B_FIXED_GRID_STATIC_NAV()
          else
@@ -2200,7 +2202,7 @@ module SENSOR_MOD
             ahi_config % lon_range =[Nav%Lon_West_Limit,Nav%Lon_East_Limit]
             ahi_config % lat_range =[Nav%Lat_South_Limit,Nav%Lat_North_Limit]
             call ahi_segment_information_region ( ahi_config , offset, count )
-        
+
             Image%Number_Of_Elements =  count(1)
             Image%Number_Of_Lines = count(2)
          endif
@@ -2208,7 +2210,7 @@ module SENSOR_MOD
          exit
 
       end if
-      
+
       if (trim(Sensor%Sensor_Name) == 'VIIRS') then
          Image%Number_Of_Elements = 3200
          Dir_File = trim(Image%Level1b_Path) // trim(Image%Level1b_Name)
@@ -2234,15 +2236,15 @@ module SENSOR_MOD
          exit
 
       end if
-      
+
       if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA-HRES') then
-       
+
           Image%Number_Of_Elements = 6400
-          
-          
+
+
           time_identifier =  trim(Image%Level1b_Name(9:23))
           file_v03img = file_search( trim(Image%Level1b_Path),'VNP03IMG'//trim(time_identifier)//'*.nc',cc,rel_path)
-          
+
           if ( cc .eq. 0) then
               print*,'we need V03IMG file ..'
               return ! skip file
@@ -2250,19 +2252,19 @@ module SENSOR_MOD
 
           call READ_NUMBER_OF_SCANS_VIIRS_NASA (trim(file_v03img(1)),Image%Number_Of_Lines,Ierror_Nscans)
           Image%Number_Of_Lines = Image%Number_Of_Lines * 2
-          
+
           ! If error reading, then go to next file
           if (Ierror_Nscans /= 0) then
             Ierror = sym%YES
             return      ! skips file
           endif
-          
+
          exit
-          
+
       end if
 
       if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA') then
-       
+
           Image%Number_Of_Elements = 3200
           Dir_File = trim(Image%Level1b_Path) // trim(Image%Level1b_Name)
 
@@ -2275,7 +2277,7 @@ module SENSOR_MOD
           endif
 
           exit
-        
+
       endif
 
       if (trim(Sensor%Sensor_Name) == 'VGAC') then
@@ -2318,32 +2320,32 @@ module SENSOR_MOD
          endif
          exit
       endif
-      
+
       !--- if an IFF, call routine to determine dimensions from latitude sds
       if (index(Sensor%Sensor_Name,'IFF') > 0) then
          call GET_IFF_DIMS_BRIDGE(trim(Image%Level1b_Path)//trim(Image%Level1b_Name),Image%Number_Of_Elements,Image%Number_Of_Lines)
          exit
       end if
-     
+
       !--- AVHRR
       if (trim(Sensor%Sensor_Name) == 'AVHRR-1' .or. &
           trim(Sensor%Sensor_Name) == 'AVHRR-2' .or. &
           trim(Sensor%Sensor_Name) == 'AVHRR-3' .or. &
           trim(Sensor%Sensor_Name) == 'AVHRR-FUSION') then
-         
+
          !-------------------------------------------------------
          ! Determine the type of level 1b file
          !-------------------------------------------------------
          call DETERMINE_AVHRR_FILE_TYPE(trim(Level1b_Full_Name),AVHRR_GAC_FLAG,AVHRR_KLM_Flag,AVHRR_AAPP_Flag, &
                                         AVHRR_Ver_1b,AVHRR_Data_Type,Byte_Swap_1b,AVHRR_1_Flag)
-   
+
          !-------------------------------------------------------------------
          !-- based on file type (AVHRR_KLM_Flag and Gac), determine parameters needed
          !-- to read in header and data records for this orbit
-         !------------------------------------------------------------------- 
+         !-------------------------------------------------------------------
          call DEFINE_1B_DATA(AVHRR_GAC_Flag,AVHRR_KLM_Flag,AVHRR_AAPP_Flag,Nrec_Avhrr_Header, &
                              Nword_Clavr_Start,Nword_Clavr)
- 
+
          !-------------------------------------------------------------------
          !-- read in header
          !-------------------------------------------------------------------
@@ -2372,9 +2374,9 @@ module SENSOR_MOD
          Image%Number_Of_Lines = AREAstr%Num_Line
         else
          if (Image%Static_Nav_Flag) then
-         
+
           call SETUP_READ_LEVEL1B_FIXED_GRID_STATIC_NAV()
-          
+
          else
           print *, "ERROR, unknown GOES-RU data"
           stop
@@ -2409,7 +2411,7 @@ module SENSOR_MOD
 
       stop
 
-      end do   !end of send 
+      end do   !end of send
 
    end subroutine SET_FILE_DIMENSIONS
 
@@ -2433,8 +2435,8 @@ module SENSOR_MOD
       integer, intent(out):: Ierror_Level1b
       TYPE(viirs_nasa_hres_config_type) :: nasa_hres_config
       integer :: i_line
-      
-      
+
+
       Ierror_Level1b = 0
       Cloud_Mask_Aux_Read_Flag = sym%NO
 
@@ -2458,7 +2460,7 @@ module SENSOR_MOD
 
             if (Sensor%Chan_On_Flag_Default(1)==sym%YES) then
                call READ_DARK_COMPOSITE_COUNTS(Segment_Number, Goes_Xstride, &
-                     Dark_Composite_Name,AREAstr,Two_Byte_Temp) 
+                     Dark_Composite_Name,AREAstr,Two_Byte_Temp)
                call CALIBRATE_GOES_DARK_COMPOSITE(Two_Byte_Temp,Time_Since_Launch,Ref_Ch1_Dark_Composite)
             end if
 
@@ -2493,7 +2495,7 @@ module SENSOR_MOD
 
 
 
-            else 
+            else
                print*,'read abi is to installed stopping'
                stop
             end if
@@ -2504,7 +2506,7 @@ module SENSOR_MOD
                      Image%Start_Doy, Image%Start_Time, &
                      AREAstr)
             call READ_DARK_COMPOSITE_COUNTS(Segment_Number,Seviri_Xstride, &
-                     Dark_Composite_Name,AREAstr,Two_Byte_Temp) 
+                     Dark_Composite_Name,AREAstr,Two_Byte_Temp)
             call CALIBRATE_SEVIRI_DARK_COMPOSITE(Two_Byte_Temp,Ref_Ch1_Dark_Composite)
 
          case('MTSAT-IMAGER')
@@ -2513,7 +2515,7 @@ module SENSOR_MOD
                      Time_Since_Launch, &
                      AREAstr,NAVstr)
             call READ_DARK_COMPOSITE_COUNTS(Segment_Number,Mtsat_Xstride, &
-                     Dark_Composite_Name,AREAstr,Two_Byte_Temp) 
+                     Dark_Composite_Name,AREAstr,Two_Byte_Temp)
             call CALIBRATE_MTSAT_DARK_COMPOSITE(Two_Byte_Temp,Ref_Ch1_Dark_Composite)
 
          case('FY2-IMAGER')
@@ -2523,7 +2525,7 @@ module SENSOR_MOD
 
          case('AGRI') ! FY4
             call READ_FY4_LEVEL1B_DATA(Segment_Number, trim(Image%Level1b_Name), Ierror_Level1b)
-        
+
          case('COMS-IMAGER')
             call READ_COMS(Segment_Number,Image%Level1b_Name, &
                      Image%Start_Doy, Image%Start_Time, &
@@ -2540,11 +2542,11 @@ module SENSOR_MOD
               Time_Since_Launch,Nrec_Avhrr_Header,Segment_Number)
             call READ_HIRS_DATA(Segment_Number)
             call REPLACE_AVHRR_WITH_HIRS()
-        
+
          case('VIIRS')
 
             call READ_VIIRS_DATA (Segment_Number, trim(Image%Level1b_Name), Ierror_Level1b)
-      
+
             ! If error reading, then go to next file
             if (Ierror_Level1b /= 0) return
 
@@ -2553,27 +2555,27 @@ module SENSOR_MOD
                call DETERMINE_SAPF_NAME(Segment_Number)
                call READ_SAPF_DATA(Segment_Number)
             end if
-        
-        
+
+
          case('VIIRS-NASA-HRES')
-        
+
             nasa_hres_config % channel_on_modis(1:45) = Sensor%Chan_On_Flag_Default(1:45)  == sym%YES
-          
+
             nasa_hres_config % sensor = 'npp'
             nasa_hres_config % filename = trim(Image%Level1b_Name)
             nasa_hres_config % path = trim(Image%Level1b_Path)
             nasa_hres_config % ny_start = (Segment_Number - 1) * Image%Number_Of_Lines_Per_Segment + 1
             nasa_hres_config % ny_end = min(Image%Number_Of_Lines, nasa_hres_config % ny_start + Image%Number_of_Lines_Per_Segment - 1)
             call READ_VIIRS_NASA_HRES_DATA(nasa_hres_config)
-          
-          
-        
+
+
+
             Image%Number_Of_Lines_Read_This_Segment = nasa_hres_config % ny_end - nasa_hres_config % ny_start + 1
-           
+
             do i_line = 1, Image%Number_Of_Lines_Per_Segment
                Image%Scan_Number(i_line) =nasa_hres_config % ny_start + i_line - 1
             end do
-           
+
          case('VIIRS-NASA')
 
             call READ_VIIRS_NASA_DATA (Segment_Number, trim(Image%Level1b_Name), Ierror_Level1b)
@@ -2582,7 +2584,7 @@ module SENSOR_MOD
             if (Ierror_Level1b /= 0) return
 
             !--- read auxillary cloud mask
-            if (Use_Aux_Flag /= sym%NO_AUX) then 
+            if (Use_Aux_Flag /= sym%NO_AUX) then
                call DETERMINE_MVCM_NAME(Segment_Number)
                call READ_MVCM_DATA(Segment_Number)
             endif
@@ -2596,18 +2598,18 @@ module SENSOR_MOD
          case('AHI')
 
             if (Image%Static_Nav_Flag) then
-               IF (Image%Nc_Format_Flag) then 
+               IF (Image%Nc_Format_Flag) then
                   call READ_LEVEL1B_FIXED_GRID_STATIC_NAV()
                else
 #ifdef LIBHIM
-                  call READ_HSD_FIXED_GRID_STATIC_NAV()   
+                  call READ_HSD_FIXED_GRID_STATIC_NAV()
 #else
                   call MESG( "LibHimawari not installed. Cannot process HSD. Stopping", level = verb_lev % ERROR , color = 4 )
                   stop
 #endif
-                 
+
                end if
-            
+
             else
                call READ_AHI_DATA (Segment_Number, trim(Image%Level1b_Name), Ierror_Level1b)
             end if
@@ -2636,7 +2638,7 @@ module SENSOR_MOD
 
          end if
 
-         !--- VIIRS GAC data 
+         !--- VIIRS GAC data
          if (index(Sensor%Sensor_Name,'VGAC') > 0) then
             call READ_VGAC_DATA(Segment_Number, Ierror_Level1b)
             ! If error reading, then go to next file
@@ -2652,7 +2654,7 @@ module SENSOR_MOD
 
 
       end if
-       
+
    end subroutine READ_LEVEL1B_DATA
 
    !-------------------------------------------------------------------
@@ -2663,7 +2665,7 @@ module SENSOR_MOD
 
       call READ_NETCDF_GLOBAL_ATTRIBUTE(Image%Level1b_Full_Name, 'orbital_slot', Orbital_Slot)
       call READ_NETCDF_GLOBAL_ATTRIBUTE(Image%Level1b_Full_Name, 'scene_id', Scene_Id)
-          
+
       if (trim(Orbital_Slot)=="GOES-East") then
          if (trim(Scene_Id)=="Full Disk") then
              Static_Nav_File = "goes_east_abi_fulldisk_static_nav.nc"
@@ -2711,7 +2713,7 @@ module SENSOR_MOD
          Sensor%Num_Chan_Sensor = 11
          if (.not. allocated(Sensor%CLAVRx_Chan_Map)) allocate(Sensor%Clavrx_Chan_Map(Sensor%Num_Chan_Sensor))
          Sensor%CLAVRx_Chan_Map = [1,2,6,20,27,28,29,30,31,32,33]
-      
+
       case(171:172,810,514:515) !MTSAT,COMS,Fy2D,Fy2E
          Sensor%Num_Chan_Sensor = 5
          if (.not. allocated(Sensor%CLAVRx_Chan_Map)) allocate(Sensor%Clavrx_Chan_Map(Sensor%Num_Chan_Sensor))
@@ -2740,7 +2742,7 @@ module SENSOR_MOD
          Sensor%Num_Chan_Sensor = 14
          if (.not. allocated(Sensor%CLAVRx_Chan_Map)) allocate(Sensor%Clavrx_Chan_Map(Sensor%Num_Chan_Sensor))
          Sensor%CLAVRx_Chan_Map = (/3,1,2,26,6,7,21,20,27,28,29,31,32,33/)
-      case(783,784) !MODIS 
+      case(783,784) !MODIS
          Sensor%Num_Chan_Sensor = 36
          if (.not. allocated(Sensor%CLAVRx_Chan_Map)) allocate(Sensor%Clavrx_Chan_Map(Sensor%Num_Chan_Sensor))
          Sensor%CLAVRx_Chan_Map = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19, &
@@ -2754,7 +2756,7 @@ module SENSOR_MOD
          print*,'sensor for WMO number not found in SET_SENSOR_CHANNEL_MAPPING for ', Sensor%WMO_ID
          print*,'stopping ... Please fix this in sensor_mod.F90'
          print*,' better tell andi.walther@ssec.wisc.edu'
-         stop    
+         stop
       end select
 
    end subroutine SET_SENSOR_CHANNEL_MAPPING

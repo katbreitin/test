@@ -172,7 +172,6 @@ contains
       ! mapping sensor channel emis yes/no
       
       sensor_identifier = trim ( self % sensor )
-     !print*,'==> ', self % sensor
       sensor_block: select case ( trim(self % sensor))
          case ('Meteosat-8','Meteosat-9','Meteosat-10','Meteosat-11') sensor_block
             has_sol_table(1) = .true.
@@ -217,12 +216,10 @@ contains
             has_sol_table(20) = .true.
             has_ems_table(20) = .true.
             chan_string(1) = '1'
-            !chan_string(2) = '2'
             chan_string(5) = '5'
             chan_string(6) = '6'
             chan_string(7) = '7'
             chan_string(20) = '20'
-            !--->sensor_identifier = trim(self % lut_path) //'MODIS'
             sensor_identifier = 'MODIS'
          
          case('GOES-16','GOES-17')  sensor_block
@@ -309,7 +306,6 @@ contains
             has_ems_table(20) = .true.
             chan_string(1) = '1'
             chan_string(20) = '5'
-            !--> sensor_identifier = trim(self % lut_path) //'MTSAT'
             sensor_identifier = 'MTSAT'
 
          case ('FY3D') sensor_block

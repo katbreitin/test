@@ -694,24 +694,8 @@ subroutine OPAQUE_CLOUD_HEIGHT(ABI_Use_104um_Flag)
            cycle
       endif
 
-      !--- loop through levels
-!     Pc_Opaque_Cloud(Elem_Idx,Line_Idx) = Psfc
-!     Zc_Opaque_Cloud(Elem_Idx,Line_Idx) = Zsfc
-!     Tc_Opaque_Cloud(Elem_Idx,Line_Idx) = Tsfc
-
       Solution_Found = .false.
 
-      !--- top down
-!     level_loop: do Level_Idx = Level_Idx_Start, Level_Idx_End
-!         if (Rad_BB_Cloud_Profile(Level_Idx) >  Rad_Toa) then
-!           Pc_Opaque_Cloud(Elem_Idx,Line_Idx) = P_Std_Rtm(Level_Idx - 1)
-!           Zc_Opaque_Cloud(Elem_Idx,Line_Idx) = Z_Prof(Level_Idx - 1)
-!           Tc_Opaque_Cloud(Elem_Idx,Line_Idx) = T_Prof(Level_Idx - 1)
-!           Solution_Found = .true.
-!           exit
-!         endif
-!     enddo Level_Loop
- 
       !--- bottom up
       level_loop: do Level_Idx = Level_Idx_End, Level_Idx_Start+1, -1
 
@@ -802,6 +786,19 @@ subroutine GET_INTERP_PROFILES(ABI_Use_104um_Flag, Nwp_Lon_Idx,Nwp_Lat_Idx, &
    Tsfc = Missing_Value_Real4
    Zsfc = Missing_Value_Real4
 
+  Rad_BB_Cloud_Profile_1 => null()
+  Rad_BB_Cloud_Profile_2 => null()
+  Rad_BB_Cloud_Profile_3 => null()
+  Rad_BB_Cloud_Profile_4 => null()
+  Z_Prof_1 => null()
+  Z_Prof_2 => null()
+  Z_Prof_3 => null()
+  Z_Prof_4 => null()
+  T_Prof_1 => null()
+  T_Prof_2 => null()
+  T_Prof_3 => null()
+  T_Prof_4 => null()
+
    !--- check that needed rtm is populated
    if ((.not. rtm(Nwp_Lon_Idx_x,Nwp_Lat_Idx)%is_set ) .or. &
        (.not. rtm(Nwp_Lon_Idx,Nwp_Lat_Idx_x)%is_set ) .or. &
@@ -845,21 +842,36 @@ subroutine GET_INTERP_PROFILES(ABI_Use_104um_Flag, Nwp_Lon_Idx,Nwp_Lat_Idx, &
      endif
 
      !--- check validity of pointers
-     if ((size(Rad_BB_Cloud_Profile_1) /= Nlevels_Rtm)  .or. &
-         (size(Rad_BB_Cloud_Profile_2) /= Nlevels_Rtm)  .or. &
-         (size(Rad_BB_Cloud_Profile_3) /= Nlevels_Rtm)  .or. &
-         (size(Rad_BB_Cloud_Profile_4) /= Nlevels_Rtm)  .or. &
-         (size(Z_Prof_1) /= Nlevels_Rtm) .or. &
-         (size(Z_Prof_2) /= Nlevels_Rtm) .or. &
-         (size(Z_Prof_3) /= Nlevels_Rtm) .or. &
-         (size(Z_Prof_4) /= Nlevels_Rtm) .or. &
-         (size(T_Prof_1) /= Nlevels_Rtm) .or. &
-         (size(T_Prof_2) /= Nlevels_Rtm) .or. &
-         (size(T_Prof_3) /= Nlevels_Rtm) .or. &
-         (size(T_Prof_4) /= Nlevels_Rtm)) then
+     if (associated(Rad_BB_Cloud_Profile_1) .and. &
+       associated(Rad_BB_Cloud_Profile_2) .and. &
+       associated(Rad_BB_Cloud_Profile_3) .and. &
+       associated(Rad_BB_Cloud_Profile_4) .and. &
+       associated(Z_Prof_1) .and. &
+       associated(Z_Prof_2) .and. &
+       associated(Z_Prof_3) .and. &
+       associated(Z_Prof_4) .and. &
+       associated(T_Prof_1) .and. &
+       associated(T_Prof_2) .and. &
+       associated(T_Prof_3) .and. &
+       associated(T_Prof_4)) then
+         if ((size(Rad_BB_Cloud_Profile_1) /= Nlevels_Rtm)  .or. &
+             (size(Rad_BB_Cloud_Profile_2) /= Nlevels_Rtm)  .or. &
+             (size(Rad_BB_Cloud_Profile_3) /= Nlevels_Rtm)  .or. &
+             (size(Rad_BB_Cloud_Profile_4) /= Nlevels_Rtm)  .or. &
+             (size(Z_Prof_1) /= Nlevels_Rtm) .or. &
+             (size(Z_Prof_2) /= Nlevels_Rtm) .or. &
+             (size(Z_Prof_3) /= Nlevels_Rtm) .or. &
+             (size(Z_Prof_4) /= Nlevels_Rtm) .or. &
+             (size(T_Prof_1) /= Nlevels_Rtm) .or. &
+             (size(T_Prof_2) /= Nlevels_Rtm) .or. &
+             (size(T_Prof_3) /= Nlevels_Rtm) .or. &
+             (size(T_Prof_4) /= Nlevels_Rtm)) then
 
-         Interp_Flag = .false.
-     endif
+             Interp_Flag = .false.
+         endif
+      else
+          Interp_Flag = .false.
+      endif
 
    endif
 

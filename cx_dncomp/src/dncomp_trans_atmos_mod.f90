@@ -40,9 +40,9 @@ contains
       real, intent(in) :: press_sfc
       real, intent(in) :: press_cld
       real, intent(in) :: air_mass
-      real :: gas_coeff_inp(3)
-      real :: ozone_coeff_inp(3)
-      real :: rayleigh_coeff_inp
+      real, intent(in) :: gas_coeff_inp(3)
+      real, intent(in) :: ozone_coeff_inp(3)
+      real, intent(in) :: rayleigh_coeff_inp
    
       real, intent(out) :: trans
       real, intent(out) :: trans_uncert
@@ -84,9 +84,9 @@ contains
       real, intent(in) :: press_sfc(:,:)
       real, intent(in) :: press_cld(:,:)
       real, intent(in) :: air_mass(:,:)
-      real :: gas_coeff_inp(3)
-      real :: ozone_coeff_inp(3)
-      real :: rayleigh_coeff_inp
+      real, intent(in) :: gas_coeff_inp(3)
+      real, intent(in) :: ozone_coeff_inp(3)
+      real, intent(in) :: rayleigh_coeff_inp
    
       real, intent(out) :: trans(:,:)
       real, intent(out) :: trans_uncert(:,:)
@@ -126,9 +126,9 @@ contains
       real, intent(in) :: press_sfc(:)
       real, intent(in) :: press_cld(:)
       real, intent(in) :: air_mass(:)
-      real :: gas_coeff_inp(3)
-      real :: ozone_coeff_inp(3)
-      real :: rayleigh_coeff_inp
+      real, intent(in) :: gas_coeff_inp(3)
+      real, intent(in) :: ozone_coeff_inp(3)
+      real, intent(in) :: rayleigh_coeff_inp
    
       real, intent(out) :: trans(:)
       real, intent(out) :: trans_uncert(:)
@@ -149,9 +149,9 @@ contains
    !
    !
    subroutine set_coeffs ( gas_coeff_inp, ozone_coeff_inp, rayleigh_coeff_inp)
-      real :: gas_coeff_inp(3)
-      real :: ozone_coeff_inp(3)
-      real :: rayleigh_coeff_inp
+      real, intent(in) :: gas_coeff_inp(3)
+      real, intent(in) :: ozone_coeff_inp(3)
+      real, intent(in) :: rayleigh_coeff_inp
    
       gas_coeff = gas_coeff_inp
       ozone_coeff = ozone_coeff_inp

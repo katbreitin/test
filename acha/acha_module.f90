@@ -139,7 +139,6 @@ module AWG_CLOUD_HEIGHT
 
   real, private, PARAMETER:: MISSING_VALUE_REAL4 = -999.0
   integer(kind=int1), private, PARAMETER:: MISSING_VALUE_integer1 = -128_int1
-  !integer(kind=int1), private, PARAMETER:: MISSING_VALUE_integer1 = -128
   integer(kind=int4), private, PARAMETER:: MISSING_VALUE_integer4 = -999
   type(ACHA_SYMBOL_STRUCT), private :: Symbol
 
@@ -199,29 +198,6 @@ module AWG_CLOUD_HEIGHT
   -5.8, -5.9, -5.9, -5.9, -6.1, -7.4, -8.7, &
   -5.2, -5.4, -5.4, -5.5, -5.6, -6.8, -7.8, &
   -4.6, -4.9, -4.9, -5.0, -5.1, -6.2, -7.1/), (/nts,ntcs/))
-
-!----- old 5/2016
-!  real, private, dimension(nts,ntcs), parameter:: ocean_lapse_rate_table = reshape ((/ &
-!                          -7.3, -7.2, -7.3, -7.4, -7.4, -6.8, -6.2, &
-!                          -7.4, -7.3, -7.3, -7.4, -7.4, -7.0, -6.3, &
-!                          -7.5, -7.3, -7.3, -7.5, -7.6, -7.1, -6.5, &
-!                          -7.2, -7.1, -7.3, -7.5, -7.6, -7.2, -6.6, &
-!                          -6.9, -6.8, -7.1, -7.4, -7.5, -7.3, -7.0, &
-!                          -6.6, -6.6, -6.8, -7.0, -7.3, -7.4, -7.4, &
-!                          -6.7, -6.4, -6.4, -6.6, -7.0, -7.3, -7.6, &
-!                          -6.2, -5.8, -5.6, -5.8, -6.3, -6.8, -7.3, &
-!                          -5.8, -5.3, -5.0, -5.2, -5.9, -6.3, -6.8/), (/nts,ntcs/))
-!
-!  real, private, dimension(nts,ntcs), parameter:: land_lapse_rate_table = reshape ((/ &
-!                           -5.2, -5.8, -6.2, -6.2, -6.4, -7.0, -7.7, &
-!                           -5.3, -5.8, -6.2, -6.3, -6.4, -7.1, -7.7, &
-!                           -5.2, -5.7, -6.0, -6.1, -6.4, -7.1, -7.7, &
-!                           -5.0, -5.4, -5.8, -5.9, -6.2, -6.9, -7.7, &
-!                           -5.0, -5.2, -5.5, -5.5, -5.8, -6.8, -7.8, &
-!                           -4.9, -5.0, -5.2, -4.9, -5.2, -6.2, -7.6, &
-!                           -4.7, -4.7, -4.8, -4.5, -4.8, -6.0, -7.5, &
-!                           -3.9, -4.0, -4.2, -3.9, -3.9, -5.3, -7.3, &
-!                           -3.3, -3.4, -3.7, -3.6, -3.5, -5.0, -7.3/), (/nts,ntcs/))
 
   contains 
 
@@ -526,6 +502,7 @@ module AWG_CLOUD_HEIGHT
 
   !--- allocate array for cirrus temperature
   allocate(Fail_Flag(Input%Number_of_Elements,Input%Number_of_Lines))
+  Fail_Flag(:,:) = Symbol%YES
   allocate(Converged_Flag(Input%Number_of_Elements,Input%Number_of_Lines))
   allocate(Temperature_Cirrus(Input%Number_of_Elements,Input%Number_of_Lines))
 
@@ -1010,9 +987,6 @@ module AWG_CLOUD_HEIGHT
     cycle 
   endif
 
-! if (Pass_Idx == Pass_Idx_Max) then
-!    Diag%Array_1(Elem_Idx,Line_Idx) = Tc_Ap
-! endif
   !------------------------------------------------------------------------
   ! modify Tc_Ap and Tc_Uncer for LRC, CIRRUS and SOUNDER options
   !------------------------------------------------------------------------
@@ -1020,13 +994,6 @@ module AWG_CLOUD_HEIGHT
                   Cloud_Type, USE_CIRRUS_FLAG, USE_SOUNDER_VALUES, &
                   Elem_Idx,Line_Idx,Dump_Diag, Lun_Iter_Dump,Temperature_Cirrus, &
                   Tc_Ap,Tc_Ap_Uncer)
-
-! if (Pass_Idx == Pass_Idx_Max) then
-!    Diag%Array_2(Elem_Idx,Line_Idx) = Temperature_Cirrus(Elem_Idx,Line_Idx)
-!    if (ilrc > 0 .and. jlrc > 0) then
-!       Diag%Array_3(Elem_Idx,Line_Idx) = Output%Tc(ilrc,jlrc)
-!    endif
-! endif
 
   !------------------------------------------------------------------------
   !  lower cloud (surface) a prior values
@@ -1203,10 +1170,8 @@ if (FULL_RETRIEVAL) then
 
  else
 
-     !---
      x_Ap_Simple = x_Ap(1:3)
      Sa_Simple = Sa(1:3,1:3)
-     !Sa_Inv_Simple = Sa_Inv(1:3,1:3)  !????
      Singular_Flag =  INVERT_MATRIX(Sa_Simple, Sa_Inv_Simple, Num_Param_Simple)
      if (Singular_Flag == 1) print *, "Cloud Height warning ==> Singular Sa Simple in ACHA", Sa(1,1),Sa(2,2),Sa(3,3)
 
@@ -1291,9 +1256,6 @@ if (FULL_RETRIEVAL) then
   !--- Save the OE to the Output Structure
   call SAVE_X_2_OUTPUT(Elem_Idx,Line_Idx,Symbol,Cloud_Type,Fail_Flag(Elem_Idx,Line_Idx), &
                   x,x_ap,Sa,Sx,AKM,Meta_Data_Flags,Output)
-
-  !--- null profile pointers each time 
-  call NULL_PIX_POINTERS(Input, ACHA_RTM_NWP)
 
   !--- set output packed quality flags
   call SET_OUTPUT_PACKED_QF(Output,Elem_Idx,Line_Idx)
@@ -1419,8 +1381,6 @@ subroutine COMPUTE_APRIORI_BASED_ON_TYPE( &
 
   !--- calipso values (not multiplier on uncer values)
   call COMPUTE_CIRRUS_APRIORI(Ttropo, Latitude, Tc_Ap_Cirrus, Tc_Ap_Uncer_Cirrus)
-
-  !Tc_Ap_Uncer_Cirrus = Tc_Ap_Uncer_Cirrus_Default
 
   !--- initialize with the opaque cloud temperature
   Tc_Ap_Opaque = T110um
@@ -1610,10 +1570,6 @@ subroutine COMPUTE_APRIORI_BASED_ON_PHASE_ETROPO( &
 
     Tc_Ap_Uncer = Emiss_Weight2*Tc_Ap_Uncer_Opaque + &
                   (1.0-Emiss_Weight2)*Tc_Ap_Uncer_Cirrus
-
-    ! ignore weighting
-    !Tc_Ap = Tc_Ap_Cirrus
-    !Tc_Ap_Uncer = Tc_Ap_Uncer_Cirrus
 
     !---- for very thick clouds, we want to ignore the LRC to 
     !---  to maintain spatial structure like overshooting columns
@@ -2316,71 +2272,45 @@ subroutine NULL_PIX_POINTERS(Input, ACHA_RTM_NWP)
 
    ACHA_RTM_NWP%Z_Prof => NULL() 
 
-   if (Input%Chan_On_038um == Symbol%YES) then
      ACHA_RTM_NWP%Atm_Rad_Prof_038um =>  NULL()
      ACHA_RTM_NWP%Atm_Trans_Prof_038um =>  NULL()
      ACHA_RTM_NWP%Black_Body_Rad_Prof_038um => NULL()
-   endif
-   if (Input%Chan_On_062um == Symbol%YES) then
      ACHA_RTM_NWP%Atm_Rad_Prof_062um =>  NULL()
      ACHA_RTM_NWP%Atm_Trans_Prof_062um =>  NULL()
      ACHA_RTM_NWP%Black_Body_Rad_Prof_062um => NULL()
-   endif
-   if (Input%Chan_On_067um == Symbol%YES) then
      ACHA_RTM_NWP%Atm_Rad_Prof_067um =>  NULL()
      ACHA_RTM_NWP%Atm_Trans_Prof_067um =>  NULL()
      ACHA_RTM_NWP%Black_Body_Rad_Prof_067um => NULL()
-   endif
-   if (Input%Chan_On_073um == Symbol%YES) then
      ACHA_RTM_NWP%Atm_Rad_Prof_073um =>  NULL()
      ACHA_RTM_NWP%Atm_Trans_Prof_073um =>  NULL()
      ACHA_RTM_NWP%Black_Body_Rad_Prof_073um => NULL()
-   endif
-   if (Input%Chan_On_085um == Symbol%YES) then
      ACHA_RTM_NWP%Atm_Rad_Prof_085um =>  NULL()
      ACHA_RTM_NWP%Atm_Trans_Prof_085um =>  NULL()
      ACHA_RTM_NWP%Black_Body_Rad_Prof_085um => NULL()
-   endif
-   if (Input%Chan_On_097um == Symbol%YES) then
      ACHA_RTM_NWP%Atm_Rad_Prof_097um =>  NULL()
      ACHA_RTM_NWP%Atm_Trans_Prof_097um =>  NULL()
      ACHA_RTM_NWP%Black_Body_Rad_Prof_097um => NULL()
-   endif
-   if (Input%Chan_On_104um == Symbol%YES) then
       ACHA_RTM_NWP%Atm_Rad_Prof_104um => NULL()
       ACHA_RTM_NWP%Atm_Trans_Prof_104um => NULL()
       ACHA_RTM_NWP%Black_Body_Rad_Prof_104um => NULL()
-   endif
-   if (Input%Chan_On_110um == Symbol%YES) then
       ACHA_RTM_NWP%Atm_Rad_Prof_110um => NULL()
       ACHA_RTM_NWP%Atm_Trans_Prof_110um => NULL()
       ACHA_RTM_NWP%Black_Body_Rad_Prof_110um => NULL()
-   endif
-   if (Input%Chan_On_120um == Symbol%YES) then
       ACHA_RTM_NWP%Atm_Rad_Prof_120um => NULL()
       ACHA_RTM_NWP%Atm_Trans_Prof_120um => NULL()
       ACHA_RTM_NWP%Black_Body_Rad_Prof_120um => NULL()
-   endif
-   if (Input%Chan_On_133um == Symbol%YES) then
       ACHA_RTM_NWP%Atm_Rad_Prof_133um => NULL()
       ACHA_RTM_NWP%Atm_Trans_Prof_133um => NULL()
       ACHA_RTM_NWP%Black_Body_Rad_Prof_133um => NULL()
-   endif
-   if (Input%Chan_On_136um == Symbol%YES) then
       ACHA_RTM_NWP%Atm_Rad_Prof_136um => NULL()
       ACHA_RTM_NWP%Atm_Trans_Prof_136um => NULL()
       ACHA_RTM_NWP%Black_Body_Rad_Prof_136um => NULL()
-   endif
-   if (Input%Chan_On_139um == Symbol%YES) then
       ACHA_RTM_NWP%Atm_Rad_Prof_139um => NULL()
       ACHA_RTM_NWP%Atm_Trans_Prof_139um => NULL()
       ACHA_RTM_NWP%Black_Body_Rad_Prof_139um => NULL()
-   endif
-   if (Input%Chan_On_142um == Symbol%YES) then
       ACHA_RTM_NWP%Atm_Rad_Prof_142um => NULL()
       ACHA_RTM_NWP%Atm_Trans_Prof_142um => NULL()
       ACHA_RTM_NWP%Black_Body_Rad_Prof_142um => NULL()
-   endif
  
 end subroutine NULL_PIX_POINTERS
 !====================================================================
@@ -2388,7 +2318,7 @@ end subroutine NULL_PIX_POINTERS
 !====================================================================
 subroutine SET_ACHA_VERSION(Acha_Version)
    character(len=*):: Acha_Version
-   Acha_Version = "$Id: acha_module.f90 4105 2021-03-12 13:56:43Z heidinger $"
+   Acha_Version = "v1.0"
 end subroutine SET_ACHA_VERSION
 !====================================================================
 ! 
@@ -2448,31 +2378,6 @@ subroutine COMPUTE_TEMPERATURE_CIRRUS(Cld_Type, &
    allocate(Mask1(Num_Elements,Num_Lines))
    allocate(Mask2(Num_Elements,Num_Lines))
 
-!  !---- make source mask
-!  Mask1 = 0_int1
-!  where( (Cld_Type == Symbol%CIRRUS_TYPE .or. &
-!          Cld_Type == Symbol%OPAQUE_ICE_TYPE .or.  &
-!          Cld_Type == Symbol%OVERSHOOTING_TYPE .or.  &
-!          Cld_Type == Symbol%OVERLAP_TYPE .or.  &
-!          Temperature_Cloud < 250.0) .and. &
-!          Temperature_Cloud /= Missing .and. &
-!          Cld_Type /= MISSING_VALUE_integer1 .and. &
-!          Emissivity_Cloud >= Emissivity_Thresh)
-!     Mask1 = 1_int1
-!  end where
-
-!  !---- make target mask
-!  Mask2 = 0_int1
-!  where( (Cld_Type == Symbol%CIRRUS_TYPE .or. &
-!          Cld_Type == Symbol%OVERLAP_TYPE .or. &
-!          Temperature_Cloud < 250.0) .and. &
-!          Temperature_Cloud /= Missing .and. &
-!          Cld_Type /= MISSING_VALUE_integer1 .and. &
-!          Emissivity_Cloud < Emissivity_Thresh)
-!     Mask2 = 1_int1
-!  end where
-
-   !--- andy change 10/2020
    !---- make source mask
    Mask1 = 0_int1
    where( (Cld_Type == Symbol%CIRRUS_TYPE .or. &
@@ -2667,9 +2572,6 @@ subroutine COMPUTE_LOWER_CLOUD_TEMPERATURE(Cld_Type, &
    !---- make output mask
    allocate(Mask2(Num_Elements,Num_Lines))
    Mask2 = 0_int1
-!  where(Cld_Type == Symbol%OVERLAP_TYPE)
-!         Mask2 = 1_int1
-!  end where
 
    where((Cld_Type == Symbol%CIRRUS_TYPE .or. &
          Cld_Type == Symbol%OPAQUE_ICE_TYPE .or.  &
@@ -3345,7 +3247,6 @@ subroutine QUALITY_CONTROL_OUTPUT(Tc, Pc, Zc, Ec, Beta, Surface_Elevation, Surfa
   if (Zc /= MISSING_VALUE_REAL4) then
      Zc_Floor_Temp = ZC_FLOOR
       if (Surface_Elevation >= 0.0) then
-!     if (Surface_Elevation /= MISSING_VALUE_REAL4) then
         Zc_Floor_Temp = Surface_Elevation + Zc_Roundoff_Offset
      endif
      if (Zc < Zc_Floor_Temp .or. Zc > ZC_CEILING) then
@@ -3893,7 +3794,6 @@ subroutine MODIFY_TC_AP(Input,Output,Symbol,Pass_Idx,Pass_Idx_Max,USE_LRC_FLAG,i
                 (Output%Ec(ilrc,jlrc) <= 1.0)) then
              !-- use lrc value but weight uncertainty
              Tc_Ap = Output%Tc(ilrc,jlrc)
-             !Tc_Ap_Uncer = 5.0 + (1.0-Output%Ec(ilrc,jlrc))*Tc_Ap_Uncer
            endif
        endif
 

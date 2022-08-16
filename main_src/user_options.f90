@@ -961,8 +961,6 @@ contains
       !--- for expert modes < 6, turn on channels on sensor
       call CHANNEL_SWITCH_ON (SensorName)
 
-!---> print *, "AFTER CHANNEL_SWITCH_ON ==> ", Sensor%Chan_On_Flag_Default
-
       !--- sub pixel channel set
       call SUB_PIXEL_CHANNEL_ON_SET()
 
@@ -1380,7 +1378,6 @@ contains
          endif
       enddo
 
-      !if ((Sensor%WMO_Id == 270  .or. Sensor%WMO_Id == 271) .and. ACHA%Mode == 'baseline') then
       if (ACHA%Mode == 'baseline') then
          call MESG( "Running AWG Baseline Cloud Height ",level = verb_lev % DEFAULT)
          Mode_Idx = -1
@@ -1589,8 +1586,6 @@ contains
          if ( any ( i == Valid_Channels )) cycle
          Sensor%Chan_On_Flag_Default(i) = 0_int1
       end do
-
-!---> print *, "CHECK_USER_CHANNEL_CHOICES ==> ", Sensor%Chan_On_Flag_Default
 
    end subroutine CHECK_USER_CHANNEL_CHOICES
    ! --------------------------------------------------------------------

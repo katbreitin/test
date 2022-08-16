@@ -127,6 +127,7 @@ module CX_NETCDF4_MOD
     if (status /= nf90_noerr) then
        print *, EXE_PROMPT_NAV , 'ERROR: Failed Open on NetCdf File'
        print*, EXE_PROMPT_NAV ,' filename is: ', nc_file
+       ncid = -1
        return
     endif
  end subroutine open_netcdf
