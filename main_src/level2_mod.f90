@@ -2657,6 +2657,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Actual_Range = [0.0,1200.0]
             Sds_Info(Var_Idx)%Long_Name = "Cloud Water Path from NWP Ancillary Data"
             Sds_Info(Var_Idx)%Units = "g m-2"
+            if (allocated(NWP_PIX%Cwp)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => NWP_PIX%Cwp
          case("cld_iwp_nwp")
             Sds_Info(Var_Idx)%Standard_Name = "cld_iwp_nwp"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,1200.0]
