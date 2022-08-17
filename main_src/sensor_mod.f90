@@ -1294,7 +1294,7 @@ module SENSOR_MOD
         Sensor%Platform_Name = 'GOES-18'
         Sensor%Spatial_Resolution_Meters = 2000
         Sensor%WMO_Id = 272
-        Sensor%Instr_Const_File = 'goes_18_instr_fake.dat'
+        Sensor%Instr_Const_File = 'goes_18_instr.dat'
         Sensor%Geo_Sub_Satellite_Longitude = -137.2   ! -137.2 - not projection sub-point
         Sensor%Geo_Sub_Satellite_Latitude = 0.0
         call COMPUTE_GOES_RU_STATIC_NAV_FILE_NAME()
