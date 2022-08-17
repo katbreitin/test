@@ -602,8 +602,8 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
    call READ_NETCDF_DIMENSION_2D(Group_Id2,'delta_lat_N_dem', Dim_2d)
 
    num_scans = Dim_2d(2)/24
-!print *, 'Dim_2d ',Dim_2d, num_scans
-!stop
+
+
    ! status = nf90_inq_varid(group_id1, trim('num_scans'), nc_var_id)
    ! call read_netcdf_attribute_real(gropu_id1, nc_var_id, 'CFAC', attr)
  
@@ -659,7 +659,9 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
   
   call READ_AND_UNSCALE_NETCDF_2D(Group_Id2, Start2d, Stride2d, Count2d, &
                                 "longitude", longitude_anchor)
-                                
+     
+     
+                             
  ! - MetImage is longitude form 0 to 360.
  ! - fix 2020/06/08 AW
  longitude_anchor = modulo((longitude_anchor+180.),360.)-180.                               
@@ -680,6 +682,7 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
                                 "solar_zenith",  solar_zenith_anchor)                                                             
  
  
+ 
   ! - compute cartesian coordinates
   cart_n = SEMI_MAJOR/SQRT(1-ECCENTRICITY * (2. - ECCENTRICITY ) * sin ( latitude_anchor*DTOR) ** 2.)
   cart_x = cart_N * cos ( latitude_anchor*DTOR) * cos ( longitude_anchor*DTOR )
@@ -691,20 +694,25 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
       cart_y = -999.
       cart_z = -999.
   end where
-
+  
  
-   
-   do kk_act = ny_start, ny_start + ny - 1  ! 3144
-       i_zone_act = kk_act /  zone_size_act + 1
-       i_rel_act = mod( kk_act-1,zone_size_act)
+ 
+
+   do kk_alt = ny_start, ny_start + ny - 1  ! 200 (seg-size)
+  
+       i_zone_alt = (kk_alt -1) /  zone_size_alt + 1 
+       i_rel_alt = mod( kk_alt-1,zone_size_alt)
+       i_scan = (kk_alt-1) / num_pix_alt  
        
-       do kk_alt = nx_start ,nx_start + nx - 1 ! 4200
-         
-          i_zone_alt = kk_alt / zone_size_alt + 1
-          i_rel_alt = mod( kk_alt-1, zone_size_alt)
-          i_scan = kk_alt / num_pix_alt 
-         
+       do kk_act = nx_start ,nx_start + nx - 1 ! 3144
+      
+          i_zone_act = (kk_act-1) / zone_size_act + 1
+          i_rel_act = mod( kk_act-1, zone_size_act)
+          
+          ! print*,kk_alt,kk_act,i_zone_alt,i_zone_act,i_rel_alt,i_rel_act
+        
          !- transformation to Cartesian is needed to avoid dateline trouble 
+         
           this_x = eps_bilin_interp ( &  
             cart_x &
               ,i_zone_alt  &
@@ -714,7 +722,10 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
               , i_rel_alt &
               ,zone_size_act &
               ,zone_size_alt )
-              
+          
+         ! stop
+          
+          
            this_y = eps_bilin_interp ( &  
             cart_y &
               ,i_zone_alt  &
@@ -724,7 +735,8 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
               , i_rel_alt &
               ,zone_size_act &
               ,zone_size_alt )
-              
+             
+                
            this_z = eps_bilin_interp ( &  
             cart_z &
               ,i_zone_alt  &
@@ -741,23 +753,31 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
           phi = atan(this_z * SEMI_major/ (p * SEMI_minor))  
           
         
-          xx = kk_alt - nx_start + 1
-          yy = kk_act - ny_start + 1
+          xx = kk_act - nx_start + 1
+          yy = kk_alt - ny_start + 1
           
+         
           
           this % longitude(xx,yy) = (2 * ATAN(this_y/(this_x + p)))/DTOR
           
           this % latitude(xx,yy) =  ((ATAN((this_z  + e_strich ** 2. * SEMI_MINOR * sin(phi *DTOR ) ** 3.) &
                                                     /(p- ECCENTRICITY ** 2. * ACOS (phi *DTOR) **3.)))) / DTOR
              
-          
+         
+       !  print*,xx,yy,this % longitude(xx,yy),this % longitude(xx,yy)
+       !  if (kk_alt .gt. 28 .and. kk_act .gt. 28) stop
+              
           if (this_x .eq. -999. .or. this_y .eq. -999. .or. this_z .eq. -999.) then
               this % longitude(xx,yy) = -999.
               this % latitude(xx,yy) = -999.
+              print*,this_x,this_y, this_z
+              print*,xx,yy
+              print*,kk_act,kk_alt
+              stop
           end if
           
                                                   
-          !print*, xx,yy,this % longitude(xx,yy) , this % latitude(xx,yy) 
+         ! print*, xx,yy,this % longitude(xx,yy) , this % latitude(xx,yy) 
           
           ! simpler version                                                        
           !this % longitude(xx,yy) =  ATAN2(this_y,this_x) / DTOR  
@@ -784,23 +804,23 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
               , i_zone_act &
               , i_rel_act &
               , i_rel_alt &
-              ,zone_size_act &
-              ,zone_size_alt )
-              
-           this % solar_azimuth(xx,yy) = eps_bilin_interp ( &  
-            solar_azimuth_anchor &
-              ,i_zone_alt  &
-              , i_scan &
-              , i_zone_act &
-              , i_rel_act &
-              , i_rel_alt &
-              ,zone_size_act &
-              ,zone_size_alt )
-              
-             this % solar_zenith(xx,yy) = eps_bilin_interp ( &  
-           solar_zenith_anchor &
-              ,i_zone_alt  &
-              , i_scan &
+          ,zone_size_act &
+          ,zone_size_alt )
+         
+       this % solar_azimuth(xx,yy) = eps_bilin_interp ( &  
+        solar_azimuth_anchor &
+          ,i_zone_alt  &
+          , i_scan &
+          , i_zone_act &
+          , i_rel_act &
+          , i_rel_alt &
+          ,zone_size_act &
+          ,zone_size_alt )
+         
+         this % solar_zenith(xx,yy) = eps_bilin_interp ( &  
+       solar_zenith_anchor &
+          ,i_zone_alt  &
+          , i_scan &
               , i_zone_act &
               , i_rel_act &
               , i_rel_alt &
@@ -808,11 +828,14 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
               ,zone_size_alt )          
               
        end do
-       
+       !stop
   end do     
-  
+ 
   !print*,minval(this % longitude), maxval(this % longitude)
   !print*,minval(this % latitude), maxval(this % latitude)
+  
+  
+  
  
   
   this % is_calculated = .TRUE.
@@ -855,23 +878,36 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
   
    
    
-   box_a = [i_zone_alt + i_scan,i_zone_act]   
-   box_b = [i_zone_alt + i_scan,i_zone_act+1]  
-   box_c = [i_zone_alt + i_scan+1,i_zone_act+1]  
-   box_d = [i_zone_alt + i_scan+1,i_zone_act]  
-  
+   box_a = [i_zone_act,i_zone_alt + i_scan]   
+   box_b = [i_zone_act+1,i_zone_alt + i_scan]  
+   box_c = [i_zone_act+1,i_zone_alt + i_scan+1]  
+   box_d = [i_zone_act,i_zone_alt + i_scan+1] 
+    
+ ! print*,box_a
+ ! print*,box_b
+ ! print*,box_c
+ ! print*,box_d
    size_arr = shape(val_array)
   
    
    box_a(1) = minval([box_a(1),size_arr(1)])
+   box_a(2) = minval([box_a(2),size_arr(2)])
    box_b(1) = minval([box_b(1),size_arr(1)])
    box_b(2) = minval([box_b(2),size_arr(2)])
-   box_c(2) = minval([box_c(2),size_arr(2)])
    box_c(1) = minval([box_c(1),size_arr(1)])
+   box_c(2) = minval([box_c(2),size_arr(2)])
    box_d(1) = minval([box_d(1),size_arr(1)])
+   box_d(2) = minval([box_d(2),size_arr(2)])
    
-   
-   
+   box_a(1) = maxval([box_a(1),1])
+   box_a(2) = maxval([box_a(2),1])
+   box_b(1) = maxval([box_b(1),1])
+   box_b(2) = maxval([box_b(2),1])
+   box_c(1) = maxval([box_c(1),1])
+   box_c(2) = maxval([box_c(2),1])
+   box_d(1) = maxval([box_d(1),1])
+   box_d(2) = maxval([box_d(2),1])
+  
    tbl(1,1) = val_array(box_a(1),box_a(2))
    tbl(2,1) = val_array(box_b(1),box_b(2))
    tbl(2,2) = val_array(box_c(1),box_c(2))
@@ -879,13 +915,24 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
   
    r  = i_rel_act/(1.*zone_size_act)
    s = i_rel_alt/(1.*zone_size_alt)
+   
+ 
+  ! print*,r,s
+  ! print*,tbl
    eps_bilin_interp =  ( 1.0 - r ) * ( 1.0 - s ) * tbl( 1 , 1 ) &
          & + r * ( 1.0 - s )          * tbl( 2 , 1 ) &
          & + (1.0 - r ) * s           * tbl( 1 , 2 ) &
          & + r * s                    * tbl( 2 , 2 ) 
-        
+     
    if ( count ( tbl .eq. -999) .gt. 0) then
+      print*,tbl
+      print*,box_a
+      print*,box_b
+      print*,box_c
+      print*,box_d
+      print*,size_arr
       eps_bilin_interp =   -999.
+      stop
    end if
   
    end function eps_bilin_interp
