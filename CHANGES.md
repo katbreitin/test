@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file
 
 ## [v1.0.0]
 
+- UMD surface emission option fixed
 - Shadow mask disabled
 - Greatly increased processing speed
 - Added support for GOES-18

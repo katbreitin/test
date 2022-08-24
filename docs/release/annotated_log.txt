@@ -568,6 +568,159 @@ Date:   Fri Jun 24 15:18:51 2022 +0200
 
     UMD fix
 
+        NOTE: Before, land emissivity was missing if sfc_emiss_option==0 (UMD)
+              This commit fixes that (bug predates git repo), so surface emissivity is no longer missing
+              The change in surface emissivity affects many products. 
+              refl_sfc_white_sky_0_65um_nom differs in Himawari-8 AHI and GOES-16, and GOES-17 ABI
+              This is due to uninitialzed data outside cropped region, these vars are garbage until 6d64b52 anyway.
+
+           ==================== l1b ====================
+
+           ==================== geo ====================
+                              glint_mask differs in multiple tests
+
+           ==================== ancil ====================
+           refl_sfc_white_sky_0_65um_nom differs in multiple tests
+           refl_sfc_white_sky_0_86um_nom differs in multiple tests
+           refl_sfc_white_sky_1_60um_nom differs in multiple tests
+           refl_sfc_white_sky_2_10um_nom differs in multiple tests
+                  ndvi_sfc_white_sky_nwp differs in multiple tests
+
+           ==================== nwp ====================
+
+           ==================== rtm ====================
+               temp_11_0um_nom_clear_sky differs in multiple tests
+               temp_12_0um_nom_clear_sky differs in multiple tests
+               temp_3_75um_nom_clear_sky differs in multiple tests
+                temp_8_5um_nom_clear_sky differs in multiple tests
+
+           ==================== ecm2 ====================
+                          cloud_fraction differs in multiple tests
+              cloud_fraction_uncertainty differs in multiple tests
+                              cloud_mask differs in multiple tests
+                       cloud_mask_binary differs in multiple tests
+          cloud_mask_test_packed_results differs in multiple tests
+                             cloud_phase differs in multiple tests
+                       cloud_probability differs in multiple tests
+           cloud_probability_uncertainty differs in multiple tests
+                              cloud_type differs in multiple tests
+                  conv_cloud_probability differs in multiple tests
+                   ice_cloud_probability differs in multiple tests
+                              smoke_mask differs in multiple tests
+                 water_cloud_probability differs in multiple tests
+
+           ==================== acha ====================
+                               acha_info differs in multiple tests
+                     acha_inversion_flag differs in multiple tests
+                            acha_quality differs in multiple tests
+                       cld_altitude_acha differs in multiple tests
+                           cld_beta_acha differs in multiple tests
+                          cld_emiss_acha differs in multiple tests
+                    cld_emiss_acha_uncer differs in multiple tests
+                         cld_height_acha differs in multiple tests
+                    cld_height_base_acha differs in multiple tests
+                     cld_height_eff_acha differs in multiple tests
+                   cld_height_uncer_acha differs in multiple tests
+                            cld_opd_acha differs in multiple tests
+                      cld_opd_uncer_acha differs in multiple tests
+                          cld_press_acha differs in multiple tests
+                      cld_press_eff_acha differs in multiple tests
+                    cld_press_uncer_acha differs in multiple tests
+                           cld_reff_acha differs in multiple tests
+                           cld_temp_acha differs in multiple tests
+                       cld_temp_eff_acha differs in multiple tests
+                     cld_temp_lower_acha differs in multiple tests
+                     cld_temp_prior_acha differs in multiple tests
+                     cld_temp_uncer_acha differs in multiple tests
+                         cloud_type_acha differs in multiple tests
+                               cost_acha differs in multiple tests
+                           goodness_acha differs in multiple tests
+                           ice_prob_acha differs in multiple tests
+                     ice_prob_uncer_acha differs in multiple tests
+                             latitude_pc differs in multiple tests
+                            longitude_pc differs in multiple tests
+               lower_cld_temp_prior_acha differs in multiple tests
+                   supercooled_prob_acha differs in multiple tests
+            wind_direction_cloud_top_nwp differs in multiple tests
+                wind_speed_cloud_top_nwp differs in multiple tests
+
+           ==================== acba ====================
+                       cld_base_altitude differs in multiple tests
+                           cld_geo_thick differs in multiple tests
+                         cld_height_base differs in multiple tests
+                           cld_temp_base differs in multiple tests
+                 lower_cld_base_altitude differs in multiple tests
+
+           ==================== dcomp ====================
+                              cdnc_dcomp differs in multiple tests
+                           cld_cwp_dcomp differs in multiple tests
+                           cld_opd_dcomp differs in multiple tests
+                         cld_opd_dcomp_3 differs in multiple tests
+                       cld_opd_dcomp_unc differs in multiple tests
+                          cld_reff_dcomp differs in multiple tests
+                        cld_reff_dcomp_3 differs in multiple tests
+                      cld_reff_dcomp_fit differs in multiple tests
+                      cld_reff_dcomp_unc differs in multiple tests
+                 cloud_albedo_0_65um_nom differs in multiple tests
+           cloud_transmission_0_65um_nom differs in multiple tests
+                              dcomp_info differs in multiple tests
+                           dcomp_quality differs in multiple tests
+                              hcld_dcomp differs in multiple tests
+                        insolation_dcomp differs in multiple tests
+                insolation_diffuse_dcomp differs in multiple tests
+                               iwc_dcomp differs in multiple tests
+                               lwc_dcomp differs in multiple tests
+                               rain_rate differs in multiple tests
+              refl_0_65um_nom_asym_dcomp differs in multiple tests
+
+           ==================== sst ====================
+
+           ==================== ccl ====================
+                                   ccl_1 differs in multiple tests
+                                   ccl_2 differs in multiple tests
+                                   ccl_3 differs in multiple tests
+                                   ccl_4 differs in multiple tests
+                                   ccl_5 differs in multiple tests
+                          ccl_layer_flag differs in multiple tests
+                              conv_ccl_1 differs in multiple tests
+                              conv_ccl_2 differs in multiple tests
+                              conv_ccl_3 differs in multiple tests
+                              conv_ccl_4 differs in multiple tests
+                              conv_ccl_5 differs in multiple tests
+                     conv_ccl_layer_flag differs in multiple tests
+                     conv_cloud_fraction differs in multiple tests
+                       supercooled_ccl_2 differs in multiple tests
+                       supercooled_ccl_3 differs in multiple tests
+                       supercooled_ccl_4 differs in multiple tests
+                       supercooled_ccl_5 differs in multiple tests
+              supercooled_ccl_layer_flag differs in multiple tests
+              supercooled_cloud_fraction differs in multiple tests
+
+           ==================== misc ====================
+                        adj_pix_cld_mask differs in multiple tests
+               beta_11um_12um_tropopause differs in multiple tests
+               beta_11um_85um_tropopause differs in multiple tests
+                      cld_emiss_splitwin differs in multiple tests
+                      cld_press_splitwin differs in multiple tests
+                          cloud_phase_ir differs in multiple tests
+                 cloud_phase_uncertainty differs in multiple tests
+                           cloud_type_ir differs in multiple tests
+                    csbt_mask_11_0um_nom differs in multiple tests
+                    csbt_mask_12_0um_nom differs in multiple tests
+                     csbt_mask_8_5um_nom differs in multiple tests
+                  emiss_3_75um_nom_clear differs in multiple tests
+                    emiss_sfc_11_0um_nom differs in multiple tests
+                    emiss_sfc_3_75um_nom differs in multiple tests
+                     emiss_sfc_8_5um_nom differs in multiple tests
+                  emiss_tropo_11_0um_nom differs in multiple tests
+                  emiss_tropo_12_0um_nom differs in multiple tests
+                  emiss_tropo_3_75um_nom differs in multiple tests
+                   emiss_tropo_8_5um_nom differs in multiple tests
+               refl_3_75um_nom_clear_sky differs in multiple tests
+           surface_temperature_retrieved differs in multiple tests
+
+
+
 commit 1ffce1d4f13098e6fa69a5454dee7c77ffda1907
 Author: Coda Phillips <coda.phillips@wisc.edu>
 Date:   Mon Jun 20 15:22:57 2022 +0000
