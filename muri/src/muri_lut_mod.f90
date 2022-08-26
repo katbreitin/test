@@ -92,7 +92,6 @@ contains
       integer ::  shp_6d(6)
       integer :: i_ws,i_ws_a(1)
       integer :: i_opt,i_mode
-      logical :: file_exist
       
       if ( present(path)) then
         path_local = trim(path)
@@ -111,23 +110,17 @@ contains
        ! the following geo parameters are the same for all bands.
        ! (ABI band 1 is not using in over ocean retrieval) 
         print*,lut_file
-        INQUIRE ( file = lut_file, EXIST=file_exist)  
-        
-        if ( .not. file_exist) then
-        
-          print*,'LUT file does not exist .. stopping'
-          stop
-        end if
+          
      
         istatus = cx_sds_read ( trim(lut_file),'Solar_Zenith_Angles', temp_2d_real)
         allocate ( this %sol(size(temp_2d_real(:,1)) ), source = temp_2d_real(:,1))
-
+	print*,this%sol
         istatus = cx_sds_read ( trim(lut_file),'View_Zenith_Angles',temp_2d_real )
         allocate ( this %sat(size(temp_2d_real(:,1))), source = temp_2d_real(:,1))
-       
+         print*,this%sat 
         istatus = cx_sds_read ( trim(lut_file),'Relative_Azimuth_Angles', temp_2d_real)
         allocate ( this %azi(size(temp_2d_real(:,1))), source = temp_2d_real(:,1))
-          
+         print*,this%azi   
         istatus = cx_sds_read ( trim(lut_file),'Wind_Speed', temp_2d_real)
        
         allocate ( this %ws(size(temp_2d_real(:,1))), source = temp_2d_real(:,1))
@@ -138,7 +131,7 @@ contains
 	
 	allocate ( this %aot_550nm(size(temp_2d_real(1,:))), source = temp_2d_real(1,:))
         this % aot_550nm(:) = temp_2d_real (1,:) /100.  ! -- new scale factor with v03
-       
+        print*,'aot',this%aot_550nm
         
       
           
@@ -222,9 +215,9 @@ contains
       
        end do
       
-       !print*,'B2 refl check',this%app_refl(5,5,5,2,2,:,1)
-       !print*,'B4 refl',this%app_refl(5,5,5,2,4,:,1)
-       !print*,'rayleigh refl',this%app_refl(5,5,5,2,4,1,1)
+       print*,'B2 refl check',this%app_refl(5,5,5,2,2,:,1)
+       print*,'B4 refl',this%app_refl(5,5,5,2,4,:,1)
+       print*,'rayleigh refl',this%app_refl(5,5,5,2,4,1,1)
        !print*,'this % opt_ocean_x',this % opt_ocean_x
        this % is_read = .true.
       

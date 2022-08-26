@@ -123,13 +123,13 @@ contains
       character :: band_string
       integer ::  shp_5d(5)
       integer :: band_arr(3) ! 3 bands 1,3,6
-		  integer :: fine_mode_aerosol_selection
+		integer :: fine_mode_aerosol_selection
 		
-		  band_arr(:)=(/1,3,6/)
+		band_arr(:)=(/1,3,6/)
       
       if ( present(path)) then
         path_local = trim(path)
-      else
+       else
        !path_local = trim('/apollo/cloud/Ancil_Data/clavrx_ancil_data/static/luts/muri/')
         path_local = trim('/apollo/cloud/scratch/mino/MURI_aerosol_LUT/')
       end if 
@@ -140,29 +140,37 @@ contains
       
         land_lut_file =  trim(path_local)//trim('/AHI_Land_Aerosol_LUT_RB1_v212A.hdf')
         
+        print*,land_lut_file
+		  
+		 
         istatus = cx_sds_read ( trim(land_lut_file),'Solar_Zenith_Angles', temp_2d_real)
         allocate ( this %sol(size(temp_2d_real(:,1)) ), source = temp_2d_real(:,1))
-		            
+		   
+         
         istatus = cx_sds_read ( trim(land_lut_file),'View_Zenith_Angles',temp_2d_real )
         allocate ( this %sat(size(temp_2d_real(:,1))), source = temp_2d_real(:,1))
           
         istatus = cx_sds_read ( trim(land_lut_file),'Relative_Azimuth_Angles', temp_2d_real)
         allocate ( this %azi(size(temp_2d_real(:,1))), source = temp_2d_real(:,1))
-       ! print*,'azi',this %azi
+        print*,'azi',this %azi
         
         istatus = cx_sds_read ( trim(land_lut_file),'AOT_at_550nm',temp_2d_real)
         ! - add scale factor  Jan 2019 AW
         allocate ( this %aot_550nm(size(temp_2d_real(1,:))), source = temp_2d_real(1,:))
         this % aot_550nm(:) = temp_2d_real (1,:) /100.  ! -- new scale factor with v03
-			  
+	
+		  
        ! Aerosol map ( longitude , latitude , season)  
-	      istatus = cx_sds_read ( trim(land_lut_file),'Aerosol_land_map', temp_3d_real)
+	istatus = cx_sds_read ( trim(land_lut_file),'Aerosol_land_map', temp_3d_real)
 		 
-	      !print*,shape(temp_3d_real)
+	!print*,shape(temp_3d_real)
 		  
         allocate ( this %aerosol_land_map(4,180,360))
-	      this %aerosol_land_map(:,:,:)=temp_3d_real
- 
+	this %aerosol_land_map(:,:,:)=temp_3d_real
+        
+        
+      
+          
         do band = 1,N_BANDS 
           write ( band_string, "(i1)") band_arr(band)
          
@@ -176,39 +184,39 @@ contains
           end if
 
         
-          ! Atmospheric Path reflctance 
+      ! Atmospheric Path reflctance 
           istatus = cx_sds_read ( trim(land_lut_file), 'Path_Reflectance_land' , temp_5d_real)
        
         
           if ( band .eq. 1) then
-            if ( .not. allocated( this%path_refl)) then
-              shp_5d = shape(temp_5d_real)
-              n_sol=  shp_5d(1) 
-              n_sat = shp_5d(2) 
-              n_azi = shp_5d(3) 
-              n_opt = shp_5d(4) 
-              this % n_opt = n_opt 
-              n_mode = shp_5d(5) 
-              allocate ( this%path_refl(n_sol,n_sat,n_azi,N_opt,N_bands,N_mode))
-            end if  
-            this%path_refl = -999.  
-          end if
+          if ( .not. allocated( this%path_refl)) then
+            shp_5d = shape(temp_5d_real)
+            n_sol=  shp_5d(1) 
+            n_sat = shp_5d(2) 
+            n_azi = shp_5d(3) 
+            n_opt = shp_5d(4) 
+            this % n_opt = n_opt 
+            n_mode = shp_5d(5) 
+            allocate ( this%path_refl(n_sol,n_sat,n_azi,N_opt,N_bands,N_mode))
+          end if  
+          this%path_refl = -999.  
+        end if
          
-          !print*,shape(temp_5d_real)
+       !print*,shape(temp_5d_real)
 		 
-          this%path_refl(:,:,:,:,band,:) =  0.0001 * temp_5d_real(:,:,:,:,:)
+       this%path_refl(:,:,:,:,band,:) =  0.0001 * temp_5d_real(:,:,:,:,:)
 		 
 		 
-          ! Transmission up T_up 
+      ! Transmission up T_up 
           istatus = cx_sds_read ( trim(land_lut_file), 'Total_Scat_Trans_Up_land' , temp_5d_real)
      
-          if ( band .eq. 1) then
-            allocate ( this%T_up(n_sol,n_sat,n_azi,N_opt,N_bands,N_mode)) 
-            this%T_up = -999.  
-          end if
-          this%T_up(:,:,:,:,band,:) =  0.0001 * temp_5d_real(:,:,:,:,:)
+        if ( band .eq. 1) then
+        allocate ( this%T_up(n_sol,n_sat,n_azi,N_opt,N_bands,N_mode)) 
+          this%T_up = -999.  
+        end if
+       this%T_up(:,:,:,:,band,:) =  0.0001 * temp_5d_real(:,:,:,:,:)
 		 
-          ! Transmission down T_dn 
+     ! Transmission down T_dn 
           istatus = cx_sds_read ( trim(land_lut_file), 'Total_Scat_Trans_Dn_land' , temp_5d_real)
      
         if ( band .eq. 1) then
