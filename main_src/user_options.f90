@@ -1147,7 +1147,7 @@ contains
       
       case ('GOES-RU-IMAGER')
          filename  = 'ecm2_lut_abhi_default.nc'
-      case ('MODIS','METIMAGE')
+      case ('MODIS','METIMAGE','MERSI-2')
          filename  = 'ecm2_lut_modis_default.nc' 
       case ('VIIRS','VIIRS-NASA','VIIRS-NASA-HRES','VIIRS-IFF','VGAC')
          filename  = 'ecm2_lut_viirs_default.nc' 
