@@ -187,7 +187,7 @@ subroutine READ_FY3D_DATA (Segment_Number, GEO1K_File, Error_Out)
         else
            call H5READDATASET (trim(Image%Level1b_Path)//trim(GEO1K_File), &
                       trim(Setname_Geo_List(I_Geo)), Offset_band, Dim_Seg, R2d_Buffer)
-           if (Scaled_Geo(I_Geo) .eq. 1) then
+        !   if (Scaled_Geo(I_Geo) .eq. 1) then
               call H5READATTRIBUTE (trim(Image%Level1b_Path)//trim(GEO1K_File), &
                       trim(Setname_Geo_List(I_Geo)//'/Slope'), Scale_Factor)
               call H5READATTRIBUTE (trim(Image%Level1b_Path)//trim(GEO1K_File), &
@@ -197,7 +197,10 @@ subroutine READ_FY3D_DATA (Segment_Number, GEO1K_File, Error_Out)
               where ( R2d_Buffer .ne. Fill_Value)
                  R2d_Buffer = (R2d_Buffer * Scale_Factor) + Add_Offset
               endwhere
-           endif
+              where ( R2d_Buffer .eq. Fill_Value)
+                 R2d_Buffer = Missing_Value_Real4 
+              endwhere
+        !  endif
         endif
 
         ! save read data to output in correct format
