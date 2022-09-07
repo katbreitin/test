@@ -150,7 +150,7 @@ CONTAINS
     erstat = 0
     if (ios0 /= 0) then
       erstat = 19
-      call MESG( "ABI instrument constants open failed",level = verb_lev % ERROR)
+      call MESG( "ABI instrument constants open failed "//trim(Instr_Const_file),level = verb_lev % ERROR)
       stop 19
     end if
     read(unit=Instr_Const_lun,fmt="(a7)") sat_name

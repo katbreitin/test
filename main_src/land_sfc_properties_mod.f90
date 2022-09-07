@@ -225,9 +225,11 @@ module LAND_SFC_PROPERTIES_MOD
  
     INTEGER:: Istatus 
 
+    where(space_mask)
+        land = missing_value_int1
+    endwhere
     
     if (ALL(space_mask)) then
-      land = missing_value_int1
       return
     end if
   
@@ -384,9 +386,11 @@ module LAND_SFC_PROPERTIES_MOD
     INTEGER:: Istatus
 
     ! - executable
+    where(space_mask)
+        land = missing_value_int2
+    endwhere
     
     if ( ALL( space_mask)) then
-      land = missing_value_int2
       return
     end if
  

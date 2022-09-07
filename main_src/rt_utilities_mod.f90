@@ -128,7 +128,7 @@ module RT_UTILITIES_MOD
        SOLAR_CH20_NU
       
    use RTM_COMMON_MOD, only: &
-       Nlevels_Rtm &
+       NLEVELS_RTM &
       , Rtm &
       , P_Std_Rtm &
       , T_Std_Rtm &
@@ -162,7 +162,7 @@ module RT_UTILITIES_MOD
    public::  GET_PIXEL_NWP_RTM 
            
             
-    integer, parameter, public:: Rtm_Nvzen = 50       
+    integer, parameter, public:: RTM_NVZEN = 50       
 
     integer, parameter :: Chan_Idx_Min = 1
     integer, parameter :: Chan_Idx_Max = 44
@@ -217,8 +217,8 @@ contains
       real:: Opd_Layer
       real:: Trans_Layer
       real:: Trans_Total
-      real :: trans_local (101)
-      real :: t_prof_local(101)
+      real :: trans_local (NLEVELS_RTM)
+      real :: t_prof_local(NLEVELS_RTM)
       
 
       !--- upwelling profiles
@@ -307,6 +307,8 @@ contains
    !  Called in process_clavrx
    !      CHANGED to RTTOV Sep 2020
    !
+   !   This is called in 
+   !
    !
    !====================================================================
    subroutine GET_PIXEL_NWP_RTM(Line_Idx_Min,Num_Lines)
@@ -333,7 +335,7 @@ contains
       integer :: n_val_pixels
       integer :: ii_pixel
       real :: geo_2way_term
-      integer :: cnt
+      
       
       real, dimension(NLevels_Rtm) ::  &
                     T_Prof_Rtm, &
@@ -342,8 +344,29 @@ contains
                      Ozmr_Prof_Rtm, &
                      Tpw_Prof_Rtm
       
-   
-      cnt = 0
+      
+      
+      logical, allocatable :: is_valid_pixel(:,:)
+      
+      
+      ! ===================   EXECUTABLE START ======================================
+      
+      allocate ( is_valid_pixel (1:Image%Number_Of_Elements,Line_Idx_Min: (Num_Lines + Line_Idx_Min - 1))) 
+      ! make a check if we have at least one pixel which is not bad or space
+      is_valid_pixel = Bad_Pixel_Mask .NE. sym%YES .and. .not. Geo%Space_Mask 
+      
+    
+      
+      if ( .not. ANY ( is_valid_pixel)) then 
+        
+         !call MESG('only bad pixels at RTM entree point ...',level = verb_lev %DEFAULT)
+         return
+      
+      end if
+      
+      
+      
+      
       ! - find RTM pixels from NWP and allocate rtm (lon,lat) % d (zen) )
       !  these pixels are the used for RTTOV
       !--- loop over pixels in segment
@@ -352,7 +375,7 @@ contains
             
             if (Bad_Pixel_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle
             if (Geo%Space_Mask(Elem_Idx,Line_Idx) ) cycle
-            
+           
             !--- compute viewing zenith bin for Rtm calculation
             Zen_Idx_Rtm(Elem_Idx,Line_Idx) =  &
               max(1,min(Rtm_Nvzen,ceiling(Geo%Coszen(Elem_Idx,Line_Idx)/Rtm_Vza_Binsize)))
@@ -448,24 +471,36 @@ contains
       rtm_inp % ancil_path = trim(Ancil_Data_Dir)
       n_val_pixels = 0 ! counter
       nwp_size_arr = shape(rtm)
+     
       do x_nwp = 1, nwp_size_arr(1)
         do y_nwp =1, nwp_size_arr(2)
           if ( rtm(x_nwp,y_nwp) % is_allocated ) then
-              
-              do z_nwp =1,50 
+             
+              do z_nwp =1,RTM_NVZEN
                 if ( rtm(x_nwp,y_nwp) % d(z_nwp) % is_allocated )  n_val_pixels = n_val_pixels + 1
               end do  
+             
           end if
         end do
       end do
       ! print*,'Number of needed RTTOV/PFAAST Clear-Sky Transmission calculations: ',n_val_pixels
       
+      ! - useless in n_val_pixels is 0
       
-      allocate (rtm_inp % p_std( 101,n_val_pixels))
-      allocate (rtm_inp % t_prof( 101,n_val_pixels))
-      allocate (rtm_inp % w_prof( 101,n_val_pixels))
-      allocate (rtm_inp % o_prof( 101,n_val_pixels))
-      allocate (rtm_inp % tpw_prof( 101,n_val_pixels))
+      if ( n_val_pixels .eq. 0) then
+         print*, 'Number of needed RTM pixels is ZERO ...'
+         print*, ' check file and line ', __FILE__, __LINE__
+         print*, ' this is an error this should not appear'
+         print*,'please inform andi.walther@ssec.wisc.edu'
+         stop
+      
+      end if
+      
+      allocate (rtm_inp % p_std( NLEVELS_RTM,n_val_pixels))
+      allocate (rtm_inp % t_prof( NLEVELS_RTM,n_val_pixels))
+      allocate (rtm_inp % w_prof( NLEVELS_RTM,n_val_pixels))
+      allocate (rtm_inp % o_prof( NLEVELS_RTM,n_val_pixels))
+      allocate (rtm_inp % tpw_prof( NLEVELS_RTM,n_val_pixels))
       allocate (rtm_inp % sat_bin( n_val_pixels))
       
       ! - populate RTTOV input
@@ -473,7 +508,7 @@ contains
       do x_nwp = 1, nwp_size_arr(1)
             do y_nwp =1, nwp_size_arr(2)
               if ( rtm(x_nwp,y_nwp) % is_allocated ) then
-                do z_nwp =1,50 
+                do z_nwp =1,RTM_NVZEN 
                   if ( rtm(x_nwp,y_nwp) % d(z_nwp) % is_allocated ) then
                   
                     n_val_pixels = n_val_pixels + 1
@@ -497,12 +532,12 @@ contains
           select case ( ch(Chan_Idx)%Obs_Type )
           
           case ( SOLAR_OBS_TYPE) 
-            allocate ( trans_prof_rtm_chn (101,n_val_pixels) )
+            allocate ( trans_prof_rtm_chn (NLEVELS_RTM,n_val_pixels) )
             do ii_pixel = 1, n_val_pixels
               
               call SOLAR_TRANS(rtm_inp % tpw_prof(:, ii_pixel),chan_idx,rtm_inp % sat_bin( ii_pixel),trans_profile, error_status)
              
-              trans_prof_rtm_chn (:,ii_pixel) = Trans_profile ** Gamma_Factor(Chan_Idx)
+              trans_prof_rtm_chn (:,ii_pixel) = Trans_profile 
             end do
             
           
@@ -529,7 +564,7 @@ contains
           do x_nwp = 1, nwp_size_arr(1)
             do y_nwp =1,nwp_size_arr(2)
               if ( rtm(x_nwp,y_nwp) % is_allocated ) then
-                do z_nwp =1,50 
+                do z_nwp =1,RTM_NVZEN 
                   if ( rtm(x_nwp,y_nwp) % d(z_nwp) % is_allocated ) then
                     ii_pixel = ii_pixel + 1
                     rtm(x_nwp,y_nwp) % d(z_nwp) % ch(chan_idx) % Trans_Atm_Profile &
@@ -932,6 +967,9 @@ contains
 
       case(271) !GOES-17
         Sensor_Name_Rtm = 'GOES-17'
+
+      case(272) !GOES-18
+        Sensor_Name_Rtm = 'GOES-18'
 
       case(706) !NOAA-6
         Sensor_Name_Rtm = 'AVHRR-NOAA06'
@@ -1531,9 +1569,6 @@ contains
                         ch(Chan_Idx)%Rad_Toa_Clear(Elem_Idx,Line_Idx),  &
                         Rtm(Lon_Idx,Lat_Idx)%d(Zen_Idx)%ch(Chan_Idx)%Rad_BB_Cloud_Profile(Lev_Bnd))
 
-               !if (isnan(ch(Chan_Idx)%Emiss_Tropo(Elem_Idx,Line_Idx))) then
-               !   print *, "Nan in emiss_tropo ", chan_idx, ch(Chan_Idx)%Rad_Toa_Clear(Elem_Idx,Line_Idx)
-               !endif
             end if
          end select
       end do

@@ -169,8 +169,6 @@ contains
         sfc_albedo(1) = alb_sfc(1)    ! White sky
         sfc_albedo(2) = alb_sfc(2)
         
-        ! - sfc_albedo(1) = alb_sfc(3)    ! DS
-      
         debug_mode = 4
         if ( present ( debug_in )) debug_mode = debug_in
        

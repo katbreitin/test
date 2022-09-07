@@ -3,7 +3,7 @@
 ! MODULE name: NBM_CLOUD_MASK_LUT_MODULE
 ! 
 ! Routines for the naive Bayesian cloud mask LUT reading
-! Version 2.0
+! Version 2.1
 !
 ! Authors: Andrew Heidinger, NOAA/NESDIS
 !          Andi Walther, CIMSS

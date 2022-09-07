@@ -12,17 +12,17 @@ contains
       implicit none
       character (len =  * )  :: sensor
       real, intent ( in ) :: sol_zen
-  
+
       real :: sun_earth_distance
       real, parameter :: PI = 3.14159265
       real, parameter :: DTOR = PI / 180.
       real :: rad_to_refl
       real :: solar, ew , solar_rad_20
       integer :: start_day
-    
+
       start_day = 100 !dd
 
-   
+
       !- these are all sensor specifiv values and van be removed an computed in dcomp box!
       sun_earth_distance = 1.0 - 0.016729 * cos ( 0.9856 * ( start_day - 4.0) * DTOR )
 
@@ -113,7 +113,7 @@ contains
             ew = 253.16404
           case('METOP-C')
             solar = 3.9731433
-            ew = 253.16404   
+            ew = 253.16404
          case ('Meteosat-8')
             solar = 5.3444818
             ew = 365.59826
@@ -131,7 +131,10 @@ contains
             ew = 116.413
          case('GOES-17') !  faked from goes-16 AW 28 Aug 2018
             solar = 1.709
-            ew = 116.413   
+            ew = 116.413
+        case('GOES-18') !  faked from goes-16 AW 16 Aug 2022
+             solar = 1.709
+             ew = 116.413
          case('COMS-1')
             solar = 4.8461549
             ew = 306.29122
@@ -146,16 +149,16 @@ contains
            ew = 305.69
          case('METIMAGE')
            solar = 2.03
-           ew = 128.72 
+           ew = 128.72
          case('Met_Image')
            solar = 2.03
-           ew = 128.72 
+           ew = 128.72
          case default
-      
+
             stop 'missing sensor calibration; add in get_rad_refl_factor.f90'
       end select
-   
-   
+
+
       solar_rad_20 =  1000.* solar / ew
       rad_to_refl    = PI / cos (sol_zen * DTOR )/ solar_rad_20 / sun_earth_distance ** 2
 
@@ -167,20 +170,20 @@ contains
       real, intent ( in) :: tmp
       character (len =  * ) :: sensor
       !real, intent ( out), optional :: db_dt
-   
-   
-   
+
+
+
       character(len = 20 ) ,save :: sensor_saved
       real :: rad
-  
+
       real :: db_dt_tmp
       integer, parameter:: nplanck = 161
       real, dimension(nplanck), save :: B20
-      real, parameter :: T_planck_min = 180.0  
+      real, parameter :: T_planck_min = 180.0
       real, parameter :: delta_T_planck = 1.0
       real, dimension(nplanck) , save :: T_planck
       integer :: l , i
-      
+
       real :: nu_20 , a1_20 , a2_20
       real , parameter :: c1 = 1.191062e-5
       real , parameter :: c2 = 1.4387863
@@ -188,7 +191,7 @@ contains
       real :: c2_times_nu_20
 
       if ( sensor /= sensor_saved ) then
-   
+
          select case ( sensor )
             case ('GOES-08')
                nu_20 = 2559.8724
@@ -329,7 +332,11 @@ contains
             case ('GOES-17') ! faked initially from GOES-16 on 28 Aug 2018 AW
                nu_20 = 2570.97
                a1_20 = -0.45401969
-               a2_20 = 1.0004997   
+               a2_20 = 1.0004997
+             case ('GOES-18') ! faked initially from GOES-16 on 16 Aug 2022 AW
+                nu_20 = 2570.97
+                a1_20 = -0.45401969
+                a2_20 = 1.0004997
             case('COMS-1')
                nu_20 = 2675.0265
                a1_20 = -2.2829416
@@ -349,32 +356,32 @@ contains
             case('METIMAGE')
                nu_20 = 2667.55436180
                a1_20 = -1.52502606
-               a2_20 = 1.00389872      
+               a2_20 = 1.00389872
              case default
                print*,'missing sensor calibration for sensor ', sensor
-      
+
                stop ' stop; add to get_planck_radiance_39um'
          end select
-    
+
          c1_times_nu_20__3 =  c1 * nu_20 ** 3
          c2_times_nu_20 = c2 * nu_20
-   
+
          do i = 1 , nplanck
             t_planck(i) = T_planck_min + ( i - 1 ) * delta_T_planck
             B20(i) = c1_times_nu_20__3  / ( exp ( ( c2_times_nu_20 ) / &
                (( T_planck(i) - a1_20 ) / a2_20 ) ) - 1.0)
          end do
-      
+
          sensor_saved = sensor
-         
+
       end if
 
       l = NINT(( tmp - T_planck_min ) / delta_T_planck)
       l = max (1, min ( nplanck - 1 , l ) )
       dB_dT_tmp = (B20(l+1)-B20(l))/(T_planck(l+1)-T_planck(l))
       rad = B20(l) + (tmp - T_planck(l)) * (dB_dT_tmp)
-  
-  
+
+
    end function get_planck_radiance_39um
 
 

@@ -3,7 +3,7 @@
 ! MODULE name: NBM_CLOUD_MASK
 ! 
 ! Routines for the determination of the naive Bayesian cloud mask
-! Version 2.0
+! Version 2.1
 !
 ! Authors: Andrew Heidinger, NOAA/NESDIS
 !          Andi Walther, CIMSS
@@ -66,7 +66,7 @@ MODULE ECM2_CLOUD_MASK_MODULE
  INCLUDE 'nbm_cloud_mask.inc'
 
  !--- string to control on-screen prompts
- CHARACTER(*), PARAMETER, PRIVATE :: EXE_PROMPT_CM = "Naive Bayesian Cloud Mask Version 2.0 >> "
+ CHARACTER(*), PARAMETER, PRIVATE :: EXE_PROMPT_CM = "Naive Bayesian Cloud Mask Version 2.1 >> "
 
 
  CONTAINS
@@ -78,7 +78,7 @@ MODULE ECM2_CLOUD_MASK_MODULE
 !====================================================================
  SUBROUTINE SET_ECM2_CLOUD_MASK_VERSION(Cloud_Mask_Version)
    CHARACTER(len=*), INTENT(OUT):: Cloud_Mask_Version
-   Cloud_Mask_Version = "$Id: nbm_cloud_mask_MODULE.f90 3030 2019-09-31 23:02:31Z heidinger $"
+   Cloud_Mask_Version = "v2.1"
  END SUBROUTINE SET_ECM2_CLOUD_MASK_VERSION
 
 
@@ -355,6 +355,8 @@ MODULE ECM2_CLOUD_MASK_MODULE
          SELECT CASE(trim(Dim_Name))
              CASE('tsfc')
                  Value_Dim = Input%Sfc_Temp
+             CASE('tpw')
+                 Value_Dim = Input%Path_Tpw
              CASE('dtsfcbt11')
                  Value_Dim = Input%Sfc_Temp - Input%Bt_11um
              CASE('etropo10')
@@ -365,11 +367,22 @@ MODULE ECM2_CLOUD_MASK_MODULE
                  Value_Dim = Input%Topa
              CASE('zopa')
                  Value_Dim = Input%Zopa
+             CASE('dzopasfc')
+                 Value_Dim = Input%Zopa - Input%Zsfc
              CASE('dtsfcopa')
                  Value_Dim = Input%Sfc_Temp - Input%Topa
              CASE('logzopa')
                  if (Input%Zopa > 0.0) Value_Dim = alog10(Input%Zopa)
                  if (Input%Zopa < 0.0 .and. Input%Zopa /= MISSING_VALUE_REAL4) Value_Dim = 1.0
+             CASE('logrefl065')
+                 if (Input%Ref_063um > 0.0) Value_Dim = alog10(Input%Ref_063um)
+                 if (Input%Ref_063um < 0.0 .and. Input%Ref_063um /= MISSING_VALUE_REAL4) Value_Dim = -2.0
+             CASE('logrefl138')
+                 if (Input%Ref_138um > 0.0) Value_Dim = alog10(Input%Ref_138um)
+                 if (Input%Ref_138um < 0.0 .and. Input%Ref_138um /= MISSING_VALUE_REAL4) Value_Dim = -2.0
+             CASE('logrefl160')
+                 if (Input%Ref_160um > 0.0) Value_Dim = alog10(Input%Ref_160um)
+                 if (Input%Ref_160um < 0.0 .and. Input%Ref_160um /= MISSING_VALUE_REAL4) Value_Dim = -2.0
              CASE('bt10')
                  Value_Dim = Input%Bt_10um
                  if (Input%Chan_On_10um == 0) Value_Dim = MISSING_VALUE_REAL4
@@ -726,10 +739,6 @@ IF (Input%Solzen < Lut(1)%Rut_Solzen_Thresh .and. Input%Ref_063um .ne. MISSING_V
     Output%RUT = RUT_ROUTINE(Input%Coastal_Mask, Is_Land, Input%Ref_063um, Input%Ref_063um_Std, &
                              Mask_Thresh%Rut_Clear_Prob_Clear_Thresh(Output%Sfc_Idx))
 ENDIF
-
-!--- apply uniformity
-!IF (Output%Cld_Mask_Bayes == symbol%CLEAR .and. (Output%TUT == 1 .or. Output%RUT == 1)) &
-!       Output%Cld_Mask_Bayes = symbol%PROB_CLEAR
 
 
 !----------------------------------------------------------------------------------

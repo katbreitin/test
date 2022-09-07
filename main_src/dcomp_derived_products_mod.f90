@@ -896,13 +896,13 @@ subroutine COMPUTE_DCOMP_INSOLATION(Line_Idx_Min,Num_Lines,Sun_Earth_Distance)
   line_loop: DO Line_Idx = Line_Idx_Min, Line_Idx_Max
     element_loop: DO Elem_Idx = Elem_Idx_Min, Elem_Idx_Max
 
-      !--- skip data that can not be processed
-      if (Bad_Pixel_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle
-      if (Solar_Zenith_Angle > 70.0) cycle
-
       Cloud_Optical_Depth = Tau_Dcomp(Elem_Idx,Line_Idx)  
       Solar_Zenith_Angle = Geo%Solzen(Elem_Idx,Line_Idx)
       Land_Class = Sfc%Land(Elem_Idx,Line_Idx)
+
+      !--- skip data that can not be processed
+      if (Bad_Pixel_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle
+      if (Solar_Zenith_Angle > 70.0) cycle
 
       !--- skip if no nwp
       if (NWP_Pix%Ozone(Elem_Idx,Line_Idx) .eqr. Missing_Value_Real4) cycle
@@ -916,10 +916,6 @@ subroutine COMPUTE_DCOMP_INSOLATION(Line_Idx_Min,Num_Lines,Sun_Earth_Distance)
 
       !--- adjust gases for slant path
       Cosine_Solar_Zenith_Angle = cos(Geo%Solzen(Elem_Idx,Line_Idx)*DTOR)
-
-      !--- skip data that can not be processed
-      if (Bad_Pixel_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle
-      if (Solar_Zenith_Angle > 70.0) cycle
 
       !--- determine surface albedo
       if (Land_Class == sym%LAND) then

@@ -6,6 +6,21 @@
 
 RM := rm -rf
 
+GF_VERSION := $(shell gfortran -dumpversion)
+VERSION := 9.
+fflags1= -O2
+
+GF_VERSION_MAJ = $(firstword $(subst ., ,$(GF_VERSION)))
+
+
+ifeq ($(shell test $(GF_VERSION_MAJ) -gt 9; echo $$?),0)
+fflags1 += -fallow-argument-mismatch 
+endif
+
+#ifeq ($(VERSION),$(firstword $(sort $(GF_VERSION) $(VERSION))))
+#fflags1 += -fallow-argument-mismatch 
+#endif
+
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include src/subdir.mk
@@ -35,14 +50,22 @@ endif
 
 # Add inputs and outputs from these tool invocations to the build variables 
 
+
+
+
+
 # All Target
 all: cx_sds_io
 
+
+
+
 # Tool invocations
 cx_sds_io: $(OBJS) $(USER_OBJS)
+	
 	@echo 'Building target: $@'
 	@echo 'Invoking: MacOS X Fortran Linker'
-	gfortran -g -O0 -L"${HDF5_PATH}/lib/" -L"${HDF4_PATH}/lib" -L"${NETCDF_PATH}/lib/" -o "cx_sds_io" $(OBJS) $(USER_OBJS) $(LIBS)
+	gfortran $(fflags1) -L"${HDF5_PATH}/lib/" -L"${HDF4_PATH}/lib" -L"${NETCDF_PATH}/lib/" -o "cx_sds_io" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 	$(MAKE) --no-print-directory post-build

@@ -162,7 +162,7 @@ module CLAVRX_STATIC_NAV_MODULE
     case (173:174) !-- ahi
       Num_Chan_Sensor = 16
 
-    case(270:271) !-- abi
+    case(270:273) !-- abi
       Num_Chan_Sensor = 16
 
     case default
@@ -201,7 +201,7 @@ module CLAVRX_STATIC_NAV_MODULE
           Chan_Stride =     (/1,1,4,1,1,1,1,1,1,1,1,1,1,1,1,1/)
       endif
 
-    case(270:271) !-- abi
+    case(270:273) !-- abi
       CLAVRx_Chan_Map = (/3,1,2,26,6,7,20,37,27,28,29,30,38,31,32,33/)
       Chan_Stride = (/2,4,2,1,2,1,1,1,1,1,1,1,1,1,1,1/)
       
@@ -328,7 +328,7 @@ module CLAVRX_STATIC_NAV_MODULE
 
     !--- determine if this static nav file is consistent with level1b by looking
     !--- at center of projections.
-    if (Sensor%WMO_Id == 270 .or. Sensor%WMO_Id == 271) then
+    if (Sensor%WMO_Id == 270 .or. Sensor%WMO_Id == 271 .or. Sensor%WMO_Id == 272) then
       call READ_NETCDF_GLOBAL_ATTRIBUTE(Static_Nav_Full_File, "geospatial_lat_center", Geospatial_Lat_Center_Sn)
       call READ_NETCDF_GLOBAL_ATTRIBUTE(Static_Nav_Full_File, "geospatial_lon_center", Geospatial_Lon_Center_Sn)
       do Chan_Idx = 1, Num_Chan_Sensor
@@ -476,7 +476,7 @@ module CLAVRX_STATIC_NAV_MODULE
 
            !--- set SOURCE Flag if ABI Fusion used for any channel
            ch(Clavrx_Chan_Map(Chan_Idx))%Source = 0    !note source of this channel is from imager
-           if (Sensor%WMO_Id == 270 .or. Sensor%WMO_Id == 271) then
+           if (Sensor%WMO_Id == 270 .or. Sensor%WMO_Id == 271 .or. Sensor%WMO_Id == 272) then
              if (index(Level1b_File(Chan_Idx),'FR_') > 0) then
                 ch(Clavrx_Chan_Map(Chan_Idx))%Source = 1    !note source of this channel is from sounder
              endif
@@ -529,7 +529,7 @@ module CLAVRX_STATIC_NAV_MODULE
        if (ch(Chan_Clavrx_Idx)%Obs_Type == SOLAR_OBS_TYPE) then
 
          !--- For ABI, use kappa0 factor from the NetCDF file.
-         if (Sensor%WMO_Id == 270 .or. Sensor%WMO_Id == 271) then
+         if (Sensor%WMO_Id == 270 .or. Sensor%WMO_Id == 271 .or. Sensor%WMO_Id == 272) then
 
            Factor = 1.0
 
@@ -939,7 +939,7 @@ subroutine READ_SEGMENT_LEVEL1B_VER2(Ncid,Chan_Name,Segment_Number, Number_Of_Li
    call READ_AND_UNSCALE_NETCDF_2d(Ncid, Start_2d, Stride_2d, Count_2d, Chan_Name, Native_Output_Seg)
 
    !--- read native resolution dqf (only for GOES-R series - not AHI))
-   if (Sensor%WMO_ID == 270 .or. Sensor%WMO_ID == 271) then
+   if (Sensor%WMO_ID == 270 .or. Sensor%WMO_ID == 271 .or. Sensor%WMO_ID == 272) then
       call READ_NETCDF(Ncid, Start_2d, Stride_2d, Count_2d, 'DQF', Native_DQF_Seg)
    endif
 
@@ -1004,7 +1004,7 @@ subroutine READ_SEGMENT_LEVEL1B_VER2(Ncid,Chan_Name,Segment_Number, Number_Of_Li
          endif
 
 
-      case(270:271) !-- abi(s)
+      case(270:273) !-- abi(s)
 
              call READ_ABI_TIME (Ncid, Line_Start_Segment, j2,  &
                                  Line_End_File, Y_Stride, Image%Scan_Time_Ms(j1:j2), Read_Time)
@@ -1074,7 +1074,7 @@ subroutine  READ_SEGMENT_STATIC_NAV(Ncid_Static)
    Geo%Sataz(:,1:Image%Number_Of_Lines_Read_This_Segment) = Data_Segment
 
    !---- read x and y (ignored for ahi)
-   if (Sensor%WMO_Id == 270 .or. Sensor%WMO_Id == 271) then 
+   if (Sensor%WMO_Id == 270 .or. Sensor%WMO_Id == 271 .or. Sensor%WMO_Id == 272) then 
      call READ_NETCDF(Ncid_Static, (/Elem_Start_Segment/), &
                                    (/Image%X_Stride/),  &
                                    (/Elem_Count_Segment/), "x_fd",Data_Segment_1D_I4_X)
@@ -1281,7 +1281,7 @@ subroutine FIND_DARK_COMPOSITE()
      case(270)
        Dark_Comp_Data_Dir = trim(Ancil_Data_Dir)//'/static/dark_comp/goes_east/'
        Dark_Composite_Name = "goes_east_fulldisk_"//trim(image % time_start % Monthname)//"_"//image % time_start % hh //"Z_refl065_dark_composite_2km.nc"
-     case(271)
+     case(271:272)
        Dark_Comp_Data_Dir = trim(Ancil_Data_Dir)//'/static/dark_comp/goes_west/'
        Dark_Composite_Name = "goes_west_fulldisk_"//trim(image % time_start % Monthname)//"_"//image % time_start % hh//"Z_refl065_dark_composite_2km.nc"
      case default

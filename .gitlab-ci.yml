@@ -3,11 +3,21 @@ image: gitlab.ssec.wisc.edu:5555/cphillips/netcdf_hdf_docker
 build:
   stage: build
   script:
-    - build_ci.sh
+    - bash build_ci.sh |& tee build.log
+  artifacts:
+    paths:
+      - build.log
+      - clavrx_bin/clavrxorb
+
 
 
 # run tests using the binary built before
 test:
   stage: test
   script:
-    - ./runmytests.sh
+    - yum install -y python3 python3-pip
+    - pip3 install pyyaml pytest
+    - bash test.sh |& tee test.log
+  artifacts:
+    paths:
+      - test.log

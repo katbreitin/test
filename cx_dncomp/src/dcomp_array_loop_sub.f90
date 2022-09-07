@@ -61,6 +61,7 @@ subroutine dcomp_array_loop ( input, output , debug_mode_user)
 
    real( kind = real4 ), parameter :: OZONE_COEFF_CHN1 (3)  = [ -0.000606266 , 9.77984e-05,-1.67962e-08 ] 
    real( kind = real4 ) :: ozone_coeff (3)  
+   real( kind = real4 ) :: gas_coeff (3)  
 
    ! -- nwp variables 
    real( kind = real4 ) :: ozone_dobson
@@ -164,6 +165,7 @@ subroutine dcomp_array_loop ( input, output , debug_mode_user)
          CHN_NIR_DEFAULT = 20
          obs_array = obs_array .and. input % chn(20) % rad >=0.
       case default
+         CHN_NIR_DEFAULT = 0
    end select
 	
 	
@@ -238,6 +240,10 @@ subroutine dcomp_array_loop ( input, output , debug_mode_user)
             if ( .not. input % is_channel_on (chn_idx)) cycle  loop_chn
             ozone_coeff(:) = 0.
             if (chn_idx == 1) ozone_coeff = OZONE_COEFF_CHN1
+            gas_coeff(:) = 0.
+            if (input % gas_coeff(chn_idx) % is_set) then
+                gas_coeff = input % gas_coeff ( chn_idx) % d
+            endif
             
             call trans_atm_above_cloud ( &
                input % tpw_ac (elem_idx,line_idx) &
@@ -245,7 +251,7 @@ subroutine dcomp_array_loop ( input, output , debug_mode_user)
                , input % press_sfc  (elem_idx,line_idx) &
                , cld_press &
                , air_mass_array(elem_idx,line_idx) &
-               , input % gas_coeff ( chn_idx) % d , ozone_coeff, 0.044 &
+               , gas_coeff, ozone_coeff, 0.044 &
                , trans_total(chn_idx) &
                , trans_unc_total(chn_idx) &
                )

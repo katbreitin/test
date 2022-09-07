@@ -42,7 +42,9 @@ module CX_RTM_MOD
 
   use CX_PFAAST_MOD, only: &
        COMPUTE_TRANSMISSION_PFAAST
-
+ 
+  use CLAVRX_MESSAGE_MOD, only: MESG
+ 
   type cx_rtm_input
     character (len=1024) :: ancil_path
     real ,dimension(:,:),allocatable :: p_std
@@ -69,7 +71,7 @@ contains
   
     trans_prof_rtm = -999.
     if ( inp % which_rtm == 2 ) then
-        if (first_run) print*,'Clear Sky Transmission with RTTOV'
+        if (first_run) call MESG('Clear Sky Transmission with RTTOV')
 #ifdef LIBRTTOV          
       call COMPUTE_TRANSMISSION_RTTOV   ( &
                            trim(inp % Ancil_path) &

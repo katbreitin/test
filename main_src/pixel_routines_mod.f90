@@ -40,7 +40,7 @@ module PIXEL_ROUTINES_MOD
  use CONSTANTS_MOD, only: &
   missing_value_real4 &
     , sym , int1, int2, exe_prompt  &
-    , real4, missing_value_int1, int4, mixed_obs_type, NChan_Clavrx, SOLAR_OBS_TYPE &
+    , real4, missing_value_int1, missing_value_int2, int4, mixed_obs_type, NChan_Clavrx, SOLAR_OBS_TYPE &
     , THERMAL_OBS_TYPE, PI, terminator_reflectance_sol_zen_thresh, DTOR
  
  use ALGORITHM_CONSTANTS_MOD,only: glint_zen_thresh, Ref_Sfc_White_Sky_Water
@@ -98,6 +98,8 @@ module PIXEL_ROUTINES_MOD
  use CALIBRATION_CONSTANTS_MOD,only:
  
  use ECM2_CLOUD_MASK_CLAVRX_BRIDGE, only: COMPUTE_TYPE_FROM_PHASE
+ 
+ use CLAVRX_MESSAGE_MOD, only: MESG, verb_lev
  
 !use RT_UTILITIES_MOD, only: COMPUTE_CLEAR_SKY_SCATTER
 
@@ -745,8 +747,10 @@ end subroutine QUALITY_CONTROL_ANCILLARY_DATA
             tsfc_onechannel = .false.
   end if
     
-  if ( first_segment) write(*,*) 'tsfc_onechannel = ',  tsfc_onechannel
-  
+  if ( first_segment)  then
+    if (tsfc_onechannel)  call MESG ('tsfc_onechannel TRUE', level = verb_lev %DEFAULT)
+    if ( .not. tsfc_onechannel)  call MESG ('tsfc_onechannel FALSE', level = verb_lev %DEFAULT)
+  end if
   !--- initialize
   Tsfc_Retrieved = Missing_Value_Real4
   Trad_Retrieved = Missing_Value_Real4
@@ -759,7 +763,7 @@ end subroutine QUALITY_CONTROL_ANCILLARY_DATA
     end if
     
   else if (tsfc_onechannel) then
-    if ( first_segment)  print*, 'LST Retrieval with single channel method '
+    if ( first_segment)  call MESG ('LST Retrieval with single channel method ', level = verb_lev %DEFAULT)
     !--- if no ch31, abort
     if (Sensor%Chan_On_Flag_Default(31) == sym%NO) then
       return 
@@ -1397,7 +1401,9 @@ subroutine READ_MODIS_WHITE_SKY_ALBEDO(modis_alb_id,modis_alb_str,Ref_Sfc_White_
     CALL READ_LAND_SFC_HDF(modis_alb_id, modis_alb_str, Nav%Lat, &
                           Nav%Lon, Geo%Space_Mask, raw)
                        
-    Ref_Sfc_White_Sky = 0.1* raw
+    where(raw /= Missing_Value_Int2)
+        Ref_Sfc_White_Sky = 0.1* raw
+    endwhere
 
 !---->    Ref_Sfc_White_Sky = 1.10*Ref_Sfc_White_Sky   !EMPIRICAL ADJUSTMENT
 
@@ -1503,6 +1509,7 @@ subroutine MODIFY_LAND_CLASS_WITH_NDVI(Line_Idx_Min,Num_Lines)
   if (Sensor%WMO_ID == 174) return
   if (Sensor%WMO_ID == 270) return
   if (Sensor%WMO_ID == 271) return
+  if (Sensor%WMO_ID == 272) return
   if (Sensor%WMO_ID == 530) return
 
   Elem_Idx_Min = 1

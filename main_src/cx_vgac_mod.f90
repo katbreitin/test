@@ -294,9 +294,9 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
   endif
 
   !--- fix vza
-  do Elem_Idx = 1, Sds_Count(1)
-    Geo%Satzen(Elem_Idx,:) =   70.0*abs(Elem_Idx - 401) / 800.0
-  enddo
+  !do Elem_Idx = 1, Sds_Count(1)
+  !  Geo%Satzen(Elem_Idx,:) =   70.0*abs(Elem_Idx - 401) / 800.0
+  !enddo
 
   !--- read scanline time
   call READ_NETCDF(Ncid_Vgac, [Sds_Start(2)], [Sds_Stride(2)], [Sds_Count(2)], "time", Sds_Data_1d)

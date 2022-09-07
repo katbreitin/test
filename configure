@@ -154,7 +154,7 @@ open (CONFIG, '>> ',@outfile) or die "Could not open file '@outfile' $!)\n";
    `uname -a`;
    print CONFIG "# Include all required macros on the following lines:\n\n";
    
-   print CONFIG "ifeq (\$(ARCH),\$(filter \$(ARCH), gfortran gfortran-profile gfortran-strict gfortran-debug))\n";
+   print CONFIG "ifeq (\$(ARCH),\$(filter \$(ARCH), gfortran gfortran-profile gfortran-strict gfortran-debug gfortran10))\n";
    print CONFIG "export CX_DATA_IO=$opt{cx_sds_io_gcc}\n";
    print CONFIG "export DNCOMP=$opt{dncomp_gcc}\n";
    print CONFIG "export MURI=$opt{muri_gcc}\n";

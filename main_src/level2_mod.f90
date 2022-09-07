@@ -188,6 +188,15 @@ subroutine SETUP_LEVEL2_SDS_INFO()
       Sds_Info(Var_Idx)%Add_Offset = 1.0
       Sds_Info(Var_Idx)%Actual_Range = [0,0]
 
+      Sds_Info(Var_Idx)%Sds_Data_1d_I1 => null()
+      Sds_Info(Var_Idx)%Sds_Data_1d_I4 => null()
+      Sds_Info(Var_Idx)%Sds_Data_1d_R4 => null()
+      Sds_Info(Var_Idx)%Sds_Data_2d_I1 => null()
+      Sds_Info(Var_Idx)%Sds_Data_2d_I2 => null()
+      Sds_Info(Var_Idx)%Sds_Data_2d_I4 => null()
+      Sds_Info(Var_Idx)%Sds_Data_2d_R4 => null()
+      Sds_Info(Var_Idx)%Sds_Data_3d_I1 => null()
+
       select case (trim(Sds_Info(Var_Idx)%Sds_Name))
         
          !----------------------------------------------------------------------------------------------------
@@ -1656,6 +1665,12 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Long_Name = "Effective Cloud Top Pressure from ACHA"
             Sds_Info(Var_Idx)%Units = "hPa"
             if (allocated(ACHA%Pc_Eff)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => ACHA%Pc_Eff
+         case("cld_press_lower_acha")
+            Sds_Info(Var_Idx)%Standard_Name = "air_pressure_at_effective_cloud_top_lower_layer"
+            Sds_Info(Var_Idx)%Actual_Range = [50.0,1100.0]
+            Sds_Info(Var_Idx)%Long_Name = "Effective Cloud Top Pressure for lower layer from ACHA"
+            Sds_Info(Var_Idx)%Units = "hPa"
+            if (allocated(ACHA%Lower_Pc)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => ACHA%Lower_Pc
          case("cld_press_uncer_acha")
             Sds_Info(Var_Idx)%Standard_Name = "cld_press_uncer_acha"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,1000.0]
@@ -2394,7 +2409,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
          case("cloud_transmission_0_65um_nom")
             Sds_Info(Var_Idx)%Standard_Name = "cloud_transmission_0_65um_nom"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,1.0]
-            Sds_Info(Var_Idx)%Long_Name = "cloud albedo at 0.65 microns nominal from DCOMP"
+            Sds_Info(Var_Idx)%Long_Name = "cloud transmission at 0.65 microns nominal from DCOMP"
             Sds_Info(Var_Idx)%Units = "none"
             if (allocated(Cloud_063um_Transmission_Solar)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Cloud_063um_Transmission_Solar
 
@@ -2651,6 +2666,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Actual_Range = [0.0,1200.0]
             Sds_Info(Var_Idx)%Long_Name = "Cloud Water Path from NWP Ancillary Data"
             Sds_Info(Var_Idx)%Units = "g m-2"
+            if (allocated(NWP_PIX%Cwp)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => NWP_PIX%Cwp
          case("cld_iwp_nwp")
             Sds_Info(Var_Idx)%Standard_Name = "cld_iwp_nwp"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,1200.0]
@@ -3026,7 +3042,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
              
              
          case default
-            print *, "Unknown Level2 Variable ==> ", trim(Sds_Info(Var_Idx)%Sds_Name)
+            call MESG ( "Unknown Level2 Variable ==> "//trim(Sds_Info(Var_Idx)%Sds_Name), level=verb_lev % ERROR )
                
       end select
    enddo
@@ -4918,7 +4934,7 @@ end subroutine WRITE_SDS_NETCDF
       if (index(Sds_Info(Var_Idx)%Sds_Name, 'refl_sfc_white_sky_') == 1 .and. &
           index(Sds_Info(Var_Idx)%Sds_Name, '_nom') >0) then 
          Sds_Info(Var_Idx)%Actual_Range = [-20.0,100.0]
-         Sds_Info(Var_Idx)%Level2_Data_Type_HDF = DFNT_INT8
+         Sds_Info(Var_Idx)%Level2_Data_Type_HDF = DFNT_INT16
          Sds_Info(Var_Idx)%Units =  "%"
          Sds_Info(Var_Idx)%Standard_Name =  "white_sky_surface_reflectance"
          Sds_Info(Var_Idx)%Long_Name =  "surface reflectance for white skies at nominal wavelength of"

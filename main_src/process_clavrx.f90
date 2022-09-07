@@ -165,13 +165,7 @@
   
   use CX_REAL_BOOLEAN_MOD 
   
-   use CONSTANTS_MOD !, only: &
-      !  int4, real4 &
-      !  , int1, int2 &
-      !   , missing_value_int4 &
-      !   , sym, DTOR &
-      !  ,  MODIS_ALB_0_86_SDS_NAME &
-      !  ,  MODIS_ALB_0_66_SDS_NAME
+   use CONSTANTS_MOD 
       
    use CX_DATE_TIME_TOOLS_MOD, only: &
       LEAP_YEAR_FCT &
@@ -211,8 +205,7 @@
       COMPUTE_LUNAR_REFLECTANCE
    
    use DNCOMP_CLAVRX_BRIDGE_MOD, only: &
-      AWG_CLOUD_DNCOMP_ALGORITHM &
-      , set_dcomp_version   
+      AWG_CLOUD_DNCOMP_ALGORITHM
   
    use FILE_TOOLS, only: FILE_TEST, GETLUN
 
@@ -296,9 +289,6 @@
     , NUCAPS &
     , CLDMASK &
     , NWP_PIX &
-    !, Diag_Pix_Array_1 &
-    !, Diag_Pix_Array_2 &
-    !, Diag_Pix_Array_3 &
       ! - routines
     , Destroy_Pixel_Arrays &
     , Create_Pixel_Arrays &
@@ -515,6 +505,8 @@
        SET_ABI_USE_104um_FLAG
 
    use CX_VGAC_MOD, only:
+
+   use cleanup, only: cleanup_tempdir
    
    implicit none 
   
@@ -612,8 +604,8 @@
    integer :: narg,cptArg
    character(len=30) :: arg_name
 
-   !real, parameter, dimension(3):: Dnb_Coef = [-0.373685,0.977945,-0.000261637]
    real, parameter, dimension(3):: Dnb_Coef = [-0.118767,0.962452,-0.000144502]
+   integer*8, parameter :: SIG_ERR = -1
 
 
    !***********************************************************************
@@ -638,7 +630,7 @@
       end do
     end if
     
-    
+
    call MESG( '<----------  Start of CLAVRXORB ----------> $Id: process_clavrx.f90 4129 2021-04-19 19:30:41Z heidinger $' &
       , level = verb_lev % DEFAULT , color = 4 ) 
    write(string,*)"Compiled on ",__DATE__//' '//__TIME__
@@ -670,6 +662,21 @@
 
    !--- make directory for temporary files created during this run
    call system("mkdir "//trim(Temporary_Data_Dir))
+   ! SIGTERM
+
+   CALL SIGNAL(15, cleanup_tempdir, ierror)
+   if(ierror .ne. 0) then
+     print*, 'Error setting up SIGTERM handler'
+     stop 124
+   endif
+   ! SIGINT
+   CALL SIGNAL(2, cleanup_tempdir, ierror)
+   if(ierror .eq. SIG_ERR) then
+     print*, 'Error setting up SIGINT handler'
+     stop 125
+   endif
+
+    
 
    !*************************************************************************
    ! Marker: Open high spatial resolution ancillary data files
@@ -737,12 +744,14 @@
             Erstat = 8
             call MESG( "ERROR: Problem reading orbit names from control file" &
                , level = verb_lev % QUIET , color = 1 ) 
+            call cleanup_tempdir()
             stop 8
          else
             !-- end of orbits
             if (File_Number == 1) then
                call MESG( "ERROR: No orbits to process, stopping" , level = verb_lev % QUIET , color = 1 ) 
-               stop
+               call cleanup_tempdir()
+               stop 404
             endif
             exit
          endif
@@ -895,12 +904,6 @@
       !*************************************************************************
       ! Marker:  READ IN SENSOR-SPECIFIC CONSTANTS
       !*************************************************************************
-
-      !if (Sensor%Wmo_Id == 271) call SET_ABI_USE_104um_FLAG(ABI_Use_104um_Flag, File_Number)
-
-      !--- DEBUG ONLY 
-      !ABI_Use_104um_Flag = .true.
-      !--- DEBUG ONLY 
 
       !*************************************************************************
       ! Marker:  Open non-static high spatial resolution ancillary data
@@ -1574,7 +1577,7 @@
 
                !--- Dust Mask
                if (Use_ABI_Dust == sym%YES) then
-                  if (Sensor%WMO_Id == 270 .or. Sensor%WMO_Id == 271) then
+                  if (Sensor%WMO_Id == 270 .or. Sensor%WMO_Id == 271 .or. Sensor%WMO_Id == 272) then
                     CLDMASK%Dust_Mask = sym%NO
                     call GET_SEGMENT_ABI_DUST_PROB() 
                   endif
@@ -1746,8 +1749,8 @@
              
                if (DCOMP_Mode > 0) then
            
-                  call AWG_CLOUD_DNCOMP_ALGORITHM( Iseg_In = Segment_Number , algorithm_started = dcomp_run)
-                  call SET_DCOMP_VERSION()
+                  call AWG_CLOUD_DNCOMP_ALGORITHM( Iseg_In = Segment_Number , algorithm_started = dcomp_run, version = dcomp_version )
+                 
 
                  !call COMPUTE_SUBPIXEL_MAX_MIN_COD()
                     
@@ -1924,7 +1927,6 @@
       call MESG ( "Finished Processing All Orbital Segments")
       call MESG ( " ")
 
-   
       !*************************************************************************
       !   Marker: Close output pixel-level files
       !*************************************************************************
@@ -1945,6 +1947,7 @@
             call MESG("DESTROY RTTOV_EMIS ")
        endif
 #endif      
+
       !*************************************************************************
       !Marker: Deallocate remaining arrays
       !*************************************************************************

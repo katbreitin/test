@@ -161,6 +161,7 @@ subroutine READ_FY3D_DATA (Segment_Number, GEO1K_File, Error_Out)
       integer (HSIZE_T), dimension(2)         :: dims_geo2
       integer (HID_T)  :: file_id              ! file id 
       integer (HID_T) :: sds_id_var           ! sds id all variables
+      real, parameter :: Missing_Local = 999.9
       !real(kind=4) :: H5T_NATIVE_REAL
 
       Error_Out = 0
@@ -187,17 +188,20 @@ subroutine READ_FY3D_DATA (Segment_Number, GEO1K_File, Error_Out)
         else
            call H5READDATASET (trim(Image%Level1b_Path)//trim(GEO1K_File), &
                       trim(Setname_Geo_List(I_Geo)), Offset_band, Dim_Seg, R2d_Buffer)
-           if (Scaled_Geo(I_Geo) .eq. 1) then
+        !   if (Scaled_Geo(I_Geo) .eq. 1) then
               call H5READATTRIBUTE (trim(Image%Level1b_Path)//trim(GEO1K_File), &
                       trim(Setname_Geo_List(I_Geo)//'/Slope'), Scale_Factor)
               call H5READATTRIBUTE (trim(Image%Level1b_Path)//trim(GEO1K_File), &
                       trim(Setname_Geo_List(I_Geo)//'/Intercept'), Add_Offset)
               call H5READATTRIBUTE (trim(Image%Level1b_Path)//trim(GEO1K_File), &
                       trim(Setname_Geo_List(I_Geo)//'/FillValue'), Fill_Value)
-              where ( R2d_Buffer .ne. Fill_Value)
+              where ( R2d_Buffer .ne. Fill_Value .and. R2d_Buffer .ne. Missing_Local)
                  R2d_Buffer = (R2d_Buffer * Scale_Factor) + Add_Offset
               endwhere
-           endif
+              where ( R2d_Buffer .eq. Fill_Value .or. R2d_Buffer .eq. Missing_Local)
+                 R2d_Buffer = Missing_Value_Real4 
+              endwhere
+        !  endif
         endif
 
         ! save read data to output in correct format

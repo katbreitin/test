@@ -89,6 +89,9 @@ use CALIBRATION_CONSTANTS_MOD, only: &
       , glint_angle &
       , scattering_angle &
       , possol
+      
+    use CLAVRX_MESSAGE_MOD, only: mesg, verb_lev   
+      
    implicit none
    private
 
@@ -107,7 +110,7 @@ use CALIBRATION_CONSTANTS_MOD, only: &
          DARK_COMPOSITE_CLOUD_MASK
 
 
-   integer(kind=int4), public, parameter:: Goes_Xstride = 1    ! goes is oversampled by 50% in x
+   integer(kind=int4), public, parameter:: Goes_Xstride = 2    ! goes is oversampled by 50% in x
    integer(kind=int4), public, parameter:: Goes_Sndr_Xstride = 1
    integer(kind=int4), private, parameter:: Num_4km_Scans_Goes_Fd = 2704 
    integer(kind=int4), private, parameter:: Num_4km_Elem_Goes_Fd = 5200 
@@ -1390,11 +1393,9 @@ end subroutine READ_GOES_SNDR
 
    open(unit=1,file=trim(filename),form="unformatted",access="direct",recl=4,status="old",action="read")
 
-        read (unit=1, rec = 1) AREAstr%area_Status
-        read (unit=1, rec = 2) AREAstr%Version_Num
+        read (unit=1, rec = 1, err=404) AREAstr%area_Status
+        read (unit=1, rec = 2, err=404) AREAstr%Version_Num
         if (AREAstr%Version_Num .ne. 4) then
-!          print *, "Area file cannot be read"  ! byte swapping may cause this
-!          AREAstr%swap_bytes = 1
            return
         endif
         read (unit=1, rec = 3) AREAstr%Sat_Id_Num
@@ -1550,14 +1551,19 @@ end subroutine READ_GOES_SNDR
         enddo
 
 
-   close(unit=1)
-
    !--- compute scan rate for future use
    Num_Elements_This_image =  int(AREAstr%Num_Elem / Goes_Xstride) + 1
    num_Scans_This_image = AREAstr%Num_Line
    Scan_rate = real((Num_Elements_This_image)/ real(Num_4km_Elem_Goes_Fd/Goes_Xstride)) * &
                real((num_Scans_This_image) / real(Num_4km_Scans_Goes_Fd)) * &
                real(time_for_fd_Scan_goes) / real(num_Scans_This_image)
+    close(unit=1)
+   return
+
+404 close(unit=1)
+    print *, "Error reading GOES Headers. File is probably empty"
+    stop 4
+    
 
  ! print *, "elements = ", Num_Elements_This_image, Num_4km_Elem_Goes_Fd/Goes_Xstride
  ! print *, "lines = ", num_Scans_This_image, Num_4km_Scans_Goes_Fd
@@ -3497,7 +3503,7 @@ subroutine READ_DARK_COMPOSITE_COUNTS(Segment_Number,Xstride,Dark_Composite_File
 
    !--- check to see if a dark composite file exists for this image
    if (trim(Dark_Composite_Filename) == "no_file" .and. Segment_Number == 1) then
-          print *, "No Dark Composite Available for this Image"
+          call MESG( "No Dark Composite Available for this Image",level=verb_lev % DEFAULT )
           return
    endif
 

@@ -28,6 +28,9 @@
 ! REVISION HISTORY:
 !   02/10.2013 : first version
 !   10/21/2013 : bridge to array instead to pixel-based    
+!
+!
+!
 !--------------------------------------------------------------------------------------
 module dncomp_clavrx_bridge_mod
 
@@ -100,11 +103,10 @@ module dncomp_clavrx_bridge_mod
    private
    
    logical :: first_call = .true.
-   
-   public :: set_dcomp_version              
+             
    public :: awg_cloud_dncomp_algorithm
    
-   character(len = 200) :: DCOMP_RELEASE_VERSION = 'DCOMP version 2_0_0'
+   character(len = 120) :: DCOMP_RELEASE_VERSION = 'DCOMP version 2_0_0'
   
        
 contains
@@ -113,7 +115,7 @@ contains
    !  AWG_CLOUD_DCOMP_ALGORITHM
    !    This is the DCOMP bridge from CLAVR-x
    !---------------------------------------------------------------------- 
-   subroutine awg_cloud_dncomp_algorithm (  iseg_in , nlcomp_mode,  algorithm_started )   
+   subroutine awg_cloud_dncomp_algorithm (  iseg_in , nlcomp_mode,  algorithm_started, version )   
        
       implicit none
  
@@ -123,6 +125,7 @@ contains
       
       ! - output 
       logical , intent(out) :: algorithm_started
+      character(len = 120), intent(out), optional :: version
       
       type(dcomp_rtm_type), target :: dcomp_rtm
       type(dncomp_in_type)  :: dcomp_input
@@ -175,6 +178,7 @@ contains
       ! ----- executable  --------------------------------------------------- !
       run_nlcomp = .false.
       if (present(nlcomp_mode)) run_nlcomp = nlcomp_mode
+      if ( present ( version) ) version = DCOMP_RELEASE_VERSION
             
       algorithm_started = .false.
       
@@ -226,13 +230,15 @@ contains
       ! - wmo sensor id
       dcomp_input % sensor_wmo_id = sensor % wmo_id
       dcomp_input % sun_earth_dist = sun_earth_distance
-            
+
+      dcomp_input % gas_coeff(:) % is_set = .false.
       ! - all reflectance channels
       do i = 1, 19 
         if ( dcomp_input % is_channel_on (i)) then
           dcomp_input % chn(i) %  refl  => ch(i)%ref_toa
           dcomp_input % chn(i) % alb_sfc => ch(i) % sfc_ref_white_sky
           dcomp_input % gas_coeff(i) % d = solar_rtm % tau_h2o_coef(i,:)
+          dcomp_input % gas_coeff(i) % is_set = .true.
         end if     
       end do  
       
@@ -336,7 +342,7 @@ contains
           call dcomp_input % check_input (debug_mode)
             
           call mesg ('DCOMP starts in Bridge',level = 9)
-            
+
           call dcomp_array_loop ( dcomp_input , dncomp_output , debug_mode_user = debug_mode)
             
           call mesg ('DCOMP ends in Bridge',level = 9)
@@ -407,13 +413,6 @@ contains
    end subroutine awg_cloud_dncomp_algorithm
 
 
-  
-   !---------------------------------------------------------------------------
-   ! routine to set the cvs version in a global variable to write to hdf file
-   !---------------------------------------------------------------------------
-   subroutine set_dcomp_version()
-      dcomp_version = DCOMP_RELEASE_VERSION
-   end subroutine set_dcomp_version
 
     
 end module dncomp_clavrx_bridge_mod 

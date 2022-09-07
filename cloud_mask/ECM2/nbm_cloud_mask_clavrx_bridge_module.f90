@@ -115,7 +115,9 @@ module ECM2_CLOUD_MASK_CLAVRX_BRIDGE
    private :: BETA_11_133_OVERLAP_TEST
    private :: WATER_EDGE_FILTER
    private :: MODIS_AQUA_SBAF
+   private :: ABI_GOES16_SBAF
    private :: SBAF_QUAD
+   private :: APPLY_SBAF
 
    !--- define these structure as module wide
    type(mask_input), private :: Input   
@@ -139,6 +141,9 @@ module ECM2_CLOUD_MASK_CLAVRX_BRIDGE
 
    !Use_104um_Flag
    logical, private:: Use_104um_Flag
+
+   !SBAF coeffs
+    real, dimension(Nchan_Clavrx), private, save:: a, b, c
 
 contains
 
@@ -245,6 +250,17 @@ contains
        call MESG( "ERROR: Catastrophic LHP Event, exiting" , level = verb_lev % DEFAULT)
        return
    endif
+
+   !---------------------------------------------------------------------
+   !  compute SBAF
+   !---------------------------------------------------------------------
+    if (index(Bayesian_Cloud_Mask_Name,"src-modis") > 0) then 
+       call MODIS_AQUA_SBAF(Sensor%WMO_Id)
+    endif
+    if (index(Bayesian_Cloud_Mask_Name,"src-abhi") > 0) then 
+      print *, "GOES16 SBAF Called"
+      call ABI_GOES16_SBAF(Sensor%WMO_Id)
+    endif
    
    !---------------------------------------------------------------------
    ! loop over pixels 
@@ -256,9 +272,9 @@ contains
          call SET_INPUT(i,j)
 
          !--- perform spectral band correction if needed
-         !if (index(Bayesian_Cloud_Mask_Name,"isccp") > 0) then 
-         !   call MODIS_AQUA_SBAF(Sensor%WMO_Id)
-         !endif
+         if (index(Bayesian_Cloud_Mask_Name,"src-") > 0) then 
+            call APPLY_SBAF()
+         endif
 
          ! --- check if pixel is valid
          if (Input%Invalid_Data_Mask == 1) cycle
@@ -1324,6 +1340,61 @@ end subroutine LHP_CHN_CHECK
    end subroutine COMPUTE_TYPE_FROM_PHASE
 
    !-------------------------------------------------------------------------------
+   ! 
+   !-------------------------------------------------------------------------------
+   subroutine APPLY_SBAF()
+    !  print *, "before", Input%Ref_063um, Input%Bt_375um, Input%Bt_67um, Input%Bt_11um, Input%Bt_133um
+      if (Input%Ref_041um /= MISSING_VALUE_REAL4) call SBAF_QUAD(a(8),b(8),c(8),Input%Ref_041um)
+      if (Input%Ref_063um /= MISSING_VALUE_REAL4) call SBAF_QUAD(a(1),b(1),c(1),Input%Ref_063um)
+      if (Input%Ref_086um /= MISSING_VALUE_REAL4) call SBAF_QUAD(a(2),b(2),c(2),Input%Ref_086um)
+      if (Input%Ref_138um /= MISSING_VALUE_REAL4) call SBAF_QUAD(a(26),b(26),c(26),Input%Ref_086um)
+      if (Input%Ref_160um /= MISSING_VALUE_REAL4) call SBAF_QUAD(a(6),b(6),c(6),Input%Ref_160um)
+      if (Input%Ref_213um /= MISSING_VALUE_REAL4) call SBAF_QUAD(a(7),b(7),c(7),Input%Ref_213um)
+      if (Input%Bt_375um /= MISSING_VALUE_REAL4) call SBAF_QUAD(a(20),b(20),c(20),Input%Bt_375um)
+      !if (Input%Bt_62um /= MISSING_VALUE_REAL4) call SBAF_QUAD(a(37),b(37),c(37),Input%Bt_62um)
+      if (Input%Bt_67um /= MISSING_VALUE_REAL4) call SBAF_QUAD(a(27),b(27),c(27),Input%Bt_67um)
+      if (Input%Bt_73um /= MISSING_VALUE_REAL4) call SBAF_QUAD(a(28),b(28),c(28),Input%Bt_73um)
+      if (Input%Bt_85um /= MISSING_VALUE_REAL4) call SBAF_QUAD(a(29),b(29),c(29),Input%Bt_85um)
+      if (Input%Bt_10um /= MISSING_VALUE_REAL4) call SBAF_QUAD(a(38),b(38),c(38),Input%Bt_10um)
+      if (Input%Bt_11um /= MISSING_VALUE_REAL4) call SBAF_QUAD(a(31),b(31),c(31),Input%Bt_11um)
+      if (Input%Bt_12um /= MISSING_VALUE_REAL4) call SBAF_QUAD(a(32),b(32),c(32),Input%Bt_12um)
+      if (Input%Bt_133um /= MISSING_VALUE_REAL4) call SBAF_QUAD(a(33),b(33),c(33),Input%Bt_133um)
+     ! print *, "after", Input%Ref_063um, Input%Bt_375um, Input%Bt_67um, Input%Bt_11um, Input%Bt_133um
+   end subroutine APPLY_SBAF
+
+   !-------------------------------------------------------------------------------
+   ! use spectral band adjustments to make input refs and bt look like GOES-16 ABI
+   !-------------------------------------------------------------------------------
+   subroutine ABI_GOES16_SBAF(WMO_Id)
+      integer, intent(in):: WMO_Id
+
+      a = 0.0
+      b = 1.0
+      c = 0.0
+
+      select case(WMO_Id)
+
+         case(255) ! GOES-11
+            a(1) = -6.8063e-03; b(1) = 1.02490e+00; c(1) = -5.3926e-04
+            a(20) =  1.5405e+01 ; b(20) = 8.8843e-01 ; c(20) =  2.0221e-04   
+            a(27) = -1.8107e+02 ; b(27) = 2.4466e00 ; c(27) = -2.7885e-03    
+            a(31) =  1.5814e+01 ; b(31) = 8.6256e-01 ; c(31) = 2.7981e-04   
+            a(32) =  -3.6017e-01 ; b(32) = 1.0102e+00 ; c(32) = -4.4293e-05   
+
+         case(257) ! GOES-13
+            a(1) = -2.7527e-03; b(1) = 1.0368e+00; c(1) = -4.5434e-02
+            a(20) =  2.5828e+01 ; b(20) = 8.0108e-01 ; c(20) =  3.7754e-04   
+            a(27) = -8.3942e+01 ; b(27) = 1.6039e+00 ; c(27) = -1.0530e-03    
+            a(31) =  2.0139e+01 ; b(31) = 8.3048e-01 ; c(31) = 3.3938e-04   
+            a(33) =  -2.1292e+01 ; b(33) = 1.1238e+00 ; c(33) = -1.1957e-04   
+
+         case default
+
+      end select
+
+   end subroutine ABI_GOES16_SBAF
+
+   !-------------------------------------------------------------------------------
    ! use spectral band adjustments to make input refs and bt look like MODIS Aqua
    !-------------------------------------------------------------------------------
    subroutine MODIS_AQUA_SBAF(WMO_Id)
@@ -1362,44 +1433,6 @@ end subroutine LHP_CHN_CHECK
             a(33) = -1.2428e+01; b(33) = 1.1756e+00; c(33) = -5.5166e-04
          case default
       end select
-
-      if (Input%Ref_041um /= MISSING_VALUE_REAL4) call SBAF_QUAD(a(8),b(8),c(8),Input%Ref_041um)
-
-!     if (Input%Ref_041um /= MISSING_VALUE_REAL4) Input%Ref_041um = a_sbaf(8) + b_sbaf(8)*Input%Ref_041um
-!     if (Input%Ref_063um /= MISSING_VALUE_REAL4) Input%Ref_063um = a_sbaf(1) + b_sbaf(1)*Input%Ref_063um
-!     if (Input%Ref_086um /= MISSING_VALUE_REAL4) Input%Ref_086um = a_sbaf(2) + b_sbaf(2)*Input%Ref_086um
-!     if (Input%Ref_138um /= MISSING_VALUE_REAL4) Input%Ref_138um = a_sbaf(26) + b_sbaf(26)*Input%Ref_138um
-!     if (Input%Ref_160um /= MISSING_VALUE_REAL4) Input%Ref_160um = a_sbaf(6) + b_sbaf(6)*Input%Ref_160um
-!     if (Input%Ref_213um /= MISSING_VALUE_REAL4) Input%Ref_213um = a_sbaf(7) + b_sbaf(7)*Input%Ref_213um
-!     if (Input%Bt_375um /= MISSING_VALUE_REAL4) Input%Bt_375um = a_sbaf(20) + b_sbaf(20)*Input%Bt_375um
-!     if (Input%Bt_67um /= MISSING_VALUE_REAL4) Input%Bt_67um = a_sbaf(27) + b_sbaf(27)*Input%Bt_67um
-!     if (Input%Bt_73um /= MISSING_VALUE_REAL4) Input%Bt_73um = a_sbaf(28) + b_sbaf(28)*Input%Bt_73um
-!     if (Input%Bt_85um /= MISSING_VALUE_REAL4) Input%Bt_85um = a_sbaf(29) + b_sbaf(29)*Input%Bt_85um
-!     if (Input%Bt_10um /= MISSING_VALUE_REAL4) Input%Bt_10um = a_sbaf(38) + b_sbaf(38)*Input%Bt_10um
-!     if (Input%Bt_11um /= MISSING_VALUE_REAL4) Input%Bt_11um = a_sbaf(31) + b_sbaf(31)*Input%Bt_11um
-!     if (Input%Bt_12um /= MISSING_VALUE_REAL4) Input%Bt_12um = a_sbaf(32) + b_sbaf(32)*Input%Bt_12um
-!     if (Input%Bt_133um /= MISSING_VALUE_REAL4) Input%Bt_133um = a_sbaf(33) + b_sbaf(33)*Input%Bt_133um 
-
-! Input%Chan_On_041um = Sensor%Chan_On_Flag_Default(8)
-! Input%Chan_On_063um = Sensor%Chan_On_Flag_Default(1)
-! Input%Chan_On_086um = Sensor%Chan_On_Flag_Default(2)
-! Input%Chan_On_138um = Sensor%Chan_On_Flag_Default(26)
-! Input%Chan_On_160um = Sensor%Chan_On_Flag_Default(6)
-! Input%Chan_On_213um = Sensor%Chan_On_Flag_Default(7)
-! Input%Chan_On_375um = Sensor%Chan_On_Flag_Default(20)
-! Input%Chan_On_62um = Sensor%Chan_On_Flag_Default(37)
-! Input%Chan_On_67um = Sensor%Chan_On_Flag_Default(27)
-! Input%Chan_On_73um = Sensor%Chan_On_Flag_Default(28)
-! Input%Chan_On_85um = Sensor%Chan_On_Flag_Default(29)
-! Input%Chan_On_97um = Sensor%Chan_On_Flag_Default(30)
-! Input%Chan_On_10um = Sensor%Chan_On_Flag_Default(38)
-! Input%Chan_On_11um = Sensor%Chan_On_Flag_Default(31)
-! Input%Chan_On_12um = Sensor%Chan_On_Flag_Default(32)
-! Input%Chan_On_133um = Sensor%Chan_On_Flag_Default(33)
-! Input%Chan_On_I1_064um = Sensor%Chan_On_Flag_Default(39)
-! Input%Chan_On_I4_374um = Sensor%Chan_On_Flag_Default(42)
-! Input%Chan_On_I5_114um = Sensor%Chan_On_Flag_Default(43)
-! Input%Chan_On_DNB = Sensor%Chan_On_Flag_Default(44)
 
    end subroutine MODIS_AQUA_SBAF
 

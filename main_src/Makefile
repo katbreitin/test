@@ -50,7 +50,7 @@ ARCH=gfortran
 
 
 COMP=gfortran
-ifneq ($(ARCH), $(filter $(ARCH), ifort ifort-debug ifort-profile gfortran gfortran-debug gfortran-debug-andy gfortran-strict ifort-trace gfortran-profile gfortran-cspp))
+ifneq ($(ARCH), $(filter $(ARCH), ifort ifort-debug ifort-profile gfortran gfortran-debug gfortran-debug-andy gfortran-strict ifort-trace gfortran-profile gfortran-cspp gfortran10))
 $(error ARCH $(ARCH) not a existing build in ../build/arch) 
 endif 
 ifeq ($(ARCH), $(filter $(ARCH), ifort ifort-debug ifort-profile ifort-trace))
@@ -295,7 +295,8 @@ clavrxorb_objs = process_clavrx.o \
                  cx_nwp_rtm_mod.o \
                  cx_sfc_emissivity_mod.o \
                  cx_rtm_mod.o \
-                 viirs_nasa_hres_read_mod.o
+                 viirs_nasa_hres_read_mod.o \
+	         cleanup.o
 
 #Level2b routines
 comp_asc_des_level2b_objs = comp_asc_des_level2b.o \
@@ -307,7 +308,8 @@ comp_asc_des_level2b_objs = comp_asc_des_level2b.o \
                             cx_date_time_tools_mod.o \
                             cx_real_boolean_mod.o \
                             class_time_date.o \
-                            constants_mod.o
+                            constants_mod.o \
+                            pixel_common_mod.o
 
 #Level2b subsetting routines
 drive_subset_level2b_objs = drive_subset_level2b.o \
@@ -318,7 +320,8 @@ drive_subset_level2b_objs = drive_subset_level2b.o \
                             level2b_mod.o \
                             numerical_routines_mod.o \
                             cx_real_boolean_mod.o \
-                            constants_mod.o
+                            constants_mod.o \
+                            pixel_common_mod.o
 
   CLAVRX_OBJ_FILES = $(clavrxorb_objs)
 
@@ -461,7 +464,8 @@ user_options.o: user_options.f90 constants_mod.o pixel_common_mod.o clavrx_messa
 pixel_common_mod.o: pixel_common_mod.f90 constants_mod.o class_time_date.o
 caliop_collocation_mod.o: caliop_collocation_mod.f90 pixel_common_mod.o file_tools.o clavrx_message_mod.o cx_hdf4_mod.o
 cx_spatial_metrics_mod.o: cx_spatial_metrics_mod.f90 constants_mod.o numerical_routines_mod.o pixel_common_mod.o cx_real_boolean_mod.o numerical_routines_mod.o acha_clavrx_bridge_module.o
-pixel_routines_mod.o: pixel_routines_mod.f90 constants_mod.o numerical_routines_mod.o pixel_common_mod.o nwp_common_mod.o planck_mod.o algorithm_constants_mod.o land_sfc_properties_mod.o surface_properties_mod.o calibration_constants_mod.o viewing_geometry_mod.o caliop_collocation_mod.o nbm_cloud_mask_clavrx_bridge_module.o
+pixel_routines_mod.o: pixel_routines_mod.f90 constants_mod.o numerical_routines_mod.o pixel_common_mod.o nwp_common_mod.o planck_mod.o algorithm_constants_mod.o land_sfc_properties_mod.o surface_properties_mod.o calibration_constants_mod.o viewing_geometry_mod.o caliop_collocation_mod.o nbm_cloud_mask_clavrx_bridge_module.o clavrx_message_mod.o
+	$(fc) -c $(fflags) $(cppflags) $(cpp) -fno-finite-math-only pixel_routines_mod.f90
 clavrx_olr_mod.o: clavrx_olr_mod.f90 constants_mod.o pixel_common_mod.o algorithm_constants_mod.o
 clavrx_sst_mod.o: clavrx_sst_mod.f90 constants_mod.o pixel_common_mod.o
 calibration_constants_mod.o: calibration_constants_mod.f90 constants_mod.o 
@@ -488,14 +492,14 @@ clavrx_static_nav_module.o: clavrx_static_nav_module.f90 constants_mod.o cx_date
 endif    
 
 ifdef rttov_libs
-cx_sfc_emissivity_mod.o:cx_sfc_emissivity_mod.f90  cx_rttov_sfc_emiss.o
+cx_sfc_emissivity_mod.o:cx_sfc_emissivity_mod.f90  cx_rttov_sfc_emiss.o clavrx_message_mod.o
 	$(fc) -c $(fflags) $(cppflags) $(cpp) $(fflags_clavr) -I$(RTTOV_DIR)  $(LIB_RTTOV_FLAG)  cx_sfc_emissivity_mod.f90
   
-cx_rtm_mod.o:cx_rtm_mod.f90 nwp_common_mod.o cx_rttov_bridge_mod.o
+cx_rtm_mod.o:cx_rtm_mod.f90 nwp_common_mod.o cx_rttov_bridge_mod.o clavrx_message_mod.o
 	$(fc) -c $(fflags) $(cppflags) $(cpp) -I$(RTTOV_DIR)  $(LIB_RTTOV_FLAG)  cx_rtm_mod.f90
   
 else
-cx_sfc_emissivity_mod.o:cx_sfc_emissivity_mod.f90 
+cx_sfc_emissivity_mod.o:cx_sfc_emissivity_mod.f90 clavrx_message_mod.o
 cx_rtm_mod.o:cx_rtm_mod.f90 nwp_common_mod.o 
 	$(fc) -c $(fflags) $(cppflags) $(cpp)  cx_rtm_mod.f90
   
@@ -537,11 +541,11 @@ dnb_retrievals_mod.o:dnb_retrievals_mod.f90 file_tools.o
 cloud_height_routines.o: cloud_height_routines.f90 constants_mod.o planck_mod.o rtm_common_mod.o numerical_routines_mod.o cx_science_tools_mod.o cx_real_boolean_mod.o
 clavrx_message_mod.o: clavrx_message_mod.f90 file_tools.o foul.o pixel_common_mod.o
 cx_hdf4_mod.o: version.inc cx_hdf4_mod.f90 hdf.o constants_mod.o level2_structures_mod.o cx_real_boolean_mod.o
-comp_asc_des_level2b.o: comp_asc_des_level2b.f90 constants_mod.o cx_hdf4_mod.o hdf.o level2b_mod.o level2_structures_mod.o cx_real_boolean_mod.o file_tools.o
+comp_asc_des_level2b.o: comp_asc_des_level2b.f90 constants_mod.o cx_hdf4_mod.o hdf.o level2b_mod.o level2_structures_mod.o cx_real_boolean_mod.o file_tools.o pixel_common_mod.o
 drive_subset_level2b.o: drive_subset_level2b.f90 constants_mod.o cx_hdf4_mod.o hdf.o level2b_mod.o
-file_tools.o: file_tools.f90
+file_tools.o: file_tools.f90 pixel_common_mod.o
 foul.o: foul.f90
-goes_mod.o: goes_mod.f90 pixel_common_mod.o viewing_geometry_mod.o cx_date_time_tools_mod.o avhrr_mod.o file_tools.o cx_spatial_metrics_mod.o
+goes_mod.o: goes_mod.f90 pixel_common_mod.o viewing_geometry_mod.o cx_date_time_tools_mod.o avhrr_mod.o file_tools.o cx_spatial_metrics_mod.o clavrx_message_mod.o 
 abi_mod.o: abi_mod.f90 pixel_common_mod.o goes_mod.o file_tools.o viewing_geometry_mod.o cx_real_boolean_mod.o
 Compare_Float_Numbers.o: Compare_Float_Numbers.f90 constants_mod.o
 gfs_hdf_mod.o: gfs_hdf_mod.f90 constants_mod.o  cx_science_tools_mod.o nwp_common_mod.o hdf.o clavrx_message_mod.o cx_hdf4_mod.o
@@ -583,7 +587,7 @@ sapf_read_mod.o: sapf_read_mod.f90 hdf.o constants_mod.o pixel_common_mod.o file
 	$(fc) -c $(fflags) $(cppflags) $(cpp) $(CLAVRX_ID_FLAG) $(netcdflibs) sapf_read_mod.f90
 planck_mod.o: planck_mod.f90 constants_mod.o calibration_constants_mod.o pixel_common_mod.o
 avhrr_reposition_mod.o: avhrr_reposition_mod.f90 constants_mod.o cx_date_time_tools_mod.o pixel_common_mod.o reposnx.o
-seviri_mod.o: seviri_mod.f90 pixel_common_mod.o constants_mod.o numerical_routines_mod.o goes_mod.o viewing_geometry_mod.o
+seviri_mod.o: seviri_mod.f90 pixel_common_mod.o constants_mod.o numerical_routines_mod.o goes_mod.o viewing_geometry_mod.o clavrx_message_mod.o
 oca_mod.o: oca_mod.f90 hdf.o constants_mod.o pixel_common_mod.o file_tools.o
 sfc_emiss.o: sfc_emiss.f90 constants_mod.o numerical_routines_mod.o
 	$(fc) -c $(fflags) $(cppflags) $(cpp) $(CLAVRX_ID_FLAG) $(netcdflibs)  sfc_emiss.f90
@@ -682,7 +686,8 @@ sub_routine = constants_mod.o pixel_common_mod.o pixel_routines_mod.o clavrx_sst
               seviri_mod.o mvcm_read_mod.o sapf_read_mod.o oca_mod.o mtsat_mod.o hirs_fusion_mod.o \
               simple_cod_065um_mod.o simple_cod_138um_mod.o simple_cod_lunar_mod.o simple_cod_160um_mod.o \
               coms_mod.o level2b_mod.o dcomp_rtm_module.o dcomp_derived_products_mod.o cx_date_time_tools_mod.o \
-              cx_real_boolean_mod.o cx_abi_lhp_mod.o cx_spatial_metrics_mod.o cx_atmospheric_correction_vis_mod.o cx_nwp_rtm_mod.o 
+              cx_real_boolean_mod.o cx_abi_lhp_mod.o cx_spatial_metrics_mod.o cx_atmospheric_correction_vis_mod.o cx_nwp_rtm_mod.o\
+              cx_nwp_rtm_mod.o cleanup.o
 
 ifdef rttov_libs1
   sub_routine += cx_rttov_sfc_emiss.o cx_rttov_bridge_mod.o 
@@ -771,7 +776,7 @@ geos_transform_pix.o: geos_transform_pix.c
 ################################ Misc. Targets #################################
 
 all_plus:
-ifeq ($(ARCH),$(filter $(ARCH), gfortran gfortran-strict gfortran-debug gfortran-profile ))
+ifeq ($(ARCH),$(filter $(ARCH), gfortran gfortran-strict gfortran-debug gfortran-profile gfortran10 ))
 all_plus:  dcomp_gfortran muri_gfortran all
 else
 all_plus: dcomp_ifort muri_ifort all

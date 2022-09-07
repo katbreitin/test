@@ -6,7 +6,7 @@
 # Include all required macros on the following lines:
 
 
-ifeq ($(ARCH),$(filter $(ARCH), gfortran gfortran-strict gfortran-debug gfortran-debug-andy))
+ifeq ($(ARCH),$(filter $(ARCH), gfortran gfortran-strict gfortran-debug gfortran-debug-andy gfortran10))
 export CX_DATA_IO=/fjord/jgs/patmosx/Ancil_Data/clavrx_ancil_data/libs/cx_sds_io/Release_gfortran/
 export DNCOMP=/fjord/jgs/patmosx/Ancil_Data/clavrx_ancil_data/libs/cx_dncomp/Release_gfortran/
 export HDF4_PATH = ${SSEC_HDF4_LIB}/../

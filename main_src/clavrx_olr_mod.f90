@@ -202,6 +202,10 @@ select case (Sensor%WMO_Id)
          olr_type = 'goes'
          olr_coef(1:5) = (/17.8305,0.553769,0.340907,0.00937766,0.00653376/)
 
+      case(272) !GOES-18 TODO FAKE NUMBER ADJUST WHEN KNOWN
+         olr_type = 'goes'
+         olr_coef(1:5) = (/17.8305,0.553769,0.340907,0.00937766,0.00653376/)
+
       case(384) !EPS-SG TODO FAKE NUMBER ADJUST WHEN KNOWN
          olr_type = 'none'
 

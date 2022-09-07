@@ -143,20 +143,20 @@ module ACHA_CLAVRX_BRIDGE
    !--- Call to Geometrical Shadow Algorithm
    !-----------------------------------------------------------------------
   
-   call CLOUD_SHADOW_RETR (  &
-           ACHA%Zc &
-         , Geo%Solaz &
-         , Geo%Solzen &
-         , Nav%Lat &
-         , Nav%Lon &
-         , Nav%Lat_Pc &
-         , Nav%Lon_Pc &
-         , CLDMASK%Shadow_Mask ) 
+   !call CLOUD_SHADOW_RETR (  &
+   !        ACHA%Zc &
+   !      , Geo%Solaz &
+   !      , Geo%Solzen &
+   !      , Nav%Lat &
+   !      , Nav%Lon &
+   !      , Nav%Lat_Pc &
+   !      , Nav%Lon_Pc &
+   !      , CLDMASK%Shadow_Mask ) 
  
-   !---- copy shadow result into cloud mask test bits
-   where (CLDMASK%Shadow_Mask == 1 .and. CLDMASK%Cld_Mask == 0 )  
-           CLDMASK%Cld_Test_Vector_Packed ( 2 , :, : )  = ibset (CLDMASK%Cld_Test_Vector_Packed ( 2 , :, : )  , 6 )
-   end where
+   !!---- copy shadow result into cloud mask test bits
+   !where (CLDMASK%Shadow_Mask == 1 .and. CLDMASK%Cld_Mask == 0 )  
+   !        CLDMASK%Cld_Test_Vector_Packed ( 2 , :, : )  = ibset (CLDMASK%Cld_Test_Vector_Packed ( 2 , :, : )  , 6 )
+   !end where
 
    !-----------------------------------------------------------------------
    !--- Null pointers after algorithm is finished

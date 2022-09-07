@@ -84,7 +84,8 @@ module AVHRR_MOD
          , cldmask &
          , Cloud_Mask_Aux_Read_Flag  &
          , num_loc &
-         , Ch1_Counts, Ch2_Counts, Ch6_Counts
+         , Ch1_Counts, Ch2_Counts, Ch6_Counts &
+         , Cld_Flag
   
   use CALIBRATION_CONSTANTS_MOD, only: &
                 sat_name &
@@ -2932,23 +2933,25 @@ subroutine UNPACK_AVHRR_HEADER_RECORD_KLM(Sc_Id_AVHRR,AVHRR_Data_Type,Start_Year
     Start_word = word_clavr_start + 8
     End_word = Start_word + Num_clavr_bytes
 
-    do iword = Start_word, End_word
-      onebyte = Buffer_AVHRR(iword)
-      Pix_Idx = 1
-      Start_Pixel = (iword - Start_word)*4 + 1
-      End_Pixel = min(Image%Number_Of_Elements, Start_Pixel+3_int2)
+    if(Cld_Flag == sym%YES) then
+        do iword = Start_word, End_word
+          onebyte = Buffer_AVHRR(iword)
+          Pix_Idx = 1
+          Start_Pixel = (iword - Start_word)*4 + 1
+          End_Pixel = min(Image%Number_Of_Elements, Start_Pixel+3_int2)
 
-      do Pix_Idx = Start_Pixel, End_Pixel
-         if (Pix_Idx > Image%Number_Of_Elements) then
-           exit
-         endif
-         i = (Pix_Idx - Start_Pixel) + 1
-         CLDMASK%Cld_Mask_Aux(Pix_Idx,Line_Idx) = ishft(ishft(onebyte,2*(i-1)),-6)
-      enddo
-    enddo
+          do Pix_Idx = Start_Pixel, End_Pixel
+             if (Pix_Idx > Image%Number_Of_Elements) then
+               exit
+             endif
+             i = (Pix_Idx - Start_Pixel) + 1
+             CLDMASK%Cld_Mask_Aux(Pix_Idx,Line_Idx) = ishft(ishft(onebyte,2*(i-1)),-6)
+          enddo
+        enddo
 
-    !--- set flag to communicate that mask was read in
-    Cloud_Mask_Aux_Read_Flag = sym%YES
+        !--- set flag to communicate that mask was read in
+        Cloud_Mask_Aux_Read_Flag = sym%YES
+    endif
 
   end subroutine UNPACK_AVHRR_DATA_RECORD_KLM
 

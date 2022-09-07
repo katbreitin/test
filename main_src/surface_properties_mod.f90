@@ -414,10 +414,11 @@ subroutine GET_PIXEL_SFC_EMISS_FROM_SFC_TYPE(j1,j2)
       if (Bad_Pixel_Mask(i,j) == sym%YES) then
         cycle
       endif
- 
+         
       !--- based on surface type, assign surface emissivities if seebor not used
       !--- if the Sfc_Type is missing, treat pixel as bad
-      if (sfc_emiss_option == 4) then
+      if (sfc_emiss_option == 0) then
+        
         if (Sfc%Sfc_Type(i,j) >= 0 .and. Sfc%Sfc_Type(i,j) < 15) then     !limits depend on Sfc_Type
           if (Sensor%Chan_On_Flag_Default(20)==sym%YES) Ch(20)%Sfc_Emiss(i,j) = Ch20_Sfc_Emiss_Umd(Sfc%Sfc_Type(i,j))
           if (Sensor%Chan_On_Flag_Default(21)==sym%YES) Ch(21)%Sfc_Emiss(i,j) = Ch20_Sfc_Emiss_Umd(Sfc%Sfc_Type(i,j))
