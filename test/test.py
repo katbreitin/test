@@ -314,7 +314,7 @@ for rtm in ['pfast','rttov']:
             if see_emiss:
                 see_emiss_str = 'IRseaemis'
             else:
-                see_emiss_str = 'IRseaemis'
+                see_emiss_str = 'noIRseaemis'
             exec(f"""
 @save
 def test_g17_conus_{rtm}_{sfc_emiss}_{see_emiss_str}(out_dir=None):
@@ -340,4 +340,11 @@ def test_h8_fd_dat(out_dir=None):
     
     return _run_it(files[0], files[1:], config_override=override, out_dir=out_dir)
 
+def test_fy3d(out_dir=None):
+    ROOT = Path('/ships19/cloud/archive/clavrx_test_data/fy3d/')
+    L1B = next(ROOT.glob('tf2022234070952.FY3D-X_MERSI_GEO1K_L1B.HDF'))
+    aux = set(ROOT.glob('*'))
+    aux.remove(L1B)
+    override = {'lut':'ecm2_lut_abhi_default.nc'}
+    return _run_it(L1B, aux, config_override=override, out_dir=out_dir)
 

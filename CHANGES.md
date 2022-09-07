@@ -23,5 +23,6 @@ All notable changes to this project will be documented in this file
 - Uncertainty in tau added to ACHA estimation
 - Updated cloud phase / type post-ECM2 filtering
 - Misc bug fixes
+- Added support for FY3D
 
 
