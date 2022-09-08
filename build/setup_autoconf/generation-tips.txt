@@ -1,0 +1,9 @@
+In the directory containing configure.ac:
+
+   autoheader;   # Creates new './cfghdr_appind.h-template' from configure.ac 
+
+   rm ./configure;
+   autoconf;     # Creates new './configure' from configure.ac
+
+   rm -rf autom4te.cache;
+
