@@ -139,6 +139,8 @@ C     Maxwvl  = max no. of spectral intervals in refl/trans tables
 C+---------------------------------------------------------------------+
 C
 
+      use file_utils, only: get_lun
+
 C     .. Parameters ..
       INTEGER  Maxtab, Maxtau, Maxwvl, Maxflx, Maxotr, Maxint, Maxfpr
       PARAMETER  ( Maxtab=2, Maxtau=15, Maxwvl=5, Maxflx=27, Maxotr=5,
@@ -146,7 +148,6 @@ C     .. Parameters ..
 C     ..
 C     .. Scalar Arguments ..
       CHARACTER * 120 Auxpath
-      INTEGER Get_Lun
       INTEGER Unit16
       INTEGER Unit1
       REAL  Aertau, Cdfrac, Cldbba, Cldref, Cldtau, Clrbba, Clrref,
@@ -368,7 +369,9 @@ C    Nlat   : number of latitudes in aerosol table
 C    Nlon   : number of longitudes in aerosol table
 C    Nmonth : number of months in aerosol table
 C+---------------------------------------------------------------------+
-C
+
+      use file_utils, only: get_lun
+
 C     .. Parameters ..
       INTEGER  Maxlat, Maxlon
       PARAMETER  ( Maxlat=51, Maxlon=111 )
@@ -384,7 +387,6 @@ C     .. Local Scalars ..
       INTEGER  Ilat, Ilon, Irec, Lat, Lon, Month1, Monthn, Nlat, Nlon,
      &         Nmonth, Nskip, Pmonth
       REAL  Clat1, Clatn, Clon1, Clonn, Dlat, Dlon, Length
-      INTEGER Get_Lun
       INTEGER Unit16, Unit2
 C     ..
 C     .. Local Arrays ..
@@ -1219,7 +1221,9 @@ C   Called by- Sasrab
 C   Calls- Wrtdim, Errmsg, Intpol, Refsur, Conver, Getalb, Matalb,
 C          Matcha, Fluxes
 C+---------------------------------------------------------------------+
-C
+
+      use file_utils, only: get_lun
+
 C     .. Parameters ..
       INTEGER Unit16
       INTEGER Maxtau, Maxwvl, Maxflx, Maxint
@@ -1258,7 +1262,6 @@ C     .. Local Arrays ..
      &      Sphref( Maxwvl ), Sphtra( Maxwvl, Maxtau ),
      &      Sphtrc( Maxwvl, Maxtau ), Sphtrn( Maxwvl )
 C     ..
-      INTEGER Get_Lun
       INTEGER Unit18
 
 C     .. External Functions ..
@@ -2089,12 +2092,13 @@ C
 C     Called by- Insest
 C     Calls- Smumon, Refsur
 C+---------------------------------------------------------------------+
-C
+
+      use file_utils, only: get_lun
+
 C     .. Scalar Arguments ..
       LOGICAL  Noretr
       INTEGER  Ilat, Ilon, Jday, Nwlint, Unit16
       REAL     lat, Snowfr
-      INTEGER Get_Lun
       INTEGER Unit3
 C     ..
 C     .. Array Arguments ..
@@ -3385,7 +3389,9 @@ C
 C   Called by- Sasrab
 C   Calls- Wrtdim, Errmsg
 C+---------------------------------------------------------------------+
-C
+
+      use file_utils, only: get_lun
+
 C     .. Parameters ..
       INTEGER  Maxtau, Maxsun, Maxwvl, Maxh2o, Maxo3, Maxtab
       PARAMETER  ( Maxtau=15, Maxsun=9, Maxwvl=5, Maxh2o=5, Maxo3=4,
@@ -3431,7 +3437,6 @@ C     .. Local Scalars ..
 C     ..
 C     .. Local Arrays ..
       INTEGER  Ntaumx( Maxtab )
-      INTEGER Get_Lun
       INTEGER Unit16
       INTEGER Unit18
 C     ..
