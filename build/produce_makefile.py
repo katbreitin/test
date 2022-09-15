@@ -7,7 +7,8 @@ given the source filepaths and other information (for Fortran 90+ and C source).
 
 This program requires either Python version 2.6+ or 3.2+, and is importable as a
 python module.  Only standard library types/methods are utilized for greater
-portability.  May need to be invoked via 'create_mf.py ...' on some systems.
+portability.  May need to be invoked via 'produce_makefile.py ...' on some
+systems.
 """
 
 from __future__ import print_function, absolute_import, division, unicode_literals
@@ -36,30 +37,36 @@ def file_keyword_scan(obj, src, items_parsed_d, obj_with_module_d,
     if arg_v:
         print("Processing file "+src+" of object "+obj+" ...")
 
-    with open(src, "rt") as src_f:
-        line_list = src_f.readlines()
-        for line in line_list:
-              # Search for Fortran module definitions:
-            module_res = module_re.search(line)
-            if module_res:
-                mod_nm = (module_res.group(1)).lower()
-                if mod_nm in obj_with_module_d and mod_nm != "procedure":
-                    print("\nModule "+mod_nm+" found in "+obj+ \
-                          " source as well as in "+obj_with_module_d[mod_nm]+ \
-                          " -- AMBIGUOUS.\n")
-                    sys.exit()
-                obj_with_module_d[mod_nm] = obj
-              # Search for Fortran 'use' directives:
-            use_res = use_re.search(line)
-            if use_res:
-                modules_used_d[obj] += ' '+(use_res.group(1)).lower()
-              # Search for include directives (both C- and Fortran-style):
-            include_res = include_re.search(line)
-            if include_res:
-                if src not in files_included_d:
-                    files_included_d[src] = ''
-                files_included_d[src] += ' '+include_res.group(1)
+    try:
+        with open(src, "rt") as src_f:
+            line_list = src_f.readlines()
+    except UnicodeDecodeError:
+        with open(src, "r", encoding='ISO-8859–1') as src_f:
+            line_list = src_f.readlines()
+
+    for line in line_list:
+          # Search for Fortran module definitions:
+        module_res = module_re.search(line)
+        if module_res:
+            mod_nm = (module_res.group(1)).lower()
+            if mod_nm in obj_with_module_d and mod_nm != "procedure":
+                print("\nModule "+mod_nm+" found in "+obj+ \
+                      " source as well as in "+obj_with_module_d[mod_nm]+ \
+                      " -- AMBIGUOUS.\n")
+                sys.exit()
+            obj_with_module_d[mod_nm] = obj
+          # Search for Fortran 'use' directives:
+        use_res = use_re.search(line)
+        if use_res:
+            modules_used_d[obj] += ' '+(use_res.group(1)).lower()
+          # Search for include directives (both C- and Fortran-style):
+        include_res = include_re.search(line)
+        if include_res:
+            if src not in files_included_d:
+                files_included_d[src] = ''
+            files_included_d[src] += ' '+include_res.group(1)
     items_parsed_d[src] = 1
+
     if arg_d:
         if modules_used_d[obj]:
             print("   requires modules: "+modules_used_d[obj])
@@ -400,7 +407,7 @@ def crmf(arg_pathpfx, arg_d, arg_v, arg_mffpath, arg_finaltgt,
 #------------------------------------------------------------------------------
 def usage():
     usage_msg = """
-usage: create_mf.py [-h][-d][-v] [--pathpfx Pathpfx] [--mffpath Mffpath]
+usage: produce_makefile.py [-h][-d][-v] [--pathpfx Pathpfx] [--mffpath Mffpath]
                     [--finaltgt Finaltgt] [--mfpreamble Mfpreamble]
                     [--otherincp Incpaths_other] [--otherflags Compflags_other]
                     arg_item1 arg_item2 ... arg_itemN
