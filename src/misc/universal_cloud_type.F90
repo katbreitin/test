@@ -48,7 +48,9 @@ module UNIVERSAL_CLOUD_TYPE_MODULE
   private:: COMPUTE_ICE_PROBABILITY_BASED_ON_TEMPERATURE
   private:: OPAQUE_CLOUD_HEIGHT_LOCAL
   private:: H2O_CLOUD_HEIGHT_LOCAL
+#ifdef ISCLAVRX
   private:: SET_CLOUD_TYPE_VERSION
+#endif
 
   logical, parameter, private:: Use_10_4_Flag = .true.
 
@@ -84,7 +86,7 @@ module UNIVERSAL_CLOUD_TYPE_MODULE
 !  record cvs version as a global variable for output to hdf
 !====================================================================
 #ifdef ISCLAVRX
-subroutine SET_CLOUD_TYPE_VERSION()
+subroutine SET_CLOUD_TYPE_VERSION
    Cloud_Type_Version = "$Id: universal_cloud_type.f90 4052 2020-11-19 13:55:22Z awalther $"
 end subroutine SET_CLOUD_TYPE_VERSION
 #endif
