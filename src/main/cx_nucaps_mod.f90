@@ -85,7 +85,7 @@ contains
   !------------------------------------------------------------------------------------
   subroutine SETUP_NUCAPS(Seg_Idx,NUCAPS_On_Flag)
 
-    use FILE_TOOLS, only: file_search
+    use FILE_UTILS, only: file_search
 
     integer, intent(in):: Seg_Idx
     integer, intent(out):: NUCAPS_On_Flag

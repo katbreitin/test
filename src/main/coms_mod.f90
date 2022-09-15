@@ -75,7 +75,7 @@ use GOES_MOD, only: &
     , AREA_struct &
     , compute_satellite_angles
     
-use FILE_TOOLS,only: get_lun
+use FILE_UTILS, only: get_lun
 
 use VIEWING_GEOMETRY_MOD, only: &
   possol

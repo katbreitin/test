@@ -30,7 +30,7 @@ module LEVEL2B_MOD
  use CX_REAL_BOOLEAN_MOD
  use HDF
  use LEVEL2_MOD
- use FILE_TOOLS,only: get_lun
+ use FILE_UTILS,only: get_lun
 
  implicit none
  private

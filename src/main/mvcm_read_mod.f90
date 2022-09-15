@@ -31,7 +31,7 @@ module MVCM_READ_MOD
            , COMPUTE_MONTH &
            , COMPUTE_DAY &
            , LEAP_YEAR_FCT
-    use FILE_TOOLS, only: FILE_SEARCH
+    use FILE_UTILS, only: FILE_SEARCH
     use CONSTANTS_MOD, only: &
              Real4 &
            , Int4 &

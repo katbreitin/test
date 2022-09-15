@@ -30,7 +30,8 @@
 !   
 !--------------------------------------------------------------------------------------
 module dnb_retrievals_mod
-   use FILE_TOOLS
+   use FILE_UTILS, only: file_test
+
    implicit none
    private
    public :: compute_lunar_reflectance, compute_lunar_irrad_dnb

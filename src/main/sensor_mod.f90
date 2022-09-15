@@ -2152,7 +2152,7 @@ module SENSOR_MOD
    subroutine SET_FILE_DIMENSIONS(Level1b_Full_Name,AREAstr,Nrec_Avhrr_Header, Ierror)
 
       use CX_READ_AHI_MOD, only : AHI_SEGMENT_INFORMATION_REGION, AHI_CONFIG_TYPE
-      use file_tools
+      use file_utils, only: file_search
 
 
       character(len=*), intent(in) :: Level1b_Full_Name

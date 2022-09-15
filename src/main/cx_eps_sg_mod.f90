@@ -190,7 +190,7 @@ end subroutine READ_EPS_SG_DATE_TIME
 !----------------------------------------------------------------------
 subroutine READ_EPS_SG_INSTR_CONSTANTS(Instr_Const_File)
 
-   use FILE_TOOLS , only: GETLUN
+   use FILE_UTILS, only: GET_LUN
 
    character(len=*), intent(in):: Instr_Const_file
 
@@ -198,7 +198,7 @@ subroutine READ_EPS_SG_INSTR_CONSTANTS(Instr_Const_File)
    integer:: Instr_Const_Lun
    character(len=20):: header
 
-   Instr_Const_Lun = GETLUN()
+   Instr_Const_Lun = GET_LUN()
 
    open(unit=Instr_Const_Lun,file=trim(Instr_Const_File),status="old",position="rewind",action="read",iostat=ios0)
    call MESG (EXE_PROMPT//" Opening "// trim(Instr_Const_File),level = verb_lev % DEFAULT)

@@ -32,7 +32,7 @@ use CALIBRATION_CONSTANTS_MOD
 use PLANCK_MOD
 use NUMERICAL_ROUTINES_MOD
 use GOES_MOD
-use FILE_TOOLS, only: get_lun
+use FILE_UTILS, only: get_lun
 use VIEWING_GEOMETRY_MOD
 
 implicit none

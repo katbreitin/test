@@ -74,7 +74,7 @@ contains
   ! Add Comments Here
   !---------------------------------------------------------------------
   subroutine do_it ( text, message_level ,color_in )
-    use file_tools, only: file_test
+    use file_utils, only: file_test
     
     character ( len = * ) , intent (in) :: text 
     integer , intent ( in ) :: message_level

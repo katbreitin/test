@@ -41,7 +41,7 @@ module MODIS_MOD
         use HDF, only: &
                 DFACC_read
  
-        use FILE_TOOLS,only: &
+        use FILE_UTILS,only: &
                 get_lun
  
         use PIXEL_COMMON_MOD, only: &
@@ -75,7 +75,7 @@ module MODIS_MOD
 
         use VIEWING_GEOMETRY_MOD, only: GLINT_ANGLE, SCATTERING_ANGLE
  
-        use FILE_TOOLS, only: &
+        use FILE_UTILS, only: &
                 file_search
  
         use CALIBRATION_CONSTANTS_MOD, only: &

@@ -34,7 +34,7 @@ module FY3D_READ_MODULE
   
  ! use FILE_UTILITY, only: &
  !     get_lun  
-  use FILE_TOOLS, only: &
+  use FILE_UTILS, only: &
         FILE_SEARCH &
       , GET_LUN
   use PIXEL_COMMON_MOD, only: &

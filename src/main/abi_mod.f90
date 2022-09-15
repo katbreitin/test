@@ -91,7 +91,7 @@ module ABI_MOD
     , area_struct &
     , Compute_Satellite_Angles
     
-  use FILE_TOOLS,only: GetLun
+  use FILE_UTILS,only: Get_Lun
   
   use VIEWING_GEOMETRY_MOD, only: &
    possol
@@ -143,7 +143,7 @@ CONTAINS
     character(len=70):: header
     real:: dummy_rad_to_ref
 
-    Instr_Const_lun = GETLUN()
+    Instr_Const_lun = GET_LUN()
 
     open(unit=Instr_Const_lun,file=trim(Instr_Const_file),status="old",position="rewind",action="read",iostat=ios0)
 
@@ -339,7 +339,7 @@ CONTAINS
         ichan_modis = MODIS_CHN_LIST(ichan_goes)
         
         if (Sensor%Chan_On_Flag_Default(ichan_modis) == sym%NO) cycle  
-        ABI_file_id = getlun()
+        ABI_file_id = get_lun()
         call mesg ("Channel 1 calibration for : "// trim(channel_filename_list(ichan_goes)), level = 6 )
         
         call mread_open(trim(file_fullpath_list(ichan_goes))//CHAR(0), ABI_file_id)

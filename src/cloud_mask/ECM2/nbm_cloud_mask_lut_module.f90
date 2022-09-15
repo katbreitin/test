@@ -10,7 +10,7 @@
 !          Denis Botambekov, CIMSS
 !          William Straka, CIMSS
 !
-! DEPENDENCIES: Services_Module, NetCDF_read_Module, File_Tools
+! DEPENDENCIES: Services_Module, NetCDF_read_Module, File_Utils
 !
 ! SIDE EFFECTS: None
 !
@@ -37,7 +37,7 @@ module ECM2_CLOUD_MASK_LUT_MODULE
    , READ_NETCDF_DIMENSION &
    , DEFAULT_NAME_LENGTH
 
- use FILE_TOOLS, only: &
+ use FILE_UTILS, only: &
      FILE_TEST
 
  implicit none

@@ -126,7 +126,7 @@ module AVHRR_MOD
    , DTOR &
    , EXE_PROMPT   
   
-  use FILE_TOOLS,only: &
+  use FILE_UTILS,only: &
    get_lun
   
   use VIEWING_GEOMETRY_MOD,only: &

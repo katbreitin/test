@@ -35,9 +35,9 @@ module VIIRS_NASA_READ_MODULE
    , h5readdataset
   
   
-  use FILE_TOOLS, only: &
+  use FILE_UTILS, only: &
         FILE_SEARCH &
-      , GETLUN &
+      , GET_LUN &
       , FILE_TEST
       
   use PIXEL_COMMON_MOD, only: &
@@ -794,7 +794,7 @@ subroutine READ_VIIRS_NASA_DATA (Segment_Number, VGEOM_File, Error_Out)
             File_Dnb_Idx = trim(Ancil_Data_Dir)//'static/viirs/dnb2m_indx.txt'
          end select
 
-         Lun = GETLUN()
+         Lun = GET_LUN()
          Dim_Dnb_Seg(1) = 4064
          Dim_Dnb_Seg(2) = Dim_Seg(2)
 
@@ -1438,7 +1438,7 @@ end subroutine CONVERT_RAD_2_SOL_REF_DNB
 !-----------------------------------------------------------------
    subroutine READ_FUSION_INSTR_CONSTANTS(Instr_Const_File)
       use CALIBRATION_CONSTANTS_MOD
-      use FILE_TOOLS , only: GETLUN
+      use FILE_UTILS , only: GET_LUN
 
       implicit none
 
@@ -1447,7 +1447,7 @@ end subroutine CONVERT_RAD_2_SOL_REF_DNB
       integer:: Instr_Const_Lun
       character(len=20):: header
 
-      Instr_Const_Lun = GETLUN()
+      Instr_Const_Lun = GET_LUN()
 
       open(unit=Instr_Const_Lun,file=trim(Instr_Const_File),status="old",position="rewind",action="read",iostat=ios0)
       call MESG ("Opening "// trim(Instr_Const_File),level = verb_lev % DEFAULT)

@@ -91,7 +91,7 @@ module PIXEL_ROUTINES_MOD
   Land_grid_description &
   , read_land_sfc_hdf
   
- use FILE_TOOLS,only: getlun
+ use FILE_UTILS,only: get_lun
  
  use SURFACE_PROPERTIES_MOD, only:
  
@@ -770,7 +770,7 @@ end subroutine QUALITY_CONTROL_ANCILLARY_DATA
     end if
   else
    !--- read LST regcoefs from binary file
-    Coef_Lun=GETLUN()
+    Coef_Lun=GET_LUN()
     open(unit=Coef_Lun, file=TRIM(Coef_Fn),recl=leng*4, form ='unformatted', access = 'direct',status='old',action = 'read', iostat=ios)
     if (ios /= 0) THEN
       write(*,*) 'ERROR: Opening LST Coef binary file', TRIM(Coef_Fn)

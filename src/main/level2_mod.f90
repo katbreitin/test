@@ -27,7 +27,7 @@
 !--------------------------------------------------------------------------------------
 module LEVEL2_MOD
  use CONSTANTS_MOD
- use FILE_TOOLS,only: FILE_NR_LINES, GETLUN, FILE_TEST
+ use FILE_UTILS,only: FILE_NR_LINES, GETLUN, FILE_TEST
  use PIXEL_COMMON_MOD
  use HDF
  use CX_STRING_TOOLS_MOD

@@ -32,7 +32,7 @@ module FY4_MOD
     , Missing_Value_Real4
 
    
-   use FILE_TOOLS, only: &
+   use FILE_UTILS, only: &
        FILE_SEARCH &
        , get_lun
 

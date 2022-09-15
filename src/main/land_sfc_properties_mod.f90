@@ -45,7 +45,7 @@ module LAND_SFC_PROPERTIES_MOD
   
   use NUMERICAL_ROUTINES_MOD,only: &
    find_bounds
-  use FILE_TOOLS,only: &
+  use FILE_UTILS, only: &
    file_test
   use CLAVRX_MESSAGE_MOD, only: MESG,MESG_1I,VERB_LEV
   use HDF, only: MAX_RANK_HDF, DFACC_READ, FAIL

@@ -207,7 +207,7 @@
    use DNCOMP_CLAVRX_BRIDGE_MOD, only: &
       AWG_CLOUD_DNCOMP_ALGORITHM
   
-   use FILE_TOOLS, only: FILE_TEST, GETLUN
+   use FILE_UTILS, only: FILE_TEST, GET_LUN
 
    use GFS_HDF_MOD, only: READ_GFS_DATA
    
@@ -712,7 +712,7 @@
    call MESG( "CLAVR-x FILE LIST FILE USED: "//trim(File_list) , level = verb_lev % VERBOSE ) 
 
    !--- open file containing list of level1b data to process
-   File_List_Lun = GETLUN()
+   File_List_Lun = GET_LUN()
    open(unit=File_List_Lun, file = trim(File_List),status="old",action="read",iostat=ios)
    if (ios /= 0) then
       write ( string_30, '(i8)') ios
