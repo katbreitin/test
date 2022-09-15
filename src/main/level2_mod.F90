@@ -27,7 +27,7 @@
 !--------------------------------------------------------------------------------------
 module LEVEL2_MOD
  use CONSTANTS_MOD
- use FILE_UTILS,only: FILE_NR_LINES, GETLUN, FILE_TEST
+ use FILE_UTILS,only: FILE_NR_LINES, GET_LUN, FILE_TEST
  use PIXEL_COMMON_MOD
  use HDF
  use CX_STRING_TOOLS_MOD
@@ -122,7 +122,7 @@ subroutine READ_LEVEL2_VAR_LIST()
       stop 'No variable names in level2_list'
    end if
    
-   Lun = GETLUN()
+   Lun = GET_LUN()
 
    open(unit=Lun,file=trim(Level2_List),status='old')
    read(unit=lun,fmt=*) Level2_Var_List_Header
