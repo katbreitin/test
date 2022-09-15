@@ -1454,7 +1454,10 @@
                !  Also Muri 
                ! - 
                
-               if ( (trim(Sensor%Sensor_Name) == 'AHI' .or. trim(Sensor%Sensor_Name) == 'AHI9') .and. Aerosol_Mode == 1) then
+               if ( (trim(Sensor%Sensor_Name) == 'AHI' &
+                       .or. trim(Sensor%Sensor_Name) == 'AHI9' &
+                       .or. trim(sensor%sensor_name) == 'ABi') &
+                       .and. Aerosol_Mode == 1) then
                   call muri % allocate (Image%Number_of_elements , Image%Number_Of_Lines_Read_This_Segment)
                end if
                

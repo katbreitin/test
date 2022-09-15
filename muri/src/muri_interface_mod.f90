@@ -11,6 +11,7 @@ module muri_interface_mod
       real, allocatable :: sat(:,:)
       real, allocatable :: azi(:,:)
       real, allocatable :: ref(:,:,:)
+       real, allocatable :: bt_ref(:,:,:)
 !      real, allocatable :: ref_tmp(:,:,:)
       real, allocatable :: windspeed(:,:)
       real, allocatable :: scat_angle(:,:)
@@ -91,6 +92,7 @@ contains
 
      
       allocate ( this % ref( 6,dim1,dim2))
+      allocate ( this % bt_ref( 3,dim1,dim2))
       this % is_allocated = .true.
       
    
@@ -116,6 +118,7 @@ contains
       if (allocated (this % do_it) ) deallocate ( this % do_it)
       
       if (allocated (this % ref) ) deallocate ( this % ref)
+       if (allocated (this % bt_ref) ) deallocate ( this % bt_ref)
       if (allocated (this % land_class) ) deallocate ( this % land_class)
       if (allocated (this % muri_cm ) ) deallocate (this % muri_cm)
     	
