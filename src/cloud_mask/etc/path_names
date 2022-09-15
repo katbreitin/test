@@ -9,9 +9,3 @@ cloud_mask/ECM2/nbm_cloud_mask_clavrx_bridge_module.f90
 cloud_mask/ECM2/nbm_cloud_mask_get_prob_mask_phase.f90
 cloud_mask/ECM2/nbm_cloud_mask_lut_module.f90
 cloud_mask/ECM2/nbm_cloud_mask_module.f90
-cloud_mask/misc_code/nb_cloud_mask_geocat_bridge_module.f90
-cloud_mask/misc_code/nb_cloud_mask_geocat_services_module.f90
-cloud_mask/misc_code/nb_cloud_mask_gsip_bridge_module.f90
-cloud_mask/misc_code/nb_cloud_mask_gsip_services_module.f90
-cloud_mask/misc_code/nb_cloud_mask_sapf_bridge_module.f90
-cloud_mask/misc_code/nb_cloud_mask_sapf_services_module.f90

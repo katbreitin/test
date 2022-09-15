@@ -1,6 +1,4 @@
 muri/src/aw_lib_array.f90
-muri/src/aw_lib_array_org.f90
-muri/src/cx_sds_type_definitions_mod.f90
 muri/src/lib_array.f90
 muri/src/muri_array_loop_sub.f90
 muri/src/muri_atmospheric_corr_mod.f90
@@ -8,10 +6,7 @@ muri/src/muri_definitions_mod.f90
 muri/src/muri_forward_mod.f90
 muri/src/muri_interface_mod.f90
 muri/src/muri_land_lut_mod.f90
-muri/src/muri_land_lut_mod_old_nearest.f90
 muri/src/muri_land_retrieval_mod.f90
-muri/src/muri_land_retrieval_mod_old_nearest.f90
 muri/src/muri_lut_mod.f90
-muri/src/muri_one_pixel_run.f90
 muri/src/muri_retrieval_mod.f90
-muri/src/test_lib.f90
+
