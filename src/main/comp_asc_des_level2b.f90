@@ -297,7 +297,7 @@ program COMPILE_ASC_DES_LEVEL2B
  
  type(date_type) :: time_obj
 
- INCLUDE 'version.inc'
+ INCLUDE 'default_xDF_version_info.inc'
 
 !----------------------------------------------------------------------
 ! Begin Executable Code

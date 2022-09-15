@@ -240,7 +240,7 @@ contains
  character(len=100):: Metadata_Link_String
  character(len=100):: Spatial_Resolution_String
 
- include 'version.inc'
+ include 'default_xDF_version_info.inc'
 
  !complete the creator string with the version number
  Clavrx_Global_Attr%creator = trim(creator0)//trim(Product_Version_String)
