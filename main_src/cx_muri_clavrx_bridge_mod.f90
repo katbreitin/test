@@ -105,9 +105,11 @@ contains
      
 
      map_modis = ahi_map_modis
-
-     if (sensor % sensor_name .eq. 'GOES-RU-IMAGER') map_modis = abi_map_modis
-
+    input % sensor ='AHI'
+     if (sensor % sensor_name .eq. 'GOES-RU-IMAGER') then
+                map_modis = abi_map_modis
+                input % sensor ='ABI'
+     end if
       do i=1,6 
           if ( .not. allocated(ch(map_modis(i))%ref_toa)) then
             if (first_call ) then

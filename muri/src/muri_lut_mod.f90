@@ -54,7 +54,6 @@ module muri_lut_mod
  
    end type muri_lut_type
    
-	
    type ( muri_lut_type),save  :: lut
          
      
@@ -96,7 +95,6 @@ contains
       
       if ( present(path)) then
         path_local = trim(path)
-		  
        else
        
         path_local = trim('/home/mino/iris-home/MURI/MURI_aerosol_LUT/')
@@ -135,8 +133,8 @@ contains
         istatus = cx_sds_read ( trim(lut_file),'AOT_at_550nm',temp_2d_real)
         ! - add scale factor  Jan 2019 AW
         !allocate ( this %aot_550nm(size(temp_2d_real(:,1))), source = temp_2d_real(:,1))
-	
-	allocate ( this %aot_550nm(size(temp_2d_real(1,:))), source = temp_2d_real(1,:))
+
+       allocate ( this %aot_550nm(size(temp_2d_real(1,:))), source = temp_2d_real(1,:))
         this % aot_550nm(:) = temp_2d_real (1,:) /100.  ! -- new scale factor with v03
        
         
@@ -170,7 +168,7 @@ contains
             n_ws = shp_6d(5)  
             n_mode = shp_6d(6) 
            ! allocate ( this%app_refl(n_sol,n_sat,n_azi,N_bands,N_opt,N_mode))
-	    allocate ( this%app_refl(n_sol,n_sat,n_azi,n_ws,N_bands,N_opt,N_mode))
+            allocate ( this%app_refl(n_sol,n_sat,n_azi,n_ws,N_bands,N_opt,N_mode))
           end if  
           this%app_refl = -999.  
         end if
@@ -185,13 +183,13 @@ contains
        
        
         do i_opt=1,n_opt
-	   do i_mode=1,n_mode
-	   do i_ws=1,n_ws
+           do i_mode=1,n_mode
+              do i_ws=1,n_ws
        
-        this%app_refl(:,:,:,i_ws,band,i_opt,i_mode) =  0.0001 * temp_6d_real(:,:,:,i_opt,i_ws,i_mode)
-	end do
-	end do
-	end do
+                   this%app_refl(:,:,:,i_ws,band,i_opt,i_mode) =  0.0001 * temp_6d_real(:,:,:,i_opt,i_ws,i_mode)
+              end do
+          end do
+        end do
         
      
      
@@ -199,33 +197,24 @@ contains
      ! AOT_at_B2, AOT_at_B4, AOT_at_B6
      
           
-	   
-	   
+   
+   
            if(band .eq. 2) then
            istatus = cx_sds_read ( trim(lut_file), 'AOT_at_B2' , temp_2d_real)
            this% opt_ocean_x(:,1,:) =  0.001 * temp_2d_real(:,:) 
-	   end if 
-	    
-	   
-	   if(band .eq. 4) then
+   end if 
+    
+   
+   if(band .eq. 4) then
            istatus = cx_sds_read ( trim(lut_file), 'AOT_at_B4' , temp_2d_real)
            this % opt_ocean_x(:,2,:) =  0.001 * temp_2d_real(:,:) 
-	   end if  
-	   
-	   !!if(band .eq. 6) then
-           !!istatus = cx_sds_read ( trim(lut_file), 'AOT_at_B6' , temp_2d_real)
-           !!this%OPT_ocean_Bands(:,3,:) =  0.001 * temp_2d_real(:,:) 
-	   !!end if     
+   end if  
        
            
      
       
        end do
       
-       !print*,'B2 refl check',this%app_refl(5,5,5,2,2,:,1)
-       !print*,'B4 refl',this%app_refl(5,5,5,2,4,:,1)
-       !print*,'rayleigh refl',this%app_refl(5,5,5,2,4,1,1)
-       !print*,'this % opt_ocean_x',this % opt_ocean_x
        this % is_read = .true.
       
       
@@ -258,85 +247,38 @@ contains
             do i_band=1,6
        
            do i_opt=1,8 ! 8
-	      do i_mode=1,4
+                do i_mode=1,4
 
              
-	      
+      
               this % refl_fine(i_band,i_opt,i_mode)=interp4d(this%sol,this%sat &
-	                                                      ,this%azi, this%ws &
-							      ,this%app_refl(:,:,:,:,i_band,i_opt,i_mode) &
-							       ,sol,sat,azi,ws &
-							       , bounds_error = .false., FILL_VALUE = -999.)  
-							       
-		
+                                                      ,this%azi, this%ws &
+      ,this%app_refl(:,:,:,:,i_band,i_opt,i_mode) &
+       ,sol,sat,azi,ws &
+       , bounds_error = .false., FILL_VALUE = -999.)  
        
-	       end do
-	   end do
-	 end do
-	 
+
+       
+       end do
+   end do
+ end do
           
-	  
-	  
-	    ! do i_mode=1,4
-	  
-            !if (this % refl_fine(4,1,i_mode).LT.0) then
-		
-		!print*,'sol,sat,azi,ws, why why',sol,sat,azi,ws
-		!print*,'this%ws',this%ws
-		!print*,'app refl',this%app_refl(7:8,12:13,12:13,1:2,4,1,i_mode)
-		!print*,'this % refl_fine(4,1,i_mode)',this % refl_fine(4,1,i_mode)
-	
-		!end if
-		
-	    !end do					       
-			
-      
-      
-      
-      
-      
-	 
        do i_band=1,6
        
            do i_opt=1,8 ! 8
-	      do i_mode=1,5
-				 
- 	      this % refl_coarse(i_band,i_opt,i_mode)=interp4d(this%sol,this%sat &
-	                                                      ,this%azi, this%ws &
-							      ,this%app_refl(:,:,:,:,i_band,i_opt,i_mode+4) &
-							       ,sol,sat,azi,ws &
-							       , bounds_error = .false., FILL_VALUE = -999.)  	          
-	           	          
-	           
+      do i_mode=1,5
+ 
+       this % refl_coarse(i_band,i_opt,i_mode)=interp4d(this%sol,this%sat &
+                                                      ,this%azi, this%ws &
+      ,this%app_refl(:,:,:,:,i_band,i_opt,i_mode+4) &
+       ,sol,sat,azi,ws &
+       , bounds_error = .false., FILL_VALUE = -999.)            
+                     
+           
        
-	       end do
-	   end do
-	 end do  
-	 
-	 
-	! do i_band=1,2
-	! 	do i_opt=1,8
-	!	      do i_mode=1,9
-	!	
-	! this % opt_ocean_x(i_opt,i_band,i_mode)= this%OPT_ocean_Bands(i_opt,i_mode,i_band)
-	!		end do				       
-	! 	end do
-	!end do	
-	 
-	     
-      
-!      call dcomp_interpolation_weight(size( this % sol) , sol , this % sol &
-!         &, near_index =  pos_sol  )
-
-!     call dcomp_interpolation_weight(size( this % sat) , sat , this % sat &
-!         &, near_index =  pos_sat  )
-
-!      call dcomp_interpolation_weight(size( this % azi) , azi , this % azi &
-!         &, near_index = pos_azi  )    
-      
-!      this % refl_fine  = this % app_refl(pos_sol,pos_sat,pos_azi,:,:,1:4) 
-!      this % refl_coarse  = this % app_refl(pos_sol,pos_sat,pos_azi,:,:,5:9)
-
+       end do
+   end do
+end do  
    end subroutine muri_lut_type__sub_table
    
   
@@ -345,7 +287,7 @@ contains
       integer, intent ( in ) :: count
       real , intent ( in ) :: value
       real , dimension(:), intent( in ) :: data_in
-	  
+  
       real , intent( out ) , optional :: weight_out
       integer, intent ( out ) , optional :: index_out 
       integer, intent ( out ) , optional :: near_index

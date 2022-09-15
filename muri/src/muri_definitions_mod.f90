@@ -15,7 +15,7 @@ module muri_definitions_mod
       real :: lat         !latitude
       real :: lon         !longitude
       integer :: month    ! need for seasonal 
-      
+     character(len=3) :: sensor 
       logical :: is_sedimental
       character(len=400) :: path
       integer :: sfc_class
@@ -38,11 +38,11 @@ module muri_definitions_mod
       real :: trans_re_default
       real :: trans_re
       real :: err_n
-		
+
    
    end type  muri_output_type
-	
-	
+
+
 !	type surface_refl_type
 !      real :: yint644
 !      real :: slope644

@@ -5,13 +5,14 @@ module muri_interface_mod
 
    type muri_in_array_type
       logical :: is_allocated = .false.
+      character (len =3 ) :: sensor
       integer :: dim(2)
       integer :: dim12(2)
       real, allocatable :: sol(:,:)
       real, allocatable :: sat(:,:)
       real, allocatable :: azi(:,:)
       real, allocatable :: ref(:,:,:)
-       real, allocatable :: bt_ref(:,:,:)
+      real, allocatable :: bt_ref(:,:,:)
 !      real, allocatable :: ref_tmp(:,:,:)
       real, allocatable :: windspeed(:,:)
       real, allocatable :: scat_angle(:,:)
@@ -121,8 +122,6 @@ contains
        if (allocated (this % bt_ref) ) deallocate ( this % bt_ref)
       if (allocated (this % land_class) ) deallocate ( this % land_class)
       if (allocated (this % muri_cm ) ) deallocate (this % muri_cm)
-    	
-		
        this % is_allocated = .false.
    
    end subroutine  muri_in_array_type__deallocate
