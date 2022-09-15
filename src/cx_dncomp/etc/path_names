@@ -3,7 +3,6 @@ cx_dncomp/src/dcomp_forward_mod.f90
 cx_dncomp/src/dcomp_lut_mod.f90
 cx_dncomp/src/dcomp_lut_sds_mod.f90
 cx_dncomp/src/dcomp_math_tools_mod.f90
-cx_dncomp/src/dcomp_one_pixel_run_program.f90
 cx_dncomp/src/dcomp_pixel_input__define_mod.f90
 cx_dncomp/src/dcomp_retrieval_mod.f90
 cx_dncomp/src/dcomp_science_tools_mod.f90
