@@ -1421,7 +1421,7 @@ contains
       case ( 'MTSAT-IMAGER')
          Valid_Channels (1:5) = [1,20,27,31,32]  
       case ('SEVIRI')
-         Valid_Channels (1:11) = [1,2,6,20,27,28,29,30,31,32,33]
+         Valid_Channels (1:11) = [1,2,6,20,37,28,29,30,31,32,33]
       case ('FY2-IMAGER')
          Valid_Channels (1:5) = [1,20,27,31,32]    
       case ('AGRI') ! FY4A

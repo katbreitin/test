@@ -94,7 +94,7 @@ module SEVIRI_MOD
   integer(kind=int4), private, parameter:: TIME_FOR_FD_SCAN = 900000 !milliseconds (15min)  !CHECK THIS
   real, private, save:: Scan_Rate    !scan rate in millsec / line
   integer(kind=int4), private, parameter:: Seviri_Byte_Shift = 0
-  integer, dimension(11), parameter, private:: Chan_Idx=[1,2,6,20,27,28,29,30,31,32,33]
+  integer, dimension(11), parameter, private:: Chan_Idx=[1,2,6,20,37,28,29,30,31,32,33]
 
 
   !--- solar calibration
@@ -151,18 +151,18 @@ contains
 
     open(unit=Instr_Const_lun,file=trim(Instr_Const_file),status="old",position="rewind",action="read",iostat=ios0)
 
-    call MESG ( "Error opening MSG constants file "//trim(Instr_Const_file), level=Verb_Lev%WARNING)
     erstat = 0
     if (ios0 /= 0) then
       erstat = 19
-      print *, EXE_PROMPT, "Error opening SEVIRI constants file, ios0 = ", ios0
+      call MESG ( "Error opening MSG constants file "//trim(Instr_Const_file), level=Verb_Lev%WARNING)
+      print *, EXE_PROMPT, "I/O status for opening SEVIRI constants file, ios0 = ", ios0
       stop 19
     end if
     read(unit=Instr_Const_lun,fmt="(a3)") sat_name
     read(unit=Instr_Const_lun,fmt=*) Solar_Ch20
     read(unit=Instr_Const_lun,fmt=*) Ew_Ch20
     read(unit=Instr_Const_lun,fmt=*) planck_a1(20), planck_a2(20), planck_nu(20)
-    read(unit=Instr_Const_lun,fmt=*) planck_a1(27), planck_a2(27), planck_nu(27)
+    read(unit=Instr_Const_lun,fmt=*) planck_a1(37), planck_a2(37), planck_nu(37)
     read(unit=Instr_Const_lun,fmt=*) planck_a1(28), planck_a2(28), planck_nu(28)
     read(unit=Instr_Const_lun,fmt=*) planck_a1(29), planck_a2(29), planck_nu(29)
     read(unit=Instr_Const_lun,fmt=*) planck_a1(30), planck_a2(30), planck_nu(30)

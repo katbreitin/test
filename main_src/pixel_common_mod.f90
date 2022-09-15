@@ -859,6 +859,7 @@ module PIXEL_COMMON_MOD
 
   real(kind=real4), dimension(:,:), allocatable, public, save, target:: Covar_Ch27_Ch31_5x5
   real(kind=real4), dimension(:,:), allocatable, public, save, target:: Covar_Ch27_Ch38_5x5
+  real(kind=real4), dimension(:,:), allocatable, public, save, target:: Covar_Ch37_Ch38_5x5
   integer(kind=int4), dimension(:,:), allocatable, public, save:: Elem_Idx_Max_Bt_Ch31_3x3
   integer(kind=int4), dimension(:,:), allocatable, public, save:: Line_Idx_Max_Bt_Ch31_3x3
   integer(kind=int4), dimension(:,:), allocatable, public, save:: Elem_Idx_Min_Bt_Ch31_3x3
@@ -898,7 +899,7 @@ module PIXEL_COMMON_MOD
   real (kind=real4),dimension(:,:),allocatable, public, save, target:: Cld_Phase_Uncertainty
   integer (kind=int1),dimension(:,:),allocatable, public, save, target:: Cld_Type_IR
   integer (kind=int1),dimension(:,:),allocatable, public, save, target:: Cld_Phase_IR
-  integer (kind=int1),dimension(:,:),allocatable, public, save, target:: Ctp_Multilayer_Flag
+ !integer (kind=int1),dimension(:,:),allocatable, public, save, target:: Ctp_Multilayer_Flag
 
   !--- Auxilliary variables
   integer (kind=int1),dimension(:,:),allocatable, public, save, target:: Metadata_Aux
@@ -1248,6 +1249,11 @@ subroutine CREATE_PIXEL_ARRAYS()
            allocate(Covar_Ch27_Ch38_5x5(dim1,dim2))
    endif
 
+   if ((Sensor%Chan_On_Flag_Default(37) == sym%YES) .and.   &
+       (Sensor%Chan_On_Flag_Default(38) == sym%YES)) then
+           allocate(Covar_Ch37_Ch38_5x5(dim1,dim2))
+   endif
+
    allocate(Bad_Pixel_Mask(dim1,dim2))
 
    
@@ -1457,6 +1463,7 @@ subroutine DESTROY_PIXEL_ARRAYS()
 
   if (allocated(Covar_Ch27_Ch31_5x5)) deallocate(Covar_Ch27_Ch31_5x5)
   if (allocated(Covar_Ch27_Ch38_5x5)) deallocate(Covar_Ch27_Ch38_5x5)
+  if (allocated(Covar_Ch37_Ch38_5x5)) deallocate(Covar_Ch37_Ch38_5x5)
 
   deallocate(Bad_Pixel_Mask)
 
@@ -3163,7 +3170,7 @@ subroutine CREATE_CLOUD_TYPE_ARRAYS(dim1,dim2)
      allocate(Cld_Type(dim1,dim2))
      allocate(Cld_Phase_IR(dim1,dim2))
      allocate(Cld_Type_IR(dim1,dim2))
-     allocate(Ctp_Multilayer_Flag(dim1,dim2))
+!    allocate(Ctp_Multilayer_Flag(dim1,dim2))
      allocate(Zc_Aux(dim1,dim2))
      allocate(Ec_Aux(dim1,dim2))
      allocate(Tc_Aux(dim1,dim2))
@@ -3179,7 +3186,7 @@ subroutine RESET_CLOUD_TYPE_ARRAYS()
       Cld_Phase_Aux = Missing_Value_Int1
       Metadata_Aux = Missing_Value_Int1
       Cld_Type_Aux = Missing_Value_Int1
-      Ctp_Multilayer_Flag = Missing_Value_Int1
+!     Ctp_Multilayer_Flag = Missing_Value_Int1
       Zc_Aux = Missing_Value_Real4
       Ec_Aux = Missing_Value_Real4
       Tc_Aux = Missing_Value_Real4
@@ -3195,7 +3202,7 @@ subroutine DESTROY_CLOUD_TYPE_ARRAYS
      deallocate(Cld_Type)
      deallocate(Cld_Phase_IR)
      deallocate(Cld_Type_IR)
-     deallocate(Ctp_Multilayer_Flag)
+!    deallocate(Ctp_Multilayer_Flag)
      deallocate(Zc_Aux)
      deallocate(Ec_Aux)
      deallocate(Tc_Aux)

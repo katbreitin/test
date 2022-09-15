@@ -50,7 +50,7 @@ module CLOUD_HEIGHT_ROUTINES
   public::  SOUNDER_EMISSIVITY
   public::  INTERCEPT_CLOUD_PRESSURE
   public::  SLICING_CLOUD_PRESSURE
-  public::  CTP_MULTILAYER
+  !public::  CTP_MULTILAYER
   public::  MAKE_CIRRUS_PRIOR_TEMPERATURE_FROM_CO2
   public::  MAKE_CIRRUS_PRIOR_TEMPERATURE_FROM_H2O_CO2IRW
   public:: EYRE_MENZEL
@@ -1144,59 +1144,59 @@ end subroutine SPLITWIN_CLOUD_HEIGHT
 !----------------------------------------------------------------------
 !
 !----------------------------------------------------------------------
-subroutine CTP_MULTILAYER()
-
-   integer:: Line_Idx
-   integer:: Elem_Idx
-   integer:: Num_Elements
-   integer:: Num_Lines
-
-   Num_Elements = Image%Number_Of_Elements
-   Num_Lines = Image%Number_Of_Lines_Per_Segment
-
-   Ctp_Multilayer_Flag = Missing_Value_Int1
-
-   !--- check if channels are on
-   if (Sensor%Chan_On_Flag_Default(31)==sym%NO) return
-   if (Sensor%Chan_On_Flag_Default(27)==sym%NO) return
-   if (Sensor%Chan_On_Flag_Default(33)==sym%NO) return
-
- 
-   !--- loop through pixels in the segment
-   do Elem_Idx = 1, Num_Elements
-     do Line_Idx = 1, Num_Lines
-
-      !--- skip bad pixels
-      if (Bad_Pixel_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle
-
-      !---- filter on cloud type
-      if (Cld_Type(Elem_Idx,Line_Idx) /= sym%CIRRUS_TYPE .and. & 
-          Cld_Type(Elem_Idx,Line_Idx) /= sym%OVERLAP_TYPE .and. & 
-          Cld_Type(Elem_Idx,Line_Idx) /= sym%OPAQUE_ICE_TYPE) then
-          cycle
-      endif
-
-
-      !--- skip pixels without valid input
-      if (Pc_H2O(Elem_Idx,Line_Idx) == Missing_Value_Real4) cycle
-      if (Pc_CO2IRW(Elem_Idx,Line_Idx) == Missing_Value_Real4) cycle
-      if (Ch(31)%Emiss_Tropo(Elem_Idx,Line_Idx) == Missing_Value_Real4) cycle
-
-
-      Ctp_Multilayer_Flag(Elem_Idx,Line_Idx) = sym%No
-
-      !--- IRWCO2
-      if (Ch(31)%Emiss_Tropo(Elem_Idx,Line_Idx) < 0.80) then
-         if (abs(Pc_H2O(Elem_Idx,Line_Idx) - Pc_CO2IRW(Elem_Idx,Line_Idx)) > 50.0) then
-           Ctp_Multilayer_Flag(Elem_Idx,Line_Idx) = sym%YES
-         endif
-      endif
-
-      enddo
-   enddo
-
-
-end subroutine CTP_MULTILAYER
+!subroutine CTP_MULTILAYER()
+!
+!   integer:: Line_Idx
+!   integer:: Elem_Idx
+!   integer:: Num_Elements
+!   integer:: Num_Lines
+!
+!   Num_Elements = Image%Number_Of_Elements
+!   Num_Lines = Image%Number_Of_Lines_Per_Segment
+!
+!   Ctp_Multilayer_Flag = Missing_Value_Int1
+!
+!   !--- check if channels are on
+!   if (Sensor%Chan_On_Flag_Default(31)==sym%NO) return
+!   if (Sensor%Chan_On_Flag_Default(27)==sym%NO) return
+!   if (Sensor%Chan_On_Flag_Default(33)==sym%NO) return
+!
+! 
+!   !--- loop through pixels in the segment
+!   do Elem_Idx = 1, Num_Elements
+!     do Line_Idx = 1, Num_Lines
+!
+!      !--- skip bad pixels
+!      if (Bad_Pixel_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle
+!
+!      !---- filter on cloud type
+!      if (Cld_Type(Elem_Idx,Line_Idx) /= sym%CIRRUS_TYPE .and. & 
+!          Cld_Type(Elem_Idx,Line_Idx) /= sym%OVERLAP_TYPE .and. & 
+!          Cld_Type(Elem_Idx,Line_Idx) /= sym%OPAQUE_ICE_TYPE) then
+!          cycle
+!      endif
+!
+!
+!      !--- skip pixels without valid input
+!      if (Pc_H2O(Elem_Idx,Line_Idx) == Missing_Value_Real4) cycle
+!      if (Pc_CO2IRW(Elem_Idx,Line_Idx) == Missing_Value_Real4) cycle
+!      if (Ch(31)%Emiss_Tropo(Elem_Idx,Line_Idx) == Missing_Value_Real4) cycle
+!
+!
+!      Ctp_Multilayer_Flag(Elem_Idx,Line_Idx) = sym%No
+!
+!      !--- IRWCO2
+!      if (Ch(31)%Emiss_Tropo(Elem_Idx,Line_Idx) < 0.80) then
+!         if (abs(Pc_H2O(Elem_Idx,Line_Idx) - Pc_CO2IRW(Elem_Idx,Line_Idx)) > 50.0) then
+!           Ctp_Multilayer_Flag(Elem_Idx,Line_Idx) = sym%YES
+!         endif
+!      endif
+!
+!      enddo
+!   enddo
+!
+!
+!end subroutine CTP_MULTILAYER
 !----------------------------------------------------------------------
 ! Eyre and Menzel
 !----------------------------------------------------------------------

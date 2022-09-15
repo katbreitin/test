@@ -2712,8 +2712,7 @@ module SENSOR_MOD
       case(55:57,70) !MSG-SEVIRI
          Sensor%Num_Chan_Sensor = 11
          if (.not. allocated(Sensor%CLAVRx_Chan_Map)) allocate(Sensor%Clavrx_Chan_Map(Sensor%Num_Chan_Sensor))
-         Sensor%CLAVRx_Chan_Map = [1,2,6,20,27,28,29,30,31,32,33]
-
+         Sensor%CLAVRx_Chan_Map = [1,2,6,20,37,28,29,30,31,32,33]
       case(171:172,810,514:515) !MTSAT,COMS,Fy2D,Fy2E
          Sensor%Num_Chan_Sensor = 5
          if (.not. allocated(Sensor%CLAVRx_Chan_Map)) allocate(Sensor%Clavrx_Chan_Map(Sensor%Num_Chan_Sensor))
