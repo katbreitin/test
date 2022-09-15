@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file
 
 ## [v1.0.0]
 
+- UMD surface emission option fixed
 - Shadow mask disabled
 - Greatly increased processing speed
 - Added support for GOES-18
@@ -22,5 +23,6 @@ All notable changes to this project will be documented in this file
 - Uncertainty in tau added to ACHA estimation
 - Updated cloud phase / type post-ECM2 filtering
 - Misc bug fixes
+- Added support for FY3D
 
 
