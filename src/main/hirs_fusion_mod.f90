@@ -62,7 +62,7 @@ module HIRS_FUSION_MOD
          , COMPUTE_BT_ARRAY_SOUNDER
 
       use CALIBRATION_CONSTANTS_MOD
-      use FILE_TOOLS , only: GETLUN
+      use FILE_UTILS, only: GET_LUN
 
    implicit none  
    private
@@ -331,15 +331,13 @@ module HIRS_FUSION_MOD
 ! read the FUSION HIRS constants into memory
 !------------------------------------------------------------------------------------------
    subroutine READ_FUSION_HIRS_INSTR_CONSTANTS(Instr_Const_file)
-!     use CALIBRATION_CONSTANTS_MOD
-!     use FILE_TOOLS , only: GETLUN
 
       character(len=*), intent(in):: Instr_Const_file
       integer:: ios0, erstat
       integer:: Instr_Const_lun
       real:: Planck_A1_Ch10, Planck_A2_Ch10, Planck_Nu_Ch10
 
-      Instr_Const_lun = GETLUN()
+      Instr_Const_lun = GET_LUN()
 
       open(unit=Instr_Const_lun,file=trim(Instr_Const_file),status="old",position="rewind",action="read",iostat=ios0)
       

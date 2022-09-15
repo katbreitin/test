@@ -192,7 +192,7 @@ end subroutine GET_IFF_DATA
 !
 subroutine READ_IFF_LEVEL1B ( config, out, error_out )
 
-      use FILE_TOOLS, only: &
+      use FILE_UTILS, only: &
          file_search
          
       use CX_HDF4_MOD, only: &

@@ -50,7 +50,7 @@ MODULE AHI_HSD_READER
     , sym &
     ,exe_prompt
   
-  use FILE_TOOLS, only: getlun
+  use FILE_UTILS, only: get_lun
 
   use iso_c_binding
   

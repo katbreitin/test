@@ -171,7 +171,7 @@ subroutine read_viirs_nasa_hres_data (in_config)
   
   use Planck_mod
   
-  use file_tools
+  use file_utils, only: file_search
   
   use CX_READH5DATASET
   

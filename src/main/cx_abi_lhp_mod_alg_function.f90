@@ -44,7 +44,7 @@ module CX_ABI_LHP_MOD_ALG_FUNCTION
       MESG, &
       VERB_LEV
 
-   use FILE_TOOLS, only: &
+   use FILE_UTILS, only: &
       Get_Lun
 
   implicit none

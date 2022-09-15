@@ -121,7 +121,7 @@ module USER_OPTIONS
       , Nchan_Clavrx &
       , MISSING_VALUE_INT4, int1
       
-   use FILE_TOOLS, only: &
+   use FILE_UTILS, only: &
       Get_Lun
 
    use LEVEL2B_MOD, only: &

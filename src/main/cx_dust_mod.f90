@@ -30,7 +30,6 @@ module CX_DUST_MOD
   use CONSTANTS_MOD
   use PIXEL_COMMON_MOD, only: Use_ABI_Dust, Image, Ch, Geo, Sensor, Sfc, Ancil_Data_Dir, &
                               Bad_Pixel_Mask, CLDMASK
-  use FILE_TOOLS,only:
   use CX_NETCDF4_MOD
   use CLAVRX_MESSAGE_MOD
 

@@ -27,7 +27,7 @@ module SAPF_READ_MOD
            , Cloud_Type_Aux_Read_Flag &
            , Cloud_Height_Aux_Read_Flag
     use CX_DATE_TIME_TOOLS_MOD, only: JULIAN, COMPUTE_MONTH, COMPUTE_DAY, LEAP_YEAR_FCT
-    use FILE_TOOLS, only: FILE_SEARCH
+    use FILE_UTILS, only: FILE_SEARCH
     use CONSTANTS_MOD, only: &
              Real4 &
            , Int4 &

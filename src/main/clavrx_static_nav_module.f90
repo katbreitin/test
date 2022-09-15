@@ -80,8 +80,6 @@ module CLAVRX_STATIC_NAV_MODULE
   use VIEWING_GEOMETRY_MOD, only: RELATIVE_AZIMUTH, SCATTERING_ANGLE, &
                                   GLINT_ANGLE, POSSOL
 
-  use FILE_TOOLS  
-
   use CX_REAL_BOOLEAN_MOD
 
 #ifdef LIBHIM
@@ -140,7 +138,7 @@ module CLAVRX_STATIC_NAV_MODULE
   ! ****************************************************************************
   subroutine SETUP_READ_LEVEL1B_FIXED_GRID_STATIC_NAV()
 
-    use FILE_TOOLS, only: FILE_SEARCH
+    use FILE_UTILS, only: FILE_SEARCH, FILE_TEST
 
     integer:: Chan_Idx
     integer:: ipos, ilen, ipos1, ilen1, N_Files
@@ -1273,6 +1271,7 @@ end subroutine DETERMINE_BOUNDS_STATIC_NAV
 !------------------------------------------------------------------------------------
 subroutine FIND_DARK_COMPOSITE()
 
+   use FILE_UTILS, only: FILE_SEARCH, FILE_TEST
   
    ! --- construct file name
    Dark_Composite_Name = "no_file"

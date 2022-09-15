@@ -68,7 +68,7 @@ module AEROSOL_PROPERTIES
  use PIXEL_COMMON_MOD
  use CONSTANTS_MOD
  
- use file_tools, only: getlun
+ use FILE_UTILS, only: get_lun
  use NUMERICAL_ROUTINES_MOD
  implicit none
  private
@@ -282,11 +282,11 @@ end subroutine AER_RET
     ch3a_aer_Lut_file = trim(ancil_data_dir)//"static/luts/aerosol/"//"Ch1F.lut.dat-NOAA15_3"
   endif
 
-  ch1_lun = GETLUN()
+  ch1_lun = GET_LUN()
   open(unit=ch1_lun,file=ch1_aer_Lut_file,status="old",position="rewind",action="read")
-  ch2_lun = GETLUN()
+  ch2_lun = GET_LUN()
   open(unit=ch2_lun,file=ch2_aer_Lut_file,status="old",position="rewind",action="read")
-  ch3a_lun = GETLUN()
+  ch3a_lun = GET_LUN()
   open(unit=ch3a_lun,file=ch3a_aer_Lut_file,status="old",position="rewind",action="read")
 
    read(unit=ch1_lun,fmt="(4i5)") nzen1, Naz1, Nsolzen1,Ntau1

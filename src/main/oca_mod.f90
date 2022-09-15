@@ -34,7 +34,7 @@ module OCA_MOD
       use HDF, only: &
              DFACC_read
 
-      use FILE_TOOLS, only: &
+      use FILE_UTILS, only: &
              FILE_SEARCH 
 
       use PIXEL_COMMON_MOD, only: &

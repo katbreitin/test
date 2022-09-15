@@ -1,6 +1,4 @@
-!  $Header: https://svn.ssec.wisc.edu/repos/cloud_team_clavrx/trunk/main_src/file_tools.f90 4034 2020-10-16 17:36:01Z heidinger $
-
-! name:                      file_tools
+! name:                      file_utils
 ! function:                   module which houses routines to perform basic file operations
 ! description:
 ! reference:
@@ -12,11 +10,10 @@
 ! history:                              added  Jan 2013 (AW)
 !
 !     Add file_utilities tools (June 2019 AW)
-!          get_lun and getlun are identical, but I will remove getlun very soon
 !
 !-----------------------------------------------------------------------------------------------------------------------
 
-module file_tools
+module file_utils
   use pixel_common_mod, only: Temporary_Data_Dir
 
   implicit none
@@ -28,7 +25,6 @@ module file_tools
   public :: file_dirname
   public :: file_search
   public :: file_test
-  public :: getlun
   public :: get_lun
   public :: file_nr_lines
   public :: uncompress_file
@@ -75,7 +71,7 @@ contains
     character(len=1) :: junk
     integer :: lun
 
-    lun = getlun()
+    lun = get_lun()
 
     nr = 0
     open( UNIT=lun,FILE=file)
@@ -139,7 +135,7 @@ contains
     return_string = file(1: kdot -1 )
   end function file_dirname
 
-! name:                      file_tools
+! name:                      file_utils
 ! function:                   
 ! description:              The FILE_SEARCH function returns a string array containing the names of all files 
 !                                matching the input path specification. Input path specifications may contain wildcard characters, 
@@ -174,7 +170,7 @@ contains
       unique_dummy_file = trim(Temporary_Data_Dir)//'/fort.file_search_dummy_'//trim(time)  
 
       call system ( 'rm -f '//trim(unique_dummy_file))
-      lun = getlun()
+      lun = get_lun()
      
       call system('ls -1 -phd '// trim (path) //''// trim (spec) //' > '//trim(unique_dummy_file)//' 2>/dev/null')
       nr = file_nr_lines (trim(unique_dummy_file))
@@ -193,51 +189,6 @@ contains
       if  ( present ( count ) ) count = nr
    
   end function file_search
-  
-  !
-  !
-  !
-  FUNCTION getlun() RESULT( lun )
-
-
-    ! -----------------
-    ! Type declarations
-    ! -----------------
- 
-    INTEGER :: lun
-    LOGICAL :: file_open
-
-
-    ! --------------------------------------------
-    ! Initialise logical unit number and file_open
-    ! --------------------------------------------
-
-    lun = 9
-    file_open = .TRUE.
-
-
-    ! ------------------------------
-    ! Start open loop for lun search
-    ! ------------------------------
-
-    lun_search: DO
-
-      ! -- Increment logical unit number
-      lun = lun + 1
-
-      ! -- Check if file is open
-      INQUIRE( lun, OPENED = file_open )
-
-      ! -- Is this lun available?
-      IF ( .NOT. file_open ) EXIT lun_search
-
-    END DO lun_search
-    
-    
-
-
-  END FUNCTION getlun
-  
   
    !
    !
@@ -329,4 +280,4 @@ contains
  
   
 
-end module file_tools
+end module file_utils

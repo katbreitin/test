@@ -14,7 +14,7 @@
 
 module CALIOP_COLLOCATION_MOD
 
-  use FILE_TOOLS, only: &
+  use FILE_UTILS, only: &
         FILE_SEARCH
 
   use CLAVRX_MESSAGE_MOD

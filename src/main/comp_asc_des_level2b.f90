@@ -75,7 +75,7 @@ program COMPILE_ASC_DES_LEVEL2B
  use CX_REAL_BOOLEAN_MOD
  use CX_HDF4_MOD
  use LEVEL2B_MOD
- use FILE_TOOLS,only: get_lun
+ use FILE_UTILS,only: get_lun
  use CLASS_TIME_DATE, only: DATE_TYPE
 
  implicit none

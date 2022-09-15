@@ -36,7 +36,7 @@ program DRIVE_SUBSET_LEVEL2B
  use CX_HDF4_MOD
  use NUMERICAL_ROUTINES_MOD
  use LEVEL2B_MOD
- use FILE_TOOLS,only: get_lun, file_search
+ use FILE_UTILS, only: get_lun, file_search
 
  implicit none
 

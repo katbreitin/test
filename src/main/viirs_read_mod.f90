@@ -202,9 +202,9 @@ contains
    subroutine read_viirs_level1b (config, out,  error_out )
       
      
-      use file_tools, only: &
+      use file_utils, only: &
          file_search &
-         , getlun
+         , get_lun
       use CALIBRATION_CONSTANTS_MOD, only: &
       sun_earth_distance
    
@@ -491,7 +491,7 @@ contains
          end select
          
          
-         lun = getlun()
+         lun = get_lun()
          dim_seg_dnb(1) = NUMBER_ELEMENTS_DNB
          dim_seg_dnb(2) = dim_seg(2)
          

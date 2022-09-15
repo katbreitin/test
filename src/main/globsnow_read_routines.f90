@@ -34,7 +34,7 @@ module GLOBSNOW_READ_ROUTINES
   use HDF
   use CONSTANTS_MOD
   use CX_DATE_TIME_TOOLS_MOD
-  use FILE_TOOLS,only: file_test
+  use FILE_UTILS,only: file_test
   implicit none
   private
   public:: GET_PIXEL_GLOBSNOW_ANALYSIS

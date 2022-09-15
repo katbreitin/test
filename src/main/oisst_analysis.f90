@@ -116,7 +116,7 @@ module OISST_ANALYSIS
   use CONSTANTS_MOD
   use CX_DATE_TIME_TOOLS_MOD
   use PIXEL_COMMON_MOD
-  use FILE_TOOLS, only: file_test
+  use FILE_UTILS, only: file_test
   use CX_NETCDF4_MOD
   use CLAVRX_MESSAGE_MOD
 

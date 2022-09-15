@@ -598,7 +598,7 @@ contains
         ! h5readattribute  &
         ! , h5readdataset
       
-      use file_tools, only: &
+      use file_utils, only: &
          file_test 
       
       implicit none

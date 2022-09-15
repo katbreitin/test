@@ -72,7 +72,7 @@ module AHI_MOD
   use CONSTANTS_MOD, only: &
     exe_prompt
   
-  use FILE_TOOLS, only: getlun
+  use FILE_UTILS, only: get_lun
 
   implicit none
 
@@ -91,7 +91,7 @@ contains
     integer:: ios0, erstat
     integer:: Instr_Const_lun
 
-    Instr_Const_lun = GETLUN()
+    Instr_Const_lun = GET_LUN()
 
     open(unit=Instr_Const_lun,file=trim(Instr_Const_file),status="old",position="rewind",action="read",iostat=ios0)
 

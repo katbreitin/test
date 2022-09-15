@@ -82,7 +82,6 @@ module CX_SEA_IR_EMISS_MOD
   use CALIBRATION_CONSTANTS_MOD, only: Planck_Nu
   use CONSTANTS_MOD
   use PIXEL_COMMON_MOD, only: Image, Ch, Geo, Sensor, Sfc, NWP_PIX, Ancil_Data_Dir, Use_Sea_IR_Emiss, Bad_Pixel_Mask
-  use FILE_TOOLS,only:
   use CX_NETCDF4_MOD
   use CLAVRX_MESSAGE_MOD
 

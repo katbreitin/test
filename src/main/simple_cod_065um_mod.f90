@@ -7,7 +7,7 @@ module SIMPLE_COD_065um_MOD
    use CONSTANTS_MOD
    use PIXEL_COMMON_MOD
    use NUMERICAL_ROUTINES_MOD
-   use FILE_TOOLS, only: get_lun
+   use FILE_UTILS, only: get_lun
    use SURFACE_PROPERTIES_MOD
    use CX_REAL_BOOLEAN_MOD
 

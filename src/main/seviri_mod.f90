@@ -59,7 +59,7 @@ module SEVIRI_MOD
     , compute_satellite_angles &
     , get_image_from_areafile
     
-  use FILE_TOOLS,only:getlun
+  use FILE_UTILS, only: get_lun
   
   use VIEWING_GEOMETRY_MOD,only: possol
   
@@ -147,7 +147,7 @@ contains
     integer:: ios0, erstat
     integer:: Instr_Const_lun
 
-    Instr_Const_lun = GETLUN()
+    Instr_Const_lun = GET_LUN()
 
     open(unit=Instr_Const_lun,file=trim(Instr_Const_file),status="old",position="rewind",action="read",iostat=ios0)
 
@@ -299,7 +299,7 @@ contains
       
       
       ! On first segment, get slope/offset information from McIDAS Header
-      Severi_File_Id = getlun()   
+      Severi_File_Id = get_lun()
 
       if (L1b_gzip == sym%YES .OR. L1b_bzip2 == sym%YES) then
         call MREAD_OPEN(trim(Temporary_Data_Dir)//trim(Channel_1_Filename)//CHAR(0), Severi_File_Id)

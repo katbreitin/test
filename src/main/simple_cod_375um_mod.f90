@@ -7,7 +7,7 @@ module SIMPLE_COD_375um_MOD
    use CONSTANTS_MOD
    use PIXEL_COMMON_MOD
    use NUMERICAL_ROUTINES
-   use FILE_TOOLS, only: get_lun
+   use FILE_UTILS, only: get_lun
    use SURFACE_PROPERTIES
 
    implicit none

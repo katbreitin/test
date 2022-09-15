@@ -416,7 +416,7 @@ print *, "REPLACED CH1"
    !-----------------------------------------------------------------
    subroutine READ_VIIRS_INSTR_CONSTANTS(Instr_Const_file)
       use calibration_constants_mod
-      use file_tools , only: getlun
+      use file_utils, only: get_lun
       
       implicit none
  
@@ -425,7 +425,7 @@ print *, "REPLACED CH1"
       integer:: Instr_Const_lun
       character(len=20):: header
 
-      Instr_Const_lun = GETLUN()
+      Instr_Const_lun = GET_LUN()
 
       open(unit=Instr_Const_lun,file=trim(Instr_Const_file),status="old",position="rewind",action="read",iostat=ios0)
       call mesg ("opening "//trim(Instr_Const_file), level = verb_lev % VERBOSE) 
