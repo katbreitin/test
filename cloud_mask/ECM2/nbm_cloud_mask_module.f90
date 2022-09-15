@@ -469,6 +469,10 @@ MODULE ECM2_CLOUD_MASK_MODULE
                  Value_Dim = Input%Bt_85um - Input%Bt_11um
                  if (Input%Chan_On_85um == 0) Value_Dim = MISSING_VALUE_REAL4
                  if (Input%Chan_On_11um == 0) Value_Dim = MISSING_VALUE_REAL4
+             CASE('btd1162')
+                 Value_Dim = Input%Bt_11um - Input%Bt_62um
+                 if (Input%Chan_On_62um == 0) Value_Dim = MISSING_VALUE_REAL4
+                 if (Input%Chan_On_11um == 0) Value_Dim = MISSING_VALUE_REAL4
              CASE('btd1167')
                  Value_Dim = Input%Bt_11um - Input%Bt_67um
                  if (Input%Chan_On_67um == 0) Value_Dim = MISSING_VALUE_REAL4
@@ -484,6 +488,10 @@ MODULE ECM2_CLOUD_MASK_MODULE
              CASE('btd13373')
                  Value_Dim = Input%Bt_133um - Input%Bt_73um
                  if (Input%Chan_On_133um == 0) Value_Dim = MISSING_VALUE_REAL4
+                 if (Input%Chan_On_73um == 0) Value_Dim = MISSING_VALUE_REAL4
+             CASE('btd7362')
+                 Value_Dim = Input%Bt_73um - Input%Bt_62um
+                 if (Input%Chan_On_62um == 0) Value_Dim = MISSING_VALUE_REAL4
                  if (Input%Chan_On_73um == 0) Value_Dim = MISSING_VALUE_REAL4
              CASE('btd1110')
                  Value_Dim = Input%Bt_11um - Input%Bt_10um
