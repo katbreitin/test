@@ -92,7 +92,7 @@ do
            [loc_result=yes],[loc_result=no])
          if test "$loc_result" = no; then
             AC_MSG_RESULT([no])
-            AC_MSG_FAILURE([[compiler does not seem to have basic Fortran 2003 capabilities -- perhaps add/remove/change a compiler flag]])
+            AC_MSG_FAILURE([[compiler does not seem to have basic Fortran 2003 capabilities -- perhaps add/remove/change a compiler flag?]])
             F2003_ability=no;
          else
             AC_MSG_RESULT([yes])
