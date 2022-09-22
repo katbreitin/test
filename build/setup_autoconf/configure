@@ -626,6 +626,7 @@ ac_subst_vars='LTLIBOBJS
 LIBOBJS
 USABLE_AUXLIBS
 FAILED_AUXLIBS
+RTTOV_ID
 SOME_F2003
 LIBS_C
 PREPROC_MFLAGS_C
@@ -2474,7 +2475,7 @@ else
    BLAH=;
 fi
 
-failed_aux_libs=""; usable_aux_libs=""; F2003_ability=no;
+failed_aux_libs=""; usable_aux_libs=""; F2003_ability="no"; RTTOV_version="None"
 
 for proglang in $prog_languages_needed
 do
@@ -5276,14 +5277,18 @@ $as_echo "yes" >&6; }
                   { $as_echo "$as_me:${as_lineno-$LINENO}: NOTE: using libHimawari is an optional capability (can be turned off in build/env_settings/user_change_me.cfg)" >&5
 $as_echo "$as_me: NOTE: using libHimawari is an optional capability (can be turned off in build/env_settings/user_change_me.cfg)" >&6;}
 
-                  # Check for useable 'eccodes.mod':
+                  # Check for useable 'hsd_*.mod':
 
-                  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether libHimawari Fortran 90+ module is present and useable" >&5
-$as_echo_n "checking whether libHimawari Fortran 90+ module is present and useable... " >&6; }
+                  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether libHimawari Fortran 90+ modules are present and useable" >&5
+$as_echo_n "checking whether libHimawari Fortran 90+ modules are present and useable... " >&6; }
 
                   cat > conftest.$ac_ext <<_ACEOF
       program main
-use eccodes
+use hsd_scene, only: openHimawariScene
+		      use iso_c_binding
+                      use hsd_structs
+		      type(C_PTR) :: handle
+                      type(hsd_sentinels) :: sentinels
       end
 _ACEOF
 if ac_fn_fc_try_compile "$LINENO"; then :
@@ -5297,7 +5302,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 $as_echo "no" >&6; }
                      { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "useable eccodes.mod not found -- modify build environment
+as_fn_error $? "useable hsd_*.mod modules not found -- modify build environment
 See \`config.log' for more details" "$LINENO" 5; }
                      failed=yes;
                   else
@@ -5312,9 +5317,12 @@ $as_echo "yes" >&6; }
 $as_echo_n "checking whether libHimawari Fortran 90+ library is present and useable... " >&6; }
                      cat > conftest.$ac_ext <<_ACEOF
       program main
-use eccodes, only: codes_open_file
-                         integer :: status
-                         call codes_open_file(status, 'dummy.grib', 'r')
+use hsd_scene, only: openHimawariScene
+                         use iso_c_binding
+                         use hsd_structs
+		         type(C_PTR) :: handle
+                         type(hsd_sentinels) :: sentinels
+                         handle = openHimawariScene('test', C_NULL_FUNPTR, sentinels)
       end
 _ACEOF
 if ac_fn_fc_try_link "$LINENO"; then :
@@ -5329,7 +5337,7 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "no" >&6; }
                         { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "useable libeccodes_f90 not found -- modify build environment
+as_fn_error $? "useable libHimawari not found -- modify build environment
 See \`config.log' for more details" "$LINENO" 5; }
                         failed=yes;
                      else
@@ -5373,14 +5381,17 @@ $as_echo "yes" >&6; }
                   { $as_echo "$as_me:${as_lineno-$LINENO}: NOTE: using RTTOV is an optional capability (can be turned off in build/env_settings/user_change_me.cfg)" >&5
 $as_echo "$as_me: NOTE: using RTTOV is an optional capability (can be turned off in build/env_settings/user_change_me.cfg)" >&6;}
 
-                  # Check for useable 'eccodes.mod':
+                  # Check for useable 'rttov_*.mod':
 
-                  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether RTTOV Fortran 90+ module is present and useable" >&5
-$as_echo_n "checking whether RTTOV Fortran 90+ module is present and useable... " >&6; }
+                  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether RTTOV Fortran 90+ modules are present and useable" >&5
+$as_echo_n "checking whether RTTOV Fortran 90+ modules are present and useable... " >&6; }
 
                   cat > conftest.$ac_ext <<_ACEOF
       program main
-use eccodes
+use rttov_const, only: version
+		      open (20, file='test.out', status='unknown')
+                      write (20, *) version
+                      close(20)
       end
 _ACEOF
 if ac_fn_fc_try_compile "$LINENO"; then :
@@ -5400,6 +5411,7 @@ See \`config.log' for more details" "$LINENO" 5; }
                   else
                      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
+		     RTTOV_version=`cat test.out`
                   fi
 
                   if test "$failed" = no; then
@@ -5409,9 +5421,9 @@ $as_echo "yes" >&6; }
 $as_echo_n "checking whether RTTOV Fortran 90+ library is present and useable... " >&6; }
                      cat > conftest.$ac_ext <<_ACEOF
       program main
-use eccodes, only: codes_open_file
-                         integer :: status
-                         call codes_open_file(status, 'dummy.grib', 'r')
+use rttov_unix_env, only: rttov_exit
+                         integer :: e
+			 call rttov_exit(e)
       end
 _ACEOF
 if ac_fn_fc_try_link "$LINENO"; then :
@@ -5426,7 +5438,7 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "no" >&6; }
                         { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "useable libeccodes_f90 not found -- modify build environment
+as_fn_error $? "useable librttov_* not found -- modify build environment
 See \`config.log' for more details" "$LINENO" 5; }
                         failed=yes;
                      else
@@ -7725,6 +7737,9 @@ $as_echo "yes" >&6; }
 done
 
 SOME_F2003="${F2003_ability}";
+
+
+RTTOV_ID="${RTTOV_version}";
 
 
 FAILED_AUXLIBS="${failed_aux_libs}"; USABLE_AUXLIBS="${usable_aux_libs}";

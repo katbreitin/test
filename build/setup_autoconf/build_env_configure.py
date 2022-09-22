@@ -130,7 +130,7 @@ def main(cbenv_path, anchor_path, build_env_cfg_fpath, supp_defs_fpath,
                                "FC="+becd["Fortran_compiler"].strip()])
     except:
         print(top_app_label+" ERROR: "+"build environment is broken; modify "+ \
-              build_env_cfg_fpath)
+              "build/env_settings/user_change_me.cfg?")
 
       # Ingest some configure results:
     pcfgd = {}
