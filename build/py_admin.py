@@ -430,6 +430,9 @@ def build(anchor_path, *action_args):
                             RTTOV_vdef = "RTTOV_LE_V"+RTTOV_mversion
                         else:
                             RTTOV_vdef = "RTTOV_GE_V"+RTTOV_mversion
+                    else:
+                        print ("ERROR: Cannot determine the RTTOV version")
+                        sys.exit(1)
 
             cfg_CRTM_txt = ''
             if cfg_use_CRTM:
