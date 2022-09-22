@@ -133,16 +133,30 @@ subroutine compute_transmission_rttov ( &
   opts % rt_ir % addclouds           = .FALSE. ! Don't include cloud effects
   opts % rt_ir % addaerosl           = .FALSE. ! Don't include aerosol effects
 
+#if defined RTTOV_LE_V12
   if (ANY( .NOT. Geo%Space_Mask) ) then
-    opts % rt_ir % ozone_data          = .TRUE. ! Set the relevant flag to .TRUE.
+    opts % rt_ir % ozone_data = .TRUE. ! Set the relevant flag to .TRUE.
   else
-    opts % rt_ir % ozone_data          = .FALSE. ! Set the relevant flag to .TRUE.
+    opts % rt_ir % ozone_data = .FALSE. ! Set the relevant flag to .TRUE.
   endif
-  opts % rt_ir % co2_data            = .FALSE. !   when supplying a profile of the
-  opts % rt_ir % n2o_data            = .FALSE. !   given trace gas (ensure the
-  opts % rt_ir % ch4_data            = .FALSE. !   coef file supports the gas)
-  opts % rt_ir % co_data             = .FALSE. !
-  opts % rt_ir % so2_data            = .FALSE. !
+  opts % rt_ir % co2_data = .FALSE. !   when supplying a profile of the
+  opts % rt_ir % n2o_data = .FALSE. !   given trace gas (ensure the
+  opts % rt_ir % ch4_data = .FALSE. !   coef file supports the gas)
+  opts % rt_ir % co_data = .FALSE. !
+  opts % rt_ir % so2_data = .FALSE. !
+#else
+  if (ANY( .NOT. Geo%Space_Mask) ) then
+    opts % rt_all % ozone_data = .TRUE. ! Set the relevant flag to .TRUE.
+  else
+    opts % rt_all % ozone_data = .FALSE. ! Set the relevant flag to .TRUE.
+  endif
+  opts % rt_all % co2_data = .FALSE. !   when supplying a profile of the
+  opts % rt_all % n2o_data = .FALSE. !   given trace gas (ensure the
+  opts % rt_all % ch4_data = .FALSE. !   coef file supports the gas)
+  opts % rt_all % co_data = .FALSE. !
+  opts % rt_all % so2_data = .FALSE. !
+#endif
+
   opts % rt_mw % clw_data            = .FALSE. !
   opts % rt_mw % clw_scheme          = 0
   opts % config % verbose            = .FALSE.  ! Enable printing of warnings

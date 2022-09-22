@@ -386,7 +386,7 @@ def build(anchor_path, *action_args):
 "libHim_Fortran_lib_dirs=\""+cfg_libHim_F_libdirs+"\";\n"+ \
 "libHim_Fortran_libs=\""+cfg_libHim_F_linker_opts+"\";\n"
 
-            cfg_RTTOV_txt = ''
+            cfg_RTTOV_txt = ''; RTTOV_vdef = ''
             if cfg_use_RTTOV:
                 this_section = "Specs, RTTOV"
                 cfg_aux_libs_mnk.append("RTTOV_Fortran")
@@ -402,6 +402,34 @@ def build(anchor_path, *action_args):
 "RTTOV_Fortran_include_dirs=\""+cfg_RTTOV_F_incdirs+"\";\n"+ \
 "RTTOV_Fortran_lib_dirs=\""+cfg_RTTOV_F_libdirs+"\";\n"+ \
 "RTTOV_Fortran_libs=\""+cfg_RTTOV_F_linker_opts+"\";\n"
+                # Determine RTTOV major version number:
+                tmp0_fpath = os.path.expandvars(cfg_RTTOV_F_libdirs.split()[0])
+                try:
+                    tmp_fpath = os.path.join(tmp0_fpath, "..", "src", "main",
+                                             "rttov_const.F9r0")
+                    print ("gewgewgw",tmp_fpath)
+                    with open(tmp_fpath, "r") as tmp_f:
+                        for line in tmp_f:
+                            if " version =" in line:
+                                vp1 = line.split('=')[1]
+                            elif " release =" in line:
+                                vp2 = line.split('=')[1]
+                            elif " minor_version =" in line:
+                                vp3 = line.split('=')[1]
+                                break
+                    RTTOV_mversion = vp1.strip()
+                except:
+                    tmp_fpath = os.path.join(tmp0_fpath, "f")
+                    for fpath in \
+                             glob.glob(tmp_fpath[:-1]+"librttov[0-9]*_main.a"):
+                        fpath_bn = os.path.basename(fpath)
+                        RTTOV_mversion = fpath_bn.split('_')[0][-2:]
+                finally:
+                    if RTTOV_mversion:
+                        if int(RTTOV_mversion) <= 12:
+                            RTTOV_vdef = "RTTOV_LE_V"+RTTOV_mversion
+                        else:
+                            RTTOV_vdef = "RTTOV_GE_V"+RTTOV_mversion
 
             cfg_CRTM_txt = ''
             if cfg_use_CRTM:
@@ -478,7 +506,7 @@ def build(anchor_path, *action_args):
 "\n"+ \
 "Fortran_compiler="+cfg_F_compiler+";\n"+ \
 "Fortran_compiler_opts=\""+cfg_F_compiler_opts+"\";\n"+ \
-"Fortran_preprocessor_opts=\""+cfg_F_preproc_opts+"\";\n"+ \
+"Fortran_preprocessor_opts=\""+cfg_F_preproc_opts+" -D"+RTTOV_vdef+"\";\n"+ \
 "Fortran_linker_opts=\""+cfg_F_linker_opts_nol+"\";\n"+ \
 "Fortran_libs=\""+cfg_F_linker_opts_lib+"\";\n"+ \
 "\n"+ \
