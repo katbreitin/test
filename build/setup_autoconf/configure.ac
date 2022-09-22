@@ -38,7 +38,7 @@ else
    BLAH=;
 fi
 
-failed_aux_libs=""; usable_aux_libs=""; F2003_ability=no;
+failed_aux_libs=""; usable_aux_libs=""; F2003_ability="no";
 
 for proglang in $prog_languages_needed
 do
@@ -427,17 +427,21 @@ do
 
                   AC_MSG_NOTICE([[NOTE: using libHimawari is an optional capability (can be turned off in build/env_settings/user_change_me.cfg)]]) 
 
-                  # Check for useable 'eccodes.mod':
+                  # Check for useable 'hsd_*.mod':
                   AC_LANG_ASSERT([Fortran])
-                  AC_MSG_CHECKING([[whether libHimawari Fortran 90+ module is present and useable]])
+                  AC_MSG_CHECKING([[whether libHimawari Fortran 90+ modules are present and useable]])
 
                   AC_COMPILE_IFELSE(
                     [AC_LANG_PROGRAM([],
-                    [use eccodes])],
+                    [[use hsd_scene, only: openHimawariScene
+		      use iso_c_binding
+                      use hsd_structs
+		      type(C_PTR) :: handle
+                      type(hsd_sentinels) :: sentinels]])],
                     [loc_result=yes],[loc_result=no])
                   if test "$loc_result" = no; then
                      AC_MSG_RESULT([no])
-                     AC_MSG_FAILURE([[useable eccodes.mod not found -- modify build environment]])
+                     AC_MSG_FAILURE([[useable hsd_*.mod modules not found -- modify build environment]])
                      failed=yes;
                   else
                      AC_MSG_RESULT([yes])
@@ -449,13 +453,16 @@ do
                      AC_MSG_CHECKING([[whether libHimawari Fortran 90+ library is present and useable]])
                      AC_LINK_IFELSE(
                        [AC_LANG_PROGRAM([],
-                       [[use eccodes, only: codes_open_file
-                         integer :: status
-                         call codes_open_file(status, 'dummy.grib', 'r')]])],
+                       [[use hsd_scene, only: openHimawariScene
+                         use iso_c_binding
+                         use hsd_structs
+		         type(C_PTR) :: handle
+                         type(hsd_sentinels) :: sentinels
+                         handle = openHimawariScene('test', C_NULL_FUNPTR, sentinels)]])],
                        [loc_result=yes],[loc_result=no])
                      if test "$loc_result" = no; then
                         AC_MSG_RESULT([no])
-                        AC_MSG_FAILURE([[useable libeccodes_f90 not found -- modify build environment]])
+                        AC_MSG_FAILURE([[useable libHimawari not found -- modify build environment]])
                         failed=yes;
                      else
                         AC_MSG_RESULT([yes])
@@ -496,13 +503,16 @@ do
 
                   AC_MSG_NOTICE([[NOTE: using RTTOV is an optional capability (can be turned off in build/env_settings/user_change_me.cfg)]]) 
 
-                  # Check for useable 'eccodes.mod':
+                  # Check for useable 'rttov_*.mod':
                   AC_LANG_ASSERT([Fortran])
-                  AC_MSG_CHECKING([[whether RTTOV Fortran 90+ module is present and useable]])
+                  AC_MSG_CHECKING([[whether RTTOV Fortran 90+ modules are present and useable]])
 
                   AC_COMPILE_IFELSE(
                     [AC_LANG_PROGRAM([],
-                    [use eccodes])],
+                    [[use rttov_const, only: version
+		      open (20, file='test.out', status='unknown')
+                      write (20, *) version
+                      close(20)]])],
                     [loc_result=yes],[loc_result=no])
                   if test "$loc_result" = no; then
                      AC_MSG_RESULT([no])
@@ -518,13 +528,13 @@ do
                      AC_MSG_CHECKING([[whether RTTOV Fortran 90+ library is present and useable]])
                      AC_LINK_IFELSE(
                        [AC_LANG_PROGRAM([],
-                       [[use eccodes, only: codes_open_file
-                         integer :: status
-                         call codes_open_file(status, 'dummy.grib', 'r')]])],
+                       [[use rttov_unix_env, only: rttov_exit
+                         integer :: e
+			 call rttov_exit(e)]])],
                        [loc_result=yes],[loc_result=no])
                      if test "$loc_result" = no; then
                         AC_MSG_RESULT([no])
-                        AC_MSG_FAILURE([[useable libeccodes_f90 not found -- modify build environment]])
+                        AC_MSG_FAILURE([[useable librttov_* not found -- modify build environment]])
                         failed=yes;
                      else
                         AC_MSG_RESULT([yes])
