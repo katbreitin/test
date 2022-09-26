@@ -1147,7 +1147,7 @@ contains
       
       case ('GOES-RU-IMAGER')
          filename  = 'ecm2_lut_abhi_default.nc'
-      case ('MODIS','METIMAGE')
+      case ('MODIS','METIMAGE','MERSI-2')
          filename  = 'ecm2_lut_modis_default.nc' 
       case ('VIIRS','VIIRS-NASA','VIIRS-NASA-HRES','VIIRS-IFF','VGAC')
          filename  = 'ecm2_lut_viirs_default.nc' 
@@ -1421,7 +1421,7 @@ contains
       case ( 'MTSAT-IMAGER')
          Valid_Channels (1:5) = [1,20,27,31,32]  
       case ('SEVIRI')
-         Valid_Channels (1:11) = [1,2,6,20,27,28,29,30,31,32,33]
+         Valid_Channels (1:11) = [1,2,6,20,37,28,29,30,31,32,33]
       case ('FY2-IMAGER')
          Valid_Channels (1:5) = [1,20,27,31,32]    
       case ('AGRI') ! FY4A
