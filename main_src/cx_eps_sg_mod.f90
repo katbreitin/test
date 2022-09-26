@@ -770,10 +770,10 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
           if (this_x .eq. -999. .or. this_y .eq. -999. .or. this_z .eq. -999.) then
               this % longitude(xx,yy) = -999.
               this % latitude(xx,yy) = -999.
-              print*,this_x,this_y, this_z
-              print*,xx,yy
-              print*,kk_act,kk_alt
-              stop
+             ! print*,this_x,this_y, this_z
+             ! print*,xx,yy
+             ! print*,kk_act,kk_alt
+             ! stop
           end if
           
                                                   
