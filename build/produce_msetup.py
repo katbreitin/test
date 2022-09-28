@@ -38,8 +38,14 @@ def main():
                             "Shell script to load BEFORE (un)loading modules")
     purge_modules_first = cfg.getboolean(this_section,
                                          "Purge any currently-loaded modules?")
-    module_commands = cfg.get(this_section,
-                              "Modules to (un)load (in order)")
+    try:
+        module_commands = cfg.get(this_section,
+                                  "Modules to (un)load (in order)")
+    except:
+        # Do not use module commands:
+        module_commands = ''
+        purge_modules_first = ''
+
     postcursor_script = cfg.get(this_section,
                               "Shell script to load AFTER (un)loading modules")
 
