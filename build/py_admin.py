@@ -406,16 +406,15 @@ def build(anchor_path, *action_args):
                 tmp0_fpath = os.path.expandvars(cfg_RTTOV_F_libdirs.split()[0])
                 try:
                     tmp_fpath = os.path.join(tmp0_fpath, "..", "src", "main",
-                                             "rttov_const.F9r0")
-                    print ("gewgewgw",tmp_fpath)
+                                             "rttov_const.F90")
                     with open(tmp_fpath, "r") as tmp_f:
                         for line in tmp_f:
                             if " version =" in line:
-                                vp1 = line.split('=')[1]
+                                vp1 = line.split('=')[-1]
                             elif " release =" in line:
-                                vp2 = line.split('=')[1]
+                                vp2 = line.split('=')[-1]
                             elif " minor_version =" in line:
-                                vp3 = line.split('=')[1]
+                                vp3 = line.split('=')[-1]
                                 break
                     RTTOV_mversion = vp1.strip()
                 except:
@@ -659,7 +658,11 @@ cfg_NetCDF_txt+ \
 
         beg_cwd = os.getcwd()  # Record the current working directory
         os.chdir(makedir_path)   # Enter the build "work" directory
-        subprocess.check_call([make_exe, "-f", makefile_fpath])
+          # Use parallel compilation if available:
+        try:
+            subprocess.check_call([make_exe, "-f", makefile_fpath, "-j", '4'])
+        except:
+            subprocess.check_call([make_exe, "-f", makefile_fpath])
 
           # Special actions for 'prams':
         if "prams" in os.path.basename(libexe_fpath):
