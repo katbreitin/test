@@ -130,8 +130,8 @@ def main(cbenv_path, anchor_path, build_env_cfg_fpath, supp_defs_fpath,
                                "FC="+becd["Fortran_compiler"].strip()])
     except:
         print (top_app_label+" ERROR: "+ \
-               "build environment is broken; modify "+ \
-               "build/env_settings/user_change_me.cfg?")
+               "build environment is broken; inspect "+cbenv_work_path+ \
+               "config.log, and then modify build/env_settings/user_change_me.cfg?")
         raise
 
       # Ingest some configure results:
@@ -338,18 +338,19 @@ def main(cbenv_path, anchor_path, build_env_cfg_fpath, supp_defs_fpath,
                            )
 
     try:
-        Fortran_compiler_def = def_Fortran_dict["Fortran_compiler_bn"]
+        Fortran_compiler_def = def_Fortran_dict[Fortran_compiler_bn]
     except:
         Fortran_compiler_def = def_Fortran_dict["unknown_default"]
 
     def_C_dict = dict( \
                         gcc = "-DCC_GNU",
                         cc = ' ',
+                        icc = "-DCC_INTEL",
                         unknown_default = ' ' \
                         )
 
     try:
-        C_compiler_def = def_C_dict["C_compiler_bn"]
+        C_compiler_def = def_C_dict[C_compiler_bn]
     except:
         C_compiler_def = def_C_dict["unknown_default"]
                       

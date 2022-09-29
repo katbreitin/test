@@ -299,6 +299,11 @@ contains
    ! parameters are pased in avhrr_pixel_common_mod public memory
    !---------------------------------------------------------------------------------
    subroutine READ_OPTION_FILE (File_Default)
+
+#if defined(FC_INTEL)
+      use ifport, only: hostnam, getpid
+#endif
+
       character(len=*), intent(in):: File_Default
       integer::ios0
       integer::erstat
@@ -339,7 +344,12 @@ contains
         Temporary_Data_Dir_Root = Temporary_Data_Dir_Root(1:string_length-1)
       endif
 
+#if defined(FC_GNU)
       call HOSTNM(hostname)
+#elif defined(FC_INTEL)
+      erstat = HOSTNAM(hostname)
+#endif
+
       PID = getpid()
       write(Pid_String,'(I7.7)' ) pid
       Temporary_Data_Dir = trim(Temporary_Data_Dir_Root) // '_' // trim(hostname) // '_' // trim(Pid_String) // '/'
