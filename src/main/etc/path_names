@@ -103,7 +103,7 @@ main/simple_cod_lunar_mod.f90
 main/snow_routines_mod.f90
 main/sort_module.f90
 main/surface_properties_mod.f90
-main/user_options.f90
+main/user_options.F90
 main/viewing_geometry_mod.f90
 main/viirs_clavrx_bridge.f90
 main/viirs_nasa_hres_read_mod.f90
