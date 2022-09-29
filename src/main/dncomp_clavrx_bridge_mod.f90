@@ -155,7 +155,7 @@ contains
             import dncomp_in_type
             import dncomp_out_type
             type (dncomp_in_type) , intent(in) :: a
-            type (dncomp_out_type), intent(out) :: b
+            type (dncomp_out_type), intent(inout) :: b
             integer , intent(in), optional :: debug_mode_user
          end subroutine
 

@@ -25,7 +25,7 @@ subroutine dcomp_array_loop ( input, output , debug_mode_user)
    implicit none
    
    type (dncomp_in_type) , intent(in) :: input
-   type (dncomp_out_type) :: output
+   type (dncomp_out_type), intent(inout) :: output
    integer , intent(in) , optional :: debug_mode_user
    
    integer, parameter :: real4 = selected_real_kind(6,37)
