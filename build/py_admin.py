@@ -386,7 +386,7 @@ def build(anchor_path, *action_args):
 "libHim_Fortran_lib_dirs=\""+cfg_libHim_F_libdirs+"\";\n"+ \
 "libHim_Fortran_libs=\""+cfg_libHim_F_linker_opts+"\";\n"
 
-            cfg_RTTOV_txt = ''; RTTOV_vdef = ''
+            cfg_RTTOV_txt = ''; RTTOV_def = ''
             if cfg_use_RTTOV:
                 this_section = "Specs, RTTOV"
                 cfg_aux_libs_mnk.append("RTTOV_Fortran")
@@ -426,9 +426,9 @@ def build(anchor_path, *action_args):
                 finally:
                     if RTTOV_mversion:
                         if int(RTTOV_mversion) <= 12:
-                            RTTOV_vdef = "RTTOV_LE_V"+RTTOV_mversion
+                            RTTOV_def = "-DRTTOV_LE_V"+RTTOV_mversion
                         else:
-                            RTTOV_vdef = "RTTOV_GE_V"+RTTOV_mversion
+                            RTTOV_def = "-DRTTOV_GE_V"+RTTOV_mversion
                     else:
                         print ("ERROR: Cannot determine the RTTOV version")
                         sys.exit(1)
@@ -508,7 +508,7 @@ def build(anchor_path, *action_args):
 "\n"+ \
 "Fortran_compiler="+cfg_F_compiler+";\n"+ \
 "Fortran_compiler_opts=\""+cfg_F_compiler_opts+"\";\n"+ \
-"Fortran_preprocessor_opts=\""+cfg_F_preproc_opts+" -D"+RTTOV_vdef+"\";\n"+ \
+"Fortran_preprocessor_opts=\""+cfg_F_preproc_opts+' '+RTTOV_def+"\";\n"+ \
 "Fortran_linker_opts=\""+cfg_F_linker_opts_nol+"\";\n"+ \
 "Fortran_libs=\""+cfg_F_linker_opts_lib+"\";\n"+ \
 "\n"+ \
