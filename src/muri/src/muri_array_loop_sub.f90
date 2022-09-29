@@ -34,7 +34,7 @@ subroutine muri_array_loop (input, output )
    implicit none
    
    type ( muri_in_array_type) , intent(in):: input
-   type ( muri_out_array_type) :: output
+   type ( muri_out_array_type), intent(INOUT) :: output
    type ( muri_input_type) :: inp_pixel
    type ( muri_output_type) :: out_pixel
    integer :: i,j,k,di1,di2

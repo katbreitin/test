@@ -56,7 +56,7 @@ module cx_muri_clavrx_bridge_mod
             import muri_in_array_type
             import muri_out_array_type
             type (muri_in_array_type) , intent(in) :: a
-            type (muri_out_array_type), intent(out) :: b
+            type (muri_out_array_type), intent(inout) :: b
             
          end subroutine
 
