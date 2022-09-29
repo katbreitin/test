@@ -167,9 +167,6 @@ module RT_UTILITIES_MOD
     integer, parameter :: Chan_Idx_Min = 1
     integer, parameter :: Chan_Idx_Max = 44
 
-    real :: gamma_factor
-
-    
     real, dimension(NLevels_Rtm,Chan_Idx_Min:Chan_Idx_Max),  save:: Trans_Atm_Solar_Prof
     real, dimension(NLevels_Rtm,Chan_Idx_Min:Chan_Idx_Max),  save:: Trans_Atm_Total_Prof
     real, dimension(NLevels_Rtm,Chan_Idx_Min:Chan_Idx_Max),  save:: Rad_Atm_Prof
@@ -1112,10 +1109,11 @@ contains
    !
    ! nwp flag  (1=gfs,2=ncep reanalysis,3=cfsr)
    !--------------------------------------------------------------
-   function gamma_factor( i_ch) 
+   function gamma_factor( i_ch)  result(answer)
       integer, intent(in) :: i_ch
       
-     
+      real :: answer  ! Function result declaration
+
       real :: gamma_trans_factor (45)
       
       !--- initialize to unity
@@ -1211,7 +1209,7 @@ contains
          Gamma_Trans_Factor(36) = 1.0917
       end if
       
-      gamma_factor = Gamma_Trans_Factor(i_ch)
+      answer = Gamma_Trans_Factor(i_ch)
       
     end function gamma_factor
 
