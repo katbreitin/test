@@ -19,6 +19,13 @@ else:
 
 
 #------------------------------------------------------------------------------
+def mkdir_p(path):
+    """Emulates 'mkdir -p' functionality"""
+    if not os.path.isdir(path):
+        os.makedirs(path)
+
+
+#------------------------------------------------------------------------------
 def main():
     """Driver."""
 
@@ -29,7 +36,14 @@ def main():
     msetup_cfg_fpath_parts = \
              "env_settings/user_change_me.cfg".split('/')
     msetup_cfg_fpath = os.path.join(*msetup_cfg_fpath_parts)
-    
+
+    if not os.path.exists(msetup_cfg_fpath):
+        print ("ERROR: Environment settings file ("+ \
+               os.path.abspath(msetup_cfg_fpath)+ \
+               ") does not exist; please create it from an example in "+ \
+               "build/env_settings/examples/\n")
+        sys.exit(1)
+
     cfg = cp.RawConfigParser()
     cfg.read(msetup_cfg_fpath)
 
@@ -80,6 +94,7 @@ def main():
         text_to_write += \
               "# Last, load any postcursor script:\n ."+tmp_str+"\n\n"
 
+    mkdir_p(os.path.dirname(machine_setup_fpath))  # Ensure directory exists
     with open(machine_setup_fpath, "wt") as text_f:
         text_f.write(text_to_write)
             
