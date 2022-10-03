@@ -20,8 +20,10 @@ import errno
 
 if sys.version_info[0] >= 3:
     import configparser as cp
+    from io import StringIO
 else:
     import ConfigParser as cp
+    from StringIO import StringIO
 
 app_label = "CLAVRx"
 
@@ -37,6 +39,18 @@ def rm_f(fpath):
     """Emulates 'rm -f' functionality."""
     if os.path.isfile(fpath) or os.path.islink(fpath):
         os.remove(fpath)
+
+
+#------------------------------------------------------------------------------
+def parse_via_configparser(cfg, section, entry, boolean=False):
+    """Parse a given section & entry via configparser (+ Python-2 kludges)."""
+    if not boolean:
+        parsed = cfg.get(section, entry)
+        if parsed == "____":
+            parsed = ''
+    else:
+        parsed = cfg.getboolean(section, entry)
+    return parsed
 
 
 #------------------------------------------------------------------------------
@@ -307,25 +321,54 @@ def build(anchor_path, *action_args):
             ucm_cfg_fpath = os.path.join(*ucm_cfg_fpath_parts)
     
             cfg = cp.RawConfigParser()
-            cfg.read(ucm_cfg_fpath)
+
+            if sys.version_info[0] < 3:
+                # Workaround for Python-2 inflexibility:
+                with open(ucm_cfg_fpath, "rt") as text_f:
+                    ucm_cfg_str_l = []
+                    for line in text_f:
+                        ls_line = line.lstrip()
+                        if len(line)-len(ls_line) < 10:
+                            lineA = ls_line
+                        else:
+                            lineA = line
+                        if len(lineA) >= 1:
+                            if not (lineA[0] == '#' or lineA[0] == ';'):
+                                parts = lineA.split(':')
+                                if parts[-1].strip():
+                                    if len(parts) > 1:
+                                        rhs = parts[-1].split("#;")[0]
+                                        lineB = parts[0]+': '+rhs
+                                    else:
+                                        lineB = parts[0]
+                                else:
+                                    lineB = lineA.strip()+' ____\n'
+                                ucm_cfg_str_l.append(lineB)
+                    ucm_cfg_flike = \
+                                 StringIO('\n'.join(ucm_cfg_str_l).encode())
+                    cfg.readfp(ucm_cfg_flike)
+            else:
+                cfg.read(ucm_cfg_fpath)
 
             # Read in some configuration parameters:
 
             cfg_aux_libs_mnk = []
             
             this_section = "Preferred Compilers"
-            cfg_F_compiler = cfg.get(this_section, "Fortran compiler")
-            cfg_C_compiler = cfg.get(this_section, "C compiler")
+            cfg_F_compiler = parse_via_configparser(cfg, this_section,
+                                                    "Fortran compiler")
+            cfg_C_compiler = parse_via_configparser(cfg, this_section,
+                                                    "C compiler")
 
             if build_debug:
                 this_section = "Compiler/Linker Options For Debugging"
             else:
                 this_section = "Compiler/Linker Options For Production Use"
-            cfg_F_preproc_opts = cfg.get(this_section,
+            cfg_F_preproc_opts = parse_via_configparser(cfg, this_section,
                                      "F preprocessor options (e.g. -D and -I)")
-            cfg_F_compiler_opts = cfg.get(this_section,
+            cfg_F_compiler_opts = parse_via_configparser(cfg, this_section,
                                    "F compiler options (no -I, -L, -l, or -D)")
-            cfg_F_linker_opts = cfg.get(this_section,
+            cfg_F_linker_opts = parse_via_configparser(cfg, this_section,
                                               "F linker options (e.g. -L, -l)")
             cfg_F_linker_opts_nol = ' '.join([x for x in
                                               cfg_F_linker_opts.split() if
@@ -333,11 +376,11 @@ def build(anchor_path, *action_args):
             cfg_F_linker_opts_lib = ' '.join([x for x in
                                               cfg_F_linker_opts.split() if
                                               x[0:1] == "-l"])
-            cfg_C_preproc_opts = cfg.get(this_section,
+            cfg_C_preproc_opts = parse_via_configparser(cfg, this_section,
                                      "C preprocessor options (e.g. -D and -I)")
-            cfg_C_compiler_opts = cfg.get(this_section,
+            cfg_C_compiler_opts = parse_via_configparser(cfg, this_section,
                                    "C compiler options (no -I, -L, -l, or -D)")
-            cfg_C_linker_opts = cfg.get(this_section,
+            cfg_C_linker_opts = parse_via_configparser(cfg, this_section,
                                               "C linker options (e.g. -L, -l)")
             cfg_C_linker_opts_nol = ' '.join([x for x in
                                               cfg_C_linker_opts.split() if
@@ -348,24 +391,32 @@ def build(anchor_path, *action_args):
 
             this_section = \
                         "Capabilities Which Require Special External Libraries"
-            cfg_use_GRIB = cfg.getboolean(this_section,
-                                            "NWP input can be in GRIB format?")
-            cfg_use_libHim = cfg.getboolean(this_section,
-                         "Use libHimawari (needed for HSD-format files only)?")
-            cfg_use_RTTOV = cfg.getboolean(this_section,
-                     "Use RTTOV (radiative transfer code/data) when possible?")
-            cfg_use_CRTM = cfg.getboolean(this_section,
-                      "Use CRTM (radiative transfer code/data) when possible?")
+            cfg_use_GRIB = parse_via_configparser(cfg, this_section,
+                                            "NWP input can be in GRIB format?",
+                                                  boolean=True)
+            cfg_use_libHim = parse_via_configparser(cfg, this_section,
+                         "Use libHimawari (needed for HSD-format files only)?",
+                                                    boolean=True)
+            cfg_use_RTTOV = parse_via_configparser(cfg, this_section,
+                     "Use RTTOV (radiative transfer code/data) when possible?",
+                                                   boolean=True)
+            cfg_use_CRTM = parse_via_configparser(cfg, this_section,
+                      "Use CRTM (radiative transfer code/data) when possible?",
+                                                  boolean=True)
 
             cfg_deGRIB_txt = ''
             if cfg_use_GRIB:
                 this_section = "Specs, De-GRIB NWP"
                 cfg_aux_libs_mnk.append("deGRIB_Fortran")
-                cfg_deGRIB_F_incdirs = cfg.get(this_section, "F include dirs")
-                cfg_deGRIB_F_libdirs = cfg.get(this_section, "F library dirs")
-                cfg_deGRIB_F_preproc_opts = cfg.get(this_section,
+                cfg_deGRIB_F_incdirs = parse_via_configparser(cfg, this_section,
+                                                              "F include dirs")
+                cfg_deGRIB_F_libdirs = parse_via_configparser(cfg, this_section,
+                                                              "F library dirs")
+                cfg_deGRIB_F_preproc_opts = parse_via_configparser(cfg,
+                                                                   this_section,
                           "F preprocessor options (e.g. -D, but not -I or -L)")
-                cfg_deGRIB_F_linker_opts = cfg.get(this_section,
+                cfg_deGRIB_F_linker_opts = parse_via_configparser(cfg,
+                                                                  this_section,
                                            "F linker options (e.g. libraries)")
                 cfg_deGRIB_txt = \
 "#--- de-GRIB software:\n"+ \
@@ -378,11 +429,15 @@ def build(anchor_path, *action_args):
             if cfg_use_libHim:
                 this_section = "Specs, libHimawari"
                 cfg_aux_libs_mnk.append("libHim_Fortran")
-                cfg_libHim_F_incdirs = cfg.get(this_section, "F include dirs")
-                cfg_libHim_F_libdirs = cfg.get(this_section, "F library dirs")
-                cfg_libHim_F_preproc_opts = cfg.get(this_section,
+                cfg_libHim_F_incdirs = parse_via_configparser(cfg, this_section,
+                                                              "F include dirs")
+                cfg_libHim_F_libdirs = parse_via_configparser(cfg, this_section,
+                                                              "F library dirs")
+                cfg_libHim_F_preproc_opts = parse_via_configparser(cfg,
+                                                                   this_section,
                           "F preprocessor options (e.g. -D, but not -I or -L)")
-                cfg_libHim_F_linker_opts = cfg.get(this_section,
+                cfg_libHim_F_linker_opts = parse_via_configparser(cfg,
+                                                                  this_section,
                                            "F linker options (e.g. libraries)")
                 cfg_libHim_txt = \
 "#--- libHimawari library:\n"+ \
@@ -395,11 +450,15 @@ def build(anchor_path, *action_args):
             if cfg_use_RTTOV:
                 this_section = "Specs, RTTOV"
                 cfg_aux_libs_mnk.append("RTTOV_Fortran")
-                cfg_RTTOV_F_incdirs = cfg.get(this_section, "F include dirs")
-                cfg_RTTOV_F_libdirs = cfg.get(this_section, "F library dirs")
-                cfg_RTTOV_F_preproc_opts = cfg.get(this_section,
+                cfg_RTTOV_F_incdirs = parse_via_configparser(cfg, this_section,
+                                                             "F include dirs")
+                cfg_RTTOV_F_libdirs = parse_via_configparser(cfg, this_section,
+                                                             "F library dirs")
+                cfg_RTTOV_F_preproc_opts = parse_via_configparser(cfg,
+                                                                  this_section,
                           "F preprocessor options (e.g. -D, but not -I or -L)")
-                cfg_RTTOV_F_linker_opts = cfg.get(this_section,
+                cfg_RTTOV_F_linker_opts = parse_via_configparser(cfg,
+                                                                 this_section,
                                            "F linker options (e.g. libraries)")
                 cfg_RTTOV_txt = \
 "#--- RTTOV software:\n"+ \
@@ -442,11 +501,15 @@ def build(anchor_path, *action_args):
             if cfg_use_CRTM:
                 this_section = "Specs, CRTM"
                 cfg_aux_libs_mnk.append("CRTM_Fortran")
-                cfg_CRTM_F_incdirs = cfg.get(this_section, "F include dirs")
-                cfg_CRTM_F_libdirs = cfg.get(this_section, "F library dirs")
-                cfg_CRTM_F_preproc_opts = cfg.get(this_section,
+                cfg_CRTM_F_incdirs = parse_via_configparser(cfg, this_section,
+                                                            "F include dirs")
+                cfg_CRTM_F_libdirs = parse_via_configparser(cfg, this_section,
+                                                            "F library dirs")
+                cfg_CRTM_F_preproc_opts = parse_via_configparser(cfg,
+                                                                 this_section,
                           "F preprocessor options (e.g. -D, but not -I or -L)")
-                cfg_CRTM_F_linker_opts = cfg.get(this_section,
+                cfg_CRTM_F_linker_opts = parse_via_configparser(cfg,
+                                                                this_section,
                                            "F linker options (e.g. libraries)")
                 cfg_CRTM_txt = \
 "#--- CRTM software:\n"+ \
@@ -457,11 +520,13 @@ def build(anchor_path, *action_args):
 
             this_section = "Specs, HDF4"
             cfg_aux_libs_mnk.append("HDF4_Fortran")
-            cfg_HDF4_F_incdirs = cfg.get(this_section, "F include dirs")
-            cfg_HDF4_F_libdirs = cfg.get(this_section, "F library dirs")
-            cfg_HDF4_F_preproc_opts = cfg.get(this_section,
+            cfg_HDF4_F_incdirs = parse_via_configparser(cfg, this_section,
+                                                        "F include dirs")
+            cfg_HDF4_F_libdirs = parse_via_configparser(cfg, this_section,
+                                                        "F library dirs")
+            cfg_HDF4_F_preproc_opts = parse_via_configparser(cfg, this_section,
                           "F preprocessor options (e.g. -D, but not -I or -L)")
-            cfg_HDF4_F_linker_opts = cfg.get(this_section,
+            cfg_HDF4_F_linker_opts = parse_via_configparser(cfg, this_section,
                                            "F linker options (e.g. libraries)")
             cfg_HDF4_txt = \
 "#--- HDF4 library:\n"+ \
@@ -472,11 +537,13 @@ def build(anchor_path, *action_args):
 
             this_section = "Specs, HDF5"
             cfg_aux_libs_mnk.append("HDF5_Fortran")
-            cfg_HDF5_F_incdirs = cfg.get(this_section, "F include dirs")
-            cfg_HDF5_F_libdirs = cfg.get(this_section, "F library dirs")
-            cfg_HDF5_F_preproc_opts = cfg.get(this_section,
+            cfg_HDF5_F_incdirs = parse_via_configparser(cfg, this_section,
+                                                        "F include dirs")
+            cfg_HDF5_F_libdirs = parse_via_configparser(cfg, this_section,
+                                                        "F library dirs")
+            cfg_HDF5_F_preproc_opts = parse_via_configparser(cfg, this_section,
                           "F preprocessor options (e.g. -D, but not -I or -L)")
-            cfg_HDF5_F_linker_opts = cfg.get(this_section,
+            cfg_HDF5_F_linker_opts = parse_via_configparser(cfg, this_section,
                                            "F linker options (e.g. libraries)")
             cfg_HDF5_txt = \
 "#--- HDF5 library:\n"+ \
@@ -487,11 +554,14 @@ def build(anchor_path, *action_args):
 
             this_section = "Specs, NetCDF"
             cfg_aux_libs_mnk.append("NetCDF_Fortran")
-            cfg_NetCDF_F_incdirs = cfg.get(this_section, "F include dirs")
-            cfg_NetCDF_F_libdirs = cfg.get(this_section, "F library dirs")
-            cfg_NetCDF_F_preproc_opts = cfg.get(this_section,
+            cfg_NetCDF_F_incdirs = parse_via_configparser(cfg, this_section,
+                                                          "F include dirs")
+            cfg_NetCDF_F_libdirs = parse_via_configparser(cfg, this_section,
+                                                          "F library dirs")
+            cfg_NetCDF_F_preproc_opts = parse_via_configparser(cfg,
+                                                               this_section,
                           "F preprocessor options (e.g. -D, but not -I or -L)")
-            cfg_NetCDF_F_linker_opts = cfg.get(this_section,
+            cfg_NetCDF_F_linker_opts = parse_via_configparser(cfg, this_section,
                                            "F linker options (e.g. libraries)")
             cfg_NetCDF_txt = \
 "#--- NetCDF library:\n"+ \

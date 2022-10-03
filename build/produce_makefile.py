@@ -41,7 +41,7 @@ def file_keyword_scan(obj, src, items_parsed_d, obj_with_module_d,
         with open(src, "rt") as src_f:
             line_list = src_f.readlines()
     except UnicodeDecodeError:
-        with open(src, "r", encoding='ISO-8859–1') as src_f:
+        with open(src, "r", encoding='ISO-8859-1') as src_f:
             line_list = src_f.readlines()
 
     for line in line_list:
