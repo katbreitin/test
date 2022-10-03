@@ -21,7 +21,7 @@ import signal
 import os
 import re
 
-CLAVRX = Path('../clavrx_bin/clavrxorb').absolute()
+CLAVRX = Path('../run/bin/clavrxorb').absolute()
 assert CLAVRX.exists(), str(CLAVRX)+' does not exist'
 
 HERE = Path(__file__).absolute().parent
