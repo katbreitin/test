@@ -11,11 +11,14 @@ from __future__ import print_function, absolute_import, division, unicode_litera
 import sys
 import os
 import getopt
+import io
 
 if sys.version_info[0] >= 3:
     import configparser as cp
+    from io import StringIO
 else:
     import ConfigParser as cp
+    from StringIO import StringIO
 
 
 #------------------------------------------------------------------------------
@@ -23,6 +26,18 @@ def mkdir_p(path):
     """Emulates 'mkdir -p' functionality"""
     if not os.path.isdir(path):
         os.makedirs(path)
+
+
+#------------------------------------------------------------------------------
+def parse_via_configparser(cfg, section, entry, boolean=False):
+    """Parse a given section & entry via configparser (+ Python-2 kludges)."""
+    if not boolean:
+        parsed = cfg.get(section, entry)
+        if parsed == "____":
+            parsed = ''
+    else:
+        parsed = cfg.getboolean(section, entry)
+    return parsed
 
 
 #------------------------------------------------------------------------------
@@ -45,22 +60,49 @@ def main():
         sys.exit(1)
 
     cfg = cp.RawConfigParser()
-    cfg.read(msetup_cfg_fpath)
+
+    if sys.version_info[0] < 3:
+        # Workaround for Python-2 inflexibility:
+        with open(msetup_cfg_fpath, "rt") as text_f:
+            msetup_cfg_str_l = []
+            for line in text_f:
+                ls_line = line.lstrip()
+                if len(line)-len(ls_line) < 10:
+                    lineA = ls_line
+                else:
+                    lineA = line
+                if len(lineA) >= 1:
+                    if not (lineA[0] == '#' or lineA[0] == ';'):
+                        parts = lineA.split(':')
+                        if parts[-1].strip():
+                            if len(parts) > 1:
+                                rhs = parts[-1].split("#;")[0]
+                                lineB = parts[0]+': '+rhs
+                            else:
+                                lineB = parts[0]
+                        else:
+                            lineB = lineA.strip()+' ____\n'
+                        msetup_cfg_str_l.append(lineB)
+            msetup_cfg_flike = StringIO('\n'.join(msetup_cfg_str_l).encode())
+            cfg.readfp(msetup_cfg_flike)
+    else:
+        cfg.read(msetup_cfg_fpath)
 
     this_section = "Modules To Load"
-    precursor_script = cfg.get(this_section,
-                            "Shell script to load BEFORE (un)loading modules")
-    purge_modules_first = cfg.getboolean(this_section,
-                                         "Purge any currently-loaded modules?")
+    precursor_script = parse_via_configparser(cfg, this_section,
+                             "Shell script to load BEFORE (un)loading modules")
+    purge_modules_first = parse_via_configparser(cfg, this_section,
+                                         "Purge any currently-loaded modules?",
+                                                 boolean=True)
     try:
-        module_commands = cfg.get(this_section,
-                                  "Modules to (un)load (in order)")
+        module_commands = parse_via_configparser(cfg, this_section,
+                                              "Modules to (un)load (in order)")
     except:
         # Do not use module commands:
         module_commands = ''
         purge_modules_first = ''
 
-    postcursor_script = cfg.get(this_section,
+    postcursor_script = parse_via_configparser(cfg, this_section,
                               "Shell script to load AFTER (un)loading modules")
 
     text_to_write = "##!/bin/sh\n"+"#\n"+"# auto-generated from "+ \
