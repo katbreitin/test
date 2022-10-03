@@ -29,7 +29,7 @@ HERE = Path(__file__).absolute().parent
 def get_all_l2_variables():
     l2_variables = set()
     pattern = re.compile(r'.*case\([\'"](\w+)[\'"]\).*')
-    with open(HERE / '../main_src/level2_mod.f90') as fp:
+    with open(HERE / '../src/main/level2_mod.F90') as fp:
         for line in fp:
             if 'case("' in line:
                 match = pattern.match(line)
