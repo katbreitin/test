@@ -1299,6 +1299,10 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Standard_Name = "bidirectional_reflectance_0_65_micron_nom_stddev_3x3"
             Sds_Info(Var_Idx)%Units =  "%"
             if (allocated(Ch(1)%Ref_Toa_Std_3x3)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Ch(1)%Ref_Toa_Std_3x3
+         case("refl_0_65um_nom_mean_3x3")
+            Sds_Info(Var_Idx)%Standard_Name = "bidirectional_reflectance_0_65_micron_nom_mean_3x3"
+            Sds_Info(Var_Idx)%Units =  "%"
+            if (allocated(Ch(1)%Ref_Toa_Mean_3x3)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Ch(1)%Ref_Toa_Mean_3x3
          case("refl_1_38um_nom_stddev_3x3")
             Sds_Info(Var_Idx)%Standard_Name = "bidirectional_reflectance_1_38_micron_nom_stddev_3x3"
             Sds_Info(Var_Idx)%Units =  "%"
@@ -2840,9 +2844,19 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             if (allocated(Ems_Ch20_Median_3x3)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Ems_Ch20_Median_3x3
          case("temp_11um_vs_67um_covar_5x5")
             Sds_Info(Var_Idx)%Standard_Name = "brightness_temperature_11_vs_67_micron_5x5_covariance"
-            Sds_Info(Var_Idx)%Actual_Range = [-10.0,10.0]
+            Sds_Info(Var_Idx)%Actual_Range = [-10.0,20.0]
             Sds_Info(Var_Idx)%Units = "K"
             if (allocated(Covar_Ch27_Ch31_5x5)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Covar_Ch27_Ch31_5x5
+         case("temp_10um_vs_67um_covar_5x5")
+            Sds_Info(Var_Idx)%Standard_Name = "brightness_temperature_10_vs_62_micron_5x5_covariance"
+            Sds_Info(Var_Idx)%Actual_Range = [-10.0,20.0]
+            Sds_Info(Var_Idx)%Units = "K"
+            if (allocated(Covar_Ch27_Ch38_5x5)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Covar_Ch27_Ch38_5x5
+         case("temp_10um_vs_62um_covar_5x5")
+            Sds_Info(Var_Idx)%Standard_Name = "brightness_temperature_10_vs_62_micron_5x5_covariance"
+            Sds_Info(Var_Idx)%Actual_Range = [-10.0,20.0]
+            Sds_Info(Var_Idx)%Units = "K"
+            if (allocated(Covar_Ch37_Ch38_5x5)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Covar_Ch37_Ch38_5x5
          case("diff_ch31_ch32_bt_ch31_max_3x3")
             Sds_Info(Var_Idx)%Standard_Name = "difference_11_minus_12_brightness_temperature_max_3x3"
             Sds_Info(Var_Idx)%Actual_Range = [-4.0,20.0]
