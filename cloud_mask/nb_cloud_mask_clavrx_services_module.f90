@@ -74,6 +74,7 @@
     REAL(kind=REAL4) :: Log_Bt_375um_Std = Missing_Value_Real4       !Log10 3.75 um toa brightness temp 3x3 Std. Dev. (K)
     REAL(kind=REAL4) :: Emiss_375um = Missing_Value_Real4            !3.75 um pseudo toa emissivity
     REAL(kind=REAL4) :: Emiss_375um_Clear = Missing_Value_Real4      !3.75 um pseudo toa emissivity clear-sky
+    REAL(kind=REAL4) :: Bt_62um = Missing_Value_Real4                !6.2 um toa brightness temperature (K)
     REAL(kind=REAL4) :: Bt_67um = Missing_Value_Real4                !6.7 um toa brightness temperature (K)
     REAL(kind=REAL4) :: Bt_73um = Missing_Value_Real4                !7.3 um toa brightness temperature (K)
     REAL(kind=REAL4) :: Bt_85um = Missing_Value_Real4                !8.5 um toa brightness temperature (K)

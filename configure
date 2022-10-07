@@ -49,6 +49,7 @@ print "Hostname is @hostName\n";
 my @rttov_path_default='/apollo/cloud/Ancil_Data//SOFTWARE/RTM/RTTOV123/';
 @rttov_path_default='/Users/awalther/SOFTWARE/RTM/RTTOV123/' if ("@hostName" eq "losna");
 
+@rttov_path_default='/apollo/cloud/Ancil_Data/SOFTWARE/RTM/RTTOV123/gfortran_8_3_1/' if ("@hostName" eq "orchid-submit.ssec.wisc.edu");
 
 
 if (-d "@rttov_path_default") {

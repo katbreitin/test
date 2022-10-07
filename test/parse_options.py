@@ -27,11 +27,14 @@ AHI_CHANNELS = {
 'AHI_13':38, 'AHI_14':31, 'AHI_15':32, 'AHI_16':33
 }
 
+ALL_CHANNELS = {f'CLAVRX_{i}':i for i in range(1, 6*8+1)}
+
 
 NEW_CHANNEL_MAP = {
     'viirs':VIIRS_CHANNELS,
     'avhrr_hirs':FUSION_CHANNELS,
-    'ahi':AHI_CHANNELS
+    'ahi':AHI_CHANNELS,
+    'clavrx':ALL_CHANNELS
 }
 
 

@@ -607,7 +607,7 @@ contains
             this % native_channel = [0,0,12,13,14,15,16]
          end if
       case ('SEVIRI')   
-         this % modis_channel_eqv = [20,27,28,29,30,31,32,33]
+         this % modis_channel_eqv = [20,37,28,29,30,31,32,33]
          this % native_channel = [ (i,i=4,11),1 ]
          
       case ('MTSAT')

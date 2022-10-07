@@ -239,9 +239,9 @@ def test_g16_fd(out_dir=None):
     return _run_it(files[0], files[1:], config_override=override, out_dir=out_dir)
 
 @save
-def test_g16_conus(out_dir=None):
+def test_g16_conus_day(out_dir=None):
     ROOT = Path('/arcdata/goes/grb/goes16/2020/2020_05_02_123/abi/L1b/RadC/')
-    files = [next(ROOT.glob(f'OR_ABI-L1b-RadC-M6C{i:02d}_G16_s2020123000111*.nc')) for i in range(1,17)]
+    files = [next(ROOT.glob(f'OR_ABI-L1b-RadC-M6C{i:02d}_G16_s2020123200111*.nc')) for i in range(1,17)]
     override = {'bounds':{
         'enable':True,
         'lat_north': 50.0,
@@ -314,7 +314,7 @@ for rtm in ['pfast','rttov']:
             if see_emiss:
                 see_emiss_str = 'IRseaemis'
             else:
-                see_emiss_str = 'IRseaemis'
+                see_emiss_str = 'noIRseaemis'
             exec(f"""
 @save
 def test_g17_conus_{rtm}_{sfc_emiss}_{see_emiss_str}(out_dir=None):
@@ -340,4 +340,11 @@ def test_h8_fd_dat(out_dir=None):
     
     return _run_it(files[0], files[1:], config_override=override, out_dir=out_dir)
 
+def test_fy3d(out_dir=None):
+    ROOT = Path('/ships19/cloud/archive/clavrx_test_data/fy3d/')
+    L1B = next(ROOT.glob('tf2022234070952.FY3D-X_MERSI_GEO1K_L1B.HDF'))
+    aux = set(ROOT.glob('*'))
+    aux.remove(L1B)
+    override = {'lut':'ecm2_lut_abhi_default.nc'}
+    return _run_it(L1B, aux, config_override=override, out_dir=out_dir)
 

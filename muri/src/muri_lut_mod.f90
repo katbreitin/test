@@ -209,10 +209,13 @@ contains
        end do
       
 <<<<<<< HEAD
+<<<<<<< HEAD
        print*,'B2 refl check',this%app_refl(5,5,5,2,2,:,1)
        print*,'B4 refl',this%app_refl(5,5,5,2,4,:,1)
        print*,'rayleigh refl',this%app_refl(5,5,5,2,4,1,1)
        !print*,'this % opt_ocean_x',this % opt_ocean_x
+=======
+>>>>>>> 59832b44d16367ae7bb74c96cb11b1cfedb45acb
 =======
 >>>>>>> 59832b44d16367ae7bb74c96cb11b1cfedb45acb
        this % is_read = .true.
@@ -256,9 +259,15 @@ contains
       ,this%app_refl(:,:,:,:,i_band,i_opt,i_mode) &
        ,sol,sat,azi,ws &
        , bounds_error = .false., FILL_VALUE = -999.)  
+<<<<<<< HEAD
        
 
        
+=======
+       
+
+       
+>>>>>>> 59832b44d16367ae7bb74c96cb11b1cfedb45acb
        end do
    end do
  end do

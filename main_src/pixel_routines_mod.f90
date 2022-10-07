@@ -128,7 +128,8 @@ module PIXEL_ROUTINES_MOD
           DESERT_MASK_FOR_CLOUD_DETECTION, &
           CITY_MASK_FOR_CLOUD_DETECTION, &
           VIIRS_TO_MODIS, &
-          MODIFY_AUX_CLOUD_TYPE
+          MODIFY_AUX_CLOUD_TYPE, &
+          DAYTIME_REFL_BALANCE_CLOUD_FRACTION
 
   private:: REMOTE_SENSING_REFLECTANCE, &
             NORMALIZED_DifFERENCE_VEGETATION_INDEX, &
@@ -137,6 +138,34 @@ module PIXEL_ROUTINES_MOD
             COMPUTE_TSFC
 
   contains
+  !----------------------------------------------------------------------
+  ! compute dayime sub pixel cloud fraction from a radiative balance
+  ! between clear and cloudy reflectances
+  !
+  ! X = (Refl - Refl_Clear) / (Refl_Cloudy - Refl_Clear)
+  !----------------------------------------------------------------------
+  subroutine DAYTIME_REFL_BALANCE_CLOUD_FRACTION(Refl,Refl_Cloudy,Refl_Clear, &
+                                                 Solar_Zen,Refl_Balance_Cloud_Fraction)
+
+     real(kind=real4), dimension(:,:), intent(in):: Refl_Clear, Refl_Cloudy, Refl, Solar_Zen  
+     real(kind=real4), dimension(:,:), intent(out)::  Refl_Balance_Cloud_Fraction  
+     real(kind=real4), parameter:: Solar_Zen_Max = 80.0
+
+     Refl_Balance_Cloud_Fraction = Missing_Value_Real4
+
+     where(Refl_Clear /= Missing_Value_Real4 .and.  &
+           Refl_Cloudy /= Missing_Value_Real4 .and. & 
+           Refl /= Missing_Value_Real4 .and.        &
+           Solar_Zen /= Missing_Value_Real4 .and.   &
+           Solar_Zen < Solar_Zen_Max .and.          &
+           Refl_Cloudy > Refl_Clear) 
+
+           Refl_Balance_Cloud_Fraction = (Refl - Refl_Clear) / &
+                                         (Refl_Cloudy - Refl_Clear)
+
+     endwhere
+
+  end subroutine DAYTIME_REFL_BALANCE_CLOUD_FRACTION
 
    !----------------------------------------------------------------------
    ! set Chan_On_Flag for each to account for Ch3a/b switching on avhrr

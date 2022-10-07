@@ -141,7 +141,6 @@
       , compute_cloud_top_level_nwp_wind_and_tpw &
       , compute_csbt_cloud_masks &
       , convective_cloud_probability &
-      , ctp_multilayer &
       , H2O_INTERCEPT_CLOUD_HEIGHT &
       , MAKE_CIRRUS_PRIOR_TEMPERATURE_FROM_CO2 &
       , mode_zero_cloud_height &
@@ -382,7 +381,10 @@
     , Nucaps_Flag &
     , Use_Sst_Anal &
     , Sst_Anal &
-    , ABI_Use_104um_Flag 
+    , ABI_Use_104um_Flag &
+    , Static_Ref_065um_Dark_Composite &
+    , Subpixel_Cloud_Fraction &
+    , Static_Dark_Sky_Flag
    
    use SNOW_ROUTINES_MOD, only: &
       COMPUTE_SNOW_CLASS &
@@ -412,7 +414,8 @@
       , Set_Solar_Contamination_Mask &
       , Surface_Remote_Sensing &
       , Read_MODIS_White_Sky_Albedo &
-      , MODIFY_AUX_CLOUD_TYPE
+      , MODIFY_AUX_CLOUD_TYPE &
+      , DAYTIME_REFL_BALANCE_CLOUD_FRACTION
 
    use CITY_MASK_MOD, only: &
       READ_CITY_MASK
@@ -923,8 +926,6 @@
           call READ_OISST_ANALYSIS_MAP(OISST_File_Name)
           Use_Sst_Anal = sym%YES
       endif
-
-   
       
       !----------------------------------------------------------------------
       ! Open Modis White Sky Albedo Map appropriate for this day
@@ -1453,7 +1454,10 @@
                !  Also Muri 
                ! - 
                
-               if ( (trim(Sensor%Sensor_Name) == 'AHI' .or. trim(Sensor%Sensor_Name) == 'AHI9') .and. Aerosol_Mode == 1) then
+               if ( (trim(Sensor%Sensor_Name) == 'AHI' &
+                       .or. trim(Sensor%Sensor_Name) == 'AHI9' &
+                       .or. trim(sensor%sensor_name) == 'ABi') &
+                       .and. Aerosol_Mode == 1) then
                   call muri % allocate (Image%Number_of_elements , Image%Number_Of_Lines_Read_This_Segment)
                end if
                
@@ -1575,6 +1579,18 @@
                !--- Compute Adjacent pixels Cloud Mask
                call ADJACENT_PIXEL_CLOUD_MASK(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)
 
+               !--- compute datyime reflectance balance subpixel cloud fraction
+
+               if (Sensor%Chan_On_Flag_Default(1) == sym%YES .and. & 
+                   Ch(1)%Sub_Pixel_On_Flag .and. Static_Dark_Sky_Flag ) then 
+
+                   call DAYTIME_REFL_BALANCE_CLOUD_FRACTION(Ch(1)%Ref_Toa, &
+                                                            Ch(1)%Ref_Toa_Max_Sub, &
+                                                            Static_Ref_065um_Dark_Composite, &
+                                                            Geo%SolZen, &
+                                                            Subpixel_Cloud_Fraction)
+               endif
+
                !--- Dust Mask
                if (Use_ABI_Dust == sym%YES) then
                   if (Sensor%WMO_Id == 270 .or. Sensor%WMO_Id == 271 .or. Sensor%WMO_Id == 272) then
@@ -1646,7 +1662,7 @@
                !---------------------------------------------------------------------
                Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
 
-               call CTP_MULTILAYER()  !WHAT IS THIS???
+               !--->call CTP_MULTILAYER()  !WHAT IS THIS???
 
                !-------------------------------------------------------------------
                ! make co2 slicing height from sounder with using sounder/imager IFF

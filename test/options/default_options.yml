@@ -105,7 +105,56 @@ channels:
         DNB: False
 
 new_channels:
-    sensor: avhrr_hirs
+    sensor: clavrx
+    clavrx:
+        CLAVRX_1: True
+        CLAVRX_2: True
+        CLAVRX_3: True
+        CLAVRX_4: True
+        CLAVRX_5: True
+        CLAVRX_6: True
+        CLAVRX_7: True
+        CLAVRX_8: True
+        CLAVRX_9: True
+        CLAVRX_10: True
+        CLAVRX_11: True
+        CLAVRX_12: True
+        CLAVRX_13: True
+        CLAVRX_14: True
+        CLAVRX_15: True
+        CLAVRX_16: True
+        CLAVRX_17: True
+        CLAVRX_18: True
+        CLAVRX_19: True
+        CLAVRX_20: True
+        CLAVRX_21: True
+        CLAVRX_22: True
+        CLAVRX_23: True
+        CLAVRX_24: True
+        CLAVRX_25: True
+        CLAVRX_26: True
+        CLAVRX_27: True
+        CLAVRX_28: True
+        CLAVRX_29: True
+        CLAVRX_30: True
+        CLAVRX_31: True
+        CLAVRX_32: True
+        CLAVRX_33: True
+        CLAVRX_34: True
+        CLAVRX_35: True
+        CLAVRX_36: True
+        CLAVRX_37: True
+        CLAVRX_38: True
+        CLAVRX_39: True
+        CLAVRX_40: True
+        CLAVRX_41: True
+        CLAVRX_42: True
+        CLAVRX_43: True
+        CLAVRX_44: True
+        CLAVRX_45: True
+        CLAVRX_46: True
+        CLAVRX_47: True
+        CLAVRX_48: True
     avhrr_hirs:
         HIRS_4: True
         HIRS_5: True

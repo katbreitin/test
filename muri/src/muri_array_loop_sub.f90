@@ -57,16 +57,25 @@ subroutine muri_array_loop (input, output )
     inp_pixel % path = trim('/home/mino/iris-home/MURI/MURI_aerosol_LUT/')
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 59832b44d16367ae7bb74c96cb11b1cfedb45acb
     
    do i = 1, input % dim(1)
   
       do j = 1, input % dim(2)
+<<<<<<< HEAD
 <<<<<<< HEAD
    
 	 
 	
 	 if ( .not. input % do_it(i,j)) cycle
 	 
+=======
+         if ( .not. input % do_it(i,j)) cycle
+ 
+>>>>>>> 59832b44d16367ae7bb74c96cb11b1cfedb45acb
 =======
          if ( .not. input % do_it(i,j)) cycle
  
@@ -80,6 +89,7 @@ subroutine muri_array_loop (input, output )
       
 	 
          inp_pixel % ws = input % windspeed(i,j) ! real wind speed
+<<<<<<< HEAD
 <<<<<<< HEAD
 	 
 	 if (input % windspeed(i,j).LT.2.0) then
@@ -279,6 +289,84 @@ subroutine muri_array_loop (input, output )
          end if  ! end of  0.001 < refl(6) <0.25
    
 
+=======
+ 
+      if (input % windspeed(i,j).LT.2.0) then
+         inp_pixel % ws =2.0
+      end if
+  
+         if (input % windspeed(i,j).GT.14.0) then
+         inp_pixel % ws =14.0
+      end if
+
+         inp_pixel % surf_elev = input % surf_elev(i,j) ! surface elevation
+      inp_pixel % ozone = input % ozone(i,j)
+         inp_pixel % h2o_conc = input %  h2o_conc(i,j)	
+ 
+      inp_pixel % month = input%month
+      inp_pixel % land_class=input % land_class(i,j)
+         inp_pixel % path = input % path
+         
+         ! atmospheric correction
+
+         trans_re_default = muri_transmission_default (inp_pixel % sol,inp_pixel % sat)
+ 
+      trans_re = muri_transmission(inp_pixel % sol,inp_pixel % sat,inp_pixel % ozone,inp_pixel % h2o_conc)
+  
+      output % trans_re_default ( i,j) = trans_re_default(3) ! just to know band 3
+      output % trans_re ( i,j) = trans_re(3) ! just to know band 3
+ 
+ 
+         do k=1,6
+            inp_pixel % rfl(k) = input % ref(k,i,j) * trans_re(k)
+         end do
+
+         out_pixel% sediment_class=-9 ! fill in value
+         out_pixel% aerosol_QA=-9 ! fill in value
+         out_pixel % aot=-99
+         out_pixel % angstrom_exponent=-99
+         out_pixel % cm_mode=0
+         out_pixel % fm_mode=0
+         out_pixel % fmf=-99
+         out_pixel % err_n= -99
+
+         select case (input % land_class(i,j))
+
+         case(0,6,7) ! ocean
+    
+            inp_pixel % is_sedimental = sedimental (inp_pixel)
+            if(inp_pixel % is_sedimental) then
+              out_pixel% sediment_class=1
+            else
+               out_pixel% sediment_class=0
+            end if
+ 
+            if(inp_pixel % sat.gt.78.or.inp_pixel % sol.gt.78) then
+               out_pixel% aerosol_QA=0
+            else
+              out_pixel% aerosol_QA=2
+            end if
+
+             call muri_algorithm( inp_pixel, out_pixel )
+   
+   
+          case (1) ! land
+    
+         !out_pixel% sediment_class=2 ! over land is not sedimental 
+
+         if(inp_pixel % rfl(6).gt.0.01.and.inp_pixel % rfl(6).lt.0.25) then
+               if(inp_pixel % sat.gt.78.or.inp_pixel % sol.gt.78) then
+               out_pixel% aerosol_QA=0 !print*,'bad land'
+            else 
+            out_pixel% aerosol_QA=2  !print*,'good land'
+            end if 
+    
+               call muri_land_algorithm( inp_pixel, out_pixel )
+         
+         end if  ! end of  0.001 < refl(6) <0.25
+   
+
+>>>>>>> 59832b44d16367ae7bb74c96cb11b1cfedb45acb
          case default
     
     ! over in-land water etc
@@ -302,6 +390,9 @@ subroutine muri_array_loop (input, output )
     
     
   
+<<<<<<< HEAD
+>>>>>>> 59832b44d16367ae7bb74c96cb11b1cfedb45acb
+=======
 >>>>>>> 59832b44d16367ae7bb74c96cb11b1cfedb45acb
       
        !  do k=1, 6
