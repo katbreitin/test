@@ -1736,6 +1736,16 @@ module SENSOR_MOD
          exit test_loop
       endif
 
+      !---  VGAC SNPP
+      if (index(Image%Level1b_Name, 'VGAC_VNPP') > 0) then
+         Sensor%Sensor_Name = 'VGAC'
+         Sensor%Spatial_Resolution_Meters = 3900
+         Sensor%Platform_Name = 'SNPP'
+         Sensor%WMO_Id = 224
+         Sensor%Instr_Const_File = 'viirs_npp_instr.dat'
+         exit test_loop
+      endif
+
       !---  EPS-SG / MetImage
       if (index(Image%Level1b_Name, 'SGA1-VII') > 0) then
          Sensor%Sensor_Name = 'METIMAGE'
