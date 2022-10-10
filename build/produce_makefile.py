@@ -173,9 +173,13 @@ def crmf(arg_pathpfx, arg_d, arg_v, arg_mffpath, arg_finaltgt,
 
     compile_str_d = dict([ \
            (".F", "$(FC) $(FPPDEFS) $(FPPFLAGS) $(FMODPATHS) $(FFLAGS) $(OTHERFLAGS) -c"),
+           (".F_auxflags1", "$(FC) $(FPPDEFS) $(FPPFLAGS) $(FMODPATHS) $(FFLAGS_AUXFLAGS1) $(OTHERFLAGS) -c"),
            (".f", "$(FC) $(FMODPATHS) $(FFLAGS) $(OTHERFLAGS) -c"),
+           (".f_auxflags1", "$(FC) $(FMODPATHS) $(FFLAGS_AUXFLAGS1) $(OTHERFLAGS) -c"),
            (".F90", "$(FC) $(FPPDEFS) $(FPPFLAGS) $(FMODPATHS) $(FFLAGS) $(OTHERFLAGS) -c"),
+           (".F90_auxflags1", "$(FC) $(FPPDEFS) $(FPPFLAGS) $(FMODPATHS) $(FFLAGS_AUXFLAGS1) $(OTHERFLAGS) -c"),
            (".f90", "$(FC) $(FMODPATHS) $(FFLAGS) $(OTHERFLAGS) -c"),
+           (".f90_auxflags1", "$(FC) $(FMODPATHS) $(FFLAGS_AUXFLAGS1) $(OTHERFLAGS) -c"),
            (".c", "$(CC) $(CPPDEFS) $(CPPFLAGS) $(CFLAGS) $(OTHERFLAGS) -c") \
                        ] )
     str_delimiter_d = dict([ ("'", "'"), ('"', '"'), ('<', '>') ])
@@ -257,7 +261,8 @@ def crmf(arg_pathpfx, arg_d, arg_v, arg_mffpath, arg_finaltgt,
                             for line in line_list:
                                 words = line.split()
                                 fif = words[-1]
-                                (i_head, i_tail) = os.path.split(fif)
+                                (i_head, i_tail0) = os.path.split(fif)
+                                i_tail = i_tail0.split('@')[0]
                                 i_sfx_b = i_tail.endswith(srcf_sfx_tuple)
                                 if arg_d:
                                     print("fif = "+fif)
@@ -280,10 +285,14 @@ def crmf(arg_pathpfx, arg_d, arg_v, arg_mffpath, arg_finaltgt,
                                     if not i_head in items_parsed_d:
                                         order_of_proc += 1
                                         items_parsed_d[i_head] = order_of_proc
-                                    i_cmd = ' '.join(words[:len(words)-2])
-                                    i_cmd.strip()
+                                    try:
+                                        i_cmd = i_tail0.split('@')[1].strip()
+                                    except:
+                                        i_cmd = None
                                     if i_cmd:
-                                        compile_str_d[i_tail] = i_cmd
+                                        tmp, i_ext = os.path.splitext(i_tail)
+                                        compile_str_d[i_tail] = \
+                                                 compile_str_d[i_ext+'_'+i_cmd]
                                         if arg_v:
                                             print("Custom compile command (for "+ \
                                                   i_tail+"): "+i_cmd)
@@ -357,9 +366,9 @@ def crmf(arg_pathpfx, arg_d, arg_v, arg_mffpath, arg_finaltgt,
 
               # Write the command line(s):
             if i_tail in compile_str_d:
-                mf_f.write("\t"+compile_str_d[i_tail]+"\n")
+                mf_f.write("\t"+compile_str_d[i_tail])
             else:
-                (tmp, i_ext) = os.path.splitext(i_tail)
+                tmp, i_ext = os.path.splitext(i_tail)
                 mf_f.write("\t"+compile_str_d[i_ext])
             for incp in paths_to_include:
                 mf_f.write(" -I"+incp)

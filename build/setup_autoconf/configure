@@ -626,7 +626,6 @@ ac_subst_vars='LTLIBOBJS
 LIBOBJS
 USABLE_AUXLIBS
 FAILED_AUXLIBS
-RTTOV_ID
 SOME_F2003
 LIBS_C
 PREPROC_MFLAGS_C
@@ -642,6 +641,7 @@ LIBS_FORTRAN
 PREPROC_MFLAGS_FORTRAN
 PREPROC_INCS_FORTRAN
 PREPROC_DEFS_FORTRAN
+FLAGS_ADDED_FORTRAN
 FLAGS_FORTRAN
 LDFLAGS_FORTRAN
 OPENMP_FCFLAGS
@@ -2475,7 +2475,7 @@ else
    BLAH=;
 fi
 
-failed_aux_libs=""; usable_aux_libs=""; F2003_ability="no"; RTTOV_version="None"
+failed_aux_libs=""; usable_aux_libs=""; F2003_ability="no";
 
 for proglang in $prog_languages_needed
 do
@@ -4829,6 +4829,7 @@ $as_echo "yes" >&6; }
          # Save for later:
          LDFLAGS_save="${LDFLAGS}";
          FCFLAGS_save="${FCFLAGS}";
+	 FCFLAGS_to_add_save="";
          LIBS_save="${LIBS}";
 
          for package in $aux_libs_needed
@@ -4925,6 +4926,7 @@ $as_echo "yes" >&6; }
 
                   if test "$failed" = no; then
                      FCFLAGS_save="${FCFLAGS_save} ${FCFLAGS_to_add}";
+		     FCFLAGS_to_add_save="${FCFLAGS_to_add_save} ${FCFLAGS_to_add}";s
                      LDFLAGS_save="${LDFLAGS_save} ${LDFLAGS_to_add}";
                      LIBS_save="${LIBS_save} ${LIBS_to_add}";
                      usable_aux_libs="${usable_aux_libs} ${package}";
@@ -5049,6 +5051,7 @@ $as_echo "yes" >&6; }
 
                   if test "$failed" = no; then
                      FCFLAGS_save="${FCFLAGS_save} ${FCFLAGS_to_add}";
+		     FCFLAGS_to_add_save="${FCFLAGS_to_add_save} ${FCFLAGS_to_add}";
                      LDFLAGS_save="${LDFLAGS_save} ${LDFLAGS_to_add}";
                      LIBS_save="${LIBS_save} ${LIBS_to_add}";
                      usable_aux_libs="${usable_aux_libs} ${package}";
@@ -5147,6 +5150,7 @@ $as_echo "yes" >&6; }
 
                   if test "$failed" = no; then
                      FCFLAGS_save="${FCFLAGS_save} ${FCFLAGS_to_add}";
+		     FCFLAGS_to_add_save="${FCFLAGS_to_add_save} ${FCFLAGS_to_add}";
                      LDFLAGS_save="${LDFLAGS_save} ${LDFLAGS_to_add}";
                      LIBS_save="${LIBS_save} ${LIBS_to_add}";
                      usable_aux_libs="${usable_aux_libs} ${package}";
@@ -5244,6 +5248,7 @@ $as_echo "yes" >&6; }
 
                   if test "$failed" = no; then
                      FCFLAGS_save="${FCFLAGS_save} ${FCFLAGS_to_add}";
+		     FCFLAGS_to_add_save="${FCFLAGS_to_add_save} ${FCFLAGS_to_add}";
                      LDFLAGS_save="${LDFLAGS_save} ${LDFLAGS_to_add}";
                      LIBS_save="${LIBS_save} ${LIBS_to_add}";
                      usable_aux_libs="${usable_aux_libs} ${package}";
@@ -5348,6 +5353,7 @@ $as_echo "yes" >&6; }
 
                   if test "$failed" = no; then
                      FCFLAGS_save="${FCFLAGS_save} ${FCFLAGS_to_add}";
+		     FCFLAGS_to_add_save="${FCFLAGS_to_add_save} ${FCFLAGS_to_add}";
                      LDFLAGS_save="${LDFLAGS_save} ${LDFLAGS_to_add}";
                      LIBS_save="${LIBS_save} ${LIBS_to_add}";
                      usable_aux_libs="${usable_aux_libs} ${package}";
@@ -5411,7 +5417,6 @@ See \`config.log' for more details" "$LINENO" 5; }
                   else
                      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-		     RTTOV_version=`cat test.out`
                   fi
 
                   if test "$failed" = no; then
@@ -5449,6 +5454,7 @@ $as_echo "yes" >&6; }
 
                   if test "$failed" = no; then
                      FCFLAGS_save="${FCFLAGS_save} ${FCFLAGS_to_add}";
+		     FCFLAGS_to_add_save="${FCFLAGS_to_add_save} ${FCFLAGS_to_add}";
                      LDFLAGS_save="${LDFLAGS_save} ${LDFLAGS_to_add}";
                      LIBS_save="${LIBS_save} ${LIBS_to_add}";
                      usable_aux_libs="${usable_aux_libs} ${package}";
@@ -5546,6 +5552,7 @@ $as_echo "yes" >&6; }
 
                   if test "$failed" = no; then
                      FCFLAGS_save="${FCFLAGS_save} ${FCFLAGS_to_add}";
+		     FCFLAGS_to_add_save="${FCFLAGS_to_add_save} ${FCFLAGS_to_add}";
                      LDFLAGS_save="${LDFLAGS_save} ${LDFLAGS_to_add}";
                      LIBS_save="${LIBS_save} ${LIBS_to_add}";
                      usable_aux_libs="${usable_aux_libs} ${package}";
@@ -5560,7 +5567,7 @@ $as_echo "yes" >&6; }
          #  directives:
 
          PREPROC_DEFS_FORTRAN=; PREPROC_INCS_FORTRAN=;
-         PREPROC_MFLAGS_FORTRAN=; FLAGS_FORTRAN=;
+         PREPROC_MFLAGS_FORTRAN=; FLAGS_FORTRAN=; FLAGS_ADDED_FORTRAN=;
          for token in $FCFLAGS_save
          do
             if expr X"$token" : '^X\-I' >/dev/null 2>&1; then
@@ -5573,10 +5580,19 @@ $as_echo "yes" >&6; }
                fi
             fi
          done
+	 for token in $FCFLAGS_to_add_save
+         do
+            if ! expr X"$token" : '^X\-I' >/dev/null 2>&1; then
+               if ! expr X"$token" : '^X\-D' >/dev/null 2>&1; then
+                  FLAGS_ADDED_FORTRAN="$FLAGS_ADDED_FORTRAN $token";
+               fi
+            fi
+         done
 
 	 # Finalize and "publish" variables:
          LDFLAGS_FORTRAN="${LDFLAGS_save}";
          LIBS_FORTRAN="${LIBS_save}";
+
 
 
 
@@ -7737,9 +7753,6 @@ $as_echo "yes" >&6; }
 done
 
 SOME_F2003="${F2003_ability}";
-
-
-RTTOV_ID="${RTTOV_version}";
 
 
 FAILED_AUXLIBS="${failed_aux_libs}"; USABLE_AUXLIBS="${usable_aux_libs}";

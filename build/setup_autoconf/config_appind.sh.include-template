@@ -39,6 +39,7 @@ Fortran_compiler="@FC@";
 some_F2003_capability="@SOME_F2003@";
 
 Fortran_compiler_flags="@FLAGS_FORTRAN@";
+Fortran_compiler_added_flags="@FLAGS_ADDED_FORTRAN@";
 
 Fortran_compiler_freeform_flag="@FCFLAGS_freeform@";
 Fortran_compiler_f_flags="@FCFLAGS_f@";
