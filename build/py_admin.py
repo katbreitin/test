@@ -121,6 +121,16 @@ def extend_composite_pnf(anchor_path, pnf_fpath, sdwe_fpath, pnf_pfx,
                                                     os.path.join(root_src_path,
                                                                  src_part)
                                         pnf_f.write(line_to_append)
+                                elif "%AUXFLAGS" in pnf_line: # Compiler opts
+                                    aux_part, src_part = \
+                                                  pnf_line.partition("%:")[::2]
+                                    aux_ID = re.split("[\(\)]", aux_part)[1]
+                                    # Add aux_ID to appended line:
+                                    line_to_append = \
+                                        os.path.join(root_src_path,
+                                                     src_part.strip())+ \
+                                                        "@auxflags"+aux_ID+'\n'
+                                    pnf_f.write(line_to_append)
                                 else:            # Normal source code
                                     trimmed_pnf_line = pnf_line.strip()
                                     if trimmed_pnf_line:  # Not all "whitespace"
@@ -281,10 +291,9 @@ def build(anchor_path, *action_args):
 #@            biad[split_pair[0]] = split_pair[1]
 
         # Configure the build environment:
-
-        if not os.path.isfile(crmf_include_fpath):
-            build_env_cfg_fpath = os.path.join(anchor_path,
+        build_env_cfg_fpath = os.path.join(anchor_path,
                                     build_envf_pfx+"_config."+mf_template_type)
+        if not os.path.isfile(crmf_include_fpath):
             supp_defs_fpath = os.path.join(anchor_path,
                                            "supplementary_defs.sh.include")
 
@@ -366,8 +375,19 @@ def build(anchor_path, *action_args):
                 this_section = "Compiler/Linker Options For Production Use"
             cfg_F_preproc_opts = parse_via_configparser(cfg, this_section,
                                      "F preprocessor options (e.g. -D and -I)")
-            cfg_F_compiler_opts = parse_via_configparser(cfg, this_section,
+            cfg_F_compiler_opts = {}
+            cfg_F_compiler_opts["nominal"] = parse_via_configparser(cfg,
+                                                                  this_section,
                                    "F compiler options (no -I, -L, -l, or -D)")
+            for i in range(10):
+                key = "auxflags{:d}".format(i+1)
+                token = "aux{:d}".format(i+1)
+                try:
+                    cfg_F_compiler_opts[key] = parse_via_configparser(cfg,
+                                                                  this_section,
+                            token+" F compiler options (no -I, -L, -l, or -D)")
+                except:
+                    cfg_F_compiler_opts[key] = None
             cfg_F_linker_opts = parse_via_configparser(cfg, this_section,
                                               "F linker options (e.g. -L, -l)")
             cfg_F_linker_opts_nol = ' '.join([x for x in
@@ -571,6 +591,12 @@ def build(anchor_path, *action_args):
 "NetCDF_Fortran_libs=\""+cfg_NetCDF_F_linker_opts+"\";\n"
             
             # Write sh-syntax output file (for use by 'configure'):
+            F_compiler_opts_line_l = []
+            for key in cfg_F_compiler_opts:
+                if cfg_F_compiler_opts[key] is not None:
+                    F_compiler_opts_line_l.append("Fortran_compiler_opts_"+ \
+                                      key+"=\""+cfg_F_compiler_opts[key]+"\";")
+            F_compiler_opts_lines = '\n'.join(F_compiler_opts_line_l)
             text_to_write = \
 "#+ sh-syntax include file, specifying specific parameter values and tasks\n"+ \
 "#   for 'configure'.\n"+ \
@@ -582,7 +608,7 @@ def build(anchor_path, *action_args):
 "#--- Fortran-language:\n"+ \
 "\n"+ \
 "Fortran_compiler="+cfg_F_compiler+";\n"+ \
-"Fortran_compiler_opts=\""+cfg_F_compiler_opts+"\";\n"+ \
+F_compiler_opts_lines+'\n'+ \
 "Fortran_preprocessor_opts=\""+cfg_F_preproc_opts+' '+RTTOV_def+"\";\n"+ \
 "Fortran_linker_opts=\""+cfg_F_linker_opts_nol+"\";\n"+ \
 "Fortran_libs=\""+cfg_F_linker_opts_lib+"\";\n"+ \
@@ -623,7 +649,7 @@ cfg_NetCDF_txt+ \
 "\n"+ \
 "LDFLAGS_Fortran_cfg_gen=\"${Fortran_linker_opts}\";\n"+ \
 "LIBS_Fortran_cfg_gen=\"${Fortran_libs}\";\n"+ \
-"FCFLAGS_cfg_gen=\"${Fortran_compiler_opts}\";\n"+ \
+"FCFLAGS_cfg_gen=\"${Fortran_compiler_opts_nominal}\";\n"+ \
 "CPPFLAGS_Fortran_cfg_gen=\"${Fortran_preprocessor_opts}\";\n"+ \
 "\n"+ \
 "# C:\n"+ \
@@ -680,6 +706,13 @@ cfg_NetCDF_txt+ \
             split_pair = (pair.replace(';', ' ')).split('=', 1)
             abd[split_pair[0]] = split_pair[1]
 
+        becd = {}
+        with open(build_env_cfg_fpath, "rt") as input_f:
+            input_f_raw = input_f.read()
+        for pair in shlex.split(input_f_raw, True, True):
+            split_pair = (pair.replace(';', ' ')).split('=', 1)
+            becd[split_pair[0]] = split_pair[1]
+
         # List of usable external library monikers:
         cfg_aux_libs_mnk = abd["usable_aux_libs"].split()
 
@@ -702,6 +735,15 @@ cfg_NetCDF_txt+ \
                                  cfg_aux_libs_mnk)
 
         # Create build environment configuration file for Makefile creation:
+        F_compiler_opts_l = []
+        for key in becd:
+            if "Fortran_compiler_opts" in key:
+                relkey = key.split('_')[-1]
+                if relkey != "nominal":
+                    F_compiler_opts_l.append("FFLAGS_"+relkey.upper()+" = "+ \
+                                             becd[key]+' '+ \
+                                           abd["Fortran_compiler_added_flags"])
+        F_compiler_opts_lines = '\n'.join(F_compiler_opts_l)
         text_to_write = \
 "# make-syntax build environment configuration file for Makefile creation\n"+ \
 "\n"+ \
@@ -709,6 +751,7 @@ cfg_NetCDF_txt+ \
 "\n"+ \
 "FC = "+abd["Fortran_compiler"]+"\n"+ \
 "FFLAGS = "+abd["Fortran_compiler_flags"]+abd["app_Fortran_compiler_flags"]+pfd[parallel_method][1]+"\n"+ \
+F_compiler_opts_lines+'\n'+ \
 "FPPDEFS = "+abd["Fortran_preproc_defines"]+abd["app_Fortran_preproc_defines"]+pfd[parallel_method][0]+"\n"+ \
 "FPPFLAGS = "+abd["Fortran_preproc_miscflags"]+abd["app_Fortran_preproc_miscflags"]+abd["Fortran_preproc_includes"]+abd["app_Fortran_preproc_includes"]+pfd[parallel_method][0]+"\n"+ \
 "FMODPATHS = "+abd["app_Fortran_modpaths"]+abd["Fortran_preproc_includes"]+abd["app_Fortran_preproc_includes"]+"\n"+ \

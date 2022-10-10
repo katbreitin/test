@@ -102,6 +102,7 @@ do
          # Save for later:
          LDFLAGS_save="${LDFLAGS}";
          FCFLAGS_save="${FCFLAGS}";
+	 FCFLAGS_to_add_save="";
          LIBS_save="${LIBS}";
 
          for package in $aux_libs_needed
@@ -170,6 +171,7 @@ do
 
                   if test "$failed" = no; then
                      FCFLAGS_save="${FCFLAGS_save} ${FCFLAGS_to_add}";
+		     FCFLAGS_to_add_save="${FCFLAGS_to_add_save} ${FCFLAGS_to_add}";s
                      LDFLAGS_save="${LDFLAGS_save} ${LDFLAGS_to_add}";
                      LIBS_save="${LIBS_save} ${LIBS_to_add}";
                      usable_aux_libs="${usable_aux_libs} ${package}";
@@ -256,6 +258,7 @@ do
 
                   if test "$failed" = no; then
                      FCFLAGS_save="${FCFLAGS_save} ${FCFLAGS_to_add}";
+		     FCFLAGS_to_add_save="${FCFLAGS_to_add_save} ${FCFLAGS_to_add}";
                      LDFLAGS_save="${LDFLAGS_save} ${LDFLAGS_to_add}";
                      LIBS_save="${LIBS_save} ${LIBS_to_add}";
                      usable_aux_libs="${usable_aux_libs} ${package}";
@@ -326,6 +329,7 @@ do
 
                   if test "$failed" = no; then
                      FCFLAGS_save="${FCFLAGS_save} ${FCFLAGS_to_add}";
+		     FCFLAGS_to_add_save="${FCFLAGS_to_add_save} ${FCFLAGS_to_add}";
                      LDFLAGS_save="${LDFLAGS_save} ${LDFLAGS_to_add}";
                      LIBS_save="${LIBS_save} ${LIBS_to_add}";
                      usable_aux_libs="${usable_aux_libs} ${package}";
@@ -395,6 +399,7 @@ do
 
                   if test "$failed" = no; then
                      FCFLAGS_save="${FCFLAGS_save} ${FCFLAGS_to_add}";
+		     FCFLAGS_to_add_save="${FCFLAGS_to_add_save} ${FCFLAGS_to_add}";
                      LDFLAGS_save="${LDFLAGS_save} ${LDFLAGS_to_add}";
                      LIBS_save="${LIBS_save} ${LIBS_to_add}";
                      usable_aux_libs="${usable_aux_libs} ${package}";
@@ -471,6 +476,7 @@ do
 
                   if test "$failed" = no; then
                      FCFLAGS_save="${FCFLAGS_save} ${FCFLAGS_to_add}";
+		     FCFLAGS_to_add_save="${FCFLAGS_to_add_save} ${FCFLAGS_to_add}";
                      LDFLAGS_save="${LDFLAGS_save} ${LDFLAGS_to_add}";
                      LIBS_save="${LIBS_save} ${LIBS_to_add}";
                      usable_aux_libs="${usable_aux_libs} ${package}";
@@ -543,6 +549,7 @@ do
 
                   if test "$failed" = no; then
                      FCFLAGS_save="${FCFLAGS_save} ${FCFLAGS_to_add}";
+		     FCFLAGS_to_add_save="${FCFLAGS_to_add_save} ${FCFLAGS_to_add}";
                      LDFLAGS_save="${LDFLAGS_save} ${LDFLAGS_to_add}";
                      LIBS_save="${LIBS_save} ${LIBS_to_add}";
                      usable_aux_libs="${usable_aux_libs} ${package}";
@@ -612,6 +619,7 @@ do
 
                   if test "$failed" = no; then
                      FCFLAGS_save="${FCFLAGS_save} ${FCFLAGS_to_add}";
+		     FCFLAGS_to_add_save="${FCFLAGS_to_add_save} ${FCFLAGS_to_add}";
                      LDFLAGS_save="${LDFLAGS_save} ${LDFLAGS_to_add}";
                      LIBS_save="${LIBS_save} ${LIBS_to_add}";
                      usable_aux_libs="${usable_aux_libs} ${package}";
@@ -626,7 +634,7 @@ do
          #  directives:
 
          PREPROC_DEFS_FORTRAN=; PREPROC_INCS_FORTRAN=;
-         PREPROC_MFLAGS_FORTRAN=; FLAGS_FORTRAN=;
+         PREPROC_MFLAGS_FORTRAN=; FLAGS_FORTRAN=; FLAGS_ADDED_FORTRAN=; 
          for token in $FCFLAGS_save
          do
             if expr X"$token" : '^X\-I' >/dev/null 2>&1; then
@@ -639,12 +647,21 @@ do
                fi
             fi
          done
+	 for token in $FCFLAGS_to_add_save
+         do
+            if ! expr X"$token" : '^X\-I' >/dev/null 2>&1; then
+               if ! expr X"$token" : '^X\-D' >/dev/null 2>&1; then
+                  FLAGS_ADDED_FORTRAN="$FLAGS_ADDED_FORTRAN $token";
+               fi
+            fi
+         done
 
 	 # Finalize and "publish" variables:
          LDFLAGS_FORTRAN="${LDFLAGS_save}";
          LIBS_FORTRAN="${LIBS_save}";
          AC_SUBST([LDFLAGS_FORTRAN])
          AC_SUBST([FLAGS_FORTRAN])
+         AC_SUBST([FLAGS_ADDED_FORTRAN])
          AC_SUBST([PREPROC_DEFS_FORTRAN])
          AC_SUBST([PREPROC_INCS_FORTRAN])
          AC_SUBST([PREPROC_MFLAGS_FORTRAN])
