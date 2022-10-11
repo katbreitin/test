@@ -113,6 +113,7 @@
 !  an extra 4 byte header and trailer word to the total record.
 !--------------------------------------------------------------------------------------
 module OISST_ANALYSIS
+  use univ_kind_defs_mod, only: i2, f4
   use CONSTANTS_MOD
   use CX_DATE_TIME_TOOLS_MOD
   use PIXEL_COMMON_MOD
@@ -133,7 +134,8 @@ module OISST_ANALYSIS
   real, parameter, private:: del_lat_sst_anal = (last_lat_sst_anal - first_lat_sst_anal)/(num_lat_sst_anal-1)
   real, parameter, private:: min_sst_anal = -4.0, max_sst_anal=36.0
 
-  integer(kind=int4), dimension(num_lon_sst_anal,num_lat_sst_anal,1,1):: temp_i4_buffer
+  integer(kind=i2), dimension(num_lon_sst_anal,num_lat_sst_anal,1,1) ::  &
+       temp_i2_buffer
   real(kind=real4), dimension(num_lon_sst_anal,num_lat_sst_anal), private, save:: oisst_anal_map
   real(kind=real4), dimension(num_lon_sst_anal,num_lat_sst_anal), private, save:: oisst_err_map
   real(kind=real4), dimension(num_lon_sst_anal,num_lat_sst_anal), private, save:: oisst_anal_map_uni
@@ -278,14 +280,17 @@ end function GET_OISST_MAP_FILENAME
    sds_edge_4d(4) = 1
    sds_stride_4d = 1
 
-   call READ_NETCDF(ncid,sds_start_4d,sds_stride_4d,sds_edge_4d,'sst',temp_i4_buffer)
-   oisst_anal_map = float(temp_i4_buffer(:,:,1,1)) * 0.01
+   call READ_NETCDF(ncid, sds_start_4d, sds_stride_4d, sds_edge_4d, 'sst',  &
+        temp_i2_buffer)
+   oisst_anal_map = real(temp_i2_buffer(:,:,1,1), kind=f4)*0.01_f4
 
-   call READ_NETCDF(ncid,sds_start_4d,sds_stride_4d,sds_edge_4d,'err',temp_i4_buffer)
-   oisst_err_map = float(temp_i4_buffer(:,:,1,1)) * 0.01
+   call READ_NETCDF(ncid, sds_start_4d, sds_stride_4d, sds_edge_4d, 'err',  &
+        temp_i2_buffer)
+   oisst_err_map = real(temp_i2_buffer(:,:,1,1), kind=f4)*0.01_f4
 
-   call READ_NETCDF(ncid,sds_start_4d,sds_stride_4d,sds_edge_4d,'ice',temp_i4_buffer)
-   oisst_cice_map = float(temp_i4_buffer(:,:,1,1)) * 0.01
+   call READ_NETCDF(ncid, sds_start_4d, sds_stride_4d, sds_edge_4d, 'ice',  &
+        temp_i2_buffer)
+   oisst_cice_map = real(temp_i2_buffer(:,:,1,1), kind=f4)*0.01_f4
 
    call CLOSE_NETCDF(ncid)
 
