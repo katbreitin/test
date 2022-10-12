@@ -112,14 +112,14 @@ module LEVEL2_STRUCTURES_MOD
     real(kind=real4), dimension(2):: Valid_Range
     integer(kind=int4):: Sds_Id
     !-- pointers to hold all possible data types
-    integer(kind=int1), dimension(:), pointer:: Sds_Data_1d_I1
-    integer(kind=int4), dimension(:), pointer:: Sds_Data_1d_I4
-    integer(kind=int1), dimension(:,:), pointer:: Sds_Data_2d_I1
-    integer(kind=int2), dimension(:,:), pointer:: Sds_Data_2d_I2
-    integer(kind=int4), dimension(:,:), pointer:: Sds_Data_2d_I4
-    integer(kind=int1), dimension(:,:,:), pointer:: Sds_Data_3d_I1
-    real, dimension(:), pointer:: Sds_Data_1d_R4
-    real, dimension(:,:), pointer:: Sds_Data_2d_R4
+    integer(kind=int1), dimension(:), pointer:: Sds_Data_1d_I1 => NULL()
+    integer(kind=int4), dimension(:), pointer:: Sds_Data_1d_I4 => NULL()
+    integer(kind=int1), dimension(:,:), pointer:: Sds_Data_2d_I1 => NULL()
+    integer(kind=int2), dimension(:,:), pointer:: Sds_Data_2d_I2 => NULL()
+    integer(kind=int4), dimension(:,:), pointer:: Sds_Data_2d_I4 => NULL()
+    integer(kind=int1), dimension(:,:,:), pointer:: Sds_Data_3d_I1 => NULL()
+    real, dimension(:), pointer:: Sds_Data_1d_R4 => NULL()
+    real, dimension(:,:), pointer:: Sds_Data_2d_R4 => NULL()
     
     contains
     
