@@ -1708,7 +1708,15 @@
                endif
 
                !--- Convective Cloud Probability
-               call CONVECTIVE_CLOUD_PROBABILITY(Bad_Pixel_Mask,ch(31)%Bt_TOA,ch(27)%Bt_TOA,Ch(31)%Emiss_Tropo,NWP_PIX%Tsfc,ACHA%Conv_Cld_Prob)
+               if (Sensor%Chan_On_Flag_Default(27) == sym%YES) then
+                  call CONVECTIVE_CLOUD_PROBABILITY(Bad_Pixel_Mask,  &
+                       ch(31)%Bt_TOA, ch(27)%Bt_TOA, Ch(31)%Emiss_Tropo,  &
+                       NWP_PIX%Tsfc, ACHA%Conv_Cld_Prob)
+               else  ! ch(27)%Bt_TOA is not allocated/used, pass ch(31) instead
+                  call CONVECTIVE_CLOUD_PROBABILITY(Bad_Pixel_Mask,  &
+                       ch(31)%Bt_TOA, ch(31)%Bt_TOA, Ch(31)%Emiss_Tropo,  &
+                       NWP_PIX%Tsfc, ACHA%Conv_Cld_Prob)
+               end if
                call SUPERCOOLED_CLOUD_PROBABILITY(Bad_Pixel_Mask,Cld_Type,ACHA%Tc,ACHA%Supercooled_Cld_Prob)
 
                End_Time_Point_Hours = COMPUTE_TIME_HOURS()
