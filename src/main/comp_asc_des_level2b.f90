@@ -115,6 +115,7 @@ program COMPILE_ASC_DES_LEVEL2B
  character(len=1020):: Dir_Out
  character(len=1020):: Root_Name
  character(len=1020):: Temp_Name
+ character(len=4096):: cmd
  integer:: Comp_Asc_Des_Input_Lun
  integer:: Ielem
  integer:: Iline
@@ -131,7 +132,7 @@ program COMPILE_ASC_DES_LEVEL2B
  integer(kind=int2):: Sc_Id_Output
  integer(kind=int4):: Sc_Id_Input
  integer:: Istatus_Sum
- integer:: ios
+ integer:: ios, nc
  integer(kind=int4):: Jday
  integer(kind=int4):: Year
  integer(kind=int4):: time
@@ -1253,7 +1254,8 @@ Sds_Output_Stride_XY = (/1,1/)
            print *, LOCAL_EXE_PROMPT, "No data composited"
            !----- close output hdf file
            Istatus_Sum = sfend(Sd_Id_Output) + Istatus_Sum
-           call system( 'rm '//trim(dir_out)//trim(File_Output)) 
+           cmd = trim(dir_out)//trim(File_Output); nc = len_trim(cmd)
+           call univ_remove_f(nc, trim(cmd), ios)
            print *, LOCAL_EXE_PROMPT, "Level-2b File Deleted, stopping"
            stop
     endif

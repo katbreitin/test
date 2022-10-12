@@ -111,7 +111,7 @@ program GEO_DARK_SKY_VIS
   real(kind=real4):: time
   real(kind=real4):: lat,lon,rlat,rlon
 
-  character(len=1020):: system_string
+  character(len=4096) :: cmd
   character(len=1020):: input_name, output_name, data_path, output_path, &
                       home_path,areafile_compressed,data_path_temp
   character(len=4):: year_string
@@ -277,11 +277,12 @@ program GEO_DARK_SKY_VIS
   data_path_temp  = trim(data_path)//trim(extra_path)
 
 
-  system_string =  "ls "//trim(data_path_temp)//"*_1_*"// &
+  cmd =  "ls "//trim(data_path_temp)//"*_1_*"// &
                    time_string//".area* | grep "// &
                    year_temp_string//"_"//jday_temp_string//" > ch1_list"
 
-  call system(system_string)
+  nc = len_trim(cmd)
+  call univ_system_cmd_f(nc, trim(cmd), error_status)
 
 !------------------------------------------------------------
 ! loop over other days make a list of files to be composited
@@ -320,12 +321,13 @@ do j = jday_first,jday_last
 
     !---- this works for the real-time tiros archive - note only selects compressed files
     data_path_temp  = trim(data_path)//trim(extra_path)
-    system_string =  "ls "//trim(data_path_temp)//"*_1_*"// &
+    cmd =  "ls "//trim(data_path_temp)//"*_1_*"// &
                      time_string//".area* | grep "// &
                      year_temp_string//"_"//jday_temp_string//" >> ch1_list"
 
     !--- make file list 
-    call system(system_string)
+    nc = len_trim(cmd)
+    call univ_system_cmd_f(nc, trim(cmd), error_status)
 
 enddo
 
@@ -376,14 +378,15 @@ comp_string = areafile_compressed(ilen-2:ilen+1)
 
 
 if (comp_string == ".gz") then 
-  system_string =  "gunzip -c "//trim(areafile_compressed)//" > temp_dark_area_file"
+  cmd =  "gunzip -c "//trim(areafile_compressed)//" > temp_dark_area_file"
 elseif (comp_string == "bz2") then 
-  system_string =  "bunzip2 -c "//trim(areafile_compressed)//" > temp_dark_area_file"
+  cmd =  "bunzip2 -c "//trim(areafile_compressed)//" > temp_dark_area_file"
 else
-  system_string =  "cp "//trim(areafile_compressed)//"  temp_dark_area_file"
+  cmd =  "cp "//trim(areafile_compressed)//"  temp_dark_area_file"
 endif
 
-call system(system_string)
+nc = len_trim(cmd)
+call univ_system_cmd_f(nc, trim(cmd), error_status)
 
 !print *, "dark_ch1 processing this file: ", areafile_compressed
 

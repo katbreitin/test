@@ -224,8 +224,8 @@ CONTAINS
     character(len=1020):: channel_x_filename
     character(len=1020):: channel_x_filename_full
     character(len=1020):: channel_x_filename_full_uncompressed
-    character(len=180):: System_String
-    integer:: ipos
+    character(len=4096) :: cmd
+    integer:: ipos, ierr, nc
     integer:: ilen
     integer:: ichan_goes
     integer:: ichan_modis
@@ -311,16 +311,17 @@ CONTAINS
             channel_x_filename_full_uncompressed = trim(Image%Level1b_Path)//trim(channel_filename_list(ichan_goes))
                     
             if (l1b_gzip == sym%YES) then
-              System_String = "gunzip -c "//trim(channel_x_filename_full_uncompressed)//".gz"// &
+              cmd = "gunzip -c "//trim(channel_x_filename_full_uncompressed)//".gz"// &
                                 " > "//trim(channel_x_filename_full)
                                 
             else if  (l1b_bzip2 == sym%YES) then
-              System_String = "bunzip2 -c "//trim(channel_x_filename_full_uncompressed)//".bz2"// &
+              cmd = "bunzip2 -c "//trim(channel_x_filename_full_uncompressed)//".bz2"// &
                               " > "//trim(channel_x_filename_full)
           
             end if                     
                                 
-            call system(System_String)
+            nc = len_trim(cmd)
+            call univ_system_cmd_f(nc, trim(cmd), ierr)
 
             Number_of_Temporary_Files = Number_of_Temporary_Files + 1
             Temporary_File_Name(Number_of_Temporary_Files) = trim(channel_x_filename)

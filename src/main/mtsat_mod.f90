@@ -125,8 +125,8 @@ subroutine READ_MTSAT(segment_number,Channel_1_Filename, &
    character(len=1020):: Channel_X_Filename
    character(len=1020):: Channel_X_Filename_Full
    character(len=1020):: Channel_X_Filename_Full_uncompressed
-   character(len=1020):: System_String
-   integer:: ipos
+   character(len=4096) :: cmd
+   integer:: ipos, ierr, nc
    integer:: ilen
    integer:: ielem
    integer:: iline
@@ -194,19 +194,21 @@ subroutine READ_MTSAT(segment_number,Channel_1_Filename, &
 
           Channel_X_Filename_Full_uncompressed = trim(Image%Level1b_Path)//trim(Channel_X_Filename)
           if (l1b_gzip == sym%YES) then
-              System_String = "gunzip -c "//trim(Channel_X_Filename_Full_uncompressed)//".gz"// &
+              cmd = "gunzip -c "//trim(Channel_X_Filename_Full_uncompressed)//".gz"// &
                                 " > "//trim(Channel_X_Filename_Full)
                                 
-              call system(System_String)
+              nc = len_trim(cmd)
+              call univ_system_cmd_f(nc, trim(cmd), ierr)
 
               Number_of_Temporary_Files = Number_of_Temporary_Files + 1
               Temporary_File_Name(Number_of_Temporary_Files) = trim(Channel_X_Filename)
 
           endif
           if (l1b_bzip2 == sym%YES) then
-              System_String = "bunzip2 -c "//trim(Channel_X_Filename_Full_uncompressed)//".bz2"// &
+              cmd = "bunzip2 -c "//trim(Channel_X_Filename_Full_uncompressed)//".bz2"// &
                                 " > "//trim(Channel_X_Filename_Full)
-              call system(System_String)
+              nc = len_trim(cmd)
+              call univ_system_cmd_f(nc, trim(cmd), ierr)
 
               Number_of_Temporary_Files = Number_of_Temporary_Files + 1
               Temporary_File_Name(Number_of_Temporary_Files) = trim(Channel_X_Filename)

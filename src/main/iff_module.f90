@@ -806,6 +806,7 @@ subroutine READ_IFF_DATE_TIME(Path,Infile,year,doy,start_time, &
  use CX_DATE_TIME_TOOLS_MOD, only: &
      LEAP_YEAR_FCT &
      , JULIAN
+ 
    implicit none
    CHARACTER(Len=*), INTENT(IN) :: Path
    CHARACTER(Len=*), INTENT(IN) :: Infile
@@ -825,8 +826,9 @@ subroutine READ_IFF_DATE_TIME(Path,Infile,year,doy,start_time, &
    integer(kind=int4):: sfrcatt
    integer(kind=int4):: sffattr
    character(len=20):: Metadata_Temp
+   character(len=4096) :: cmd
 
-   INTEGER :: ileap
+   INTEGER :: ileap, ierr, nc
    INTEGER :: month
    INTEGER :: day
    INTEGER :: start_hour
@@ -842,7 +844,8 @@ Status_Flag = 0
 !---- open file
 Sd_Id = sfstart(trim(Path)//trim(Infile), DFACC_read)
 print *,Sd_Id,'NEED TO DELETE THIS IN THE NEXT IFF_MODULE'
-call system('ls -lh '//trim(Path)//trim(Infile))
+cmd = 'ls -lh '//trim(Path)//trim(Infile); nc = len_trim(cmd)
+call univ_system_cmd_f(nc, trim(cmd), ierr)
 !--- determine attribute index
 Sds_Id = sffattr(Sd_Id, "granule_start_time")
 print *,Sds_Id

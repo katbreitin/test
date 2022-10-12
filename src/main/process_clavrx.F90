@@ -507,7 +507,7 @@
    use CX_VGAC_MOD, only:
 
    use cleanup, only: cleanup_tempdir
-   
+
    implicit none 
   
    !***********************************************************************
@@ -545,7 +545,7 @@
    integer(kind=int4):: err_reposnx_Flag
   
  
-   integer(kind=int4):: ios
+   integer(kind=int4):: ios, nc
    integer(kind=int4):: File_Number
    integer(kind=int4):: Ierror_Level1b
    integer(kind=int4):: ierror_Nwp
@@ -559,7 +559,8 @@
    character(len=1020):: Modis_White_Sky_2_13_Name
    character(len=1020):: Snow_Mask_File_Name
    character(len=1020):: oiSst_File_Name
-   
+   character(len=4096) :: cmd
+
 
    integer(kind=int4):: Emiss_File_Id = missing_value_int4
    integer(kind=int4):: Coast_Mask_Id = missing_value_int4
@@ -661,22 +662,13 @@
    call SETUP_USER_DEFINED_OPTIONS()
 
    !--- make directory for temporary files created during this run
-   call system("mkdir "//trim(Temporary_Data_Dir))
+   nc = len_trim(Temporary_Data_Dir)
+   call univ_mkdir_p_f(nc, trim(Temporary_Data_Dir), ierror)
+
    ! SIGTERM
-
-   CALL SIGNAL(15, cleanup_tempdir, ierror)
-   if(ierror .ne. 0) then
-     print*, 'Error setting up SIGTERM handler'
-     stop 124
-   endif
+   call univ_reg_sigterm_handler(cleanup_tempdir)
    ! SIGINT
-   CALL SIGNAL(2, cleanup_tempdir, ierror)
-   if(ierror .eq. SIG_ERR) then
-     print*, 'Error setting up SIGINT handler'
-     stop 125
-   endif
-
-    
+   call univ_reg_sigint_handler(cleanup_tempdir)
 
    !*************************************************************************
    ! Marker: Open high spatial resolution ancillary data files
@@ -744,13 +736,13 @@
             Erstat = 8
             call MESG( "ERROR: Problem reading orbit names from control file" &
                , level = verb_lev % QUIET , color = 1 ) 
-            call cleanup_tempdir()
+            call cleanup_tempdir
             stop 8
          else
             !-- end of orbits
             if (File_Number == 1) then
                call MESG( "ERROR: No orbits to process, stopping" , level = verb_lev % QUIET , color = 1 ) 
-               call cleanup_tempdir()
+               call cleanup_tempdir
                stop 404
             endif
             exit
@@ -1970,7 +1962,9 @@
       if (Number_Of_Temporary_Files > 0) then 
          do Ifile = 1, Number_Of_Temporary_Files
             call MESG("Removing Temporary File: "//trim(Temporary_File_Name(Ifile)))
-            call system("rm -f "//trim(Temporary_Data_Dir)//trim(Temporary_File_Name(Ifile)))
+            cmd = trim(Temporary_Data_Dir)//  &
+                 trim(Temporary_File_Name(Ifile)); nc = len_trim(cmd)
+            call univ_remove_f(nc, trim(cmd), ierror)
          end do
       endif
       Number_Of_Temporary_Files = 0   !reset for next file
@@ -2040,7 +2034,8 @@
    if (Use_ABI_Dust == sym%YES) call FORGET_ABI_DUST()
 
    !--- remove directory for temporary files
-   call system("rmdir "//trim(Temporary_Data_Dir))
+   cmd = 'rmdir '//trim(Temporary_Data_Dir); nc = len_trim(cmd)
+   call univ_system_cmd_f(nc, trim(cmd), ierror)
 
    !*************************************************************************
    ! Marker: Final remaining memory deallocation

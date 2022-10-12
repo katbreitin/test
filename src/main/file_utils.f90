@@ -152,15 +152,16 @@ contains
 !                                   set file "list" to unique_dummy_file which is unique...
 
    function file_search ( path, spec , count , rel_path ) result(return_string)
-      
+
       implicit none
       character(*) , intent(in) :: spec
       character(*) , intent(in) :: path
       integer , intent(out), optional :: count
       logical , intent(in) , optional :: rel_path
-      character(1020), pointer, dimension(:) :: return_string
-      character(1020) :: cfile
-      integer :: nr , ii
+      character(len=1020), pointer, dimension(:) :: return_string
+      character(len=1020) :: cfile
+      character(len=4096) :: cmd
+      integer :: nr, ii, ierr, nc
       integer :: lun
       character(len=8) :: date
       character(len=20) :: time
@@ -169,10 +170,13 @@ contains
       call date_and_time(date = date, time=time)
       unique_dummy_file = trim(Temporary_Data_Dir)//'/fort.file_search_dummy_'//trim(time)  
 
-      call system ( 'rm -f '//trim(unique_dummy_file))
+      cmd = trim(unique_dummy_file); nc = len_trim(cmd)
+      call univ_remove_f(nc, trim(cmd), ierr)
       lun = get_lun()
      
-      call system('ls -1 -phd '// trim (path) //''// trim (spec) //' > '//trim(unique_dummy_file)//' 2>/dev/null')
+      cmd = 'ls -1 -phd '// trim (path) //''// trim (spec) //' > '//trim(unique_dummy_file)//' 2>/dev/null'
+      nc = len_trim(cmd)
+      call univ_system_cmd_f(nc, trim(cmd), ierr)
       nr = file_nr_lines (trim(unique_dummy_file))
       open(unit = lun , file = trim(unique_dummy_file) )
       allocate (return_string(nr))
@@ -185,7 +189,8 @@ contains
       end do
       
       close(lun)
-      call system ( 'rm -f '//trim(unique_dummy_file))
+      cmd = trim(unique_dummy_file); nc = len_trim(cmd)
+      call univ_remove_f(nc, trim(cmd), ierr)
       if  ( present ( count ) ) count = nr
    
   end function file_search
@@ -193,7 +198,8 @@ contains
    !
    !
    !
-   subroutine uncompress_file ( file_original ,   file_unzipped , dir_in,  tmp_dir_in)
+  subroutine uncompress_file ( file_original ,   file_unzipped , dir_in,  tmp_dir_in)
+
       character ( len = * ) , intent(in) :: file_original
       character ( len = * ) , intent(in) , optional :: dir_in
       character ( len = * ) , intent(out) :: file_unzipped
@@ -202,8 +208,8 @@ contains
       character ( len =1020) :: dir
       character ( len =1020) :: tmp_dir
       
-      character ( len = 1020 ) :: system_string
-      integer :: len_orig
+      character(len=4096) :: cmd
+      integer :: len_orig, ierr, nc
       character ( len = 3) :: last_3_ch
       
       tmp_dir = "./temp/"
@@ -218,17 +224,19 @@ contains
       
       case ( '.gz')     
          file_unzipped = file_original ( 1:len_orig-3)
-         system_string = "gunzip -c "//trim(dir)//trim(file_original)// &
-            " > "//trim(tmp_dir)//trim(file_unzipped)  
+         cmd = "gunzip -c "//trim(dir)//trim(file_original)// &
+              " > "//trim(tmp_dir)//trim(file_unzipped)  
             
-            CALL SYSTEM(System_String)
+         nc = len_trim(cmd)
+         call univ_system_cmd_f(nc, trim(cmd), ierr)
          file_unzipped=trim(tmp_dir)//trim(file_unzipped) 
             
       case ('bz2')
          file_unzipped = file_original ( 1:len_orig-4)
-         system_string = "bunzip2 -c "//trim(dir)//trim(file_original)// &
-            " > "//trim(tmp_dir)//trim(file_unzipped)   
-            CALL SYSTEM(System_String)
+         cmd = "bunzip2 -c "//trim(dir)//trim(file_original)// &
+              " > "//trim(tmp_dir)//trim(file_unzipped)   
+         nc = len_trim(cmd)
+         call univ_system_cmd_f(nc, trim(cmd), ierr)
          file_unzipped=trim(tmp_dir)//trim(file_unzipped)
       case default
          file_unzipped = trim(dir)//trim(file_original)

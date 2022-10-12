@@ -1422,11 +1422,13 @@ end subroutine READ_MODIS_WHITE_SKY_ALBEDO
 !
 !==============================================================================
  subroutine DETERMINE_LEVEL1B_COMPRESSION(File_1b_Original,L1b_Gzip,L1b_Bzip2)
+ 
    character(len=*), intent(in):: File_1b_Original
    integer(kind=int4), intent(out):: L1b_Gzip
    integer(kind=int4), intent(out):: L1b_Bzip2
-   character(len=1020):: System_String
+   character(len=4096):: cmd
    character(len=7):: L1b_ext
+   integer :: ierr, nc
 
 
   !--- determine if the goes data is compressed
@@ -1450,18 +1452,20 @@ end subroutine READ_MODIS_WHITE_SKY_ALBEDO
   !--- uncompress
   if (L1b_Gzip == sym%YES) then
      Image%Level1b_Name = File_1b_Original(1:len(trim(File_1b_Original))-3)
-     System_String = "gunzip -c "//trim(Image%Level1b_Path)//trim(File_1b_Original)// &
-        " > "//trim(Temporary_Data_Dir)//trim(Image%Level1b_Name)
-     call SYSTEM(System_String)
+     cmd = "gunzip -c "//trim(Image%Level1b_Path)//trim(File_1b_Original)//  &
+          " > "//trim(Temporary_Data_Dir)//trim(Image%Level1b_Name)
+     nc = len_trim(cmd)
+     call univ_system_cmd_f(nc, trim(cmd), ierr)
 
      Number_of_Temporary_Files = Number_of_Temporary_Files + 1
      Temporary_File_Name(Number_of_Temporary_Files) = trim(Image%Level1b_Name)
 
   elseif (L1b_Bzip2 == sym%YES) then
      Image%Level1b_Name = File_1b_Original(1:len(trim(File_1b_Original))-4)
-     System_String = "bunzip2 -c "//trim(Image%Level1b_Path)//trim(File_1b_Original)// &
-        " > "//trim(Temporary_Data_Dir)//trim(Image%Level1b_Name)
-     call SYSTEM(System_String)
+     cmd = "bunzip2 -c "//trim(Image%Level1b_Path)//trim(File_1b_Original)//  &
+          " > "//trim(Temporary_Data_Dir)//trim(Image%Level1b_Name)
+     nc = len_trim(cmd)
+     call univ_system_cmd_f(nc, trim(cmd), ierr)
 
      Number_of_Temporary_Files = Number_of_Temporary_Files + 1
      Temporary_File_Name(Number_of_Temporary_Files) = trim(Image%Level1b_Name)

@@ -198,9 +198,9 @@ contains
     character(len=1020):: Channel_X_Filename
     character(len=1020):: Channel_X_Filename_Full
     character(len=1020):: Channel_X_Filename_Full_uncompressed
-    character(len=1020):: System_String
+    character(len=4096) :: cmd
 
-    integer:: ipos
+    integer:: ipos, ierr, nc
     integer:: ilen
     integer:: Elem_Idx
     integer:: Line_Idx
@@ -275,9 +275,10 @@ contains
           Channel_X_Filename_Full_uncompressed = trim(Image%LeveL1b_Path)//trim(Channel_X_Filename)
         
           if (L1b_gzip == sym%YES) then
-            System_String = "gunzip -c "//trim(Channel_X_Filename_Full_uncompressed)//".gz"// &
-                                " > "//trim(Channel_X_Filename_Full)
-            call system(System_String)
+            cmd = "gunzip -c "//trim(Channel_X_Filename_Full_uncompressed)//  &
+                  ".gz"//" > "//trim(Channel_X_Filename_Full)
+            nc = len_trim(cmd)
+            call univ_system_cmd_f(nc, trim(cmd), ierr)
 
             Number_of_Temporary_Files = Number_of_Temporary_Files + 1
             Temporary_File_Name(Number_of_Temporary_Files) = trim(Channel_X_Filename)
@@ -285,9 +286,11 @@ contains
           end if
         
           if (L1b_bzip2 == sym%YES) then
-            System_String = "bunzip2 -c "//trim(Channel_X_Filename_Full_uncompressed)//".bz2"// &
-                                " > "//trim(Channel_X_Filename_Full)
-            call system(System_String)
+            cmd = "bunzip2 -c "//  &
+                  trim(Channel_X_Filename_Full_uncompressed)//".bz2"//  &
+                  " > "//trim(Channel_X_Filename_Full)
+            nc = len_trim(cmd)
+            call univ_system_cmd_f(nc, trim(cmd), ierr)
 
             Number_of_Temporary_Files = Number_of_Temporary_Files + 1
             Temporary_File_Name(Number_of_Temporary_Files) = trim(Channel_X_Filename)
