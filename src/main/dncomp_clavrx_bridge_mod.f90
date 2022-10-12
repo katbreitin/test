@@ -235,43 +235,43 @@ contains
       ! - all reflectance channels
       do i = 1, 19 
         if ( dcomp_input % is_channel_on (i)) then
-          dcomp_input % chn(i) %  refl  => ch(i)%ref_toa
-          dcomp_input % chn(i) % alb_sfc => ch(i) % sfc_ref_white_sky
+          dcomp_input % chn(i) %  refl  => ch(i)%ref_toa(1:dim_1,1:dim_2)
+          dcomp_input % chn(i) % alb_sfc => ch(i) % sfc_ref_white_sky(1:dim_1,1:dim_2)
           dcomp_input % gas_coeff(i) % d = solar_rtm % tau_h2o_coef(i,:)
           dcomp_input % gas_coeff(i) % is_set = .true.
         end if     
       end do  
       
-      dcomp_input % chn(1) % alb_sfc_dark_sky => Static_Ref_065um_Dark_Composite
-         
+      dcomp_input % chn(1) % alb_sfc_dark_sky => Static_Ref_065um_Dark_Composite(1:dim_1,1:dim_2)
+
       if ( dcomp_input % is_channel_on (20)) then
-        dcomp_input % chn(20) %  rad => ch(20)%rad_toa
+        dcomp_input % chn(20) %  rad => ch(20)%rad_toa(1:dim_1,1:dim_2)
         if ( allocated(sfc_dummy)) deallocate(sfc_dummy)
-        allocate ( sfc_dummy, source = ch(20)%sfc_emiss )
-        sfc_dummy = 100.0*(1.0 - ch(20)%sfc_emiss)
-        dcomp_input % chn(20) % alb_sfc  =>  sfc_dummy    
-        dcomp_input % chn(20) % emiss_sfc  => ch(20)%sfc_emiss
-        dcomp_input % chn(20) % trans_ac_nadir  => dcomp_rtm % trans_ir_ac_nadir
-        dcomp_input % chn(20) % rad_clear_sky_toc  => dcomp_rtm % rad_clear_sky_toc_ch20
-        dcomp_input % chn(20) % rad_clear_sky_toa  => dcomp_rtm % rad_clear_sky_toa_ch20
+        allocate(sfc_dummy(1:dim_1,1:dim_2))
+        sfc_dummy = 100.0*(1.0 - ch(20)%sfc_emiss(1:dim_1,1:dim_2))
+        dcomp_input % chn(20) % alb_sfc => sfc_dummy  ! Already subset
+        dcomp_input % chn(20) % emiss_sfc  => ch(20)%sfc_emiss(1:dim_1,1:dim_2)
+        dcomp_input % chn(20) % trans_ac_nadir  => dcomp_rtm % trans_ir_ac_nadir(1:dim_1,1:dim_2)
+        dcomp_input % chn(20) % rad_clear_sky_toc  => dcomp_rtm % rad_clear_sky_toc_ch20(1:dim_1,1:dim_2)
+        dcomp_input % chn(20) % rad_clear_sky_toa  => dcomp_rtm % rad_clear_sky_toa_ch20(1:dim_1,1:dim_2)
         ! -- Solar irradiance in channel 20
         dcomp_input % solar_irradiance ( 20) = solar_ch20_nu  
       end if
       
       ! IR channels
       do i = 21, 44
-        if ( dcomp_input % is_channel_on (i)) dcomp_input % chn(i) %  rad  => ch(i)%rad_toa
+        if ( dcomp_input % is_channel_on (i)) dcomp_input % chn(i) %  rad  => ch(i)%rad_toa(1:dim_1,1:dim_2)
       end do
           
       dcomp_input % sat => geo % satzen(1:dim_1,1:dim_2)
-      dcomp_input % sol  => geo % solzen
-      dcomp_input % azi  => geo % relaz
+      dcomp_input % sol  => geo % solzen(1:dim_1,1:dim_2)
+      dcomp_input % azi  => geo % relaz(1:dim_1,1:dim_2)
     
       ! - Cloud products
-      dcomp_input % cloud_press  => acha % pc
-      dcomp_input % cloud_temp  => acha % tc
-      dcomp_input % tau_acha   => acha % tau
-      dcomp_input % cloud_mask  => cldmask % cld_mask
+      dcomp_input % cloud_press  => acha % pc(1:dim_1,1:dim_2)
+      dcomp_input % cloud_temp  => acha % tc(1:dim_1,1:dim_2)
+      dcomp_input % tau_acha   => acha % tau(1:dim_1,1:dim_2)
+      dcomp_input % cloud_mask  => cldmask % cld_mask(1:dim_1,1:dim_2)
 !ccm
       dcomp_input % cloud_type  => cld_type(1:dim_1,1:dim_2)
 !end ccm
@@ -280,19 +280,21 @@ contains
       ! - Flags
       if ( allocated(is_land)) deallocate(is_land)
       if ( allocated(is_valid)) deallocate(is_valid)
-      allocate(is_land,source=sfc % land_mask == 1 )
-      allocate(is_valid,source=bad_pixel_mask /= 1)
-      dcomp_input % is_land => is_land 
-      dcomp_input % is_valid => is_valid
+      allocate(is_land(dim_1,dim_2))
+      is_land = ( sfc%land_mask(1:dim_1,1:dim_2) == 1 )
+      allocate(is_valid(dim_1,dim_2))
+      is_valid = ( bad_pixel_mask(1:dim_1,1:dim_2) /= 1 )
+      dcomp_input % is_land => is_land    ! Already subset to (1:dim_1,1:dim_2)
+      dcomp_input % is_valid => is_valid  !
   
-      dcomp_input % press_sfc  =>  dcomp_rtm % sfc_nwp
-      dcomp_input % snow_class => sfc % snow
+      dcomp_input % press_sfc  =>  dcomp_rtm % sfc_nwp(1:dim_1,1:dim_2)
+      dcomp_input % snow_class => sfc % snow(1:dim_1,1:dim_2)
             
       ! - Atmospheric contents
       ! ozone column in Dobson
-      dcomp_input % ozone_nwp  => dcomp_rtm % ozone_path
+      dcomp_input % ozone_nwp  => dcomp_rtm % ozone_path(1:dim_1,1:dim_2)
       ! Total water Vapour above the cloud
-      dcomp_input % tpw_ac  => dcomp_rtm % tpw_ac
+      dcomp_input % tpw_ac  => dcomp_rtm % tpw_ac(1:dim_1,1:dim_2)
     
       if ( .not. run_nlcomp) then
         do i_mode = 1 , 3 
