@@ -160,8 +160,7 @@ contains
     ! history:                              added  Jan 2013 (AW)
 
     function file_search ( path, spec , count , rel_path ) result(return_string)
-  
-      
+
         implicit none
         character(*) , intent(in) :: spec
         character(*) , intent(in) :: path
@@ -169,14 +168,18 @@ contains
         logical , intent(in) , optional :: rel_path
         character(355), pointer, dimension(:) :: return_string
         character(355) :: cfile
+        character(len=4096) :: cmd
         integer :: nr , ii
-        integer :: lun
+        integer :: lun, ierr, nc
       
-      
-        call system ( 'rm -f list')
+
+        cmd = 'list'; nc = len_trim(cmd)
+        call univ_remove_f(nc, trim(cmd), ierr)
         lun = getlun()
-     
-        call system('ls -1 -phd '// trim (path) //''// trim (spec) //' > list')
+
+        cmd = 'ls -1 -phd '// trim (path) //''// trim (spec) //' > list'
+        nc = len_trim(cmd)
+        call univ_system_cmd_f(nc, trim(cmd), ierr)
         nr = file_nr_lines ('list')
         open(unit = lun , file = "list" )
         allocate (return_string(nr))
@@ -189,7 +192,8 @@ contains
         end do
       
         close(lun)
-        call system ( 'rm -f list')
+        cmd = 'list'; nc = len_trim(cmd)
+        call univ_remove_f(nc, trim(cmd), ierr)
         if  ( present ( count ) ) count = nr
    
     end function file_search

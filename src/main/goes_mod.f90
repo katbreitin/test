@@ -433,9 +433,9 @@ subroutine READ_GOES(Segment_Number,Channel_1_Filename, &
    character(len=1020):: Channel_X_Filename
    character(len=1020):: Channel_X_Filename_Full
    character(len=1020):: Channel_X_Filename_Full_uncompressed
-   character(len=1020):: System_String
+   character(len=4096):: cmd
 
-   integer:: ipos
+   integer:: ipos, ierr, nc
    integer:: ilen
    integer:: Elem_Idx
    integer:: Line_Idx
@@ -480,18 +480,20 @@ subroutine READ_GOES(Segment_Number,Channel_1_Filename, &
 
           Channel_X_Filename_Full_uncompressed = trim(Image%Level1b_Path)//trim(Channel_X_Filename)
           if (L1b_Gzip == sym%YES) then
-              System_String = "gunzip -c "//trim(Channel_X_Filename_Full_uncompressed)//".gz"// &
+              cmd = "gunzip -c "//trim(Channel_X_Filename_Full_uncompressed)//".gz"// &
                                 " > "//trim(Channel_X_Filename_Full)
-              call system(System_String)
+              nc = len_trim(cmd)
+              call univ_system_cmd_f(nc, trim(cmd), ierr)
 
               Number_of_Temporary_Files = Number_of_Temporary_Files + 1
               Temporary_File_Name(Number_of_Temporary_Files) = trim(Channel_X_Filename)
 
           endif
           if (l1b_bzip2 == sym%YES) then
-              System_String = "bunzip2 -c "//trim(Channel_X_Filename_Full_uncompressed)//".bz2"// &
+              cmd = "bunzip2 -c "//trim(Channel_X_Filename_Full_uncompressed)//".bz2"// &
                                 " > "//trim(Channel_X_Filename_Full)
-              call system(System_String)
+              nc = len_trim(cmd)
+              call univ_system_cmd_f(nc, trim(cmd), ierr)
 
               Number_of_Temporary_Files = Number_of_Temporary_Files + 1
               Temporary_File_Name(Number_of_Temporary_Files) = trim(Channel_X_Filename)
@@ -760,9 +762,9 @@ subroutine READ_GOES_SNDR(Segment_Number,Channel_1_Filename, &
    character(len=1020):: Channel_X_Filename
    character(len=1020):: Channel_X_Filename_Full
    character(len=1020):: Channel_X_Filename_Full_uncompressed
-   character(len=1020):: System_String
+   character(len=4096):: cmd
 
-   integer:: ipos
+   integer:: ipos, ierr, nc
    integer:: ilen
    integer:: Elem_Idx
    integer:: Line_Idx
@@ -820,18 +822,20 @@ subroutine READ_GOES_SNDR(Segment_Number,Channel_1_Filename, &
 
           Channel_X_Filename_Full_uncompressed = trim(Image%Level1b_Path)//trim(Channel_X_Filename)
           if (L1b_Gzip == sym%YES) then
-              System_String = "gunzip -c "//trim(Channel_X_Filename_Full_uncompressed)//".gz"// &
+              cmd = "gunzip -c "//trim(Channel_X_Filename_Full_uncompressed)//".gz"// &
                                 " > "//trim(Channel_X_Filename_Full)
-              call system(System_String)
+              nc = len_trim(cmd)
+              call univ_system_cmd_f(nc, trim(cmd), ierr)
 
               Number_of_Temporary_Files = Number_of_Temporary_Files + 1
               Temporary_File_Name(Number_of_Temporary_Files) = trim(Channel_X_Filename)
 
           endif
           if (l1b_bzip2 == sym%YES) then
-              System_String = "bunzip2 -c "//trim(Channel_X_Filename_Full_uncompressed)//".bz2"// &
+              cmd = "bunzip2 -c "//trim(Channel_X_Filename_Full_uncompressed)//".bz2"// &
                                 " > "//trim(Channel_X_Filename_Full)
-              call system(System_String)
+              nc = len_trim(cmd)
+              call univ_system_cmd_f(nc, trim(cmd), ierr)
 
               Number_of_Temporary_Files = Number_of_Temporary_Files + 1
               Temporary_File_Name(Number_of_Temporary_Files) = trim(Channel_X_Filename)
@@ -3460,7 +3464,7 @@ subroutine READ_DARK_COMPOSITE_COUNTS(Segment_Number,Xstride,Dark_Composite_File
    character(len=*), intent(in):: Dark_Composite_Filename
    type (AREA_STRUCT), intent(in) :: AREAstr_Image
    integer(kind=int2), dimension(:,:), intent(out):: Ch1_Dark_Composite_Counts
-   integer:: Io_Status
+   integer:: Io_Status, nc
 
    type (AREA_STRUCT), save :: AREAstr_Dark
    integer:: Dark_Lun_Header
@@ -3487,7 +3491,7 @@ subroutine READ_DARK_COMPOSITE_COUNTS(Segment_Number,Xstride,Dark_Composite_File
    integer:: Elem_Idx
    integer:: Temp_Idx
    integer:: dark_length
-   character(len=1020):: System_String
+   character(len=4096):: cmd
    character(len=1020):: Dark_Name_Full
    character(len=3):: Dark_Ext
 
@@ -3521,11 +3525,12 @@ subroutine READ_DARK_COMPOSITE_COUNTS(Segment_Number,Xstride,Dark_Composite_File
         Dark_Ext = Dark_Composite_Name(dark_length-2:dark_length)
 
         if (Dark_Ext == ".gz") then
-          System_String = "gunzip -c "//trim(Dark_Comp_Data_Dir_Temp)// &
+          cmd = "gunzip -c "//trim(Dark_Comp_Data_Dir_Temp)// &
                         Dark_Composite_Name(1:dark_length)// &
                         " > "//trim(Temporary_Data_Dir)// &
                         Dark_Composite_Name(1:dark_length-3)
-          call system(System_String)
+          nc = len_trim(cmd)
+          call univ_system_cmd_f(nc, trim(cmd), io_status)
  
           !add its name to list of temp files for deletion at end
           Number_of_Temporary_Files = Number_of_Temporary_Files + 1

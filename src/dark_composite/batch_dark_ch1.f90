@@ -10,7 +10,8 @@
   character(len=80):: data_path,dark_ch1_path,avn_path
   character(len=7):: domain
   character(len=6):: sat_id
-  integer:: ssec_id
+  character(len=128) :: cmd
+  integer:: ssec_id, ierr, nc
   integer:: year,hour,minute,ix_skip,ios
   integer:: jday_first
   integer:: jday_last
@@ -111,9 +112,13 @@ itime = -999
  write (unit=6,fmt=*)
 
 
-  call system("date")
+  cmd = 'date'
+  nc = len_trim(cmd)
+  call univ_system_cmd_f(nc, trim(cmd), ierr)
   print *, "Calling DARK_CH1 for jday = ", jday," and time = ", itime
-  call system('./dark_ch1')
+  cmd = './dark_ch1'
+  nc = len_trim(cmd)
+  call univ_system_cmd_f(nc, trim(cmd), ierr)
 
   enddo
 
