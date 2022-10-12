@@ -54,14 +54,14 @@ module dncomp_interface_def_mod
    end type  gas_coeff_type
    
    type channel_type
-    real, pointer :: rad(:,:)
-    real, pointer :: refl(:,:)
-    real, pointer :: alb_sfc(:,:)
-    real, pointer :: alb_sfc_dark_sky(:,:)
-    real, pointer :: emiss_sfc(:,:)
-    real, pointer :: trans_ac_nadir(:,:)
-    real, pointer :: rad_clear_sky_toc(:,:)
-    real, pointer :: rad_clear_sky_toa(:,:)
+    real, pointer :: rad(:,:) => NULL()
+    real, pointer :: refl(:,:) => NULL()
+    real, pointer :: alb_sfc(:,:) => NULL()
+    real, pointer :: alb_sfc_dark_sky(:,:) => NULL()
+    real, pointer :: emiss_sfc(:,:) => NULL()
+    real, pointer :: trans_ac_nadir(:,:) => NULL()
+    real, pointer :: rad_clear_sky_toc(:,:) => NULL()
+    real, pointer :: rad_clear_sky_toa(:,:) => NULL()
    end type channel_type
    
    
@@ -79,30 +79,30 @@ module dncomp_interface_def_mod
       ! - satellite input channel
       type (channel_type), allocatable :: chn(:)
       
-      real, pointer :: sat(:,:)
-      real, pointer :: sol(:,:)
-      real, pointer :: azi(:,:)
-      real, pointer :: zen_lunar(:,:)
-      real, pointer :: azi_lunar(:,:)
+      real, pointer :: sat(:,:) => NULL()
+      real, pointer :: sol(:,:) => NULL()
+      real, pointer :: azi(:,:) => NULL()
+      real, pointer :: zen_lunar(:,:) => NULL()
+      real, pointer :: azi_lunar(:,:) => NULL()
       ! - cloud products
-      integer(int1), pointer  :: cloud_mask(:,:)
-      integer(int1), pointer :: cloud_type(:,:)
-      real, pointer  :: cloud_hgt(:,:)
-      real, pointer  :: cloud_temp(:,:)
-      real, pointer  :: cloud_press(:,:)
-      real, pointer  :: tau_acha(:,:)
+      integer(int1), pointer  :: cloud_mask(:,:) => NULL()
+      integer(int1), pointer :: cloud_type(:,:) => NULL()
+      real, pointer  :: cloud_hgt(:,:) => NULL()
+      real, pointer  :: cloud_temp(:,:) => NULL()
+      real, pointer  :: cloud_press(:,:) => NULL()
+      real, pointer  :: tau_acha(:,:) => NULL()
       
       ! - flags
-      logical, pointer  :: is_land (:,:)
-      logical, pointer  :: is_valid(:,:)
+      logical, pointer  :: is_land (:,:) => NULL()
+      logical, pointer  :: is_valid(:,:) => NULL()
       
       ! - surface
-      real, pointer :: press_sfc(:,:)
-      integer(int1), pointer   :: snow_class (:,:)
+      real, pointer :: press_sfc(:,:) => NULL()
+      integer(int1), pointer   :: snow_class (:,:) => NULL()
       
       ! - atmosphere
-      real, pointer :: ozone_nwp(:,:)
-      real, pointer :: tpw_ac(:,:)
+      real, pointer :: ozone_nwp(:,:) => NULL()
+      real, pointer :: tpw_ac(:,:) => NULL()
     
       ! - coeffecients,params
       real :: sun_earth_dist
@@ -120,7 +120,7 @@ module dncomp_interface_def_mod
       
    type dncomp_out_type
       type ( d2_real4_type) :: cod  
-      ! real, pointer :: cod(:,:)
+      ! real, pointer :: cod(:,:) => NULL()
       type ( d2_real4_type) :: cps
       type ( d2_real4_type) :: cod_unc
       type ( d2_real4_type) :: ref_unc
