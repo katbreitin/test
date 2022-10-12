@@ -525,17 +525,20 @@ module CX_NETCDF4_MOD
  end subroutine  read_ahi_nav_coeff
 
    ! ----------------------------------------------------------
-   ! Read and Uscale 2D arrays Two-Byte Integers
+   ! Read and Unscale 1D arrays Two-Byte Integers
    ! ----------------------------------------------------------
    subroutine read_and_unscale_netcdf_1d (nc_file_id, var_start, var_stride, &
-                                          var_dim, var_name, var_output_unscaled)
+        var_dim, var_name, var_output_unscaled)
+
+      use univ_kind_defs_mod, only: i2
+
       integer, intent(in) :: nc_file_id
-      integer, dimension(:), intent(in) :: var_start
-      integer, dimension(:), intent(in) :: var_stride
-      integer, dimension(:), intent(in) :: var_dim
+      integer, dimension(1), intent(in) :: var_start
+      integer, dimension(1), intent(in) :: var_stride
+      integer, dimension(1), intent(in) :: var_dim
       character(len=*), intent(in) :: var_name
 
-      real(kind=4) , dimension(var_dim(1)) :: var_output_scaled
+      integer(kind=i2), dimension(var_dim(1)) :: var_output_scaled
       real(kind=4) , intent(out), dimension(:) :: var_output_unscaled
       real(kind=4) , dimension(var_dim(1)) :: var_output_unscaled_temp
       real(kind=4):: add_offset, scale_factor
@@ -589,17 +592,20 @@ module CX_NETCDF4_MOD
    end subroutine read_and_unscale_netcdf_1d
 
    ! ----------------------------------------------------------
-   ! Read and Uscale 2D arrays Two-Byte Integers
+   ! Read and Unscale 2D arrays Two-Byte Integers
    ! ----------------------------------------------------------
    subroutine read_and_unscale_netcdf_2d (nc_file_id, var_start, var_stride, &
-                                          var_dim, var_name, var_output_unscaled)
+        var_dim, var_name, var_output_unscaled)
+
+      use univ_kind_defs_mod, only: i2
+
       integer, intent(in) :: nc_file_id
-      integer, dimension(:), intent(in) :: var_start
-      integer, dimension(:), intent(in) :: var_stride
-      integer, dimension(:), intent(in) :: var_dim
+      integer, dimension(2), intent(in) :: var_start
+      integer, dimension(2), intent(in) :: var_stride
+      integer, dimension(2), intent(in) :: var_dim
       character(len=*), intent(in) :: var_name
 
-      real(kind=4) , dimension(var_dim(1),var_dim(2)) :: var_output_scaled
+      integer(kind=i2), dimension(var_dim(1),var_dim(2)) :: var_output_scaled
       real(kind=4) , intent(out), dimension(:,:) :: var_output_unscaled
       real(kind=4) , dimension(var_dim(1),var_dim(2)) :: var_output_unscaled_temp
       real(kind=4):: add_offset, scale_factor
@@ -653,17 +659,21 @@ module CX_NETCDF4_MOD
    end subroutine read_and_unscale_netcdf_2d
 
    ! ----------------------------------------------------------
-   ! Read and Uscale 3D arrays Two-Byte Integers
+   ! Read and Unscale 3D arrays Two-Byte Integers
    ! ----------------------------------------------------------
    subroutine read_and_unscale_netcdf_3d (nc_file_id, var_start, var_stride, &
-                                          var_dim, var_name, var_output_unscaled)
+        var_dim, var_name, var_output_unscaled)
+
+      use univ_kind_defs_mod, only: i2
+
       integer, intent(in) :: nc_file_id
-      integer, dimension(:), intent(in) :: var_start
-      integer, dimension(:), intent(in) :: var_stride
-      integer, dimension(:), intent(in) :: var_dim
+      integer, dimension(3), intent(in) :: var_start
+      integer, dimension(3), intent(in) :: var_stride
+      integer, dimension(3), intent(in) :: var_dim
       character(len=*), intent(in) :: var_name
 
-      real(kind=4) , dimension(var_dim(1),var_dim(2),var_dim(3)) :: var_output_scaled
+      integer(kind=i2), dimension(var_dim(1),var_dim(2),var_dim(3)) ::  &
+           var_output_scaled
       real(kind=4) , intent(out), dimension(:,:,:) :: var_output_unscaled
       real(kind=4) , dimension(var_dim(1),var_dim(2),var_dim(3)) :: var_output_unscaled_temp
       real(kind=4):: add_offset, scale_factor
@@ -717,17 +727,22 @@ module CX_NETCDF4_MOD
    end subroutine read_and_unscale_netcdf_3d
 
    ! ----------------------------------------------------------
-   ! Read and Uscale 4D arrays Two-Byte Integers
+   ! Read and Unscale 4D arrays Two-Byte Integers
    ! ----------------------------------------------------------
    subroutine read_and_unscale_netcdf_4d (nc_file_id, var_start, var_stride, &
-                                          var_dim, var_name, var_output_unscaled)
+        var_dim, var_name, var_output_unscaled)
+
+      use univ_kind_defs_mod, only: i2
+
       integer, intent(in) :: nc_file_id
-      integer, dimension(:), intent(in) :: var_start
-      integer, dimension(:), intent(in) :: var_stride
-      integer, dimension(:), intent(in) :: var_dim
+      integer, dimension(4), intent(in) :: var_start
+      integer, dimension(4), intent(in) :: var_stride
+      integer, dimension(4), intent(in) :: var_dim
       character(len=*), intent(in) :: var_name
 
-      real(kind=4) , dimension(var_dim(1),var_dim(2),var_dim(3),var_dim(4)) :: var_output_scaled
+      integer(kind=i2),  &
+           dimension(var_dim(1),var_dim(2),var_dim(3),var_dim(4)) ::  &
+           var_output_scaled
       real(kind=4) , intent(out), dimension(:,:,:,:) :: var_output_unscaled
       real(kind=4) , dimension(var_dim(1),var_dim(2),var_dim(3),var_dim(4)) :: var_output_unscaled_temp
       real(kind=4):: add_offset, scale_factor
