@@ -39,15 +39,17 @@
 
  !---- CLAVR-x/PATMOS-x
  logical, private, parameter:: FULL_RETRIEVAL = .true.
- logical, private, parameter:: USE_LINEAR_IN_OPD_EMISSION = .true.
- integer(kind=int4), parameter, private:: MULTI_LAYER_LOGIC_Flag = 2
+ logical, private, parameter:: USE_LINEAR_IN_OPD_EMISSION = .false.
+ ! aab ---integer(kind=int4), parameter, private:: MULTI_LAYER_LOGIC_Flag = 2
+ ! aab --- TESTING
+ integer(kind=int4), parameter, private:: MULTI_LAYER_LOGIC_Flag = 1
  logical, private, parameter :: USE_CIRRUS_FLAG = .true. 
  logical, private, parameter :: USE_LAPSE_RATE_FLAG = .true.  
- logical, private, parameter :: USE_LOWER_INTERP_FLAG = .true.  
+ logical, private, parameter :: USE_LOWER_INTERP_FLAG = .false.  
  logical, private, parameter :: USE_LRC_FLAG = .false.
  integer, parameter, private:: Cloud_Type_Forced = -1 ! -1 = not used, 0-10 use this type
  logical, private, parameter :: USE_SOUNDER_VALUES = .false.
- integer, private, parameter :: USE_TYPE_FLAG = 0               !choice which a priori routine to use
+ integer, private, parameter :: USE_TYPE_FLAG = 2               !choice which a priori routine to use
  real, private, parameter:: ICE_EXTINCTION_TUNING_FACTOR = 1.0
  logical, private, parameter :: USE_TYPE_FOR_ICE_PROB = .false. !whether or not use input type for ice_prob_ap
  logical, private, parameter :: CONSTRAIN_ICE_PROB= .false.     !whether or not to allow acha to modify ice_prob_ap
@@ -122,7 +124,10 @@
  real(kind=real4), parameter, private:: ABS_LAPSE_RATE_DT_DZ_UNCER = 0.007 !K/m
 
  !--- parameters that control the bottom-up estimation of Zc and Pc
- real(kind=real4), parameter, private:: MIN_P_INVERSION = 600.0 !min pressure to look for low-level inversion
+! AAB 6-14-2022 Baseline Inversion Change
+!real(kind=real4), parameter, private:: MIN_P_INVERSION = 600.0 !min pressure to look for low-level inversion
+!real(kind=real4), parameter, private:: MAX_DELTA_T_INVERSION = 5.0 !max temperature difference (surface -cloud) to look for low-level inversion
+ real(kind=real4), parameter, private:: MIN_P_INVERSION = 700.0 !min pressure to look for low-level inversion
  real(kind=real4), parameter, private:: MAX_DELTA_T_INVERSION = 20.0 !max temperature difference (surface -cloud) to look for low-level inversion
  real(kind=real4), parameter, private:: DELTA_PSFC_INVERSION = 50.0  !pressure above sfc to look for low-level inversion
  real(kind=real4), parameter, private:: DELTA_T_LAYER_INVERSION = 0.0   !maximum temperature difference to define an inversion layer
