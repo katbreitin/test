@@ -263,10 +263,16 @@ Retrieval_Loop: do
      Ts_Temp = Tsfc_Est
   endif
 
-  call KNOWING_T_COMPUTE_P_Z_BOTTOM_UP(ACHA_RTM_NWP,Symbol,Cloud_Type,Pc_temp,Tc_temp,Zc_Temp, &
+! aab 6-29-2022 TEST without Bottom Up look
+! call KNOWING_T_COMPUTE_P_Z_BOTTOM_UP(ACHA_RTM_NWP,Symbol,Cloud_Type,Pc_temp,Tc_temp,Zc_Temp, &
+!                            T_Tropo,Z_Tropo,P_Tropo,Lev_Idx,ierror,NWP_Profile_Inversion_Flag)
+  call KNOWING_T_COMPUTE_P_Z(ACHA_RTM_NWP,Symbol,Cloud_Type,Pc_temp,Tc_temp,Zc_Temp, &
                              T_Tropo,Z_Tropo,P_Tropo,Lev_Idx,ierror,NWP_Profile_Inversion_Flag)
 
-  call KNOWING_T_COMPUTE_P_Z_BOTTOM_UP(ACHA_RTM_NWP,Symbol,Cloud_Type,Ps_temp,Ts_temp,Zs_Temp, &
+! aab 6-29-2022 TEST without Bottom Up look
+! call KNOWING_T_COMPUTE_P_Z_BOTTOM_UP(ACHA_RTM_NWP,Symbol,Cloud_Type,Ps_temp,Ts_temp,Zs_Temp, &
+!                            T_Tropo,Z_Tropo,P_Tropo,Lev_Idx,ierror,NWP_Profile_Inversion_Flag)
+  call KNOWING_T_COMPUTE_P_Z(ACHA_RTM_NWP,Symbol,Cloud_Type,Ps_temp,Ts_temp,Zs_Temp, &
                              T_Tropo,Z_Tropo,P_Tropo,Lev_Idx,ierror,NWP_Profile_Inversion_Flag)
 
   !--- If GOES-17 11 um is bad, at this point, all 11um variables are filled
