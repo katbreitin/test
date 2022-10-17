@@ -95,6 +95,7 @@
     REAL(kind=REAL4) :: Bt_12um_Clear = Missing_Value_Real4          !12 um toa bright temp clear-sky (K)
     REAL(kind=REAL4) :: Bt_10um_Bt_67um_Covar = Missing_Value_Real4  !covariance of 10.4 and 6.7 um bright temp.
     REAL(kind=REAL4) :: Bt_11um_Bt_67um_Covar = Missing_Value_Real4  !covariance of 11 and 6.7 um bright temp.
+    REAL(kind=REAL4) :: Bt_11um_Bt_62um_Covar = Missing_Value_Real4  !covariance of 11 and 6.2 um bright temp.
     REAL(kind=REAL4) :: Bt_133um = Missing_Value_Real4               !13.3 um toa brightness temperature (K)
     REAL(kind=REAL4) :: Emiss_Sfc_375um = Missing_Value_Real4        !the surface emissivity at 3.75 um
     REAL(kind=REAL4) :: Rad_Lunar = Missing_Value_Real4              !Lunar toa radiance from DNB
