@@ -1,12 +1,23 @@
 !$Id:$
 !----------------------------------------------------------------------
 !CLAVR-x VIIRS Global Area Coverage (VGAC)
+!
+! HISTORY:   
+!            added Fusion  October, 2022 (Denis B.)
+!
 !----------------------------------------------------------------------
 module CX_VGAC_MOD
 
 !--- use statements
-use PIXEL_COMMON_MOD, only: Ch, Geo, Image, Nav, Sensor,  &
-                            Temp_Pix_Array_1, Gap_Pixel_Mask
+use PIXEL_COMMON_MOD, only: Ch, &
+                            Geo, &
+                            Image, &
+                            Nav, &
+                            Sensor, &
+                            Temp_Pix_Array_1, &
+                            Gap_Pixel_Mask, &
+                            Bt_11um_Sounder, &
+                            Bt_12um_Sounder
 
 use NETCDF,only: nf90_inquire_dimension, nf90_inq_dimid, &
     nf90_noerr,nf90_inq_varid,nf90_get_var
@@ -24,9 +35,12 @@ use CONSTANTS_MOD, only: MSEC_PER_DAY, Sym, MISSING_VALUE_REAL4, &
                          SOLAR_OBS_TYPE, THERMAL_OBS_TYPE, &
                          MIXED_OBS_TYPE, LUNAR_OBS_TYPE
 
+use FILE_TOOLS, only: FILE_SEARCH
+
 use CALIBRATION_CONSTANTS_MOD
 use CX_REAL_BOOLEAN_MOD
 use CLASS_TIME_DATE
+use CLAVRX_MESSAGE_MOD
 
 implicit none
 
@@ -34,6 +48,7 @@ private
 public:: READ_NUMBER_OF_SCANS_VGAC
 public:: READ_VGAC_DATE_TIME
 public:: READ_VGAC_DATA
+public:: CHECK_IF_FUSION_VGAC
 
 !--- module wide variables and parameters
 integer, private, save:: Ncid_Vgac
@@ -155,20 +170,76 @@ subroutine READ_VGAC_DATE_TIME(Start_Year,Start_Doy,Start_Time,&
 
 end subroutine READ_VGAC_DATE_TIME
 !----------------------------------------------------------------------
+!  this code is to check if fusion file exist, if yes sensor is changed to VIIRS-FUSION
+!  called from sensor_mod.f90
+!----------------------------------------------------------------------
+subroutine CHECK_IF_FUSION_VGAC(Fusion)
+     logical, intent (out) :: Fusion
+
+     character(len=1020), dimension(:), pointer:: Files
+     character(len=1020) :: File_2_Read
+     integer:: Num_Files
+
+     ! initialize Fusion = false
+     Fusion = .false.
+
+     ! --- search fusion file
+     !0        1         2         3         4
+     !12345678901234567890123456789012345678901234567890
+     !VGAC_VJ102MOD_A2019122_0700_n007530_K005.nc
+     !VgacCrIS_rad_fusion_19hirsBands_2019122_0700to0836.nc
+     if (Sensor%Platform_Name == 'NOAA-20') then
+       Files => FILE_SEARCH(trim(Image%Level1b_Path), &
+                   'VgacCrIS_rad_fusion_19hirsBands_'//trim(Image%Level1b_Name(16:27))//'*.nc',count=Num_Files)
+
+       if (Num_Files == 0) then
+          File_2_Read = "no_file"
+       else
+          File_2_Read = Files(1)
+       endif
+
+     else
+       call MESG ( "FUSION CHECK IS NOT DESIGNED FOR THIS PLATFORM = "//trim(Sensor%Platform_Name), &
+                   level = verb_lev % DEFAULT)
+       return
+     endif
+
+     ! --- if file found set fusion = true
+     if (trim(File_2_Read) .ne. 'no_file') Fusion = .true.
+
+end subroutine CHECK_IF_FUSION_VGAC
+!----------------------------------------------------------------------
+!
+!----------------------------------------------------------------------
+!subroutine READ_FUSION_INSTR_CONSTANTS
+!end subroutine READ_FUSION_INSTR_CONSTANTS
+!----------------------------------------------------------------------
 !
 !----------------------------------------------------------------------
 subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
   integer, intent(in):: Segment_Number
   integer, intent(out):: Error_Status
+
   integer, dimension(2) :: Sds_Start
   integer, dimension(2) :: Sds_Stride
   integer, dimension(2) :: Sds_Count
   real(kind=8), dimension(:), allocatable:: Sds_Data_1d
   real, dimension(:,:), allocatable:: Sds_Data_2d
-  integer:: Nx_Start, Nx_End, Ny_Start, Ny_End
-  integer:: Chan_Idx, CLAVRx_Chan_Idx, Line_Idx, Elem_Idx
   real(kind=8) :: proj_time0
-  integer:: varid, status
+  integer :: Nx_Start, Nx_End, Ny_Start, Ny_End
+  integer :: Chan_Idx, CLAVRx_Chan_Idx, Line_Idx, Elem_Idx
+  integer :: varid, status
+  integer :: Num_Files
+  integer :: I_Fusion
+  integer :: Ncid_Fusion
+  character(len=1020), dimension(:), pointer:: Files
+  character(len=1020) :: Fusion_File
+  character(len=100) :: Sds_Name
+  character(len=2) :: Fusion_Band_Str
+  integer, parameter :: N_Fusion = 11
+  integer, dimension(N_Fusion), parameter :: Fusion_Ch_List  = (/15, 14, 12, 11, 10,  9,  8,  7,  6,  5,  4/)
+  integer, dimension(N_Fusion), parameter :: CLAVRX_Ch_List  = (/24, 25, 27, 28, 32, 30, 31, 33, 34, 35, 36/)
+
 
   !--- determine location of segement data in the file
   Nx_Start = 1
@@ -261,14 +332,14 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
 
   !--- read sub-pixel standard deviations
   if (Sensor%Chan_On_Flag_Default(1) == sym%Yes) then
-     call READ_AND_UNSCALE_NETCDF_2D(Ncid_Vgac, Sds_Start, Sds_Stride, Sds_Count,'M05_sd', Sds_Data_2d)
-     print *,"range in m05_sd = ", minval(Sds_Data_2d),maxval(Sds_Data_2d)
+     call READ_AND_UNSCALE_NETCDF_2D(Ncid_Vgac, Sds_Start, Sds_Stride, Sds_Count,'i01_stdev', Sds_Data_2d)
+     !print *,"range in m05_sd = ", minval(Sds_Data_2d),maxval(Sds_Data_2d)
      where(Sds_Data_2d .ltr. 0.00)   !missing seems to be -1.00
          Sds_Data_2d = MISSING_VALUE_REAL4
      endwhere
-     where(Sds_Data_2d .ger. 0.00)
-         Sds_Data_2d = 100.0*Sds_Data_2d
-     endwhere
+     !where(Sds_Data_2d .ger. 0.00)
+     !    Sds_Data_2d = 100.0*Sds_Data_2d
+     !endwhere
      ch(1)%Ref_Toa_Std_Sub(1:Sds_Count(1),1:Sds_Count(2)) = Sds_Data_2d
   endif
 
@@ -277,7 +348,7 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
      where(Temp_Pix_Array_1 .ler. 0.00)   !missing seems to be -1.00
          Temp_Pix_Array_1 = MISSING_VALUE_REAL4
      endwhere
-     call READ_AND_UNSCALE_NETCDF_2D(Ncid_Vgac, Sds_Start, Sds_Stride, Sds_Count,'M15_sd', Sds_Data_2d)
+     call READ_AND_UNSCALE_NETCDF_2D(Ncid_Vgac, Sds_Start, Sds_Stride, Sds_Count,'i05_stdev', Sds_Data_2d)
      where(Sds_Data_2d .ltr. 0.00)   !missing seems to be -1.00
          Sds_Data_2d = MISSING_VALUE_REAL4
      endwhere
@@ -309,6 +380,123 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
   endwhere
 
   Image%Scan_Time_Ms(1:Sds_Count(2)) = Sds_Data_1d
+
+
+  !--- read fusion if it is there (Denis B. Oct., 2022)
+  if (Sensor%Fusion_Flag) then
+
+     ! --- search fusion file
+     !0        1         2         3         4
+     !12345678901234567890123456789012345678901234567890
+     !VGAC_VJ102MOD_A2019122_0700_n007530_K005.nc
+     !VgacCrIS_rad_fusion_19hirsBands_2019122_0700to0836.nc
+     if (Sensor%Platform_Name == 'NOAA-20') then
+       Files => FILE_SEARCH(trim(Image%Level1b_Path), &
+                   'VgacCrIS_rad_fusion_19hirsBands_'//trim(Image%Level1b_Name(16:27))//'*.nc',count=Num_Files)
+
+       if (Num_Files == 0) then
+          Fusion_File = "no_file"
+       else
+          Fusion_File = Files(1)
+       endif
+     endif
+
+     ! - open fusion file
+     call OPEN_NETCDF(trim(Image%Level1b_Path)//trim(Fusion_File),Ncid_Fusion)
+
+
+     ! Fusion_Ch = Wave Length = MODIS_Ch = Read Here
+     !     1     =  14.96334   =   -      =    N
+     !     2     =  14.71692   =   -      =    N
+     !     3     =  14.47011   =   -      =    N
+     !     4     =  14.26127   =   36     =    Y
+     !     5     =  13.95479   =   35     =    Y
+     !     6     =  13.67989   =   34     =    Y
+     !     7     =  13.35470   =   33     =    Y
+     !     8     =  11.13797   =   31     =    Y
+     !     9     =  9.724504   =   30     =    Y
+     !     10    =  12.50578   =   32     =    Y
+     !     11    =  7.339988   =   28     =    Y
+     !     12    =  6.526776   =   27     =    Y
+     !     13    =  4.565689   =   -      =    N
+     !     14    =  4.522840   =   25     =    Y
+     !     15    =  4.468974   =   24     =    Y
+     !     16    =  4.452260   =   -      =    N
+     !     17    =  4.132829   =   -      =    N
+     !     18    =  3.975669   =   22     =    N
+     !     19    =  3.756433   =   20     =    N
+    
+     ! - read from ch 24 to 36 = total 11 ch.
+     !N_Fusion = 11
+     !Fusion_Ch_List  = [15, 14, 12, 11, 10,  9,  8,  7,  6,  5,  4]
+     !CLAVRX_Ch_List  = [24, 25, 27, 28, 32, 30, 31, 33, 34, 35, 36]
+
+     ! - loop over all fusion channels
+     do I_Fusion = 1, N_Fusion
+
+        ! - check if channel is on 
+        if (Sensor%Chan_On_Flag_Default (CLAVRX_Ch_List(I_Fusion)) == sym%NO) cycle
+
+        ! - make string band number
+        if (Fusion_Ch_List(I_Fusion) .ge. 10) then
+          write (Fusion_Band_Str, '(i2)') Fusion_Ch_List(I_Fusion)
+        else
+          write (Fusion_Band_Str, '(i1)') Fusion_Ch_List(I_Fusion)
+        endif
+        Sds_Name = 'VC_Fusion_Rad_Chan'//trim(Fusion_Band_Str)
+
+        call READ_NETCDF(Ncid_Fusion, Sds_Start, Sds_Stride, Sds_Count, Sds_Name, Sds_Data_2d)
+
+        where((Sds_Data_2d .ltr. 0.0))
+           Sds_Data_2d = MISSING_VALUE_REAL4
+        endwhere
+
+        ! - common case not ch 31 or 32
+        if (CLAVRX_Ch_List(I_Fusion) /= 31 .and. CLAVRX_Ch_List(I_Fusion) /= 32) then
+
+           ! - initialize output
+           Ch (CLAVRX_Ch_List(I_Fusion)) % Rad_Toa (1:Sds_Count(1),1:Sds_Count(2)) = MISSING_VALUE_REAL4
+
+           !- store radiance
+           Ch (CLAVRX_Ch_List(I_Fusion)) % Rad_Toa (1:Sds_Count(1),1:Sds_Count(2)) = Sds_Data_2d
+           !--- convert radiance to noaa units
+           call CONVERT_RADIANCE (Ch(CLAVRX_Ch_List(I_Fusion))%Rad_Toa, Planck_Nu(CLAVRX_Ch_List(I_Fusion)), &
+                                 MISSING_VALUE_REAL4)
+           !--- convert radiance to brightness temperature
+           call COMPUTE_BT_ARRAY(Ch(CLAVRX_Ch_List(I_Fusion))%Bt_Toa,Ch(CLAVRX_Ch_List(I_Fusion))%Rad_Toa, &
+                                 CLAVRX_Ch_List(I_Fusion),MISSING_VALUE_REAL4)
+ 
+        ! - special case ch 31 or 32
+        else
+           ! - 11um
+           if (CLAVRX_Ch_List(I_Fusion) == 31) then
+              ! - initialize output
+              Bt_11um_Sounder = MISSING_VALUE_REAL4
+
+              !--- convert radiance to noaa units
+              call CONVERT_RADIANCE (Sds_Data_2d, Planck_Nu_11um_Sndr, MISSING_VALUE_REAL4)
+              !--- convert radiance to brightness temperature
+              call COMPUTE_BT_ARRAY(Bt_11um_Sounder,Sds_Data_2d, &
+                                    CLAVRX_Ch_List(I_Fusion),MISSING_VALUE_REAL4)
+           endif
+
+           ! - 12um
+           if (CLAVRX_Ch_List(I_Fusion) == 32) then
+              ! - initialize output
+              Bt_12um_Sounder = MISSING_VALUE_REAL4
+
+              !--- convert radiance to noaa units
+              call CONVERT_RADIANCE (Sds_Data_2d, Planck_Nu_12um_Sndr, MISSING_VALUE_REAL4)
+              !--- convert radiance to brightness temperature
+              call COMPUTE_BT_ARRAY(Bt_12um_Sounder,Sds_Data_2d, &
+                                    CLAVRX_Ch_List(I_Fusion),MISSING_VALUE_REAL4)
+           endif
+
+        endif ! special case
+     enddo ! loop channels
+     call CLOSE_NETCDF(Ncid_Fusion)
+  endif ! fusion
+
 
   !--- deallocate temporary memory
   deallocate(Sds_Data_1d)
