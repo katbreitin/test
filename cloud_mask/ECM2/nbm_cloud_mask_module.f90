@@ -610,6 +610,10 @@ MODULE ECM2_CLOUD_MASK_MODULE
                  Value_Dim = Input%Bt_11um_Bt_67um_Covar
                  if (Input%Chan_On_67um == 0) Value_Dim = MISSING_VALUE_REAL4
                  if (Input%Chan_On_11um == 0) Value_Dim = MISSING_VALUE_REAL4
+             CASE('bt6211covar')
+                 Value_Dim = Input%Bt_11um_Bt_62um_Covar
+                 if (Input%Chan_On_67um == 0) Value_Dim = MISSING_VALUE_REAL4
+                 if (Input%Chan_On_11um == 0) Value_Dim = MISSING_VALUE_REAL4
              CASE default
                  PRINT *,"unknown classifier DIMENSION name = ",trim(Dim_Name)
                  Class_Use_Flag(Class_Idx) = 0
