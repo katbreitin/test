@@ -306,9 +306,54 @@ subroutine COMPUTE_SPATIAL_CORRELATION_ARRAYS()
                Elem_Idx_width, Line_Idx_width, &
                Bad_Pixel_Mask(Elem_Idx_min:Elem_Idx_max,Line_Idx_min:Line_Idx_max))
 
-          if (AVHRR_Fusion_Flag) then
+           if (AVHRR_Fusion_Flag) then
               Covar_Ch27_Ch31_5x5(Elem_Idx,Line_Idx) = Missing_Value_Real4
-          endif
+           endif
+
+        endif
+
+        if ((Sensor%Chan_On_Flag_Per_Line(37,Line_Idx) == sym%YES) .and. & 
+            (Sensor%Chan_On_Flag_Per_Line(31,Line_Idx) == sym%YES)) then
+
+            Covar_Ch37_Ch31_5x5(Elem_Idx,Line_Idx) = Covariance(&
+               ch(31)%Bt_Toa(Elem_Idx_min:Elem_Idx_max,Line_Idx_min:Line_Idx_max), &
+               ch(37)%Bt_Toa(Elem_Idx_min:Elem_Idx_max,Line_Idx_min:Line_Idx_max), &
+               Elem_Idx_width, Line_Idx_width, &
+               Bad_Pixel_Mask(Elem_Idx_min:Elem_Idx_max,Line_Idx_min:Line_Idx_max))
+
+           if (AVHRR_Fusion_Flag) then
+              Covar_Ch37_Ch31_5x5(Elem_Idx,Line_Idx) = Missing_Value_Real4
+           endif
+
+        endif
+
+        if ((Sensor%Chan_On_Flag_Per_Line(27,Line_Idx) == sym%YES) .and. & 
+            (Sensor%Chan_On_Flag_Per_Line(38,Line_Idx) == sym%YES)) then
+
+            Covar_Ch27_Ch38_5x5(Elem_Idx,Line_Idx) = Covariance(&
+               ch(27)%Bt_Toa(Elem_Idx_min:Elem_Idx_max,Line_Idx_min:Line_Idx_max), &
+               ch(38)%Bt_Toa(Elem_Idx_min:Elem_Idx_max,Line_Idx_min:Line_Idx_max), &
+               Elem_Idx_width, Line_Idx_width, &
+               Bad_Pixel_Mask(Elem_Idx_min:Elem_Idx_max,Line_Idx_min:Line_Idx_max))
+
+           if (AVHRR_Fusion_Flag) then
+              Covar_Ch27_Ch38_5x5(Elem_Idx,Line_Idx) = Missing_Value_Real4
+           endif
+
+        endif
+
+        if ((Sensor%Chan_On_Flag_Per_Line(37,Line_Idx) == sym%YES) .and. & 
+            (Sensor%Chan_On_Flag_Per_Line(38,Line_Idx) == sym%YES)) then
+
+            Covar_Ch37_Ch38_5x5(Elem_Idx,Line_Idx) = Covariance(&
+               ch(37)%Bt_Toa(Elem_Idx_min:Elem_Idx_max,Line_Idx_min:Line_Idx_max), &
+               ch(38)%Bt_Toa(Elem_Idx_min:Elem_Idx_max,Line_Idx_min:Line_Idx_max), &
+               Elem_Idx_width, Line_Idx_width, &
+               Bad_Pixel_Mask(Elem_Idx_min:Elem_Idx_max,Line_Idx_min:Line_Idx_max))
+
+           if (AVHRR_Fusion_Flag) then
+              Covar_Ch37_Ch38_5x5(Elem_Idx,Line_Idx) = Missing_Value_Real4
+           endif
 
         endif
 

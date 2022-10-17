@@ -2847,6 +2847,11 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Actual_Range = [-10.0,20.0]
             Sds_Info(Var_Idx)%Units = "K"
             if (allocated(Covar_Ch27_Ch31_5x5)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Covar_Ch27_Ch31_5x5
+         case("temp_11um_vs_62um_covar_5x5")
+            Sds_Info(Var_Idx)%Standard_Name = "brightness_temperature_11_vs_62_micron_5x5_covariance"
+            Sds_Info(Var_Idx)%Actual_Range = [-10.0,20.0]
+            Sds_Info(Var_Idx)%Units = "K"
+            if (allocated(Covar_Ch37_Ch31_5x5)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Covar_Ch37_Ch31_5x5
          case("temp_10um_vs_67um_covar_5x5")
             Sds_Info(Var_Idx)%Standard_Name = "brightness_temperature_10_vs_62_micron_5x5_covariance"
             Sds_Info(Var_Idx)%Actual_Range = [-10.0,20.0]

@@ -858,6 +858,7 @@ module PIXEL_COMMON_MOD
   real(kind=real4), dimension(:,:), allocatable, public, save, target:: Btd_Ch38_Ch32_Bt_Ch38_Max_3x3
 
   real(kind=real4), dimension(:,:), allocatable, public, save, target:: Covar_Ch27_Ch31_5x5
+  real(kind=real4), dimension(:,:), allocatable, public, save, target:: Covar_Ch37_Ch31_5x5
   real(kind=real4), dimension(:,:), allocatable, public, save, target:: Covar_Ch27_Ch38_5x5
   real(kind=real4), dimension(:,:), allocatable, public, save, target:: Covar_Ch37_Ch38_5x5
   integer(kind=int4), dimension(:,:), allocatable, public, save:: Elem_Idx_Max_Bt_Ch31_3x3
@@ -1244,6 +1245,11 @@ subroutine CREATE_PIXEL_ARRAYS()
            allocate(Covar_Ch27_Ch31_5x5(dim1,dim2))
    endif
 
+   if ((Sensor%Chan_On_Flag_Default(37) == sym%YES) .and.   &
+       (Sensor%Chan_On_Flag_Default(31) == sym%YES)) then
+           allocate(Covar_Ch37_Ch31_5x5(dim1,dim2))
+   endif
+
    if ((Sensor%Chan_On_Flag_Default(27) == sym%YES) .and.   &
        (Sensor%Chan_On_Flag_Default(38) == sym%YES)) then
            allocate(Covar_Ch27_Ch38_5x5(dim1,dim2))
@@ -1462,6 +1468,7 @@ subroutine DESTROY_PIXEL_ARRAYS()
              Pixel_Local_Time_Hours,Pixel_Time)
 
   if (allocated(Covar_Ch27_Ch31_5x5)) deallocate(Covar_Ch27_Ch31_5x5)
+  if (allocated(Covar_Ch37_Ch31_5x5)) deallocate(Covar_Ch37_Ch31_5x5)
   if (allocated(Covar_Ch27_Ch38_5x5)) deallocate(Covar_Ch27_Ch38_5x5)
   if (allocated(Covar_Ch37_Ch38_5x5)) deallocate(Covar_Ch37_Ch38_5x5)
 
