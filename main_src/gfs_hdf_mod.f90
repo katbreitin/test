@@ -767,8 +767,6 @@ subroutine INTERPOLATE_2D(X,Missing1,Missing2,Temp)
           if ((Temp2d_Nwp_1(i1,i2) /= Missing1) .and. (Temp2d_Nwp_2(i1,i2) /= Missing1) .and. &
               (Temp2d_Nwp_1(i1,i2) /= Missing2) .and. (Temp2d_Nwp_2(i1,i2) /= Missing2)) then
            Temp(i1,i2) = (1.0 - X) * Temp2d_Nwp_1(i1,i2)   + X * Temp2d_Nwp_2(i1,i2)
-          else
-           Temp(i1,i2) = Missing1
           endif
       enddo
     enddo
@@ -816,8 +814,6 @@ subroutine INTERPOLATE_3D(X,Missing1,Missing2,Temp)
           if ((Temp3d_Nwp_1(i1,i2,i3) /= Missing1) .and. (Temp3d_Nwp_2(i1,i2,i3) /= Missing1) .and. &
               (Temp3d_Nwp_1(i1,i2,i3) /= Missing2) .and. (Temp3d_Nwp_2(i1,i2,i3) /= Missing2)) then
             Temp(i1,i2,i3) = (1.0 - X) * Temp3d_Nwp_1(i1,i2,i3)   + X * Temp3d_Nwp_2(i1,i2,i3)
-          else
-            Temp(i1,i2,i3) = Missing1
           endif
         enddo
       enddo
