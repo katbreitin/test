@@ -171,7 +171,7 @@ module SNOW_ROUTINES_MOD
    endif
 
    ! --- make sure everything out of range is missing 
-   where(Snow_Class_Final < sym%NO_SNOW .and. &
+   where(Snow_Class_Final < sym%NO_SNOW .or. &
          Snow_Class_Final > sym%SNOW)
         Snow_Class_Final = Missing_Value_Int1
    endwhere
