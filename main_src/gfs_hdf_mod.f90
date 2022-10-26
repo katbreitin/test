@@ -433,14 +433,14 @@ module GFS_HDF_MOD
                       Sds_Edges_2d, Temp2d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"surface temperature",Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_2) + Istatus
-    call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Tmpsfc)
+    call INTERPOLATE_2D(t_weight, Missing_Nwp, Missing_GFS, NWP%Tmpsfc)
 
 !- surface height
     Istatus = HDF_SDS_READER(Sd_Id_1,"surface height",Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"surface height",Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_2) + Istatus
-    call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Zsfc)
+    call INTERPOLATE_2D(t_weight, Missing_Nwp, Missing_GFS, NWP%Zsfc)
 
     !--- check if missing data is critical to further processing
     if (Istatus < 0) then
@@ -454,7 +454,7 @@ module GFS_HDF_MOD
                       Sds_Edges_2d, Temp2d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"land mask", Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_2) + Istatus
-    call INTERPOLATE_2D(t_weight, Missing_Nwp, Temp_2D_Real)
+    call INTERPOLATE_2D(t_weight, Missing_Nwp, Missing_GFS, Temp_2D_Real)
     NWP%Land = int(Temp_2D_Real, kind=int1)
     deallocate (Temp_2D_Real)
 
@@ -464,77 +464,77 @@ module GFS_HDF_MOD
                       Sds_Edges_2d, Temp2d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"ice fraction",Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_2) + Istatus
-    call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Sea_Ice_Frac)
+    call INTERPOLATE_2D(t_weight, Missing_Nwp, Missing_GFS, NWP%Sea_Ice_Frac)
 
 !- msl pressure
     Istatus = HDF_SDS_READER(Sd_Id_1,"MSL pressure",Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"MSL pressure",Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_2) + Istatus
-    call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Pmsl)
+    call INTERPOLATE_2D(t_weight, Missing_Nwp, Missing_GFS, NWP%Pmsl)
 
 !- surface pressure
     Istatus = HDF_SDS_READER(Sd_Id_1,"surface pressure",Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"surface pressure",Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_2) + Istatus
-    call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Psfc)
+    call INTERPOLATE_2D(t_weight, Missing_Nwp, Missing_GFS, NWP%Psfc)
 
 !- air temperature
     Istatus = HDF_SDS_READER(Sd_Id_1,"temperature at sigma=0.995",Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"temperature at sigma=0.995",Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_2) + Istatus
-    call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Tmpair)
+    call INTERPOLATE_2D(t_weight, Missing_Nwp, Missing_GFS, NWP%Tmpair)
 
 !- air humidity
     Istatus = HDF_SDS_READER(Sd_Id_1,"rh at sigma=0.995",Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"rh at sigma=0.995",Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_2) + Istatus
-    call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Rhsfc)
+    call INTERPOLATE_2D(t_weight, Missing_Nwp, Missing_GFS, NWP%Rhsfc)
 
 !- water equivalent snow depth
     Istatus = HDF_SDS_READER(Sd_Id_1,"water equivalent snow depth",Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"water equivalent snow depth",Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_2) + Istatus
-    call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Weasd)
+    call INTERPOLATE_2D(t_weight, Missing_Nwp, Missing_GFS, NWP%Weasd)
 
 !- TPW
     Istatus = HDF_SDS_READER(Sd_Id_1,"total precipitable water", Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"total precipitable water", Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_2) + Istatus
-    call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Tpw)
+    call INTERPOLATE_2D(t_weight, Missing_Nwp, Missing_GFS, NWP%Tpw)
 
 !- tropopause temperature
     Istatus = HDF_SDS_READER(Sd_Id_1,"tropopause temperature", Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"tropopause temperature", Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_2) + Istatus
-    call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%T_Trop)
+    call INTERPOLATE_2D(t_weight, Missing_Nwp, Missing_GFS, NWP%T_Trop)
 
 !- tropopause pressure
     Istatus = HDF_SDS_READER(Sd_Id_1,"tropopause pressure", Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"tropopause pressure", Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_2) + Istatus
-    call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%P_Trop)
+    call INTERPOLATE_2D(t_weight, Missing_Nwp, Missing_GFS, NWP%P_Trop)
 
 !- wind direction
     Istatus = HDF_SDS_READER(Sd_Id_1,"u-wind at sigma=0.995", Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"u-wind at sigma=0.995", Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_2) + Istatus
-    call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%U_Wnd_10m)
+    call INTERPOLATE_2D(t_weight, Missing_Nwp, Missing_GFS, NWP%U_Wnd_10m)
 
 !- wind speed
     Istatus = HDF_SDS_READER(Sd_Id_1,"v-wind at sigma=0.995", Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"v-wind at sigma=0.995", Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_2) + Istatus
-    call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%V_Wnd_10m)
+    call INTERPOLATE_2D(t_weight, Missing_Nwp, Missing_GFS, NWP%V_Wnd_10m)
 
 
 !- total ozone
@@ -542,7 +542,7 @@ module GFS_HDF_MOD
                       Sds_Edges_2d, Temp2d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"total ozone", Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_2) + Istatus
-    call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Ozone)
+    call INTERPOLATE_2D(t_weight, Missing_Nwp, Missing_GFS, NWP%Ozone)
 
 
 !--- read in three dimensional arrays
@@ -552,21 +552,21 @@ module GFS_HDF_MOD
                       Sds_Edges_3d, Temp3d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"temperature", Sds_Start_3d, Sds_Stride_3d, &
                       Sds_Edges_3d, Temp3d_Nwp_2) + Istatus
-    call INTERPOLATE_3D(t_weight, Missing_Nwp, NWP%T_Prof)
+    call INTERPOLATE_3D(t_weight, Missing_Nwp, Missing_GFS, NWP%T_Prof)
 
     !- height
     Istatus = HDF_SDS_READER(Sd_Id_1,"height", Sds_Start_3d, Sds_Stride_3d, &
                       Sds_Edges_3d, Temp3d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"height", Sds_Start_3d, Sds_Stride_3d, &
                       Sds_Edges_3d, Temp3d_Nwp_2) + Istatus
-    call INTERPOLATE_3D(t_weight, Missing_Nwp, NWP%Z_Prof)
+    call INTERPOLATE_3D(t_weight, Missing_Nwp, Missing_GFS, NWP%Z_Prof)
 
     !- humidity
     Istatus = HDF_SDS_READER(Sd_Id_1,"rh", Sds_Start_3d, Sds_Stride_3d, &
                       Sds_Edges_3d, Temp3d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"rh", Sds_Start_3d, Sds_Stride_3d, &
                       Sds_Edges_3d, Temp3d_Nwp_2) + Istatus
-    call INTERPOLATE_3D(t_weight, Missing_Nwp, NWP%Rh_Prof)
+    call INTERPOLATE_3D(t_weight, Missing_Nwp, Missing_GFS, NWP%Rh_Prof)
 
     !--- check if missing data is critical to further processing
     if (Istatus < 0) then
@@ -579,28 +579,28 @@ module GFS_HDF_MOD
                       Sds_Edges_3d, Temp3d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"u-wind", Sds_Start_3d, Sds_Stride_3d, &
                       Sds_Edges_3d, Temp3d_Nwp_2) + Istatus
-    call INTERPOLATE_3D(t_weight, Missing_Nwp, NWP%U_Wnd_Prof)
+    call INTERPOLATE_3D(t_weight, Missing_Nwp, Missing_GFS, NWP%U_Wnd_Prof)
 
     !- wind speed
     Istatus = HDF_SDS_READER(Sd_Id_1,"v-wind", Sds_Start_3d, Sds_Stride_3d, &
                       Sds_Edges_3d, Temp3d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"v-wind", Sds_Start_3d, Sds_Stride_3d, &
                       Sds_Edges_3d, Temp3d_Nwp_2) + Istatus
-    call INTERPOLATE_3D(t_weight, Missing_Nwp, NWP%V_Wnd_Prof)
+    call INTERPOLATE_3D(t_weight, Missing_Nwp, Missing_GFS, NWP%V_Wnd_Prof)
 
     !- ozone
     Istatus = HDF_SDS_READER(Sd_Id_1,"o3mr", Sds_Start_3d, Sds_Stride_3d, &
                       Sds_Edges_3d, Temp3d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"o3mr", Sds_Start_3d, Sds_Stride_3d, &
                       Sds_Edges_3d, Temp3d_Nwp_2) + Istatus
-    call INTERPOLATE_3D(t_weight, Missing_Nwp, NWP%Ozone_Prof)
+    call INTERPOLATE_3D(t_weight, Missing_Nwp, Missing_GFS, NWP%Ozone_Prof)
 
     !- cloud liquid water mixing ratio
     Istatus = HDF_SDS_READER(Sd_Id_1,"clwmr", Sds_Start_3d, Sds_Stride_3d, &
                       Sds_Edges_3d, Temp3d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"clwmr", Sds_Start_3d, Sds_Stride_3d, &
                       Sds_Edges_3d, Temp3d_Nwp_2) + Istatus
-    call INTERPOLATE_3D(t_weight, Missing_Nwp, NWP%Clwmr_Prof)
+    call INTERPOLATE_3D(t_weight, Missing_Nwp, Missing_GFS, NWP%Clwmr_Prof)
 
     !- cape
   if (Nwp_Data_Type == 1) then
@@ -608,7 +608,7 @@ module GFS_HDF_MOD
                       Sds_Edges_2d, Temp2d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"cape", Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_2) + Istatus
-    call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%CAPE)
+    call INTERPOLATE_2D(t_weight, Missing_Nwp, Missing_GFS, NWP%CAPE)
   endif
 
   if (Nwp_Data_Type == 8) then
@@ -617,14 +617,14 @@ module GFS_HDF_MOD
                       Sds_Edges_2d, Temp2d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"freezing level",Sds_Start_2d, Sds_Stride_2d, &
                       Sds_Edges_2d, Temp2d_Nwp_2) + Istatus
-    call INTERPOLATE_2D(t_weight, Missing_Nwp, NWP%Freezing_lev_hgt)
+    call INTERPOLATE_2D(t_weight, Missing_Nwp, Missing_GFS, NWP%Freezing_lev_hgt)
 
     !- ic cloud mixing ratio
     Istatus = HDF_SDS_READER(Sd_Id_1,"icmr", Sds_Start_3d, Sds_Stride_3d, &
                       Sds_Edges_3d, Temp3d_Nwp_1) + Istatus
     Istatus = HDF_SDS_READER(Sd_Id_2,"icmr", Sds_Start_3d, Sds_Stride_3d, &
                       Sds_Edges_3d, Temp3d_Nwp_2) + Istatus
-    call INTERPOLATE_3D(t_weight, Missing_Nwp, NWP%Icmr_Prof)
+    call INTERPOLATE_3D(t_weight, Missing_Nwp, Missing_GFS, NWP%Icmr_Prof)
   endif
  
     ! --- close files
@@ -753,21 +753,20 @@ enddo
 !------------------------------------------------------------------------------------------
 ! interpolate 2d dimensional data from the GFS HDF files
 !------------------------------------------------------------------------------------------
-subroutine INTERPOLATE_2D(X,Missing,Temp)
-  real, intent(in):: X, Missing
+subroutine INTERPOLATE_2D(X,Missing1,Missing2,Temp)
+  real, intent(in):: X, Missing1, Missing2
   real, dimension(:,:), intent(out):: Temp
 
   integer:: i1,i2,Ndim1,Ndim2
 
-    Temp = Missing
+    Temp = Missing1
     Ndim1 = size(Temp,1)
     Ndim2 = size(Temp,2)
     do i1 = 1, Ndim1
       do i2 = 1, Ndim2
-          if ((Temp2d_Nwp_1(i1,i2) /= Missing) .and. (Temp2d_Nwp_2(i1,i2) /= Missing)) then
+          if ((Temp2d_Nwp_1(i1,i2) /= Missing1) .and. (Temp2d_Nwp_2(i1,i2) /= Missing1) .and. &
+              (Temp2d_Nwp_1(i1,i2) /= Missing2) .and. (Temp2d_Nwp_2(i1,i2) /= Missing2)) then
            Temp(i1,i2) = (1.0 - X) * Temp2d_Nwp_1(i1,i2)   + X * Temp2d_Nwp_2(i1,i2)
-          else
-           Temp(i1,i2) = Missing
           endif
       enddo
     enddo
@@ -779,13 +778,13 @@ end subroutine INTERPOLATE_2D
 !------------------------------------------------------------------------------------------
 ! interpolate 3d dimensional data from the GFS HDF files
 !------------------------------------------------------------------------------------------
-subroutine INTERPOLATE_3D(X,Missing,Temp)
-  real, intent(in):: X, Missing
+subroutine INTERPOLATE_3D(X,Missing1,Missing2,Temp)
+  real, intent(in):: X, Missing1, Missing2
   real, dimension(:,:,:), intent(out):: Temp
 
   integer:: i1,i2,i3,Ndim1,Ndim2,Ndim3
 
-    Temp = Missing
+    Temp = Missing1
     Ndim1 = size(Temp,1)
     Ndim2 = size(Temp,2)
     Ndim3 = size(Temp,3)
@@ -812,10 +811,9 @@ subroutine INTERPOLATE_3D(X,Missing,Temp)
     do i1 = 1, Ndim1
       do i2 = 1, Ndim2
         do i3 = 1, Ndim3
-          if ((Temp3d_Nwp_1(i1,i2,i3) /= Missing) .and. (Temp3d_Nwp_2(i1,i2,i3) /= Missing)) then
+          if ((Temp3d_Nwp_1(i1,i2,i3) /= Missing1) .and. (Temp3d_Nwp_2(i1,i2,i3) /= Missing1) .and. &
+              (Temp3d_Nwp_1(i1,i2,i3) /= Missing2) .and. (Temp3d_Nwp_2(i1,i2,i3) /= Missing2)) then
             Temp(i1,i2,i3) = (1.0 - X) * Temp3d_Nwp_1(i1,i2,i3)   + X * Temp3d_Nwp_2(i1,i2,i3)
-          else
-            Temp(i1,i2,i3) = Missing
           endif
         enddo
       enddo

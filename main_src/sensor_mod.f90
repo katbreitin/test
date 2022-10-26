@@ -217,6 +217,7 @@ module SENSOR_MOD
       READ_ISCCPNG_DATA
 
    use CX_VGAC_MOD, only: &
+      CHECK_IF_FUSION_VGAC, &
       READ_NUMBER_OF_SCANS_VGAC, &
       READ_VGAC_DATE_TIME, &
       READ_VGAC_DATA
@@ -1714,6 +1715,13 @@ module SENSOR_MOD
          Sensor%Spatial_Resolution_Meters = 3900
          Sensor%Platform_Name = 'NOAA-20'
          Sensor%WMO_Id = 225
+         ! - check if it is FUSION
+         Sensor%Fusion_Flag = .false.
+         call CHECK_IF_FUSION_VGAC(Sensor%Fusion_Flag)
+         if (Sensor%Fusion_Flag) then
+           Sensor%Instr_Const_File = 'fusion_20_instr.dat'
+           exit test_loop
+         endif
          Sensor%Instr_Const_File = 'viirs_20_instr.dat'
          exit test_loop
       endif
