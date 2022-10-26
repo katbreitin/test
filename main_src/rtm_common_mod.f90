@@ -246,7 +246,7 @@ contains
     this % is_allocated = .true.
   end  subroutine rtm_params__alloc
   
-   subroutine rtm_params__dealloc ( this )
+  subroutine rtm_params__dealloc ( this )
     class ( Rtm_Params ) :: this
     if ( .not. this % is_allocated) return
     if ( allocated (this % d ) ) deallocate (this % d)

@@ -338,7 +338,6 @@ module CLAVRX_STATIC_NAV_MODULE
           exit
         end if
       end do
-      print*,Geospatial_Lon_Center_Sn , Geospatial_Lon_Center_L1b
       !--- check values use 0.01 as a threshold for difference
       if ((abs(Geospatial_Lon_Center_Sn - Geospatial_Lon_Center_L1b) .gtr. 0.01) .or.  &
           (abs(Geospatial_Lat_Center_Sn - Geospatial_Lat_Center_L1b) .gtr. 0.01)) then
@@ -447,6 +446,18 @@ module CLAVRX_STATIC_NAV_MODULE
 
     !--- glint angle
     Geo%Glintzen = glint_angle(Geo%Solzen, Geo%Satzen, Geo%Relaz)
+
+    !--- ensure missing values
+    where((Geo%Solzen .eqr. MISSING_VALUE_REAL4) .or. &
+          (Geo%Solaz  .eqr. MISSING_VALUE_REAL4) .or. &
+          (Geo%Sataz  .eqr. MISSING_VALUE_REAL4) .or. &
+          (Geo%Satzen .eqr. MISSING_VALUE_REAL4))
+
+          Geo%Relaz = MISSING_VALUE_REAL4
+          Geo%Scatangle = MISSING_VALUE_REAL4
+          Geo%Glintzen = MISSING_VALUE_REAL4
+
+    endwhere
 
     !--- allocate memory for the temp arrays for reading from level-1b
     if (.not. allocated(Output_Seg)) allocate(Output_Seg(Image%Number_Of_Elements, Image%Number_Of_Lines_Per_Segment))
@@ -678,6 +689,19 @@ end subroutine READ_LEVEL1B_FIXED_GRID_STATIC_NAV
 
     !--- glint angle
     Geo%Glintzen = glint_angle(Geo%Solzen, Geo%Satzen, Geo%Relaz)
+
+    !--- ensure missing values
+    where((Geo%Solzen .eqr. MISSING_VALUE_REAL4) .or. &
+          (Geo%Solaz  .eqr. MISSING_VALUE_REAL4) .or. &
+          (Geo%Sataz  .eqr. MISSING_VALUE_REAL4) .or. &
+          (Geo%Satzen .eqr. MISSING_VALUE_REAL4))
+
+          Geo%Relaz = MISSING_VALUE_REAL4
+          Geo%Scatangle = MISSING_VALUE_REAL4
+          Geo%Glintzen = MISSING_VALUE_REAL4
+
+    endwhere
+
 
     !--- allocate memory for the temp arrays for reading from level-1b
     if (.not. allocated(Output_Seg)) allocate(Output_Seg(Image%Number_Of_Elements, Image%Number_Of_Lines_Per_Segment))
@@ -1292,7 +1316,7 @@ subroutine FIND_DARK_COMPOSITE()
    Dark_File_Exist = FILE_TEST(trim(Dark_Comp_Data_Dir)//trim(Dark_Composite_Name))
    if (.not. Dark_File_Exist) then
       call MESG('DID NOT FIND DARK COMPOSITE FILE, SETTING TO MISSING', level = verb_lev % DEFAULT )
-      print*,trim(Dark_Comp_Data_Dir)//trim(Dark_Composite_Name)
+      !print*,trim(Dark_Comp_Data_Dir)//trim(Dark_Composite_Name)
    endif
 
 end subroutine FIND_DARK_COMPOSITE

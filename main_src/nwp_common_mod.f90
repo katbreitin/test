@@ -1919,12 +1919,12 @@ end function COMPUTE_DIVERGENCE
   integer (kind=int1), intent(out):: Cloud_Type
 
   real, dimension(size(Clwmr_Profile)):: Cloud_Fraction_Profile
-  real:: Sat_Specific_Humidity
-  real:: Cloud_Fraction_Satellite
-  real:: High_Cloud_Fraction_Satellite
-  real:: Mid_Cloud_Fraction_Satellite
-  real:: Low_Cloud_Fraction_Satellite
+  real, intent(out):: Cloud_Fraction_Satellite
+  real, intent(out):: High_Cloud_Fraction_Satellite
+  real, intent(out):: Mid_Cloud_Fraction_Satellite
+  real, intent(out):: Low_Cloud_Fraction_Satellite
  
+  real:: Sat_Specific_Humidity
   real:: Clwmr_Min
   real, parameter:: Lwp_Threshold  = 5.0
   real, parameter:: Iwp_Threshold  = 1.0
@@ -1997,7 +1997,7 @@ end function COMPUTE_DIVERGENCE
                            (Max_Temperature_Sc_Water - Min_Temperature_Sc_Water)))
 
         Clwmr_Sc_Water_Layer = 0.5 * (Sc_Water_Frac_Top*Clwmr_Profile(ilay) + &
-                                     Sc_Water_Frac_Bot*Clwmr_Profile(ilay+1))
+                                      Sc_Water_Frac_Bot*Clwmr_Profile(ilay+1))
 
         Factor = 1000.0 * 100.0 * (Pressure_Profile(ilay+1) - Pressure_Profile(ilay)) / g
 

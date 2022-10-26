@@ -253,6 +253,10 @@
   end function glint_angle
   !-------------------------------------------------------------------------------------
   !
+  ! http://stcorp.github.io/harp/doc/html/algorithms/derivations/scattering_angle.html
+  !
+  ! note, this equation assumes that the relaz convention conforms to CLAVR-x, if this 
+  ! is reverse, the cos(relaz) becomes negative and this should be accounted for below
   !-------------------------------------------------------------------------------------
   real elemental function scattering_angle(sol_zen, sen_zen, rel_az)
 
@@ -260,14 +264,7 @@
    real, intent(in):: sen_zen
    real, intent(in):: rel_az
 
-   !--- I think this equation is wrong (akh)
-   !scattering_angle = cos(sol_zen*DTOR)*cos(sen_zen*DTOR) -    &
-   !                   sin(sol_zen*DTOR)*sin(sen_zen*DTOR)*cos(rel_az*DTOR)
-   !scattering_angle = -1.0*scattering_angle
-
-   !--- I think this equation is correct based on visual analysis
-   scattering_angle = -1.0 * cos(sol_zen*DTOR)*cos(sen_zen*DTOR) -    &
-                             sin(sol_zen*DTOR)*sin(sen_zen*DTOR)*cos(rel_az*DTOR)
+   scattering_angle = -cos(sol_zen*DTOR)*cos(sen_zen*DTOR)-sin(sol_zen*DTOR)*sin(sen_zen*DTOR)*cos(rel_az*DTOR)
 
    scattering_angle = max(-1.0,min(scattering_angle,1.0))
 

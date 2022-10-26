@@ -1175,7 +1175,7 @@ contains
       if (Sensor%WMO_Id == 56) then
      
          Gamma_Trans_Factor(20) = 1.55
-         Gamma_Trans_Factor(27) = 0.96
+         Gamma_Trans_Factor(37) = 0.96
          Gamma_Trans_Factor(29) = 1.35
          Gamma_Trans_Factor(31) = 0.95
          Gamma_Trans_Factor(32) = 0.95
