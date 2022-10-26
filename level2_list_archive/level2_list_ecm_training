@@ -50,6 +50,7 @@ temp_3_75um_nom
 temp_3_75um_nom_min_sub
 temp_3_75um_nom_max_sub
 temp_3_9um_nom
+temp_6_2um_nom
 temp_6_7um_nom
 temp_7_3um_nom
 temp_8_5um_nom
@@ -62,7 +63,6 @@ temp_13_3um_nom
 temp_13_6um_nom
 temp_13_9um_nom
 temp_14_2um_nom
-temp_6_2um_nom
 temp_10_4um_nom
 temp_10_4um_nom_max_3x3
 temp_10_4um_nom_min_3x3
@@ -71,6 +71,9 @@ temp_11_0um_nom_max_3x3
 temp_11_0um_nom_min_3x3
 temp_11_0um_nom_stddev_3x3
 temp_11um_vs_67um_covar_5x5
+temp_10um_vs_67um_covar_5x5
+temp_11um_vs_62um_covar_5x5
+temp_10um_vs_62um_covar_5x5
 temp_3_75um_nom_median_5x5
 refl_sol_dnb_nom
 refl_lunar_dnb_nom
@@ -111,6 +114,7 @@ refl_0_65um_nom_clear_sky_max_3x3
 refl_0_65um_nom_clear_sky_std_3x3
 refl_lunar_dnb_nom_clear_sky
 temp_3_75um_nom_clear_sky
+temp_6_2um_nom_clear_sky
 temp_6_7um_nom_clear_sky
 temp_7_3um_nom_clear_sky
 temp_8_5um_nom_clear_sky
@@ -121,7 +125,6 @@ temp_13_3um_nom_clear_sky
 temp_13_6um_nom_clear_sky
 temp_13_9um_nom_clear_sky
 temp_14_2um_nom_clear_sky
-temp_6_2um_nom_clear_sky
 temp_10_4um_nom_clear_sky
 emiss_sfc_11_0um_nom
 emiss_sfc_3_75um_nom
@@ -148,6 +151,5 @@ dqf_10_4um_nom
 dqf_11_0um_nom
 dqf_12_0um_nom
 dqf_13_3um_nom
-cld_temp_acha
 refl_0_65um_nom_dark_static
 refl_0_65um_nom_dark_static_stddev
