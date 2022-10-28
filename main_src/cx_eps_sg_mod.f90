@@ -146,15 +146,26 @@ subroutine READ_EPS_SG_DATE_TIME(File_Name,Start_Year,Start_Doy,Start_Time,&
    integer :: Start_Month, Start_Day, Start_Hour, Start_Minute, Start_Sec
    integer :: End_Month, End_Day, End_Hour, End_Minute, End_Sec
    integer :: Start_Msec, End_Msec
-
+   !integer :: resloc, tempstrlen
 
    ! --- read start time
    call READ_NETCDF_GLOBAL_ATTRIBUTE(File_Name, 'sensing_start_time_utc', String_Tmp)
-
    read(String_Tmp(1:4), fmt="(I4)") Start_Year
    read(String_Tmp(6:7), fmt="(I2)") Start_Month
    read(String_Tmp(9:10), fmt="(I2)") Start_Day
+ 
+!+++++++++++++++++++++++++ new 
+   !resloc = index(File_Name, 'W_')
+   !tempstrlen = len('W_xx-eumetsat-darmstadt,SAT,SGA1-VII-1B-RAD_C_EUMT_20191001043852_G_D_')
+   !read(File_Name(resloc+tempstrlen:resloc+tempstrlen+3), fmt="(I4)") Start_Year
+   !read(File_Name(resloc+tempstrlen+4:resloc+tempstrlen+5), fmt="(I2)") Start_Month
+   !read(File_Name(resloc+tempstrlen+6:resloc+tempstrlen+7), fmt="(I2)") Start_Day
+!+++++++++++++++++++++++++
 
+   !Start_Month
+   !Start_Day
+!print *, 'eps time ',File_Name, 'result ',resloc, String_Tmp, Start_Year,Start_Month,Start_Day
+!stop
    !--- compute day of year
    call JULIAN (Start_Day, Start_Month, Start_Year, Start_Doy)
 
@@ -163,12 +174,26 @@ subroutine READ_EPS_SG_DATE_TIME(File_Name,Start_Year,Start_Doy,Start_Time,&
    read(String_Tmp(18:19), fmt="(I2)") Start_Sec
    read(String_Tmp(21:23), fmt="(I3)") Start_Msec
 
+   !read(File_Name(resloc+tempstrlen+8:resloc+tempstrlen+9), fmt="(I2)") Start_Hour
+   !read(File_Name(resloc+tempstrlen+10:resloc+tempstrlen+11), fmt="(I2)") Start_Minute
+   !read(File_Name(resloc+tempstrlen+12:resloc+tempstrlen+13), fmt="(I2)") Start_Sec
+   !Start_Msec = 0
+
    ! --- read end time
    call READ_NETCDF_GLOBAL_ATTRIBUTE(File_Name, 'sensing_end_time_utc', String_Tmp)
 
    read(String_Tmp(1:4), fmt="(I4)") End_Year
    read(String_Tmp(6:7), fmt="(I2)") End_Month
    read(String_Tmp(9:10), fmt="(I2)") End_Day
+
+!+++++++++++++++++++++++++ new 
+   !read(File_Name(resloc+tempstrlen+15:resloc+tempstrlen+18), fmt="(I4)") End_Year
+   !read(File_Name(resloc+tempstrlen+19:resloc+tempstrlen+20), fmt="(I2)") End_Month
+   !read(File_Name(resloc+tempstrlen+21:resloc+tempstrlen+22), fmt="(I2)") End_Day
+!+++++++++++++++++++++++++
+
+   !Start_Month
+   !Start_Day
 
    !--- compute day of year
    call JULIAN (End_Day, End_Month, End_Year, End_Doy)
@@ -178,10 +203,15 @@ subroutine READ_EPS_SG_DATE_TIME(File_Name,Start_Year,Start_Doy,Start_Time,&
    read(String_Tmp(18:19), fmt="(I2)") End_Sec
    read(String_Tmp(21:23), fmt="(I3)") End_Msec
 
+   !read(File_Name(resloc+tempstrlen+23:resloc+tempstrlen+24), fmt="(I2)") End_Hour
+   !read(File_Name(resloc+tempstrlen+25:resloc+tempstrlen+26), fmt="(I2)") End_Minute
+   !read(File_Name(resloc+tempstrlen+27:resloc+tempstrlen+28), fmt="(I2)") End_Sec
+   !End_Msec = 0
    
    ! --- Calculate start and end time
    Start_Time = ((Start_Hour * 60 + Start_Minute) * 60 + Start_Sec) * 1000 + Start_Msec
    End_Time = ((End_Hour * 60 + End_Minute) * 60 + End_Sec) * 1000 + End_Msec
+
 
 end subroutine READ_EPS_SG_DATE_TIME
 
@@ -318,10 +348,12 @@ subroutine READ_EPS_SG_DATA(Segment_Number, Error_Status)
 
 
   !--- make sure lat/lon are within the limits
-  where(Nav%Lon_1b <= -180.0 .or. Nav%Lon_1b >= 180.0)  
+!  where(Nav%Lon_1b <= -180.0 .or. Nav%Lon_1b >= 180.0)  
+  where(Nav%Lon_1b < -180.0 .or. Nav%Lon_1b > 180.0)  
      Nav%Lon_1b = MISSING_VALUE_REAL4
   end where
-  where(Nav%Lat_1b <= -90.0 .or. Nav%Lat_1b >= 90.0)
+!  where(Nav%Lat_1b <= -90.0 .or. Nav%Lat_1b >= 90.0)
+  where(Nav%Lat_1b < -90.0 .or. Nav%Lat_1b > 90.0)
      Nav%Lat_1b = MISSING_VALUE_REAL4
   end where
 
@@ -341,8 +373,8 @@ subroutine READ_EPS_SG_DATA(Segment_Number, Error_Status)
   call GET_GROUP_ID(Ncid_Eps_Sg, 'data', Group_Id1)
   call GET_GROUP_ID(Group_Id1, 'calibration_data', Group_Id2)
   call READ_AND_UNSCALE_NETCDF_1D(Group_Id2, [1], [1], [Num_Sol_Ch], &
-                  "integrated_solar_irradiance", Ch_Aver_Sol_Irrad)
-
+!                  "integrated_solar_irradiance", Ch_Aver_Sol_Irrad)
+                  "Band_averaged_solar_irradiance", Ch_Aver_Sol_Irrad)
 
   !--- allocate a temporary array to hold 2d data
   allocate(Sds_Data_2d(Sds_Count_2d(1),Sds_Count_2d(2)))
@@ -524,8 +556,9 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
   integer :: kk_alt, kk_act
   integer :: i_zone_alt, i_zone_act
   integer, parameter :: num_pix_alt = 24
-  integer, parameter :: num_scans = 175
-  integer, parameter :: num_lines = num_pix_alt * num_scans
+!  integer, parameter :: num_scans = 35 !175
+  integer :: num_scans
+  !integer, parameter :: num_lines = num_pix_alt * num_scans
   integer, parameter :: num_elem = 3144
   
   integer, parameter :: zone_size_act = 8
@@ -556,14 +589,29 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
   real:: this_x, this_y,  this_z
   real :: phi, p, e_strich
   integer :: xx, yy
-  
+ 
+  integer, dimension(2):: Dim_2d 
   
   
   if ( this % is_calculated ) return
+
+  Dim_2d = -1
+  call GET_GROUP_ID(Ncid_Eps_Sg, 'data', Group_Id1)
+  call GET_GROUP_ID(Group_Id1, 'measurement_data', Group_Id2)
+
+   call READ_NETCDF_DIMENSION_2D(Group_Id2,'delta_lat_N_dem', Dim_2d)
+
+   num_scans = Dim_2d(2)/24
+
+
+   ! status = nf90_inq_varid(group_id1, trim('num_scans'), nc_var_id)
+   ! call read_netcdf_attribute_real(gropu_id1, nc_var_id, 'CFAC', attr)
  
-  n_x = num_scans * 4
-  n_y = 394
-  
+  n_x = 394 !140 !num_scans * 4
+  n_y = num_scans * 4 !394
+ 
+  !n_x = num_scans * 4
+  !n_y = 394 
   
   start2d = [1,1]
   stride2d = [1,1]
@@ -604,14 +652,16 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
   this % solar_zenith = MISSING_VALUE_REAL4
 
   ! --- get group id
-  call GET_GROUP_ID(Ncid_Eps_Sg, 'data', Group_Id1)
+!  call GET_GROUP_ID(Ncid_Eps_Sg, 'data', Group_Id1)
   call GET_GROUP_ID(Group_Id1, 'measurement_data', Group_Id2)
   
   ! --- navigation  
   
   call READ_AND_UNSCALE_NETCDF_2D(Group_Id2, Start2d, Stride2d, Count2d, &
                                 "longitude", longitude_anchor)
-                                
+     
+     
+                             
  ! - MetImage is longitude form 0 to 360.
  ! - fix 2020/06/08 AW
  longitude_anchor = modulo((longitude_anchor+180.),360.)-180.                               
@@ -632,6 +682,7 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
                                 "solar_zenith",  solar_zenith_anchor)                                                             
  
  
+ 
   ! - compute cartesian coordinates
   cart_n = SEMI_MAJOR/SQRT(1-ECCENTRICITY * (2. - ECCENTRICITY ) * sin ( latitude_anchor*DTOR) ** 2.)
   cart_x = cart_N * cos ( latitude_anchor*DTOR) * cos ( longitude_anchor*DTOR )
@@ -643,20 +694,25 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
       cart_y = -999.
       cart_z = -999.
   end where
-
+  
  
-   
-   do kk_act = ny_start, ny_start + ny - 1  ! 3144
-       i_zone_act = kk_act /  zone_size_act + 1
-       i_rel_act = mod( kk_act-1,zone_size_act)
+ 
+
+   do kk_alt = ny_start, ny_start + ny - 1  ! 200 (seg-size)
+  
+       i_zone_alt = (kk_alt -1) /  zone_size_alt + 1 
+       i_rel_alt = mod( kk_alt-1,zone_size_alt)
+       i_scan = (kk_alt-1) / num_pix_alt  
        
-       do kk_alt = nx_start ,nx_start + nx - 1 ! 4200
-         
-          i_zone_alt = kk_alt / zone_size_alt + 1
-          i_rel_alt = mod( kk_alt-1, zone_size_alt)
-          i_scan = kk_alt / num_pix_alt 
-         
+       do kk_act = nx_start ,nx_start + nx - 1 ! 3144
+      
+          i_zone_act = (kk_act-1) / zone_size_act + 1
+          i_rel_act = mod( kk_act-1, zone_size_act)
+          
+          ! print*,kk_alt,kk_act,i_zone_alt,i_zone_act,i_rel_alt,i_rel_act
+        
          !- transformation to Cartesian is needed to avoid dateline trouble 
+         
           this_x = eps_bilin_interp ( &  
             cart_x &
               ,i_zone_alt  &
@@ -666,7 +722,10 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
               , i_rel_alt &
               ,zone_size_act &
               ,zone_size_alt )
-              
+          
+         ! stop
+          
+          
            this_y = eps_bilin_interp ( &  
             cart_y &
               ,i_zone_alt  &
@@ -676,7 +735,8 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
               , i_rel_alt &
               ,zone_size_act &
               ,zone_size_alt )
-              
+             
+                
            this_z = eps_bilin_interp ( &  
             cart_z &
               ,i_zone_alt  &
@@ -693,23 +753,31 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
           phi = atan(this_z * SEMI_major/ (p * SEMI_minor))  
           
         
-          xx = kk_alt - nx_start + 1
-          yy = kk_act - ny_start + 1
+          xx = kk_act - nx_start + 1
+          yy = kk_alt - ny_start + 1
           
+         
           
           this % longitude(xx,yy) = (2 * ATAN(this_y/(this_x + p)))/DTOR
           
           this % latitude(xx,yy) =  ((ATAN((this_z  + e_strich ** 2. * SEMI_MINOR * sin(phi *DTOR ) ** 3.) &
                                                     /(p- ECCENTRICITY ** 2. * ACOS (phi *DTOR) **3.)))) / DTOR
              
-          
+         
+       !  print*,xx,yy,this % longitude(xx,yy),this % longitude(xx,yy)
+       !  if (kk_alt .gt. 28 .and. kk_act .gt. 28) stop
+              
           if (this_x .eq. -999. .or. this_y .eq. -999. .or. this_z .eq. -999.) then
               this % longitude(xx,yy) = -999.
               this % latitude(xx,yy) = -999.
+             ! print*,this_x,this_y, this_z
+             ! print*,xx,yy
+             ! print*,kk_act,kk_alt
+             ! stop
           end if
           
                                                   
-          !print*, xx,yy,this % longitude(xx,yy) , this % latitude(xx,yy) 
+         ! print*, xx,yy,this % longitude(xx,yy) , this % latitude(xx,yy) 
           
           ! simpler version                                                        
           !this % longitude(xx,yy) =  ATAN2(this_y,this_x) / DTOR  
@@ -736,23 +804,23 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
               , i_zone_act &
               , i_rel_act &
               , i_rel_alt &
-              ,zone_size_act &
-              ,zone_size_alt )
-              
-           this % solar_azimuth(xx,yy) = eps_bilin_interp ( &  
-            solar_azimuth_anchor &
-              ,i_zone_alt  &
-              , i_scan &
-              , i_zone_act &
-              , i_rel_act &
-              , i_rel_alt &
-              ,zone_size_act &
-              ,zone_size_alt )
-              
-             this % solar_zenith(xx,yy) = eps_bilin_interp ( &  
-           solar_zenith_anchor &
-              ,i_zone_alt  &
-              , i_scan &
+          ,zone_size_act &
+          ,zone_size_alt )
+         
+       this % solar_azimuth(xx,yy) = eps_bilin_interp ( &  
+        solar_azimuth_anchor &
+          ,i_zone_alt  &
+          , i_scan &
+          , i_zone_act &
+          , i_rel_act &
+          , i_rel_alt &
+          ,zone_size_act &
+          ,zone_size_alt )
+         
+         this % solar_zenith(xx,yy) = eps_bilin_interp ( &  
+       solar_zenith_anchor &
+          ,i_zone_alt  &
+          , i_scan &
               , i_zone_act &
               , i_rel_act &
               , i_rel_alt &
@@ -760,11 +828,14 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
               ,zone_size_alt )          
               
        end do
-       
+       !stop
   end do     
-  
+ 
   !print*,minval(this % longitude), maxval(this % longitude)
   !print*,minval(this % latitude), maxval(this % latitude)
+  
+  
+  
  
   
   this % is_calculated = .TRUE.
@@ -807,23 +878,36 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
   
    
    
-   box_a = [i_zone_alt + i_scan,i_zone_act]   
-   box_b = [i_zone_alt + i_scan,i_zone_act+1]  
-   box_c = [i_zone_alt + i_scan+1,i_zone_act+1]  
-   box_d = [i_zone_alt + i_scan+1,i_zone_act]  
-  
+   box_a = [i_zone_act,i_zone_alt + i_scan]   
+   box_b = [i_zone_act+1,i_zone_alt + i_scan]  
+   box_c = [i_zone_act+1,i_zone_alt + i_scan+1]  
+   box_d = [i_zone_act,i_zone_alt + i_scan+1] 
+    
+ ! print*,box_a
+ ! print*,box_b
+ ! print*,box_c
+ ! print*,box_d
    size_arr = shape(val_array)
   
    
    box_a(1) = minval([box_a(1),size_arr(1)])
+   box_a(2) = minval([box_a(2),size_arr(2)])
    box_b(1) = minval([box_b(1),size_arr(1)])
    box_b(2) = minval([box_b(2),size_arr(2)])
-   box_c(2) = minval([box_c(2),size_arr(2)])
    box_c(1) = minval([box_c(1),size_arr(1)])
+   box_c(2) = minval([box_c(2),size_arr(2)])
    box_d(1) = minval([box_d(1),size_arr(1)])
+   box_d(2) = minval([box_d(2),size_arr(2)])
    
-   
-   
+   box_a(1) = maxval([box_a(1),1])
+   box_a(2) = maxval([box_a(2),1])
+   box_b(1) = maxval([box_b(1),1])
+   box_b(2) = maxval([box_b(2),1])
+   box_c(1) = maxval([box_c(1),1])
+   box_c(2) = maxval([box_c(2),1])
+   box_d(1) = maxval([box_d(1),1])
+   box_d(2) = maxval([box_d(2),1])
+  
    tbl(1,1) = val_array(box_a(1),box_a(2))
    tbl(2,1) = val_array(box_b(1),box_b(2))
    tbl(2,2) = val_array(box_c(1),box_c(2))
@@ -831,13 +915,24 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
   
    r  = i_rel_act/(1.*zone_size_act)
    s = i_rel_alt/(1.*zone_size_alt)
+   
+ 
+  ! print*,r,s
+  ! print*,tbl
    eps_bilin_interp =  ( 1.0 - r ) * ( 1.0 - s ) * tbl( 1 , 1 ) &
          & + r * ( 1.0 - s )          * tbl( 2 , 1 ) &
          & + (1.0 - r ) * s           * tbl( 1 , 2 ) &
          & + r * s                    * tbl( 2 , 2 ) 
-        
+     
    if ( count ( tbl .eq. -999) .gt. 0) then
+      print*,tbl
+      print*,box_a
+      print*,box_b
+      print*,box_c
+      print*,box_d
+      print*,size_arr
       eps_bilin_interp =   -999.
+      stop
    end if
   
    end function eps_bilin_interp

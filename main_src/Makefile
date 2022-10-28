@@ -169,6 +169,8 @@ clavrxorb_objs = process_clavrx.o \
                  planck_mod.o \
                  surface_properties_mod.o \
                  hdf.o \
+                 pfio_get_att_string.o \
+                 netcdf_supplement.o \
                  cx_netcdf4_mod.o \
                  oisst_analysis.o \
                  constants_mod.o \
@@ -553,7 +555,7 @@ globsnow_read_routines.o: globsnow_read_routines.f90 constants_mod.o hdf.o cx_da
 hdf.o: hdf.f90
 hirs_fusion_mod.o:hirs_fusion_mod.f90 
 	$(fc) -c $(fflags) $(cppflags) $(cpp) -I$(CX_DATA_IO) hirs_fusion_mod.f90 
-cx_netcdf4_mod.o: cx_netcdf4_mod.f90 level2_structures_mod.o constants_mod.o
+cx_netcdf4_mod.o: cx_netcdf4_mod.f90 level2_structures_mod.o constants_mod.o netcdf_supplement.o
 	$(fc) -c $(fflags) $(cppflags) $(cpp) $(netcdflibs) cx_netcdf4_mod.f90
 
 level2_mod.o: level2_mod.f90 constants_mod.o pixel_common_mod.o hdf.o cx_hdf4_mod.o cx_netcdf4_mod.o clavrx_message_mod.o cx_muri_clavrx_bridge_mod.o file_tools.o cx_string_tools_mod.o level2_structures_mod.o cx_real_boolean_mod.o
@@ -565,6 +567,7 @@ level2_mod.o: level2_mod.f90 constants_mod.o pixel_common_mod.o hdf.o cx_hdf4_mo
 land_sfc_properties_mod.o: land_sfc_properties_mod.f90 constants_mod.o file_tools.o class_time_date.o numerical_routines_mod.o cx_hdf4_mod.o hdf.o clavrx_message_mod.o
 laszlo_insolation_mod.o: laszlo_insolation_mod.f90 constants_mod.o sasrab.o conver.o getmod.o pixel_common_mod.o nwp_common_mod.o
 level2_structures_mod.o: level2_structures_mod.f90 constants_mod.o
+netcdf_supplement.o: netcdf_supplement.f90
 fy4_mod.o: fy4_mod.f90 pixel_common_mod.o constants_mod.o  viewing_geometry_mod.o clavrx_message_mod.o cx_netcdf4_mod.o cx_date_time_tools_mod.o file_tools.o clavrx_static_nav_module.o
 modis_mod.o: modis_mod.f90 constants_mod.o hdf.o pixel_common_mod.o pixel_routines_mod.o planck_mod.o viewing_geometry_mod.o file_tools.o calibration_constants_mod.o cx_date_time_tools_mod.o cx_real_boolean_mod.o
 iff_clavrx_bridge.o: iff_clavrx_bridge.f90 iff_module.o constants_mod.o pixel_common_mod.o pixel_routines_mod.o planck_mod.o viewing_geometry_mod.o
@@ -772,6 +775,8 @@ move_bytes.o: move_bytes.c
 geos_transform_pix.o: geos_transform_pix.c
 	$(CC) -c -O2 geos_transform_pix.c
 
+pfio_get_att_string.o: pfio_get_att_string.c
+	$(CC) -c -O2 $(netcdflibs) pfio_get_att_string.c
 
 ################################ Misc. Targets #################################
 

@@ -33,11 +33,14 @@ module CX_NETCDF4_MOD
    , NF90_STRERROR &
    , NF90_GET_VAR &
    , NF90_INQUIRE_VARIABLE   &
-   , NF90_INQ_NCID
+   , NF90_INQ_NCID &
+   , NF90_INQUIRE_ATTRIBUTE
 
  use LEVEL2_STRUCTURES_MOD, only: Sds_Struct, L2_Glob_Attr_Definition, Clavrx_Global_Attr
  
  use CONSTANTS_MOD
+
+ use netcdf_supplement
 
  implicit none
 
@@ -315,7 +318,8 @@ module CX_NETCDF4_MOD
  subroutine read_netcdf_global_attribute_char(nc_file, attr_name, attr_value)
   character(len=*), intent(in):: nc_file, attr_name
   character(len=*), intent(out):: attr_value
-  integer:: ncid, status
+  integer:: ncid, status, xtype
+  integer, parameter :: nf90_char = 2, nf90_string = 12
 
    status = nf90_open(nc_file, mode = nf90_nowrite, ncid = ncid)
 
@@ -325,11 +329,16 @@ module CX_NETCDF4_MOD
       return
    endif
 
-   status = nf90_get_att(ncid, nf90_global, trim(attr_name), attr_value)
+   status = nf90_inquire_attribute(ncid, nf90_global, trim(attr_name), xtype)
+
+   if (xtype == nf90_char) status = nf90_get_att(ncid, nf90_global, trim(attr_name), attr_value)
+
+   if (xtype == nf90_string) status = pfio_get_att_string(ncid, trim(attr_name),attr_value)
 
    status = nf90_close(ncid)
 
  end subroutine read_netcdf_global_attribute_char
+
  !------------------------------------------------------------------------------
  ! read a real attribute from a variable
  ! this is redundant but more convenient
