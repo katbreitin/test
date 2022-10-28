@@ -296,7 +296,7 @@ subroutine READ_EPS_SG_DATA(Segment_Number, Error_Status)
   integer(kind=int8), parameter :: Microsec_Per_Day =  86400000000_8
   integer, parameter :: Num_Ch = 20
   integer, parameter :: Num_Sol_Ch = 11
-  integer, parameter :: Num_Scan = 24
+  integer :: Num_Scan
   integer :: k
   integer :: x_count, y_count
   integer :: Nx_Start, Nx_End, Ny_Start, Ny_End
@@ -430,7 +430,8 @@ subroutine READ_EPS_SG_DATA(Segment_Number, Error_Status)
 
 
   !--- adjust start and count for 1d
-  
+  Num_Scan = Image%Number_Of_Lines/24 
+ 
   Sds_Start_1d = 1
   Sds_Count_1d = Num_Scan
   Sds_Stride_1d(1) = 1
@@ -449,8 +450,10 @@ subroutine READ_EPS_SG_DATA(Segment_Number, Error_Status)
     Sds_Data_1d = Sds_Data_1d - MSEC_PER_DAY
   end where
 
-  Time_Msec_Day = (mod(int(Sds_Data_1d), Microsec_Per_Day)) * 1000
-  Image%Scan_Time_Ms(1:Sds_Count_2d(2)) = (/(Time_Msec_Day((k - 1) /24 + 1), k=1, Sds_Count_2d(2))/)
+  Sds_Data_1d = (/(Image%Start_Time+(Image%End_Time - Image%Start_Time)/Sds_Count_1d(1)*(k-1), k=1,Sds_Count_1d(1))/)
+
+  Time_Msec_Day = mod(long(Sds_Data_1d), long(Microsec_Per_Day/1000))
+  Image%Scan_Time_Ms(1:Sds_Count_2d(2)) = (/(Time_Msec_Day((k - 1) /24 + 1), k=Sds_Ny_Start, Sds_Ny_End)/)
 
   !--- special case last segment
   if(Sds_Nx_End == Image%Number_Of_Lines) then
