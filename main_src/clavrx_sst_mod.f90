@@ -122,7 +122,7 @@ select case (Sensor%WMO_Id)
       case(223) !NOAA-19
          sst_coef = (/1.037, 1.574, 0.984, -283.552/)
 
-      case(224,225) !VIIRS 
+      case(224,225,226) !VIIRS 
          sst_coef = (/1.0563,    1.5878,    2.0775, -287.0832 /)
 
       case(252) !GOES-8

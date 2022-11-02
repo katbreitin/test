@@ -1525,7 +1525,7 @@ contains
       endif
 
       !--- Treat VIIRS I-Bands as higher resolution versions of analogous M-Bands
-      if ((Sensor%WMO_Id == 224 .or. Sensor%WMO_Id == 225)) then
+      if ((Sensor%WMO_Id == 224 .or. Sensor%WMO_Id == 225 .or. Sensor%WMO_Id == 226)) then
 
         !--- VGAC has no I-bands but it does report subpixel stddev of vis and irwin
         if (Sensor%Sensor_Name == "VGAC") then 

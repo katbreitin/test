@@ -290,7 +290,6 @@ contains
                                     Temp_Pix_Array_1,X_Sample_Offset,Y_Sample_Offset)
          if (Use_Iband) then
             ch(1)%Ref_Toa = Temp_Pix_Array_1
-print *, "REPLACED CH1"
          endif
       endif
       if (out%iband(2)%is_read) then

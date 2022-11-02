@@ -1692,6 +1692,16 @@ module SENSOR_MOD
          exit test_loop
       endif
 
+      !---  VIIRS NOAA-21 (JPSS-2)
+      if (index(Image%Level1b_Name, 'GMTCO_j02') > 0) then
+         Sensor%Sensor_Name = 'VIIRS'
+         Sensor%Spatial_Resolution_Meters = 750
+         Sensor%Platform_Name = 'NOAA-21'
+         Sensor%WMO_Id = 226
+         Sensor%Instr_Const_File = 'viirs_20_instr.dat'
+         exit test_loop
+      endif
+
       !---  VIIRS-NASA NOAA-20 (JPSS-1)
       if (index(Image%Level1b_Name, 'VJ103MOD') > 0) then
          Sensor%Sensor_Name = 'VIIRS-NASA'
@@ -2241,6 +2251,7 @@ module SENSOR_MOD
             return      !skips file
          end if
 
+
          exit
 
       end if
@@ -2737,7 +2748,7 @@ module SENSOR_MOD
          Sensor%Num_Chan_Sensor = 16
          if (.not. allocated(Sensor%CLAVRx_Chan_Map)) allocate(Sensor%Clavrx_Chan_Map(Sensor%Num_Chan_Sensor))
          Sensor%CLAVRx_Chan_Map = (/3,1,2,26,6,7,20,37,27,28,29,30,38,31,32,33/)
-      case(224:225) !VIIRS - SNPP
+      case(224:226) !VIIRS - SNPP
          Sensor%Num_Chan_Sensor = 16
          if (.not. allocated(Sensor%CLAVRx_Chan_Map)) allocate(Sensor%Clavrx_Chan_Map(Sensor%Num_Chan_Sensor))
          Sensor%CLAVRx_Chan_Map = (/8,9,3,4,1,15,2,5,26,6,7,20,22,29,31,32/)

@@ -483,8 +483,9 @@ contains
          
          ! - mapping file ( maps from dnb to M-bands resolution)
          ! - add J01 aka NOAA-20 5 Feb 2018 AW
+         ! - add J02 aka NOAA-21 as J01 for now Nov 2022 DB
          select case (platform)
-         case ('j01')
+         case ('j01','j02')
             file_dnb_idx = trim(config % Ancil_Data_Dir)//'static/viirs/dnb2m_index_viirs_noaa20.txt'
          case ('npp')
             file_dnb_idx = trim(config % Ancil_Data_Dir)//'static/viirs/dnb2m_indx.txt'
