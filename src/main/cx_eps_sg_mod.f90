@@ -50,7 +50,7 @@ use PLANCK_MOD,only: COMPUTE_BT_ARRAY  &
               , CONVERT_RADIANCE
 
 use CONSTANTS_MOD, only: MSEC_PER_DAY, Sym, MISSING_VALUE_REAL4, &
-                         MISSING_VALUE_REAL8, REAL8, INT8, &
+                         MISSING_VALUE_REAL8,  &
                          SOLAR_OBS_TYPE, THERMAL_OBS_TYPE, &
                          MIXED_OBS_TYPE, LUNAR_OBS_TYPE, DTOR
 
@@ -276,6 +276,7 @@ end subroutine READ_EPS_SG_INSTR_CONSTANTS
 ! read level1b
 !----------------------------------------------------------------------
 subroutine READ_EPS_SG_DATA(Segment_Number, Error_Status)
+  use univ_kind_defs_mod, only: f8, i8
 
   integer, intent(in):: Segment_Number
   integer, intent(out):: Error_Status
@@ -288,12 +289,12 @@ subroutine READ_EPS_SG_DATA(Segment_Number, Error_Status)
   integer, dimension(1) :: Sds_Count_1d
   integer :: Group_Id1,Group_Id2
 
-  real(kind=8), dimension(:), allocatable:: Sds_Data_1d
+  real(kind=f8), dimension(:), allocatable:: Sds_Data_1d
   real, dimension(:,:), allocatable :: Sds_Data_2d
   real, dimension(:,:), allocatable :: Sds_Data_2d_clavrx_grid
-  real(kind=8) :: Earth_Sun_Ratio
+  real(kind=f8) :: Earth_Sun_Ratio
   integer, dimension (:), allocatable :: Time_Msec_Day
-  integer(kind=int8), parameter :: Microsec_Per_Day =  86400000000_8
+  integer(kind=i8), parameter :: Microsec_Per_Day =  86400000000_i8
   integer, parameter :: Num_Ch = 20
   integer, parameter :: Num_Sol_Ch = 11
   integer :: Num_Scan
@@ -452,7 +453,8 @@ subroutine READ_EPS_SG_DATA(Segment_Number, Error_Status)
 
   Sds_Data_1d = (/(Image%Start_Time+(Image%End_Time - Image%Start_Time)/Sds_Count_1d(1)*(k-1), k=1,Sds_Count_1d(1))/)
 
-  Time_Msec_Day = mod(long(Sds_Data_1d), long(Microsec_Per_Day/1000))
+  Time_Msec_Day = real(mod(int(Sds_Data_1d, kind=i8),  &
+       Microsec_Per_Day/1000_i8), kind=f8)
   Image%Scan_Time_Ms(1:Sds_Count_2d(2)) = (/(Time_Msec_Day((k - 1) /24 + 1), k=Sds_Ny_Start, Sds_Ny_End)/)
 
   !--- special case last segment
@@ -493,8 +495,9 @@ end subroutine READ_EPS_SG_DATA
 ! converting for solar channels radiance (Wm^-2 sr^-1 µm^-) to reflectance (%)
 !-------------------------------------------------------------------------------
 subroutine CONVERT_RAD_TO_REF(Earth_Sun_Rat, Aver_Sol_Irrad, Buffer_2d)
+  use univ_kind_defs_mod, only: f8
 
-  real(kind=real8), intent(in) :: Earth_Sun_Rat
+  real(f8), intent(in) :: Earth_Sun_Rat
   real, intent(in) :: Aver_Sol_Irrad
   real, dimension(:,:), intent(inout) :: Buffer_2d
 
@@ -546,7 +549,9 @@ end subroutine
 !  This routine computes navigation 
 !   AW 2020 Mai 12
 !-------------------------------------------------------------------------------
-subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny ) 
+subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
+  use univ_kind_defs_mod, only: f8, f4
+
   class ( eps_navigation ) :: this
   
   integer , intent(in) ::  nx_start, ny_start, nx, ny
@@ -567,10 +572,10 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
   integer, parameter :: zone_size_act = 8
   integer, parameter :: zone_size_alt = 8
   
-  real(8), parameter :: ECCENTRICITY =1/298.257223563
-  real(8), parameter :: SEMI_MAJOR = 6378137.
-  real(8), parameter :: R_EARTH = 6371.
-  real(8) :: SEMI_MINOR = SEMI_MAJOR*(1-ECCENTRICITY)
+  real(f8), parameter :: ECCENTRICITY =1/298.257223563
+  real(f8), parameter :: SEMI_MAJOR = 6378137.
+  real(f8), parameter :: R_EARTH = 6371.
+  real(f8) :: SEMI_MINOR = SEMI_MAJOR*(1-ECCENTRICITY)
   character(len=120) :: var_name
   
   
@@ -579,7 +584,7 @@ subroutine EPS_NAVIGATION_SET_NAV ( this , nx_start, ny_start, nx, ny )
   real :: kkk
   
   integer :: i_rel_alt, i_rel_act
-  real(4) :: val_for_interp
+  real(f4) :: val_for_interp
   
   real, allocatable, dimension(:,:) :: longitude_anchor
   real, allocatable, dimension(:,:) :: latitude_anchor
