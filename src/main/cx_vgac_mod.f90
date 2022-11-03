@@ -35,7 +35,7 @@ use CONSTANTS_MOD, only: MSEC_PER_DAY, Sym, MISSING_VALUE_REAL4, &
                          SOLAR_OBS_TYPE, THERMAL_OBS_TYPE, &
                          MIXED_OBS_TYPE, LUNAR_OBS_TYPE
 
-use FILE_TOOLS, only: FILE_SEARCH
+use FILE_UTILS, only: FILE_SEARCH
 
 use CALIBRATION_CONSTANTS_MOD
 use CX_REAL_BOOLEAN_MOD
@@ -176,7 +176,7 @@ end subroutine READ_VGAC_DATE_TIME
 subroutine CHECK_IF_FUSION_VGAC(Fusion)
      logical, intent (out) :: Fusion
 
-     character(len=1020), dimension(:), pointer:: Files
+     character(len=1020), dimension(:), pointer:: Files => NULL()
      character(len=1020) :: File_2_Read
      integer:: Num_Files
 
@@ -232,7 +232,7 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
   integer :: Num_Files
   integer :: I_Fusion
   integer :: Ncid_Fusion
-  character(len=1020), dimension(:), pointer:: Files
+  character(len=1020), dimension(:), pointer :: Files => NULL()
   character(len=1020) :: Fusion_File
   character(len=100) :: Sds_Name
   character(len=2) :: Fusion_Band_Str
