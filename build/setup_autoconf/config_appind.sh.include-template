@@ -1,0 +1,65 @@
+# sh-syntax include file template (application-independent) -- completed by
+#  'configure' script
+
+# "Good" versions of commonly used script programs:
+
+GREP="@GREP@";
+SED="@SED@";
+AWK="@AWK@";
+LN_S="@LN_S@";
+MKDIR_P="@MKDIR_P@";
+
+# Canonical system type(s):
+
+sys_canonical_cputype="@build_cpu@";
+sys_canonical_vendor="@build_vendor@";
+sys_canonical_os="@build_os@";
+sys_canonical_fullstr="@build@";
+sys_canonical_endianness="@ENDIAN_TYPE@";
+
+# C-language compiler and flags:
+
+C_compiler="@CC@";
+C_compiler_flags="@FLAGS_C@";
+
+C_preprocessor="@CPP@";
+C_preproc_miscflags="@PREPROC_MFLAGS_C@";
+C_preproc_defines="@PREPROC_DEFS_C@";
+C_preproc_includes="@PREPROC_INCS_C@";
+
+C_linker_libs="@LIBS_C@";
+C_linker_flags="@LDFLAGS_C@";
+
+C_OpenMP_flags="@OPENMP_CFLAGS@";
+
+# Fortran-language compiler and flags:
+
+Fortran_compiler="@FC@";
+
+some_F2003_capability="@SOME_F2003@";
+
+Fortran_compiler_flags="@FLAGS_FORTRAN@";
+Fortran_compiler_added_flags="@FLAGS_ADDED_FORTRAN@";
+
+Fortran_compiler_freeform_flag="@FCFLAGS_freeform@";
+Fortran_compiler_f_flags="@FCFLAGS_f@";
+Fortran_compiler_f90_flags="@FCFLAGS_f90@";
+Fortran_compiler_f95_flags="@FCFLAGS_f95@";
+Fortran_compiler_F_flags="@FCFLAGS_F@";
+Fortran_compiler_F90_flags="@FCFLAGS_F90@";
+Fortran_compiler_F95_flags="@FCFLAGS_F95@";
+
+Fortran_preproc_miscflags="@PREPROC_MFLAGS_FORTRAN@";
+Fortran_preproc_defines="@PREPROC_DEFS_FORTRAN@";
+Fortran_preproc_includes="@PREPROC_INCS_FORTRAN@";
+
+Fortran_linker_cross_libs="@FCLIBS@";
+Fortran_linker_libs="@LIBS_FORTRAN@";
+Fortran_linker_flags="@LDFLAGS_FORTRAN@";
+
+Fortran_OpenMP_flags="@OPENMP_FCFLAGS@";
+
+# Specifies which auxiliary library checks failed/succeeded:
+
+failed_aux_libs="@FAILED_AUXLIBS@";
+usable_aux_libs="@USABLE_AUXLIBS@";
