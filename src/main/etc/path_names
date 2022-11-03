@@ -83,6 +83,7 @@ main/nwp_common_mod.f90
 main/oca_mod.f90
 main/oisst_analysis.f90
 main/pfcometsg101.f
+main/pfio_get_att_string.c
 main/pixel_common_mod.f90
 main/pixel_routines_mod.f90
 main/planck_mod.f90

@@ -10,7 +10,7 @@ void pfio_check(int stat) {
   }
 }
 
-int pfio_get_att_string(int ncid, const char* name, char* value, int *attlen)
+int pfio_get_gatt_string(int ncid, const char* name, char* value, int *attlen)
 {
   int stat;
   size_t alen;

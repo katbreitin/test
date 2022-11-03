@@ -40,8 +40,6 @@ module CX_NETCDF4_MOD
  
  use CONSTANTS_MOD
 
- use netcdf_supplement
-
  implicit none
 
  private
@@ -70,6 +68,7 @@ module CX_NETCDF4_MOD
  public :: read_abi_kappa0
  public :: read_abi_max_focal_plane_temp
  public :: WRITE_CLAVRX_NETCDF_GLOBAL_ATTRIBUTES
+ public :: pfio_get_gatt_string
 
 !interface read_and_unscale_netcdf
 !    module procedure &
@@ -100,6 +99,19 @@ module CX_NETCDF4_MOD
           read_netcdf_global_attribute_r4, &
           read_netcdf_global_attribute_char
  end interface read_netcdf_global_attribute
+
+ interface
+     function c_f_pfio_get_gatt_string(ncid, name, string, attlen) &
+                              result(stat) bind(C, name='pfio_get_gatt_string')
+         use, intrinsic :: iso_c_binding, only: C_INT, C_CHAR
+         implicit none
+         integer :: stat
+         integer(kind=C_INT), value, intent(in) :: ncid
+         character(kind=C_CHAR, len=1), intent(in) :: name(*)
+         character(kind=C_CHAR, len=1), intent(inout) :: string(*)
+         integer(kind=C_INT), intent(inout) :: attlen
+     end function c_f_pfio_get_gatt_string
+  end interface
 
  integer, parameter, private :: sds_rank_1d = 1
  integer, dimension(sds_rank_1d), private :: sds_start_1d, sds_edge_1d, sds_stride_1d
@@ -333,7 +345,8 @@ module CX_NETCDF4_MOD
 
    if (xtype == nf90_char) status = nf90_get_att(ncid, nf90_global, trim(attr_name), attr_value)
 
-   if (xtype == nf90_string) status = pfio_get_att_string(ncid, trim(attr_name),attr_value)
+   if (xtype == nf90_string) status = pfio_get_gatt_string(ncid,  &
+        trim(attr_name), attr_value)
 
    status = nf90_close(ncid)
 
@@ -1520,5 +1533,34 @@ contains
    end function netcdf_timestamp
 
  end subroutine WRITE_CLAVRX_NETCDF_GLOBAL_ATTRIBUTES
+
+
+ function pfio_get_gatt_string(ncid, name, string)  result(status)
+      use, intrinsic :: iso_c_binding, only: C_INT, C_CHAR, C_NULL_CHAR
+      implicit none
+
+      integer :: status
+      integer(kind=C_INT), intent(in) :: ncid
+      character(len=*), intent(in) :: name
+      !character(:), allocatable, intent(out) :: string
+      character(len=*), intent(out) :: string      
+
+      integer :: name_len
+      integer(kind=C_INT),target :: attlen
+      character(kind=C_CHAR, len=:), target, allocatable :: c_name
+      character(len=512) :: tmp_str
+
+      ! C requires null termination
+      name_len = len_trim(name)
+      allocate(character(kind=C_CHAR, len=name_len+1) :: c_name)
+      c_name(1:name_len) = name(1:name_len)
+      c_name(name_len+1:name_len+1) = C_NULL_CHAR
+      tmp_str = ''
+      ! This c-call would fill tmp_str with the global attribute
+      status = c_f_pfio_get_gatt_string(ncid, c_name, tmp_str, attlen)
+      !allocate(character(len=attlen) :: string)
+      string = trim(tmp_str)
+      deallocate(c_name)
+ end function pfio_get_gatt_string
  
 end module CX_NETCDF4_MOD

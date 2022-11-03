@@ -565,12 +565,24 @@ def build(anchor_path, *action_args):
                           "F preprocessor options (e.g. -D, but not -I or -L)")
             cfg_HDF5_F_linker_opts = parse_via_configparser(cfg, this_section,
                                            "F linker options (e.g. libraries)")
+            cfg_aux_libs_mnk.append("HDF5_C")
+            cfg_HDF5_C_incdirs = parse_via_configparser(cfg, this_section,
+                                                        "C include dirs")
+            cfg_HDF5_C_libdirs = parse_via_configparser(cfg, this_section,
+                                                        "C library dirs")
+            cfg_HDF5_C_preproc_opts = parse_via_configparser(cfg, this_section,
+                          "C preprocessor options (e.g. -D, but not -I or -L)")
+            cfg_HDF5_C_linker_opts = parse_via_configparser(cfg, this_section,
+                                           "C linker options (e.g. libraries)")
             cfg_HDF5_txt = \
 "#--- HDF5 library:\n"+ \
 "\n"+ \
 "HDF5_Fortran_include_dirs=\""+cfg_HDF5_F_incdirs+"\";\n"+ \
 "HDF5_Fortran_lib_dirs=\""+cfg_HDF5_F_libdirs+"\";\n"+ \
-"HDF5_Fortran_libs=\""+cfg_HDF5_F_linker_opts+"\";\n"
+"HDF5_Fortran_libs=\""+cfg_HDF5_F_linker_opts+"\";\n"+ \
+"HDF5_C_include_dirs=\""+cfg_HDF5_C_incdirs+"\";\n"+ \
+"HDF5_C_lib_dirs=\""+cfg_HDF5_C_libdirs+"\";\n"+ \
+"HDF5_C_libs=\""+cfg_HDF5_C_linker_opts+"\";\n"
 
             this_section = "Specs, NetCDF"
             cfg_aux_libs_mnk.append("NetCDF_Fortran")
@@ -583,12 +595,25 @@ def build(anchor_path, *action_args):
                           "F preprocessor options (e.g. -D, but not -I or -L)")
             cfg_NetCDF_F_linker_opts = parse_via_configparser(cfg, this_section,
                                            "F linker options (e.g. libraries)")
+            cfg_aux_libs_mnk.append("NetCDF_C")
+            cfg_NetCDF_C_incdirs = parse_via_configparser(cfg, this_section,
+                                                          "C include dirs")
+            cfg_NetCDF_C_libdirs = parse_via_configparser(cfg, this_section,
+                                                          "C library dirs")
+            cfg_NetCDF_C_preproc_opts = parse_via_configparser(cfg,
+                                                               this_section,
+                          "C preprocessor options (e.g. -D, but not -I or -L)")
+            cfg_NetCDF_C_linker_opts = parse_via_configparser(cfg, this_section,
+                                           "C linker options (e.g. libraries)")
             cfg_NetCDF_txt = \
 "#--- NetCDF library:\n"+ \
 "\n"+ \
 "NetCDF_Fortran_include_dirs=\""+cfg_NetCDF_F_incdirs+"\";\n"+ \
 "NetCDF_Fortran_lib_dirs=\""+cfg_NetCDF_F_libdirs+"\";\n"+ \
-"NetCDF_Fortran_libs=\""+cfg_NetCDF_F_linker_opts+"\";\n"
+"NetCDF_Fortran_libs=\""+cfg_NetCDF_F_linker_opts+"\";\n"+ \
+"NetCDF_C_include_dirs=\""+cfg_NetCDF_C_incdirs+"\";\n"+ \
+"NetCDF_C_lib_dirs=\""+cfg_NetCDF_C_libdirs+"\";\n"+ \
+"NetCDF_C_libs=\""+cfg_NetCDF_C_linker_opts+"\";\n"
             
             # Write sh-syntax output file (for use by 'configure'):
             F_compiler_opts_line_l = []
