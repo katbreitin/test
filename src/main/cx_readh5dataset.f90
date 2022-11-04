@@ -2011,7 +2011,7 @@ CONTAINS
     CHARACTER (len = *), INTENT(in)                      :: datasetname
 
     !Going out:
-    REAL(KIND=SP)                                        :: dataset
+    REAL(KIND=SP), intent(OUT)                           :: dataset
 
     !<<<<<<<<<<<<<<<<<<<<<<< Local variables >>>>>>>>>>>>>>>>>>>>>>>>
     INTEGER, PARAMETER                                   :: maxdims = 4

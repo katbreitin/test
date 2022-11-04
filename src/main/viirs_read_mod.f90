@@ -216,12 +216,12 @@ contains
       integer(kind=int4) :: nx_start , nx_end , ny_start , ny_end
       integer(kind=int4) :: nx_start_iband  , ny_start_iband 
    
-      real, dimension( : , : ) , pointer :: r2d_buffer
+      real, dimension(:,:), pointer :: r2d_buffer => NULL()
       real, dimension( : , : ) , allocatable :: r2d_data
-      integer ( kind = int8) , dimension(:) , pointer :: i1d_buffer
-      integer, dimension ( : , : ) , pointer :: i2d_buffer             
+      integer(kind=int8), dimension(:), pointer :: i1d_buffer => NULL()
+      integer, dimension(:,:), pointer :: i2d_buffer => NULL()
       integer, dimension ( :, :), allocatable :: cld_type_idps
-      character ( len = 1020 ) , pointer , dimension ( :) :: file_arr_dummy 
+      character(len=1020), pointer, dimension(:) :: file_arr_dummy => NULL()
       
       character (len=100), dimension ( 7 ) :: setname_gmtco_list = (/ character (len =300) :: &
                           'All_Data/VIIRS-MOD-GEO-TC_All/Latitude              ' & ! 1
@@ -260,7 +260,7 @@ contains
       
       character ( len = 2 ) :: band_nr_file
       character ( len = 2 ) :: band_nr_var
-      real , dimension(:) , pointer :: factors
+      real, dimension(:), pointer :: factors => NULL()
       logical , dimension(16) :: data_scaled_mband
      
       integer, dimension(2) :: dim_buf
@@ -284,6 +284,8 @@ contains
       
       character ( len = 3) :: platform
       integer, parameter :: NUMBER_ELEMENTS_DNB = 4064
+
+      character(len=1020) :: gdnbo_fpath
       
       
       ! -- executable
@@ -505,7 +507,8 @@ contains
          if ( n_files > 0 ) then
             out % file_exists % gdnbo_file_exists = .true.
             file_gdnbo = file_arr_dummy(1)
-            call h5readdataset ( trim(config %dir_1b)//file_gdnbo,'All_Data/VIIRS-DNB-GEO_All/LunarAzimuthAngle' ,offset_mband , dim_seg_dnb , r2d_buffer )
+            gdnbo_fpath = trim(config%dir_1b)//trim(file_gdnbo)
+            call h5readdataset (trim(gdnbo_fpath), 'All_Data/VIIRS-DNB-GEO_All/LunarAzimuthAngle' ,offset_mband , dim_seg_dnb , r2d_buffer )
             where ( r2d_buffer < unscaled_missing ) r2d_buffer = missing_value_real4
             do i_map = 1, dim_seg(1)
                if (.not. allocated ( out % geo % lunaz) ) allocate ( out % geo % lunaz (dim_seg(1), dim_seg(2)) )
@@ -513,7 +516,7 @@ contains
             end do
             deallocate ( r2d_buffer )
          
-            call h5readdataset ( trim(config %dir_1b)//file_gdnbo,'All_Data/VIIRS-DNB-GEO_All/LunarZenithAngle' ,offset_mband , dim_seg_dnb, r2d_buffer )
+            call h5readdataset (trim(gdnbo_fpath), 'All_Data/VIIRS-DNB-GEO_All/LunarZenithAngle' ,offset_mband , dim_seg_dnb, r2d_buffer )
             where ( r2d_buffer < unscaled_missing ) r2d_buffer = missing_value_real4
             do i_map = 1, dim_seg(1)
                if (.not. allocated ( out % geo % lunzen ) ) allocate ( out % geo %  lunzen (dim_seg(1), dim_seg(2)) )
@@ -521,10 +524,10 @@ contains
             end do
            
             deallocate ( r2d_buffer )
-        
-            call H5ReadDataset( trim(config %dir_1b)//file_gdnbo , 'All_Data/VIIRS-DNB-GEO_All/MoonIllumFraction', out % geo % Moon_Illum_Frac )
+
+            call H5ReadDataset(trim(gdnbo_fpath), 'All_Data/VIIRS-DNB-GEO_All/MoonIllumFraction', out % geo % Moon_Illum_Frac )
             
-            call H5ReadDataset( trim(config %dir_1b)//file_gdnbo , 'All_Data/VIIRS-DNB-GEO_All/MoonPhaseAngle', out % geo % Moon_Phase_Angle )
+            call H5ReadDataset(trim(gdnbo_fpath), 'All_Data/VIIRS-DNB-GEO_All/MoonPhaseAngle', out % geo % Moon_Phase_Angle )
 
          else
             out % file_exists % gdnbo_file_exists = .false.
@@ -1050,7 +1053,7 @@ contains
       INTEGER(kind=int4), INTENT(OUT) :: Error_Out
       INTEGER(KIND=INT4), INTENT(OUT):: Number_of_Viirs_Lines
       CHARACTER(Len=100) :: Setname
-      integer ,dimension(:), pointer ::test
+      integer, dimension(:), pointer :: test => NULL()
 
 
       error_out = 0
