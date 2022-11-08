@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <signal.h>
+#include <unistd.h>
 #include "build_env_appind.h"  /* Macros, etc. from autoconf configure */
 
 
@@ -22,6 +23,7 @@
 #define URF FC_FUNC_(univ_remove_f,UNIV_REMOVE_F)
 #define RSIH FC_FUNC_(univ_reg_sigint_handler,UNIV_REG_SIGINT_HANDLER)
 #define RSTH FC_FUNC_(univ_reg_sigterm_handler,UNIV_REG_SIGTERM_HANDLER)
+#define EXIMM FC_FUNC_(univ__exit,UNIV__EXIT)
 #else
 #define UFCF univ_filematch_count_f
 #define UFF univ_filematch_f
@@ -30,6 +32,7 @@
 #define URF univ_remove_f
 #define RSIH univ_reg_sigint_handler
 #define RSTH univ_reg_sigterm_handler
+#define EXIMM univ__exit
 #endif
 
 typedef void (*sighandler_t)(int);
@@ -233,4 +236,13 @@ void RSTH(sighandler_t handler) {   /* Input */
 */
 
   signal(SIGTERM, handler);
+}
+
+void EXIMM(int* status) {   /* Input */
+
+/*
+!+ Exit immediately, skip exit handlers
+*/
+    _exit(*status);
+    
 }

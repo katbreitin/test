@@ -509,7 +509,7 @@
 
    use CX_VGAC_MOD, only:
 
-   use cleanup, only: cleanup_tempdir
+   use cleanup, only: cleanup_tempdir, cleanup_tempdir__exit
 
    implicit none 
   
@@ -669,9 +669,9 @@
    call univ_mkdir_p_f(nc, trim(Temporary_Data_Dir), ierror)
 
    ! SIGTERM
-   call univ_reg_sigterm_handler(cleanup_tempdir)
+   call univ_reg_sigterm_handler(cleanup_tempdir__exit)
    ! SIGINT
-   call univ_reg_sigint_handler(cleanup_tempdir)
+   call univ_reg_sigint_handler(cleanup_tempdir__exit)
 
    !*************************************************************************
    ! Marker: Open high spatial resolution ancillary data files

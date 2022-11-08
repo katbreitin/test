@@ -52,9 +52,8 @@ character(len=4096) :: cmd
 
 !--- remove directory for temporary files
 print *, 'Cleaning up'
-cmd = 'rmdir '//trim(Temporary_Data_Dir)
-nc = len_trim(cmd)
-call univ_system_cmd_f(nc, trim(cmd), ierr)
+nc = len_trim(Temporary_Data_Dir)
+call univ_remove_f(nc, trim(Temporary_Data_Dir), ierr)
 if (ierr /= 0) then
    print *, 'rmdir error'
 else
@@ -62,6 +61,11 @@ else
 end if
 
 end subroutine cleanup_tempdir
+
+subroutine cleanup_tempdir__exit
+    call cleanup_tempdir()
+    call univ__exit(1)
+end subroutine cleanup_tempdir__exit
 
 
 end module cleanup
