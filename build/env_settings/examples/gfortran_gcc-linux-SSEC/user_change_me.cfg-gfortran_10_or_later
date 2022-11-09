@@ -16,7 +16,7 @@
  #  set in its associated "Specs" section further below.
  # NOTE: HDF4, HDF5, and NetCDF are always needed
    NWP input can be in GRIB format? :  no
-   Use libHimawari (needed for HSD-format files only)? :  no
+   Use libHimawari (needed for HSD-format files only)? :  yes
    Use RTTOV (radiative transfer code/data) when possible? :  yes
    Use CRTM (radiative transfer code/data) when possible? :  no
 
@@ -25,9 +25,10 @@
    C compiler :  gcc
 
 [Compiler/Linker Options For Debugging]
+ # These options are for gfortran 10 or later:
    F preprocessor options (e.g. -D and -I) :  
-   F compiler options (no -I, -L, -l, or -D) :  -Wextra -Wall -fbacktrace -g -fcheck=all -fno-range-check -ffree-line-length-200
-   aux1 F compiler options (no -I, -L, -l, or -D) :  -Wextra -Wall -fbacktrace -g -fcheck=all -ffpe-trap=zero,invalid,overflow -fno-range-check -ffree-line-length-200 -fno-automatic
+   F compiler options (no -I, -L, -l, or -D) :  -Wextra -Wall -fbacktrace -g -fcheck=all -fno-range-check -ffree-line-length-200 -fallow-argument-mismatch -fallow-invalid-boz
+   aux1 F compiler options (no -I, -L, -l, or -D) :  -Wextra -Wall -fbacktrace -g -fcheck=all -ffpe-trap=zero,invalid,overflow -fno-range-check -ffree-line-length-200 -fno-automatic -fallow-argument-mismatch -fallow-invalid-boz
    F linker options (e.g. -L, -l) :  -v
    
    C preprocessor options (e.g. -D and -I) :  
@@ -35,9 +36,10 @@
    C linker options (e.g. -L, -l) :  -v
 
 [Compiler/Linker Options For Production Use]
+ # These options are for gfortran 10 or later:
    F preprocessor options (e.g. -D and -I) :
-   F compiler options (no -I, -L, -l, or -D) :  -Wextra -Wall -fbacktrace -g -O3 -fno-range-check -ffree-line-length-200
-   aux1 F compiler options (no -I, -L, -l, or -D) :  -Wextra -Wall -fbacktrace -g -O3 -ffpe-trap=zero,invalid -fno-range-check -ffree-line-length-200 -fno-automatic
+   F compiler options (no -I, -L, -l, or -D) :  -Wextra -Wall -fbacktrace -g -O3 -fno-range-check -ffree-line-length-200 -fallow-argument-mismatch -fallow-invalid-boz
+   aux1 F compiler options (no -I, -L, -l, or -D) :  -Wextra -Wall -fbacktrace -g -O3 -ffpe-trap=zero,invalid -fno-range-check -ffree-line-length-200 -fno-automatic -fallow-argument-mismatch -fallow-invalid-boz
    F linker options (e.g. -L, -l) :  -v
    
    C preprocessor options (e.g. -D and -I) :  
@@ -51,25 +53,25 @@
  # ecCodes
    F include dirs :  ${SSEC_ECCODES_INC}
    F library dirs :  ${SSEC_ECCODES_LIB} 
-   F preprocessor options (e.g. -D, but not -I or -L) :  
+   F preprocessor options (e.g. -D, but not -I or -L) :  -DDEGRIB
    F linker options (e.g. libraries) :  -leccodes_f90  -leccodes 
 
 [Specs, libHimawari]
-   F include dirs :  ${HOME}/misc-git-repos/libHimawari/include ${HOME}/misc-git-repos/libHimawari/src
-   F library dirs :  ${HOME}/misc-git-repos/libHimawari/src
-   F preprocessor options (e.g. -D, but not -I or -L) : 
-   F linker options (e.g. libraries) :  -lHimawari
+   F include dirs :  ${HOME}/misc-git-repos/libHimawari_GCC/include ${HOME}/misc-git-repos/libHimawari_GCC/src
+   F library dirs :  ${HOME}/misc-git-repos/libHimawari_GCC/src
+   F preprocessor options (e.g. -D, but not -I or -L) :  -DLIBHIM
+   F linker options (e.g. libraries) :  -Wl,-rpath,${HOME}/misc-git-repos/libHimawari_GCC/src -lHimawari
 
 [Specs, RTTOV]
    F include dirs :  /apollo/cloud/Ancil_Data/SOFTWARE/RTM/RTTOV123/include /apollo/cloud/Ancil_Data/SOFTWARE/RTM/RTTOV123/mod
    F library dirs :  /apollo/cloud/Ancil_Data/SOFTWARE/RTM/RTTOV123/lib
-   F preprocessor options (e.g. -D, but not -I or -L) : 
-   F linker options (e.g. libraries) :  -lrttov_brdf_atlas -lrttov_emis_atlas -lrttov_mw_scatt -lrttov_other -lrttov_coef_io -lrttov_parallel -lrttov_hdf -lrttov_main
+   F preprocessor options (e.g. -D, but not -I or -L) :  -DLIBRTTOV
+   F linker options (e.g. libraries) :  -Wl,-rpath,/apollo/cloud/Ancil_Data/SOFTWARE/RTM/RTTOV123/lib -lrttov_brdf_atlas -lrttov_emis_atlas -lrttov_mw_scatt -lrttov_other -lrttov_coef_io -lrttov_parallel -lrttov_hdf -lrttov_main
 
 [Specs, CRTM]
    F include dirs :      
    F library dirs :      
-   F preprocessor options (e.g. -D, but not -I or -L) : 
+   F preprocessor options (e.g. -D, but not -I or -L) :  -DLIBCRTM
    F linker options (e.g. libraries) :
 
 [Specs, HDF4]

@@ -375,6 +375,7 @@ def build(anchor_path, *action_args):
                 this_section = "Compiler/Linker Options For Production Use"
             cfg_F_preproc_opts = parse_via_configparser(cfg, this_section,
                                      "F preprocessor options (e.g. -D and -I)")
+            cfg_F_preproc_opts += " -DISCLAVRX"
             cfg_F_compiler_opts = {}
             cfg_F_compiler_opts["nominal"] = parse_via_configparser(cfg,
                                                                   this_section,
@@ -438,6 +439,8 @@ def build(anchor_path, *action_args):
                 cfg_deGRIB_F_linker_opts = parse_via_configparser(cfg,
                                                                   this_section,
                                            "F linker options (e.g. libraries)")
+                if cfg_deGRIB_F_preproc_opts:
+                    cfg_F_preproc_opts += ' '+cfg_deGRIB_F_preproc_opts
                 cfg_deGRIB_txt = \
 "#--- de-GRIB software:\n"+ \
 "\n"+ \
@@ -459,6 +462,8 @@ def build(anchor_path, *action_args):
                 cfg_libHim_F_linker_opts = parse_via_configparser(cfg,
                                                                   this_section,
                                            "F linker options (e.g. libraries)")
+                if cfg_libHim_F_preproc_opts:
+                    cfg_F_preproc_opts += ' '+cfg_libHim_F_preproc_opts
                 cfg_libHim_txt = \
 "#--- libHimawari library:\n"+ \
 "\n"+ \
@@ -480,6 +485,8 @@ def build(anchor_path, *action_args):
                 cfg_RTTOV_F_linker_opts = parse_via_configparser(cfg,
                                                                  this_section,
                                            "F linker options (e.g. libraries)")
+                if cfg_RTTOV_F_preproc_opts:
+                    cfg_F_preproc_opts += ' '+cfg_RTTOV_F_preproc_opts
                 cfg_RTTOV_txt = \
 "#--- RTTOV software:\n"+ \
 "\n"+ \
@@ -531,6 +538,8 @@ def build(anchor_path, *action_args):
                 cfg_CRTM_F_linker_opts = parse_via_configparser(cfg,
                                                                 this_section,
                                            "F linker options (e.g. libraries)")
+                if cfg_CRTM_F_preproc_opts:
+                    cfg_F_preproc_opts += ' '+cfg_CRTM_F_preproc_opts
                 cfg_CRTM_txt = \
 "#--- CRTM software:\n"+ \
 "\n"+ \
@@ -548,6 +557,8 @@ def build(anchor_path, *action_args):
                           "F preprocessor options (e.g. -D, but not -I or -L)")
             cfg_HDF4_F_linker_opts = parse_via_configparser(cfg, this_section,
                                            "F linker options (e.g. libraries)")
+            if cfg_HDF4_F_preproc_opts:
+                    cfg_F_preproc_opts += ' '+cfg_HDF4_F_preproc_opts
             cfg_HDF4_txt = \
 "#--- HDF4 library:\n"+ \
 "\n"+ \
@@ -574,6 +585,10 @@ def build(anchor_path, *action_args):
                           "C preprocessor options (e.g. -D, but not -I or -L)")
             cfg_HDF5_C_linker_opts = parse_via_configparser(cfg, this_section,
                                            "C linker options (e.g. libraries)")
+            if cfg_HDF5_F_preproc_opts:
+                cfg_F_preproc_opts += ' '+cfg_HDF5_F_preproc_opts
+            if cfg_HDF5_C_preproc_opts:
+                cfg_C_preproc_opts += ' '+cfg_HDF5_C_preproc_opts
             cfg_HDF5_txt = \
 "#--- HDF5 library:\n"+ \
 "\n"+ \
@@ -605,6 +620,10 @@ def build(anchor_path, *action_args):
                           "C preprocessor options (e.g. -D, but not -I or -L)")
             cfg_NetCDF_C_linker_opts = parse_via_configparser(cfg, this_section,
                                            "C linker options (e.g. libraries)")
+            if cfg_NetCDF_F_preproc_opts:
+                cfg_F_preproc_opts += ' '+cfg_NetCDF_F_preproc_opts
+            if cfg_NetCDF_C_preproc_opts:
+                cfg_C_preproc_opts += ' '+cfg_NetCDF_C_preproc_opts
             cfg_NetCDF_txt = \
 "#--- NetCDF library:\n"+ \
 "\n"+ \
