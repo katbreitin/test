@@ -504,7 +504,7 @@ FUNCTION Him_Rad_Average(Handle,                  &
   Data_factor = Stride(1)* Factor
   
   !currently commented out until RKG and WCS can discuss differences in CLAVR-x/Libhim 
-      
+  Status = Sym%FAILURE  ! Provide a result, in lieu of below commented-out code
 !  Status = averageHimawariFloatArray( &
 !    Data_factor, &! Average factors
 !    MISSING_VALUE_REAL4,  &! missing value sentinel to be expected on source and applied on destination
