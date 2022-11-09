@@ -238,6 +238,12 @@ contains
       !   use topo phase angle 
       phase_fraction  = lunar_phase_angle_topo - int(lunar_phase_angle_topo)
       phase_array     = lunar_irrad_lut(1,:)
+      if (lunar_phase_angle_topo < phase_array(1) .or.  &
+           lunar_phase_angle_topo > phase_array(num_irrad_tabvals)) then
+         ! lunar_phase_angle_topo is out of bounds; set canary value and return
+         ref_chdnb_lunar = -999.0
+         return
+      end if
       irrad_index     = index_in_vector(phase_array,num_irrad_tabvals,lunar_phase_angle_topo)
       curr_mean_irrad = lunar_irrad_lut(2,irrad_index) + &
                      &   phase_fraction*(lunar_irrad_lut(2,irrad_index+1)-lunar_irrad_lut(2,irrad_index))
