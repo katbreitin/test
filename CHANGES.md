@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file
 
 ## [Unreleased]
 
+- New build system based on autoconf
+- Major bug fix for relative azimuth angle and scattering angle
+- New Sensors
+    - JPSS-2 / NOAA-21
+    - VGAC Fusion
+    
+
 ## [v1.0.0]
 
 - UMD surface emission option fixed
