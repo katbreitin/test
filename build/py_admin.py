@@ -495,6 +495,7 @@ def build(anchor_path, *action_args):
 "RTTOV_Fortran_libs=\""+cfg_RTTOV_F_linker_opts+"\";\n"
                 # Determine RTTOV major version number:
                 tmp0_fpath = os.path.expandvars(cfg_RTTOV_F_libdirs.split()[0])
+                RTTOV_mversion = None
                 try:
                     tmp_fpath = os.path.join(tmp0_fpath, "..", "src", "main",
                                              "rttov_const.F90")
@@ -515,13 +516,14 @@ def build(anchor_path, *action_args):
                         fpath_bn = os.path.basename(fpath)
                         RTTOV_mversion = fpath_bn.split('_')[0][-2:]
                 finally:
-                    if RTTOV_mversion:
+                    if RTTOV_mversion is not None:
                         if int(RTTOV_mversion) <= 12:
                             RTTOV_def = "-DRTTOV_LE_V"+RTTOV_mversion
                         else:
                             RTTOV_def = "-DRTTOV_GE_V"+RTTOV_mversion
                     else:
                         print ("ERROR: Cannot determine the RTTOV version")
+                        print (tmp0_fpath)
                         sys.exit(1)
 
             cfg_CRTM_txt = ''
