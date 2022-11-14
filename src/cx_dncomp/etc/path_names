@@ -4,7 +4,7 @@ cx_dncomp/src/dcomp_lut_mod.f90
 cx_dncomp/src/dcomp_lut_sds_mod.f90
 cx_dncomp/src/dcomp_math_tools_mod.f90
 cx_dncomp/src/dcomp_pixel_input__define_mod.f90
-cx_dncomp/src/dcomp_retrieval_mod.f90
+cx_dncomp/src/dcomp_retrieval_mod.F90
 cx_dncomp/src/dcomp_science_tools_mod.f90
 cx_dncomp/src/dncomp_interface_def_mod.f90
 cx_dncomp/src/dncomp_precip_mod.f90

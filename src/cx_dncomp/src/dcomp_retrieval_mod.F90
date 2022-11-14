@@ -392,7 +392,25 @@ contains
                 exit
             end if
  
+#ifdef NOMISSINGDCOMP
+            if ( iteration_idx > 20 )  then
+
+                output_str % cod  = 10 ** state_vec(1)
+                output_str % codu = sqrt ( S_x ( 1, 1 ) )
+                output_str % cps  = 10 ** state_vec(2)
+                output_str % cpsu = sqrt ( S_x ( 2, 2 ) )
+
+                output_str % cloud_alb_vis = cld_albedo_vis
+                output_str % cloud_trans_sol_vis = cld_trans_sol(1)
+                output_str % cloud_trans_sat_vis = cld_trans_sat(1)
+                output_str % cloud_sph_alb_vis = cld_sph_alb(1)
+                output_str % refl_vis_max = rfl_vis_max
+
+                exit retrieval_loop
+            endif
+#else
             if ( iteration_idx > 20 )  exit retrieval_loop
+#endif
                   
         end do Retrieval_Loop
       
