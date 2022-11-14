@@ -62,6 +62,7 @@ module RTM_COMMON_MOD
    use CONSTANTS_MOD, only: &
     int1, int4 &
     , Missing_Value_Int1 &
+    , Missing_Value_Real4 &
     , EXE_PROMPT
 
    implicit none
@@ -200,7 +201,7 @@ contains
    !====================================================================
    subroutine ALLOCATE_RTM(nx,ny)
       integer (kind=int4), intent(in) :: nx, ny
-
+      integer :: i,j
       integer :: Alloc_Status
 
       allocate(Rtm(nx,ny),stat=Alloc_Status)
@@ -208,6 +209,20 @@ contains
          print "(a,'Not enough memory to allocate Rtm_Params structure.')",EXE_PROMPT
          stop
       end if
+      do j = 1,ny
+        do i = 1,nx
+            Rtm(i,j)%is_set = .false.
+            Rtm(i,j)%is_allocated = .false.
+            Rtm(i,j)%Sfc_Level = 0
+            Rtm(i,j)%Tropo_Level = 0
+            Rtm(i,j)%Inversion_Level = 0
+            Rtm(i,j)%Level440 = 0
+            Rtm(i,j)%Level850 = 0
+            Rtm(i,j)%Vza_Idx_Min = Missing_Value_Int1
+            Rtm(i,j)%Vza_Idx_Max = Missing_Value_Int1
+            Rtm(i,j)%satzen_mid_bin = Missing_Value_Real4
+        enddo
+      enddo 
 
    end subroutine ALLOCATE_RTM
 
