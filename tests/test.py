@@ -20,6 +20,7 @@ import pytest
 import signal
 import os
 import re
+import asyncio
 
 CLAVRX = Path('../run/bin/clavrxorb').absolute()
 assert CLAVRX.exists(), str(CLAVRX)+' does not exist'
@@ -41,6 +42,7 @@ def get_all_l2_variables():
 L2_LIST_CONTENT = '\n'.join(['testing',*get_all_l2_variables()])
 
 TEST_EXTRA = False
+FORCE_FULL = False
 
 DEFAULT_MODE=None
 
@@ -52,7 +54,36 @@ def save(func):
     return func
 
 
-def _run_it(main_l1b_file, aux_l1b_files=(), config_override=None, out_dir=None, mode=DEFAULT_MODE):
+async def run_one_segment(clavrxorb, work_dir):
+    prev_pwd = os.path.abspath(os.getcwd())
+    import sys
+    sys.path.append(prev_pwd)
+    os.chdir(clavrxorb.parent)
+    # tracer_utils needs to see ./clavrxorb at (first) import
+    import tracer_utils
+    os.chdir(work_dir)
+    try:
+        pid = tracer_utils.start_clavrx('test_proc', num_clones=0, redirect=False, skip_output=False)
+        # wait until one netcdf write is complete
+        wn = await tracer_utils.wait_until(pid, 6)
+        if wn == -1:
+            print('process terminated unexpectedly')
+            return 1
+        elif wn != 6:
+            print(f'was supposed to be at waitpoint 6, instead at {wn}')
+            await tracer_utils.kill(pid)
+            return 1
+        else:
+            # everything good
+            await tracer_utils.kill(pid)
+            return 0
+    finally:
+        os.chdir(prev_pwd)
+        # reset tracing since we have other tests without tracing
+        os.environ['CLAVRX_ENABLE_TRACER'] = ''
+
+
+def _run_it(main_l1b_file, aux_l1b_files=(), config_override=None, out_dir=None, mode=DEFAULT_MODE, only_1seg=False):
     """
     Run clavrx case
 
@@ -112,15 +143,20 @@ def _run_it(main_l1b_file, aux_l1b_files=(), config_override=None, out_dir=None,
         file_list_path = tmpdir / 'file_list'
         with open(file_list_path, 'w') as fp:
             fp.write(file_list_content)
-        if mode=='perf':
-            p = subprocess.run(['perf','record','-F99','-g',CLAVRX], cwd=tmpdir)
-        elif mode=='gdb':
-            p = subprocess.run(['gdb',CLAVRX], cwd=tmpdir)
-        elif mode=='valgrind':
-            p = subprocess.run(['valgrind','--suppressions='+str(Path('suppressions').absolute()), CLAVRX], cwd=tmpdir)
+        if only_1seg and not FORCE_FULL:
+            loop = asyncio.get_event_loop()
+            r = loop.run_until_complete(run_one_segment(CLAVRX, tmpdir))
+            assert r == 0
         else:
-            p = subprocess.run([CLAVRX], cwd=tmpdir)
-        assert p.returncode == 0
+            if mode=='perf':
+                p = subprocess.run(['perf','record','-F99','-g',CLAVRX], cwd=tmpdir)
+            elif mode=='gdb':
+                p = subprocess.run(['gdb',CLAVRX], cwd=tmpdir)
+            elif mode=='valgrind':
+                p = subprocess.run(['valgrind','--suppressions='+str(Path('suppressions').absolute()), CLAVRX], cwd=tmpdir)
+            else:
+                p = subprocess.run([CLAVRX], cwd=tmpdir)
+            assert p.returncode == 0
         return options_file_content
     finally:
         rmtree(tmpdir)
@@ -169,7 +205,8 @@ def test_noaa_viirs(out_dir=None):
     VIIRS_L1 = ROOT / 'GMTCO_npp_d20220221_t2356569_e0002373_b53481_c20220222005748538034_oebc_ops.h5'
     aux = set(ROOT.glob('*npp_d20220221_t2356569_e0002373*'))
     aux.remove(VIIRS_L1)
-    return _run_it(VIIRS_L1, aux, out_dir=out_dir)
+    # only run 1 segment, VIIRS takes forever
+    return _run_it(VIIRS_L1, aux, out_dir=out_dir, only_1seg=True)
 
 @save
 def test_nasa_viirs(out_dir=None):
@@ -177,7 +214,8 @@ def test_nasa_viirs(out_dir=None):
     vnp03 = ROOT / 'VNP03MOD.A2019003.1700.002.2021102031552.nc'
     extra = set(ROOT.glob('*A2019003.1700*'))
     extra.remove(vnp03)
-    return _run_it(vnp03, extra, out_dir=out_dir)
+    # only run 1 segment, VIIRS takes forever
+    return _run_it(vnp03, extra, out_dir=out_dir, only_1seg=True)
 
 @extra
 def test_nasa_viirs_rttov_slow(out_dir=None):
@@ -192,14 +230,14 @@ def test_nasa_viirs_rttov_slow(out_dir=None):
         'rtm':'rttov',
         'sfc_emiss':'rttov',
     }
-    return _run_it(vnp03, extra, config_override=config_override, out_dir=out_dir)
+    return _run_it(vnp03, extra, config_override=config_override, out_dir=out_dir, only_1seg=True)
 
 
 
 @save
 def test_avhrr(out_dir=None):
     AVHRR = Path('/arcdata/polar/noaa/noaa18/2020/2020_01_01_001/avhrr/NSS.GHRR.NN.D20001.S0000.E0143.B7532324.WI')
-    return _run_it(AVHRR, out_dir=out_dir)
+    return _run_it(AVHRR, out_dir=out_dir, only_1seg=True)
 
 def test_avhrr_get_goes_header_bug():
     # This file is empty
@@ -216,7 +254,7 @@ def test_fusion(out_dir=None):
     FUSION = Path('/ships19/cloud/archive/Satellite_Input/HIRS-FUSION/NN/2020/001/NSS.GHRR.NN.D20001.S0000.E0143.B7532324.WI.fusion.nc')
     AVHRR = Path('/arcdata/polar/noaa/noaa18/2020/2020_01_01_001/avhrr/NSS.GHRR.NN.D20001.S0000.E0143.B7532324.WI')
     override = {'lut':'ecm2_lut_avhrr123_hirs_common_chs.nc'}
-    return _run_it(FUSION, [AVHRR], config_override=override, out_dir=out_dir)
+    return _run_it(FUSION, [AVHRR], config_override=override, out_dir=out_dir, only_1seg=True)
 
 
 @save
