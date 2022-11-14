@@ -81,7 +81,8 @@ module VIIRS_CLAVRX_BRIDGE
       , Use_Iband &
       , X_Sample_Offset &
       , Y_Sample_Offset &
-      , Temp_Pix_Array_1
+      , Temp_Pix_Array_1 &
+      , Tracer_Flag
       
 
    use CONSTANTS_MOD, only: &
@@ -90,10 +91,12 @@ module VIIRS_CLAVRX_BRIDGE
     , Missing_Value_Real4
       
    use CLAVRX_MESSAGE_MOD
+   use VIIRS_READ_MOD, only: viirs_data_out
 
    private
 
-   public:: READ_VIIRS_DATA, READ_VIIRS_DATE_TIME, GET_NUMBER_OF_SCANS_FROM_VIIRS_BRIDGE, READ_VIIRS_INSTR_CONSTANTS
+   public:: READ_VIIRS_DATA, READ_VIIRS_DATE_TIME, GET_NUMBER_OF_SCANS_FROM_VIIRS_BRIDGE, READ_VIIRS_INSTR_CONSTANTS, out
+   type ( viirs_data_out )  :: out
   
 !--------------------------------------------------------------------------------------------------------------------
 ! 
@@ -123,7 +126,6 @@ contains
       integer(kind=int4), intent(out) :: error_out
       
       type ( viirs_data_config )  :: v_conf
-      type ( viirs_data_out )  :: out
       integer :: modis_chn_list (16)
       integer :: modis_chn_list_iband (5)
       logical :: is_mband_on (16)
@@ -166,6 +168,11 @@ contains
       v_conf % Nu_List = 0.0
       v_conf % Nu_List(12:16) = [Planck_Nu(20) , Planck_Nu(22) ,  &
                                 Planck_Nu(29) , Planck_Nu(31) , Planck_Nu(32)]
+
+      if ((Tracer_Flag == 1) .and. (Segment_Number > 1)) then
+        ! Defer deallocation until next loop to keep high-res "out" around for tracers
+        call out % dealloc ()
+      endif
 
       ! - read the data 
       call get_viirs_data ( v_conf, out )
@@ -342,8 +349,10 @@ contains
          Cloud_Type_Aux_Read_Flag = Sym % NO
       end if   
       
-      ! --- deallocate all
-      call out % dealloc ()
+      ! --- deallocate all, unless tracer wants to read high-res data out
+      if (Tracer_Flag == 0) then
+          call out % dealloc ()
+      endif
 
    end subroutine READ_VIIRS_DATA
 

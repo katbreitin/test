@@ -60,6 +60,7 @@ module LEVEL2_MOD
           
  !--- Level2 File Index
  integer, private, save:: Sd_Id_Level2
+ character(len=1020), save :: File_Level2
 
  !--- number of level2 variables in the level2_list-
  integer, private, save:: Num_Level2_Vars_List
@@ -3176,7 +3177,6 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
   integer(kind=int2), intent(in):: End_Day
   character(len=4):: l1b_ext
   character(len=1020):: File_1b_root
-  character(len=1020):: File_Level2
 
   character(len=8):: Orbit_Number_String
 
@@ -3478,6 +3478,13 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
     endif
 
   endif
+  if(Tracer_Flag /= 0) then
+      ! close file
+      Istatus = nf90_close(Sd_Id_Level2)
+      ! reopen file
+      !Istatus = nf90_open(trim(Dir_Level2)//trim(File_Level2), NF90_WRITE, ncid=Sd_Id_Level2)
+      !if(Istatus /= nf90_noerr) print*, 'Could not open netcdf', trim(nf90_strerror(Istatus))
+  endif
 
 end subroutine DEFINE_HDF_FILE_STRUCTURES
 
@@ -3550,6 +3557,15 @@ subroutine WRITE_SEGMENT_LEVEL2(Level2_File_Flag)
 
       Istatus = 0
       Istatus_Sum = 0
+
+       ! if tracing, we usually skip output
+       ! but if we don't skip output, then the netcdf is closed
+       ! reopen it, exclusive access is to be assured by tracing program
+       if((Tracer_Flag /= 0) .and. (Output_Format_Flag == 1)) then
+            Istatus = nf90_open(trim(Dir_Level2)//trim(File_Level2), NF90_WRITE, ncid=Sd_Id_Level2)
+            if(Istatus /= nf90_noerr) print*, 'Could not open netcdf', trim(nf90_strerror(Istatus))
+            Istatus = 0
+       endif
       
       do Var_Idx = 1, Num_Level2_Vars_List
 
@@ -3567,6 +3583,13 @@ subroutine WRITE_SEGMENT_LEVEL2(Level2_File_Flag)
     if (Istatus_Sum /= 0) then
        print *, EXE_PROMPT, MOD_PROMPT, "Error writing to level2 file: ", Istatus
        stop
+    endif
+
+    ! if tracing, close the file after every variable write
+    if((Tracer_Flag /= 0) .and. (Output_Format_Flag == 1)) then
+         Istatus = nf90_close(Sd_Id_Level2)
+         if(Istatus /= nf90_noerr) print*, 'Could not close netcdf', trim(nf90_strerror(Istatus))
+         Istatus = 0
     endif
     
    endif

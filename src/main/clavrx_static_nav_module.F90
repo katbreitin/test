@@ -117,12 +117,14 @@ module CLAVRX_STATIC_NAV_MODULE
   character(len=20), dimension(:), allocatable, save:: Variable_Name
   character(len=200), dimension(:), allocatable, save:: Level1b_File
 
-  real, allocatable, save :: Rad_To_Ref_Fac(:)
-  integer (kind=int1), allocatable, dimension(:,:) , save:: DQF_Seg
-  real, allocatable, save:: Output_Seg(:,:)
-  real, allocatable, save:: Min_Output_Seg(:,:)
-  real, allocatable, save:: Max_Output_Seg(:,:)
-  real, allocatable, save:: Stddev_Output_Seg(:,:)
+  real, allocatable, save, public :: Rad_To_Ref_Fac(:)
+  integer (kind=int1), allocatable, dimension(:,:) , save:: DQF_Seg_2km, DQF_Seg_1km, DQF_Seg_500m
+  real, allocatable, save :: Output_Seg_2km(:,:)    ! Not public, no need
+  real, allocatable, save, public:: Output_Seg_1km(:,:,:)  ! 3 channels
+  real, allocatable, save, public:: Output_Seg_500m(:,:,:) ! only 1 channel
+  real, allocatable, dimension(:,:), save:: Min_Output_Seg_2km, Min_Output_Seg_500m, Min_Output_Seg_1km
+  real, allocatable, dimension(:,:), save:: Max_Output_Seg_2km, Max_Output_Seg_500m, Max_Output_Seg_1km
+  real, allocatable, dimension(:,:), save:: Stddev_Output_Seg_2km, Stddev_Output_Seg_500m, Stddev_Output_Seg_1km
   real(kind=8),allocatable, save:: Output_Time(:)
   logical, dimension(:), allocatable, save:: File_Present_Flag
 
@@ -397,11 +399,21 @@ module CLAVRX_STATIC_NAV_MODULE
     if (allocated(Ncid_Level1b)) deallocate(Ncid_Level1b)
     if (allocated(Level1b_File)) deallocate(Level1b_File)
 
-    if (allocated(Output_Seg)) deallocate(Output_Seg)
-    if (allocated(DQF_Seg)) deallocate(DQF_Seg)
-    if (allocated(Min_Output_Seg)) deallocate(Min_Output_Seg)
-    if (allocated(Max_Output_Seg)) deallocate(Max_Output_Seg)
-    if (allocated(Stddev_Output_Seg)) deallocate(Stddev_Output_Seg)
+    if (allocated(DQF_Seg_2km)) deallocate(DQF_Seg_2km)
+    if (allocated(Output_Seg_2km)) deallocate(Output_Seg_2km)
+    if (allocated(Output_Seg_1km)) deallocate(Output_Seg_1km)
+    if (allocated(Output_Seg_500m)) deallocate(Output_Seg_500m)
+    if (allocated(Min_Output_Seg_2km)) deallocate(Min_Output_Seg_2km)
+    if (allocated(Max_Output_Seg_2km)) deallocate(Max_Output_Seg_2km)
+    if (allocated(Stddev_Output_Seg_2km)) deallocate(Stddev_Output_Seg_2km)
+    if (allocated(DQF_Seg_500m)) deallocate(DQF_Seg_500m)
+    if (allocated(Min_Output_Seg_500m)) deallocate(Min_Output_Seg_500m)
+    if (allocated(Max_Output_Seg_500m)) deallocate(Max_Output_Seg_500m)
+    if (allocated(Stddev_Output_Seg_500m)) deallocate(Stddev_Output_Seg_500m)
+    if (allocated(DQF_Seg_1km)) deallocate(DQF_Seg_1km)
+    if (allocated(Min_Output_Seg_1km)) deallocate(Min_Output_Seg_1km)
+    if (allocated(Max_Output_Seg_1km)) deallocate(Max_Output_Seg_1km)
+    if (allocated(Stddev_Output_Seg_1km)) deallocate(Stddev_Output_Seg_1km)
     if (allocated(Output_Time)) deallocate(Output_Time)
     if (allocated(Rad_to_Ref_Fac)) deallocate(Rad_to_Ref_Fac)
     if (allocated(File_Present_Flag)) deallocate(File_Present_Flag)
@@ -423,6 +435,7 @@ module CLAVRX_STATIC_NAV_MODULE
     real :: Factor
     real :: Image_Date
     integer :: i_line, add_lines
+    integer:: Alloc_Status
     character(len=50):: var_name
 
     !--- get lat, lon, zen, sataz from the static nav file
@@ -458,11 +471,25 @@ module CLAVRX_STATIC_NAV_MODULE
     endwhere
 
     !--- allocate memory for the temp arrays for reading from level-1b
-    if (.not. allocated(Output_Seg)) allocate(Output_Seg(Image%Number_Of_Elements, Image%Number_Of_Lines_Per_Segment))
-    if (.not. allocated(DQF_Seg)) allocate(DQF_Seg(Image%Number_Of_Elements, Image%Number_Of_Lines_Per_Segment))
-    if (.not. allocated(Min_Output_Seg)) allocate(Min_Output_Seg(Image%Number_Of_Elements, Image%Number_Of_Lines_Per_Segment))
-    if (.not. allocated(Max_Output_Seg)) allocate(Max_Output_Seg(Image%Number_Of_Elements, Image%Number_Of_Lines_Per_Segment))
-    if (.not. allocated(Stddev_Output_Seg)) allocate(Stddev_Output_Seg(Image%Number_Of_Elements, Image%Number_Of_Lines_Per_Segment))
+    if (.not. allocated(Output_Seg_2km)) allocate(Output_Seg_2km(Image%Number_Of_Elements, Image%Number_Of_Lines_Per_Segment))
+    if (.not. allocated(Output_Seg_1km)) then
+        allocate(Output_Seg_1km(Image%Number_Of_Elements*2,Image%Number_Of_Lines_Per_Segment*2,5),stat=Alloc_Status)
+        if (Alloc_Status /= 0) then
+            call MESG( "Could not allocate Output_Seg_1km", level = verb_lev % ERROR )
+            stop 5
+        endif
+    endif
+    if (.not. allocated(Output_Seg_500m)) then
+        allocate(Output_Seg_500m(Image%Number_Of_Elements*4, Image%Number_Of_Lines_Per_Segment*4,1),stat=Alloc_Status)
+        if (Alloc_Status /= 0) then
+            call MESG( "Could not allocate Output_Seg_500m", level = verb_lev % ERROR )
+            stop 5
+        endif
+    endif
+    if (.not. allocated(DQF_Seg_2km)) allocate(DQF_Seg_2km(Image%Number_Of_Elements, Image%Number_Of_Lines_Per_Segment))
+    if (.not. allocated(Min_Output_Seg_2km)) allocate(Min_Output_Seg_2km(Image%Number_Of_Elements, Image%Number_Of_Lines_Per_Segment))
+    if (.not. allocated(Max_Output_Seg_2km)) allocate(Max_Output_Seg_2km(Image%Number_Of_Elements, Image%Number_Of_Lines_Per_Segment))
+    if (.not. allocated(Stddev_Output_Seg_2km)) allocate(Stddev_Output_Seg_2km(Image%Number_Of_Elements, Image%Number_Of_Lines_Per_Segment))
     if (.not. allocated(Output_Time)) allocate(Output_Time(Image%Number_Of_Lines_Per_Segment))
     
     add_lines = (Image%Segment_Number-1) * Image%Number_Of_Lines_Per_Segment
@@ -476,12 +503,32 @@ module CLAVRX_STATIC_NAV_MODULE
      if (Sensor%Chan_On_Flag_Default(Clavrx_Chan_Map(Chan_Idx)) == 1) then
 
        if (File_Present_Flag(Chan_Idx)) then
+
+            if(Chan_Stride(Chan_Idx) == 2) then
+                call READ_SEGMENT_LEVEL1B_RAW(Ncid_Level1b(Chan_Idx),Variable_Name(Chan_Idx), &
+                                       Image%Segment_Number, Image%Number_Of_Lines_Per_Segment, &
+                                       Chan_Stride(Chan_Idx), X_Sample_Offset, Y_Sample_Offset, Output_Seg_1km(:,:,Chan_Idx))
+            else if(Chan_Stride(Chan_Idx) == 4) then
+                call READ_SEGMENT_LEVEL1B_RAW(Ncid_Level1b(Chan_Idx),Variable_Name(Chan_Idx), &
+                                       Image%Segment_Number, Image%Number_Of_Lines_Per_Segment, &
+                                       Chan_Stride(Chan_Idx), X_Sample_Offset, Y_Sample_Offset, Output_Seg_500m(:,:,1))
+                !if (.not. allocated(DQF_Seg_500m)) allocate(DQF_Seg_500m(Image%Number_Of_Elements*4, Image%Number_Of_Lines_Per_Segment*4))
+                !if (.not. allocated(Min_Output_Seg_500m)) allocate(Min_Output_Seg_500m(Image%Number_Of_Elements*4, Image%Number_Of_Lines_Per_Segment*4))
+                !if (.not. allocated(Max_Output_Seg_500m)) allocate(Max_Output_Seg_500m(Image%Number_Of_Elements*4, Image%Number_Of_Lines_Per_Segment*4))
+                !if (.not. allocated(Stddev_Output_Seg_500m)) allocate(Stddev_Output_Seg_500m(Image%Number_Of_Elements*4, Image%Number_Of_Lines_Per_Segment*4))
+                !call READ_SEGMENT_LEVEL1B_VER2(Ncid_Level1b(Chan_Idx),Variable_Name(Chan_Idx), &
+                                       !Image%Segment_Number, Image%Number_Of_Lines_Per_Segment, Image%Number_Of_Segments, &
+                                       !Image%X_Stride, Image%Y_Stride, 1, X_Sample_Offset, Y_Sample_Offset, &
+                                       !0,  &
+                                       !Output_Seg_500m(:,:,1), Min_Output_Seg_500m, Max_Output_Seg_500m, Stddev_Output_Seg_500m, Read_Time, DQF_Seg_500m)
+            endif
+
             !--- read channel values if file is present
             call READ_SEGMENT_LEVEL1B_VER2(Ncid_Level1b(Chan_Idx),Variable_Name(Chan_Idx), &
                                    Image%Segment_Number, Image%Number_Of_Lines_Per_Segment, Image%Number_Of_Segments, &
                                    Image%X_Stride, Image%Y_Stride, Chan_Stride(Chan_Idx), X_Sample_Offset, Y_Sample_Offset, &
                                    Image%Chan_Average_Flag,  &
-                                   Output_Seg, Min_Output_Seg, Max_Output_Seg, Stddev_Output_Seg, Read_Time, DQF_Seg)
+                                   Output_Seg_2km, Min_Output_Seg_2km, Max_Output_Seg_2km, Stddev_Output_Seg_2km, Read_Time, DQF_Seg_2km)
 
            !--- set SOURCE Flag if ABI Fusion used for any channel
            ch(Clavrx_Chan_Map(Chan_Idx))%Source = 0    !note source of this channel is from imager
@@ -493,29 +540,29 @@ module CLAVRX_STATIC_NAV_MODULE
 
        else
             !--- fill channel values with missing if file is missing and channel is on
-            Output_Seg = MISSING_VALUE_REAL4
-            Min_Output_Seg = MISSING_VALUE_REAL4
-            Max_Output_Seg = MISSING_VALUE_REAL4
-            Stddev_Output_Seg = MISSING_VALUE_REAL4
-            DQF_Seg = Missing_Value_Int1
+            Output_Seg_2km = MISSING_VALUE_REAL4
+            Min_Output_Seg_2km = MISSING_VALUE_REAL4
+            Max_Output_Seg_2km = MISSING_VALUE_REAL4
+            Stddev_Output_Seg_2km = MISSING_VALUE_REAL4
+            DQF_Seg_2km = Missing_Value_Int1
        endif
 
 
        Chan_Clavrx_Idx = Clavrx_Chan_Map(Chan_Idx)
 
        !--- store DQF in clavrx global data structure
-       ch(Chan_Clavrx_Idx)%DQF = DQF_Seg
+       ch(Chan_Clavrx_Idx)%DQF = DQF_Seg_2km
 
        !--- ahi radiances for all channels have to be converted from nasa units (W m-2 sr-1 um-1) to noaa units (mW m-2 sr-1 (cm-1)-1)
        if (Sensor%WMO_Id == 173 .or. Sensor%WMO_Id == 174) then
           if (ch(Chan_Clavrx_Idx)%Obs_Type == THERMAL_OBS_TYPE .or. &
                ch(Chan_Clavrx_Idx)%Obs_Type == MIXED_OBS_TYPE) then
-            call CONVERT_RADIANCE(Output_Seg,Planck_Nu(Chan_Clavrx_Idx),MISSING_VALUE_REAL4)
-            if (maxval(Min_Output_Seg) /= MISSING_VALUE_REAL4) then
-              call CONVERT_RADIANCE(Min_Output_Seg,Planck_Nu(Chan_Clavrx_Idx),MISSING_VALUE_REAL4)
+            call CONVERT_RADIANCE(Output_Seg_2km,Planck_Nu(Chan_Clavrx_Idx),MISSING_VALUE_REAL4)
+            if (maxval(Min_Output_Seg_2km) /= MISSING_VALUE_REAL4) then
+              call CONVERT_RADIANCE(Min_Output_Seg_2km,Planck_Nu(Chan_Clavrx_Idx),MISSING_VALUE_REAL4)
             end if
-            if (maxval(Max_Output_Seg) /= MISSING_VALUE_REAL4) then
-              call CONVERT_RADIANCE(Max_Output_Seg,Planck_Nu(Chan_Clavrx_Idx),MISSING_VALUE_REAL4)
+            if (maxval(Max_Output_Seg_2km) /= MISSING_VALUE_REAL4) then
+              call CONVERT_RADIANCE(Max_Output_Seg_2km,Planck_Nu(Chan_Clavrx_Idx),MISSING_VALUE_REAL4)
             end if
           end if
        end if
@@ -524,7 +571,7 @@ module CLAVRX_STATIC_NAV_MODULE
        if (ch(Chan_Clavrx_Idx)%Obs_Type == THERMAL_OBS_TYPE .or. &
              ch(Chan_Clavrx_Idx)%Obs_Type == MIXED_OBS_TYPE) then
 
-             ch(Chan_Clavrx_Idx)%Rad_Toa = Output_Seg
+             ch(Chan_Clavrx_Idx)%Rad_Toa = Output_Seg_2km
 
              do Elem_Idx = 1, Image%Number_Of_Elements
                 do Line_Idx = 1, Image%Number_Of_Lines_Read_This_Segment
@@ -552,25 +599,26 @@ module CLAVRX_STATIC_NAV_MODULE
 
            if (ch(Chan_Clavrx_Idx)%Obs_Type == SOLAR_OBS_TYPE) then
              call read_abi_kappa0(Ncid_Level1b(Chan_Idx), kappa0)
-             ch(Chan_Clavrx_Idx)%Ref_Toa = Factor * Output_Seg * kappa0 * 100.0
-             where(Output_Seg == MISSING_VALUE_REAL4)
+             ch(Chan_Clavrx_Idx)%Ref_Toa = Factor * Output_Seg_2km * kappa0 * 100.0
+             if(Chan_Idx .le. 6) Rad_To_Ref_Fac(Chan_Idx) = Factor * kappa0 * 100.0
+             where(Output_Seg_2km == MISSING_VALUE_REAL4)
                   ch(Chan_Clavrx_Idx)%Ref_Toa = MISSING_VALUE_REAL4
              endwhere
              if (allocated(ch(Chan_Clavrx_Idx)%Ref_Toa_Min_Sub)) then
-                ch(Chan_Clavrx_Idx)%Ref_Toa_Min_Sub = Factor * Min_Output_Seg * kappa0 * 100.0
-                where(Min_Output_Seg == MISSING_VALUE_REAL4)
+                ch(Chan_Clavrx_Idx)%Ref_Toa_Min_Sub = Factor * Min_Output_Seg_2km * kappa0 * 100.0
+                where(Min_Output_Seg_2km == MISSING_VALUE_REAL4)
                       ch(Chan_Clavrx_Idx)%Ref_Toa_Min_Sub = MISSING_VALUE_REAL4
                 endwhere
              endif
              if (allocated(ch(Chan_Clavrx_Idx)%Ref_Toa_Max_Sub)) then
-                ch(Chan_Clavrx_Idx)%Ref_Toa_Max_Sub = Factor * Max_Output_Seg * kappa0 * 100.0
-                where(Max_Output_Seg == MISSING_VALUE_REAL4)
+                ch(Chan_Clavrx_Idx)%Ref_Toa_Max_Sub = Factor * Max_Output_Seg_2km * kappa0 * 100.0
+                where(Max_Output_Seg_2km == MISSING_VALUE_REAL4)
                       ch(Chan_Clavrx_Idx)%Ref_Toa_Max_Sub = MISSING_VALUE_REAL4
                 endwhere
              endif
              if (allocated(ch(Chan_Clavrx_Idx)%Ref_Toa_Std_Sub)) then
-                ch(Chan_Clavrx_Idx)%Ref_Toa_Std_Sub = Factor * Stddev_Output_Seg * kappa0 * 100.0
-                where(Stddev_Output_Seg == MISSING_VALUE_REAL4)
+                ch(Chan_Clavrx_Idx)%Ref_Toa_Std_Sub = Factor * Stddev_Output_Seg_2km * kappa0 * 100.0
+                where(Stddev_Output_Seg_2km == MISSING_VALUE_REAL4)
                       ch(Chan_Clavrx_Idx)%Ref_Toa_Std_Sub = MISSING_VALUE_REAL4
                 endwhere
              endif
@@ -578,25 +626,25 @@ module CLAVRX_STATIC_NAV_MODULE
 
          else
 
-           ch(Chan_Clavrx_Idx)%Ref_Toa = Output_Seg * Rad_To_Ref_Fac(Chan_Idx)
-           where(Output_Seg == MISSING_VALUE_REAL4)
+           ch(Chan_Clavrx_Idx)%Ref_Toa = Output_Seg_2km * Rad_To_Ref_Fac(Chan_Idx)
+           where(Output_Seg_2km == MISSING_VALUE_REAL4)
                ch(Chan_Clavrx_Idx)%Ref_Toa = MISSING_VALUE_REAL4
            endwhere
            if (allocated(ch(Chan_Clavrx_Idx)%Ref_Toa_Min_Sub)) then
-              ch(Chan_Clavrx_Idx)%Ref_Toa_Min_Sub = Min_Output_Seg * Rad_To_Ref_Fac(Chan_Idx)
-              where(Min_Output_Seg == MISSING_VALUE_REAL4)
+              ch(Chan_Clavrx_Idx)%Ref_Toa_Min_Sub = Min_Output_Seg_2km * Rad_To_Ref_Fac(Chan_Idx)
+              where(Min_Output_Seg_2km == MISSING_VALUE_REAL4)
                  ch(Chan_Clavrx_Idx)%Ref_Toa_Min_Sub = MISSING_VALUE_REAL4
               endwhere
            endif
            if (allocated(ch(Chan_Clavrx_Idx)%Ref_Toa_Max_Sub)) then
-               ch(Chan_Clavrx_Idx)%Ref_Toa_Max_Sub = Max_Output_Seg * Rad_To_Ref_Fac(Chan_Idx)
-               where(Max_Output_Seg == MISSING_VALUE_REAL4)
+               ch(Chan_Clavrx_Idx)%Ref_Toa_Max_Sub = Max_Output_Seg_2km * Rad_To_Ref_Fac(Chan_Idx)
+               where(Max_Output_Seg_2km == MISSING_VALUE_REAL4)
                     ch(Chan_Clavrx_Idx)%Ref_Toa_Max_Sub = MISSING_VALUE_REAL4
                endwhere
            endif
            if (allocated(ch(Chan_Clavrx_Idx)%Ref_Toa_Std_Sub)) then
-             ch(Chan_Clavrx_Idx)%Ref_Toa_Std_Sub = Stddev_Output_Seg * Rad_To_Ref_Fac(Chan_Idx)
-             where(Stddev_Output_Seg == MISSING_VALUE_REAL4)
+             ch(Chan_Clavrx_Idx)%Ref_Toa_Std_Sub = Stddev_Output_Seg_2km * Rad_To_Ref_Fac(Chan_Idx)
+             where(Stddev_Output_Seg_2km == MISSING_VALUE_REAL4)
                  ch(Chan_Clavrx_Idx)%Ref_Toa_Std_Sub = MISSING_VALUE_REAL4
              endwhere
            endif
@@ -665,6 +713,7 @@ end subroutine READ_LEVEL1B_FIXED_GRID_STATIC_NAV
     integer:: Static_Nav_Elem_End_File, Static_Nav_Line_End_File
     integer:: Elem_Start_Segment, Elem_End_Segment, Elem_Count_Segment
     integer:: Line_Start_Segment, Line_End_Segment, Line_Count_Segment
+    integer:: Alloc_Status
 
     
 
@@ -702,10 +751,31 @@ end subroutine READ_LEVEL1B_FIXED_GRID_STATIC_NAV
 
 
     !--- allocate memory for the temp arrays for reading from level-1b
-    if (.not. allocated(Output_Seg)) allocate(Output_Seg(Image%Number_Of_Elements, Image%Number_Of_Lines_Per_Segment))
-    if (.not. allocated(Min_Output_Seg)) allocate(Min_Output_Seg(Image%Number_Of_Elements, Image%Number_Of_Lines_Per_Segment))
-    if (.not. allocated(Max_Output_Seg)) allocate(Max_Output_Seg(Image%Number_Of_Elements, Image%Number_Of_Lines_Per_Segment))
+    if (.not. allocated(Output_Seg_2km)) then 
+        allocate(Output_Seg_2km(Image%Number_Of_Elements, Image%Number_Of_Lines_Per_Segment),stat=Alloc_Status)
+        if (Alloc_Status /= 0) then
+            call MESG( "Could not allocate Output_Seg_2km", level = verb_lev % ERROR )
+            stop 5
+        endif
+    endif
+    if (.not. allocated(Output_Seg_1km)) then
+        allocate(Output_Seg_1km(Image%Number_Of_Elements*2,Image%Number_Of_Lines_Per_Segment*2,4),stat=Alloc_Status)
+        if (Alloc_Status /= 0) then
+            call MESG( "Could not allocate Output_Seg_1km", level = verb_lev % ERROR )
+            stop 5
+        endif
+    endif
+    if (.not. allocated(Output_Seg_500m)) then
+        allocate(Output_Seg_500m(Image%Number_Of_Elements*4, Image%Number_Of_Lines_Per_Segment*4,1),stat=Alloc_Status)
+        if (Alloc_Status /= 0) then
+            call MESG( "Could not allocate Output_Seg_500m", level = verb_lev % ERROR )
+            stop 5
+        endif
+    endif
+    if (.not. allocated(Min_Output_Seg_2km)) allocate(Min_Output_Seg_2km(Image%Number_Of_Elements, Image%Number_Of_Lines_Per_Segment))
+    if (.not. allocated(Max_Output_Seg_2km)) allocate(Max_Output_Seg_2km(Image%Number_Of_Elements, Image%Number_Of_Lines_Per_Segment))
     if (.not. allocated(Output_Time)) allocate(Output_Time(Image%Number_Of_Lines_Per_Segment))
+
     
     add_lines = (Image%Segment_Number-1) * Image%Number_Of_Lines_Per_Segment
     Image%Scan_Number = [(i_line, i_line = Line_start + add_lines, &
@@ -741,9 +811,11 @@ end subroutine READ_LEVEL1B_FIXED_GRID_STATIC_NAV
    Start(2) = Static_Nav_Line_Start_Segment
    
    ! Initialize output arrays to missing
-   Output_Seg = MISSING_VALUE_REAL4
-   Min_Output_Seg = MISSING_VALUE_REAL4
-   Max_Output_Seg = MISSING_VALUE_REAL4
+   Output_Seg_2km = MISSING_VALUE_REAL4
+   Output_Seg_1km = MISSING_VALUE_REAL4
+   Output_Seg_500m = MISSING_VALUE_REAL4
+   Min_Output_Seg_2km = MISSING_VALUE_REAL4
+   Max_Output_Seg_2km = MISSING_VALUE_REAL4
    
     
 
@@ -759,6 +831,40 @@ end subroutine READ_LEVEL1B_FIXED_GRID_STATIC_NAV
             !if the file is HCAST, then change types - WCS3
             IF (Image%DB_Flag) AHI_FILE_TYPE = FILE_TYPE_AHI_HRIT
 
+            if (Chan_Idx < 5) then
+                if(Chan_Idx == 3) then
+                    Status = Get_Him_Raddata(AHI_FILE_TYPE,  & !dynamic reading of file type
+                                             trim(Image%Level1b_Path), &
+                                             trim(Base_Filename),          &
+                                             Chan_Idx,                &
+                                             Start,                  &
+                                             Stride,                 &
+                                             Image%Number_Of_Lines_Read_This_Segment, & ! this is so that you don't over reach in the data
+                                             3, &
+                                             Output_Seg_500m(:,:,1), &
+                                             !Min_Output_Seg and Max_Output_Seg are only used for Average mode 2
+                                             ! but it is easier (and cleaner) to have a single call rather than
+                                             ! multiple calls
+                                             Min_Output_Seg_2km, & 
+                                             Max_Output_Seg_2km)
+                else
+                    Status = Get_Him_Raddata(AHI_FILE_TYPE,  & !dynamic reading of file type
+                                             trim(Image%Level1b_Path), &
+                                             trim(Base_Filename),          &
+                                             Chan_Idx,                &
+                                             Start,                  &
+                                             Stride,                 &
+                                             Image%Number_Of_Lines_Read_This_Segment, & ! this is so that you don't over reach in the data
+                                             3, &
+                                             Output_Seg_1km(:,:,Chan_Idx), &
+                                             !Min_Output_Seg and Max_Output_Seg are only used for Average mode 2
+                                             ! but it is easier (and cleaner) to have a single call rather than
+                                             ! multiple calls
+                                             Min_Output_Seg_2km, & 
+                                             Max_Output_Seg_2km)
+                endif
+            endif 
+
             Status = Get_Him_Raddata(AHI_FILE_TYPE,  & !dynamic reading of file type
                                      trim(Image%Level1b_Path), &
                                      trim(Base_Filename),          &
@@ -767,12 +873,12 @@ end subroutine READ_LEVEL1B_FIXED_GRID_STATIC_NAV
                                      Stride,                 &
                                      Image%Number_Of_Lines_Read_This_Segment, & ! this is so that you don't over reach in the data
                                      Image%Chan_Average_Flag, &
-                                     Output_Seg, &
+                                     Output_Seg_2km, &
                                      !Min_Output_Seg and Max_Output_Seg are only used for Average mode 2
                                      ! but it is easier (and cleaner) to have a single call rather than
                                      ! multiple calls
-                                     Min_Output_Seg, & 
-                                     Max_Output_Seg)
+                                     Min_Output_Seg_2km, & 
+                                     Max_Output_Seg_2km)
                                      
 #endif
 
@@ -786,12 +892,12 @@ end subroutine READ_LEVEL1B_FIXED_GRID_STATIC_NAV
        !--- ahi radiances for all channels have to be converted from nasa units (W m-2 sr-1 um-1) to noaa units (mW m-2 sr-1 (cm-1)-1)
        if (ch(Chan_Clavrx_Idx)%Obs_Type == THERMAL_OBS_TYPE .or. &
                ch(Chan_Clavrx_Idx)%Obs_Type == MIXED_OBS_TYPE) then
-            call CONVERT_RADIANCE(Output_Seg,Planck_Nu(Chan_Clavrx_Idx),MISSING_VALUE_REAL4)
-            if (maxval(Min_Output_Seg) /= MISSING_VALUE_REAL4) then
-              call CONVERT_RADIANCE(Min_Output_Seg,Planck_Nu(Chan_Clavrx_Idx),MISSING_VALUE_REAL4)
+            call CONVERT_RADIANCE(Output_Seg_2km,Planck_Nu(Chan_Clavrx_Idx),MISSING_VALUE_REAL4)
+            if (maxval(Min_Output_Seg_2km) /= MISSING_VALUE_REAL4) then
+              call CONVERT_RADIANCE(Min_Output_Seg_2km,Planck_Nu(Chan_Clavrx_Idx),MISSING_VALUE_REAL4)
             end if
-            if (maxval(Max_Output_Seg) /= MISSING_VALUE_REAL4) then
-              call CONVERT_RADIANCE(Max_Output_Seg,Planck_Nu(Chan_Clavrx_Idx),MISSING_VALUE_REAL4)
+            if (maxval(Max_Output_Seg_2km) /= MISSING_VALUE_REAL4) then
+              call CONVERT_RADIANCE(Max_Output_Seg_2km,Planck_Nu(Chan_Clavrx_Idx),MISSING_VALUE_REAL4)
             end if
        end if
 
@@ -799,7 +905,7 @@ end subroutine READ_LEVEL1B_FIXED_GRID_STATIC_NAV
        if (ch(Chan_Clavrx_Idx)%Obs_Type == THERMAL_OBS_TYPE .or. &
              ch(Chan_Clavrx_Idx)%Obs_Type == MIXED_OBS_TYPE) then
 
-             ch(Chan_Clavrx_Idx)%Rad_Toa = Output_Seg
+             ch(Chan_Clavrx_Idx)%Rad_Toa = Output_Seg_2km
 
              do Elem_Idx = 1, Image%Number_Of_Elements
                 do Line_Idx = 1, Image%Number_Of_Lines_Read_This_Segment
@@ -814,19 +920,19 @@ end subroutine READ_LEVEL1B_FIXED_GRID_STATIC_NAV
        !--- make reflectances (not normalized yet) aka scaled radiances
        if (ch(Chan_Clavrx_Idx)%Obs_Type == SOLAR_OBS_TYPE) then
 
-             ch(Chan_Clavrx_Idx)%Ref_Toa = Output_Seg * Rad_To_Ref_Fac(Chan_Idx)
-             where(Output_Seg == MISSING_VALUE_REAL4)
+             ch(Chan_Clavrx_Idx)%Ref_Toa = Output_Seg_2km * Rad_To_Ref_Fac(Chan_Idx)
+             where(Output_Seg_2km == MISSING_VALUE_REAL4)
                ch(Chan_Clavrx_Idx)%Ref_Toa = MISSING_VALUE_REAL4
              endwhere
              if (allocated(ch(Chan_Clavrx_Idx)%Ref_Toa_Min_Sub)) then
-                ch(Chan_Clavrx_Idx)%Ref_Toa_Min_Sub = Min_Output_Seg * Rad_To_Ref_Fac(Chan_Idx)
-                where(Min_Output_Seg == MISSING_VALUE_REAL4)
+                ch(Chan_Clavrx_Idx)%Ref_Toa_Min_Sub = Min_Output_Seg_2km * Rad_To_Ref_Fac(Chan_Idx)
+                where(Min_Output_Seg_2km == MISSING_VALUE_REAL4)
                       ch(Chan_Clavrx_Idx)%Ref_Toa_Min_Sub = MISSING_VALUE_REAL4
                 endwhere
              endif
              if (allocated(ch(Chan_Clavrx_Idx)%Ref_Toa_Max_Sub)) then
-                ch(Chan_Clavrx_Idx)%Ref_Toa_Max_Sub = Max_Output_Seg * Rad_To_Ref_Fac(Chan_Idx)
-                where(Max_Output_Seg == MISSING_VALUE_REAL4)
+                ch(Chan_Clavrx_Idx)%Ref_Toa_Max_Sub = Max_Output_Seg_2km * Rad_To_Ref_Fac(Chan_Idx)
+                where(Max_Output_Seg_2km == MISSING_VALUE_REAL4)
                       ch(Chan_Clavrx_Idx)%Ref_Toa_Max_Sub = MISSING_VALUE_REAL4
                 endwhere
              endif
@@ -836,6 +942,70 @@ end subroutine READ_LEVEL1B_FIXED_GRID_STATIC_NAV
    
 end subroutine READ_HSD_FIXED_GRID_STATIC_NAV
 
+subroutine READ_SEGMENT_LEVEL1B_RAW(Ncid,Chan_Name,Segment_Number, Number_Of_Lines_Per_Segment, &
+                                Chan_Scale, X_Res_Offset, Y_Res_Offset, &
+                                Output_Seg)
+
+   character(len=*), intent(in):: Chan_Name
+   integer, intent(in):: Ncid,Segment_Number, Number_Of_Lines_Per_Segment, &
+                         X_Res_Offset, Y_Res_Offset, Chan_Scale
+
+   real, dimension(:,:), intent(out):: Output_Seg
+   integer:: nx, ny
+
+   integer:: Native_X_Stride, Native_Y_Stride
+   integer:: X_Stride, Y_Stride
+   integer:: Native_Elem_Start_Segment, Native_Elem_End_Segment, Native_Elem_Count_Segment
+   integer:: Native_Line_Start_Segment, Native_Line_End_Segment, Native_Line_Count_Segment
+   integer:: Native_Elem_End_File, Native_Line_End_File
+   integer:: Elem_Start_Segment, Elem_End_Segment, Elem_Count_Segment
+   integer:: Line_Start_Segment, Line_End_Segment, Line_Count_Segment
+   integer:: Elem_End_File, Line_End_File
+   integer:: Y_Res_Stride
+   integer:: i, j, ni, nj, i1, i2, j1, j2, is, js, n, nn
+
+   integer, dimension(2):: start_2d, stride_2d, count_2d
+   
+   !--- initialize
+   Output_Seg = MISSING_VALUE_REAL4
+
+   !--- save output size
+   nx = size(Output_Seg,1)
+   ny = size(Output_Seg,2)
+
+   !--- determine native pixel sizes 
+   Native_Elem_End_File = Num_Elem_Fd*Chan_Scale
+   Native_Line_End_File = Num_Line_Fd*Chan_Scale
+
+   !--- there is no striding in the reading of the native data
+   Native_X_Stride = 1
+   Native_Y_Stride = 1
+
+   !--- effect stride the product of chosen thinning stride and native
+   !--- resolution stride value
+   X_Stride = 1
+   Y_Stride = 1
+
+   !--- native element terms
+   Native_Elem_Start_Segment = (Elem_Start-1)*Chan_Scale+1
+   Native_Elem_Count_Segment = Num_Elem*Chan_Scale
+   Native_Elem_End_Segment = Native_Elem_Start_Segment + Native_Elem_Count_Segment - 1
+ 
+   !--- native line terms
+   Native_Line_Start_Segment = (Line_Start-1)*Chan_Scale + (Segment_Number-1)*Number_Of_Lines_Per_Segment*Chan_Scale + 1
+   Native_Line_Count_Segment = Number_Of_Lines_Per_Segment*Chan_Scale
+   Native_Line_End_Segment = Native_Line_Start_Segment + Native_Line_Count_Segment - 1
+   Native_Line_End_Segment =   min(Native_Line_End_Segment,Native_Line_End_File)
+
+   Native_Line_Count_Segment = (Native_Line_End_Segment - Native_Line_Start_Segment) + 1
+
+   !--- read native resolution data
+   start_2d =  (/Native_Elem_Start_Segment, Native_Line_Start_Segment/)
+   stride_2d = (/Native_X_Stride,Native_Y_Stride/)
+   count_2d =   (/Native_Elem_Count_Segment, Native_Line_Count_Segment/)
+   call READ_AND_UNSCALE_NETCDF_2d(Ncid, Start_2d, Stride_2d, Count_2d, Chan_Name, Output_Seg)
+
+end subroutine READ_SEGMENT_LEVEL1B_RAW
 
 
 !------------------------------------------------------------------------------------

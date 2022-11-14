@@ -19,6 +19,7 @@ main/clavrx_olr_mod.f90
 main/clavrx_sst_mod.f90
 main/clavrx_static_nav_module.F90
 main/cleanup.f90
+main/clone.c
 main/cloud_height_routines.f90
 main/Compare_Float_Numbers.f90
 main/coms_mod.f90
@@ -104,6 +105,7 @@ main/simple_cod_lunar_mod.f90
 main/snow_routines_mod.f90
 main/sort_module.f90
 main/surface_properties_mod.f90
+main/tracer.F90
 main/user_options.F90
 main/univ_sys_interface.c
 main/viewing_geometry_mod.f90

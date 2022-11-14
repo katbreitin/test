@@ -98,6 +98,8 @@ module ECM2_CLOUD_MASK_CLAVRX_BRIDGE
     , ABI_FPT_Thresh_104um, ABI_FPT_Thresh_110um, ABI_FPT_Thresh_120um &
     , ABI_FPT_Thresh_133um
 
+   use tracer, only: waitpoint
+
    implicit none
 
    public :: ECM2_CLOUD_MASK_BRIDGE
@@ -450,7 +452,12 @@ contains
    end do line_loop_lrc
 
    !--- try to remove water edges around cirrus that impacts AMVs
+
    call WATER_EDGE_FILTER(Cld_Phase,2)
+
+
+   !---  WAITPOINT cloud mask done
+   call waitpoint(2)
 
    !--- cloud type
    line_loop_type: do i = 1, Image%Number_Of_Elements
@@ -528,6 +535,9 @@ contains
 
       enddo elem_loop_type
    enddo line_loop_type
+
+   !---  WAITPOINT cloud type / phase done
+   call waitpoint(4)
 
    !-------------------------------------------------------------------------------
    ! on the last segment, Save number of classifiers and names to CLAVR-x, 

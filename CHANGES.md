@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file
 - New Sensors
     - JPSS-2 / NOAA-21
     - VGAC Fusion
-    
+- Added tracing hooks used for super-resolution and parallel segment processing
 
 ## [v1.0.0]
 

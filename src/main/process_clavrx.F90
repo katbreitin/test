@@ -333,6 +333,8 @@
     , Cloud_Type_Aux_Read_Flag &
     , Cloud_Mask_Aux_Read_Flag &
     , cld_flag &
+    , Tracer_Flag &
+    , Skip_Output &
     , Cld_Phase_IR &
     , Use_IR_Cloud_Type_Flag &
     , Cld_Phase &
@@ -511,6 +513,8 @@
 
    use cleanup, only: cleanup_tempdir, cleanup_tempdir__exit
 
+   use tracer, only: waitpoint, Set_Tracer_Flag, maybe_clone, update_skip_processing
+   
    implicit none 
   
    !***********************************************************************
@@ -645,6 +649,7 @@
    !----------------------------------------------------------------------------
    Number_Of_Temporary_Files = 0
    Skip_Processing_Flag = sym%NO
+   CALL Set_Tracer_Flag()
 
    !----------------------------------------------------------------------------
    ! Determine time of the start of all processing
@@ -1153,6 +1158,10 @@
 
          End_Time_Point_Hours = COMPUTE_TIME_HOURS()
 
+           call maybe_clone()
+           call waitpoint(1)
+           call update_skip_processing(Skip_Processing_Flag)
+
          !--- update time summation for level-1b processing
          Segment_Time_Point_Seconds(1) =  Segment_Time_Point_Seconds(1) + &
               60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
@@ -1430,7 +1439,7 @@
             ! this has to be here because cal coefficients are only known
             ! after data has been read in and calibrated
             !*******************************************************************
-            if (Segment_Number == 1) then
+            if ((Segment_Number == 1) .and. (Skip_Output == 0)) then
 
                !--- place algorithm cvs tags into global strings for output
                call SET_CLOUD_TYPE_VERSION()
@@ -1531,6 +1540,9 @@
                    call VIIRS_NUCAPS(Segment_Number)
                    Cloud_Fraction_Background = NUCAPS%Cld_Fraction
                endif
+
+               !--- WAITPOINT before cloud mask
+               call waitpoint(5)
               
                !--- cloud mask
                if (Use_Aux_Flag == sym%USE_AUX .and. Cloud_Mask_Aux_Read_Flag == sym%YES) then
@@ -1623,6 +1635,9 @@
                     call CLOUD_TYPE_BRIDGE()
                     !Cld_Type_Aux = Cld_Type
                     !call UNIVERSAL_CLOUD_TYPE()
+
+                    !--- WAITPOINT Cloud Phase Complete (if not ECM2)
+                    call waitpoint(4)
                   endif
 
                   !--- Bryan Baum MODIS C6 Cloud Type
@@ -1865,12 +1880,17 @@
                call SET_REPLACED_AVHRR_TO_MISSING()
             endif
 
+            !-- WAITPOINT before write
+            call waitpoint(3)
+
             !*******************************************************************
             ! Marker: Write to output files (pixel-level)
             !*******************************************************************
             Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
 
+            if(Skip_Output == 0) then
             call WRITE_SEGMENT_LEVEL2(Level2_File_Flag)
+            endif
             
             End_Time_Point_Hours = COMPUTE_TIME_HOURS()
             Segment_Time_Point_Seconds(15) =  Segment_Time_Point_Seconds(15) + &
@@ -1930,6 +1950,9 @@
                         Image%Scan_Number(Image%Number_Of_Lines_Read_This_Segment)
            call MESG  ( string_100 )
 
+        !--- WAITPOINT saving complete
+        call waitpoint(6)
+
          endif   !end Skip_Processing_Flag condition
         !*************************************************************************
         ! Marker: End of loop over orbital segments
@@ -1939,6 +1962,9 @@
 
       call MESG ( "Finished Processing All Orbital Segments")
       call MESG ( " ")
+
+      !--- WAITPOINT finished all segments
+      call waitpoint(7)
 
       !*************************************************************************
       !   Marker: Close output pixel-level files

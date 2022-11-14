@@ -90,7 +90,7 @@ REAL(KIND=REAL4), DIMENSION(NUM_AHI_BANDS), PARAMETER, PRIVATE :: HCAST_NATIVE_I
                                                                                "IR1_", "B14_", "IR2_","B16_"/)
 PUBLIC :: Get_Him_Raddata
 
-PRIVATE :: Him_Rad_Subsample, &
+PUBLIC :: Him_Rad_Subsample, &
            Him_Rad_Average
    
 CONTAINS
@@ -152,6 +152,7 @@ FUNCTION Get_Him_Raddata(File_Type,              &
   INTEGER(KIND=INT4) :: Factor
   CHARACTER(LEN=4) :: HCAST_Band_ID
   INTEGER :: nx, ny
+  INTEGER(KIND=INT4), DIMENSION(2) :: Start_Native
 
 !-----------------------------------------------------------------
 ! Conditional compilation: Himawari-8/9 processing capability is
@@ -216,7 +217,7 @@ FUNCTION Get_Him_Raddata(File_Type,              &
     STOP
   
   ENDIF
-  
+
   
   !----- Begin HSD calls. Theoretically this could be in it's own routine, 
   !------ like GEOCAT, butfor now, leave as one self contained routine, like RKG test code
@@ -258,6 +259,20 @@ FUNCTION Get_Him_Raddata(File_Type,              &
                                Path_And_Filename,  &
                                Sentinels,          &
                                Start,              &
+                               Stride,             &
+                               Edge,               &
+                               Factor,             &
+                               Hsd_Meta,           &
+                               Rad)  
+
+  Else IF (Average_Mode_Flag == 3) THEN 
+    Start_Native = (Start-1) * Factor + 1
+    Edge(2) = Num_Lines_Seg * Factor
+    Factor = 1
+    Status = Him_Rad_Subsample(Handle,             &
+                               Path_And_Filename,  &
+                               Sentinels,          &
+                               Start_Native,       &
                                Stride,             &
                                Edge,               &
                                Factor,             &
@@ -336,7 +351,7 @@ FUNCTION Him_Rad_Subsample(Handle,                  &
   ! Set the variables that control which parts of the image are
   ! read in
   !-----------------------------------------------------------------
-  
+
   
   !Start line/element in native space. Needs to be in 0 based space.
   !Hence the subtraction
@@ -358,7 +373,7 @@ FUNCTION Him_Rad_Subsample(Handle,                  &
   ! be explicit in what is being used.
   Dst%Line_Increment = Src%Columns
   Dst%Column_Increment = 1
- 
+
   !-----------------------------------------------------------------
   ! Read in the data
   !-----------------------------------------------------------------

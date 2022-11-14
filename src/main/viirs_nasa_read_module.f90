@@ -85,6 +85,9 @@ module VIIRS_NASA_READ_MODULE
   integer(kind=int4), dimension(:,:), allocatable, public :: Gap_Line_Idx_Pattern
   integer(kind=int1), dimension(:,:), allocatable, public :: Gap_Pixel_Mask_Pattern
 
+  real(kind=real4), dimension(:,:), allocatable, public :: nasa_viirs_i1_ref, &
+      nasa_viirs_i2_ref, nasa_viirs_i3_ref,nasa_viirs_i4_bt, nasa_viirs_i5_bt
+
       contains
 
 !--------------------------------------------------------------------
@@ -466,6 +469,9 @@ subroutine READ_VIIRS_NASA_DATA (Segment_Number, VGEOM_File, Error_Out)
                  ! - calculate min, max, mean
                  select case(I_Iband)
                  case(1) ! 0.65um
+                    if(allocated(nasa_viirs_i1_ref)) deallocate(nasa_viirs_i1_ref)
+                    allocate(nasa_viirs_i1_ref(Dim_Seg_Iband(1),Dim_Seg_Iband(2)))
+                    nasa_viirs_i1_ref = Iband_Temp_Buff
                     if (ch(1)%Sub_Pixel_On_Flag) then
                        call COMPUTE_IBAND_STATISTICS(Iband_Temp_Buff, &
                                                 Ch(1)%Ref_Toa_Min_Sub(1:Dim_Seg(1),1:Dim_Seg(2)), &
@@ -485,6 +491,9 @@ subroutine READ_VIIRS_NASA_DATA (Segment_Number, VGEOM_File, Error_Out)
                     endif
 
                  case(2) ! 0.86um
+                    if(allocated(nasa_viirs_i2_ref)) deallocate(nasa_viirs_i2_ref)
+                    allocate(nasa_viirs_i2_ref(Dim_Seg_Iband(1),Dim_Seg_Iband(2)))
+                    nasa_viirs_i2_ref = Iband_Temp_Buff
                     if (ch(2)%Sub_Pixel_On_Flag) then
                        call COMPUTE_IBAND_STATISTICS(Iband_Temp_Buff, &
                                                    Ch(2)%Ref_Toa_Min_Sub(1:Dim_Seg(1),1:Dim_Seg(2)), &
@@ -503,6 +512,9 @@ subroutine READ_VIIRS_NASA_DATA (Segment_Number, VGEOM_File, Error_Out)
                        endif
                     endif
                  case(3) ! 1.61um
+                    if(allocated(nasa_viirs_i3_ref)) deallocate(nasa_viirs_i3_ref)
+                    allocate(nasa_viirs_i3_ref(Dim_Seg_Iband(1),Dim_Seg_Iband(2)))
+                    nasa_viirs_i3_ref = Iband_Temp_Buff
                     if (ch(6)%Sub_Pixel_On_Flag) then
                        call COMPUTE_IBAND_STATISTICS(Iband_Temp_Buff, &
                                                    Ch(6)%Ref_Toa_Min_Sub(1:Dim_Seg(1),1:Dim_Seg(2)), &
@@ -545,6 +557,9 @@ subroutine READ_VIIRS_NASA_DATA (Segment_Number, VGEOM_File, Error_Out)
                  ! - calculate min, max, mean
                  select case(I_Iband)
                  case(4) ! 3.75um
+                    if(allocated(nasa_viirs_i4_bt)) deallocate(nasa_viirs_i4_bt)
+                    allocate(nasa_viirs_i4_bt(Dim_Seg_Iband(1),Dim_Seg_Iband(2)))
+                    nasa_viirs_i4_bt = Iband_Temp_Buff_Bt
                     if (ch(20)%Sub_Pixel_On_Flag) then
                       call COMPUTE_IBAND_STATISTICS(Iband_Temp_Buff_Bt, &
                                                     Ch(20)%Bt_Toa_Min_Sub(1:Dim_Seg(1),1:Dim_Seg(2)), &
@@ -575,6 +590,9 @@ subroutine READ_VIIRS_NASA_DATA (Segment_Number, VGEOM_File, Error_Out)
                       endif
                      endif
                  case(5) ! 11um
+                    if(allocated(nasa_viirs_i5_bt)) deallocate(nasa_viirs_i5_bt)
+                    allocate(nasa_viirs_i5_bt(Dim_Seg_Iband(1),Dim_Seg_Iband(2)))
+                    nasa_viirs_i5_bt = Iband_Temp_Buff_Bt
                     if (ch(31)%Sub_Pixel_On_Flag) then
                       call COMPUTE_IBAND_STATISTICS(Iband_Temp_Buff_Bt, &
                                                 Ch(31)%Bt_Toa_Min_Sub(1:Dim_Seg(1),1:Dim_Seg(2)), &

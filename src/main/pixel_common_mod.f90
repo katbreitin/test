@@ -563,10 +563,10 @@ module PIXEL_COMMON_MOD
     integer (kind=int1):: Mode
     integer:: Nwp_Opt
     integer:: Smooth_Nwp_Flag
-    integer, allocatable, dimension(:,:):: I_Nwp
-    integer, allocatable, dimension(:,:):: J_Nwp
-    integer, allocatable, dimension(:,:):: I_Nwp_x
-    integer, allocatable, dimension(:,:):: J_Nwp_x
+    integer*4, allocatable, dimension(:,:):: I_Nwp
+    integer*4, allocatable, dimension(:,:):: J_Nwp
+    integer*4, allocatable, dimension(:,:):: I_Nwp_x
+    integer*4, allocatable, dimension(:,:):: J_Nwp_x
     real, allocatable, dimension(:,:):: Lon_Nwp_Fac
     real, allocatable, dimension(:,:):: Lat_Nwp_Fac
     real (kind=real4), dimension(:,:), allocatable:: Tsfc
@@ -681,6 +681,8 @@ module PIXEL_COMMON_MOD
   integer,public, save:: Mask_Mode
   integer,public, save:: NWP_Mode
   integer,public, save:: Cld_Flag
+  integer,public, save:: Tracer_Flag
+  integer,public, save:: Skip_Output
   integer,public, save:: Blank_Flag
   integer,public, save:: Sasrab_Flag
   integer,public, save:: Modis_Clr_Alb_Flag
@@ -1039,7 +1041,7 @@ module PIXEL_COMMON_MOD
   integer(kind=int1),dimension(:,:),allocatable, public, save, target:: Temp_Mask
 
   !--- nwp parameters
-  integer, allocatable, dimension(:,:), public, save, target :: Zen_Idx_Rtm
+  integer*4, allocatable, dimension(:,:), public, save, target :: Zen_Idx_Rtm
 
   !--- local radiative center
   integer (kind=int1), allocatable, dimension(:,:), public, save, target :: Mask_LRC
@@ -2435,7 +2437,7 @@ end subroutine DESTROY_SURFACE_ARRAYS
 !------------------------------------------------------------------------------
 subroutine CREATE_ACHA_ARRAYS(dim1,dim2)
    integer, intent(in):: dim1, dim2
-   if (Cld_Flag == sym%YES) then
+   if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
 
     allocate(ACHA%Tc_Ap(dim1,dim2)) 
     allocate(ACHA%Ec_Ap(dim1,dim2)) 
@@ -2518,7 +2520,7 @@ end subroutine CREATE_ACHA_ARRAYS
 
 subroutine RESET_ACHA_ARRAYS()
 
-   if (Cld_Flag == sym%YES) then
+   if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
     ACHA%Tc_Ap = Missing_Value_Real4
     ACHA%Ec_Ap = Missing_Value_Real4
     ACHA%Beta_Ap = Missing_Value_Real4
@@ -2595,7 +2597,7 @@ end subroutine RESET_ACHA_ARRAYS
 
 subroutine DESTROY_ACHA_ARRAYS()
 
-   if (Cld_Flag == sym%YES) then
+   if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
     deallocate(ACHA%Tc_Ap) 
     deallocate(ACHA%Ec_Ap) 
     deallocate(ACHA%Beta_Ap) 
@@ -2673,7 +2675,7 @@ end subroutine DESTROY_ACHA_ARRAYS
 !------------------------------------------------------------------------------
 subroutine CREATE_BASE_ARRAYS(dim1,dim2)
    integer, intent(in):: dim1, dim2
-   if (Cld_Flag == sym%YES) then
+   if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
      allocate (BASE%Zc_Base(dim1,dim2))
      allocate (BASE%Pc_Base(dim1,dim2))
      allocate (BASE%Tc_Base(dim1,dim2))
@@ -2799,7 +2801,7 @@ end subroutine DESTROY_CCL_ARRAYS
 !------------------------------------------------------------------------------
 subroutine CREATE_ASOS_ARRAYS(dim1,dim2)
    integer, intent(in):: dim1, dim2
-   if (Cld_Flag == sym%YES) then
+   if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
     allocate(ASOS%Code(dim1,dim2))
     allocate(ASOS%ECA(dim1,dim2))
     allocate(ASOS%Zmax(dim1,dim2))
@@ -2824,7 +2826,7 @@ end subroutine DESTROY_ASOS_ARRAYS
 !------------------------------------------------------------------------------
 subroutine CREATE_DCOMP_ARRAYS(dim1,dim2)
    integer, intent(in):: dim1, dim2
-   if (Cld_Flag == sym%YES) then
+   if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
       allocate(Tau_DCOMP_1(dim1,dim2))
       allocate(Tau_DCOMP_2(dim1,dim2))
       allocate(Tau_DCOMP_3(dim1,dim2))
@@ -2882,7 +2884,7 @@ subroutine CREATE_DCOMP_ARRAYS(dim1,dim2)
    endif
 end subroutine CREATE_DCOMP_ARRAYS
 subroutine RESET_DCOMP_ARRAYS()
-   if (Cld_Flag == sym%YES) then
+   if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
       Tau_DCOMP = Missing_Value_Real4
       Tau_DCOMP_1 = Missing_Value_Real4
       Tau_DCOMP_2 = Missing_Value_Real4
@@ -2940,7 +2942,7 @@ subroutine RESET_DCOMP_ARRAYS()
    endif
 end subroutine RESET_DCOMP_ARRAYS
 subroutine DESTROY_DCOMP_ARRAYS()
-   if (Cld_Flag == sym%YES) then
+   if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
       deallocate(Tau_DCOMP)
       deallocate(Tau_DCOMP_1)
       deallocate(Tau_DCOMP_2)
@@ -3081,7 +3083,7 @@ end subroutine DESTROY_AEROSOL_ARRAYS
 subroutine CREATE_CLOUD_MASK_ARRAYS(dim1,dim2,dim3)
   integer, intent(in):: dim1, dim2, dim3
   allocate(CLDMASK%Cld_Mask_Qf(dim1,dim2))
-  if (Cld_Flag == sym%YES) then
+  if (Cld_Flag == sym%YES .OR. Tracer_Flag==1) then
      allocate(CLDMASK%Cld_Mask(dim1,dim2))
      allocate(CLDMASK%Cld_Mask_Binary(dim1,dim2))
      allocate(CLDMASK%Cld_Mask_IR(dim1,dim2))
@@ -3109,7 +3111,7 @@ subroutine CREATE_CLOUD_MASK_ARRAYS(dim1,dim2,dim3)
 end subroutine CREATE_CLOUD_MASK_ARRAYS
 subroutine RESET_CLOUD_MASK_ARRAYS()
   if (allocated(CLDMASK%Cld_Mask_Qf)) CLDMASK%Cld_Mask_Qf = Missing_Value_Int1
-  if (Cld_Flag == sym%YES) then
+  if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
      CLDMASK%Cld_Mask = Missing_Value_Int1
      CLDMASK%Cld_Mask_Binary = Missing_Value_Int1
      CLDMASK%Cld_Mask_IR = Missing_Value_Int1
@@ -3137,7 +3139,7 @@ subroutine RESET_CLOUD_MASK_ARRAYS()
 end subroutine RESET_CLOUD_MASK_ARRAYS
 subroutine DESTROY_CLOUD_MASK_ARRAYS()
   deallocate(CLDMASK%Cld_Mask_Qf)
-  if (Cld_Flag == sym%YES) then
+  if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
      deallocate(CLDMASK%Cld_Mask)
      deallocate(CLDMASK%Cld_Mask_Binary)
      deallocate(CLDMASK%Cld_Mask_IR)
@@ -3168,7 +3170,7 @@ end subroutine DESTROY_CLOUD_MASK_ARRAYS
 !-----------------------------------------------------------
 subroutine CREATE_CLOUD_TYPE_ARRAYS(dim1,dim2)
   integer, intent(in):: dim1, dim2
-  if (Cld_Flag == sym%YES) then
+  if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
      allocate(Metadata_Aux(dim1,dim2))
      allocate(Cld_Type_Aux(dim1,dim2))
      allocate(Cld_Phase_Aux(dim1,dim2))
@@ -3184,7 +3186,7 @@ subroutine CREATE_CLOUD_TYPE_ARRAYS(dim1,dim2)
   endif
 end subroutine CREATE_CLOUD_TYPE_ARRAYS
 subroutine RESET_CLOUD_TYPE_ARRAYS()
-  if (Cld_Flag == sym%YES) then
+  if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
       Cld_Phase = Missing_Value_Int1
       Cld_Phase_Uncertainty = Missing_Value_Real4
       Cld_Type = Missing_Value_Int1
@@ -3200,7 +3202,7 @@ subroutine RESET_CLOUD_TYPE_ARRAYS()
   endif
 end subroutine RESET_CLOUD_TYPE_ARRAYS
 subroutine DESTROY_CLOUD_TYPE_ARRAYS
-  if (Cld_Flag == sym%YES) then
+  if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
      deallocate(Metadata_Aux)
      deallocate(Cld_Type_Aux)
      deallocate(Cld_Phase_Aux)
@@ -3309,7 +3311,7 @@ subroutine CREATE_CLOUD_PROD_ARRAYS(dim1,dim2)
   allocate(Pc_Opaque_Cloud(dim1,dim2))
   allocate(Zc_Opaque_Cloud(dim1,dim2))
   allocate(Tc_Opaque_Cloud(dim1,dim2))
-  if (Cld_Flag == sym%YES) then
+  if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
     allocate(Pc_H2O(dim1,dim2))
     allocate(Tc_H2O(dim1,dim2))
     allocate(Zc_H2O(dim1,dim2))
@@ -3336,7 +3338,7 @@ subroutine RESET_CLOUD_PROD_ARRAYS()
   Pc_Opaque_Cloud = Missing_Value_Real4
   Zc_Opaque_Cloud = Missing_Value_Real4
   Tc_Opaque_Cloud = Missing_Value_Real4
-  if (Cld_Flag == sym%YES) then
+  if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
      Pc_H2O = Missing_Value_Real4
      Tc_H2O = Missing_Value_Real4
      Zc_H2O = Missing_Value_Real4
@@ -3363,7 +3365,7 @@ subroutine DESTROY_CLOUD_PROD_ARRAYS()
   deallocate(Pc_Opaque_Cloud)
   deallocate(Zc_Opaque_Cloud)
   deallocate(Tc_Opaque_Cloud)
-  if (Cld_Flag == sym%YES) then
+  if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
      deallocate(Pc_H2O)
      deallocate(Tc_H2O)
      deallocate(Zc_H2O)
@@ -3416,7 +3418,7 @@ end subroutine DESTROY_CALIOP_ARRAYS
 !-----------------------------------------------------------
 subroutine CREATE_NLCOMP_ARRAYS(dim1,dim2)
   integer, intent(in):: dim1, dim2
-  if (Cld_Flag == sym%YES) then
+  if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
      allocate(Tau_Nlcomp(dim1,dim2))
      allocate(Reff_Nlcomp(dim1,dim2))
      allocate(Nlcomp_Info_Flag(dim1,dim2))
@@ -3426,7 +3428,7 @@ subroutine CREATE_NLCOMP_ARRAYS(dim1,dim2)
   endif
 end subroutine CREATE_NLCOMP_ARRAYS
 subroutine RESET_NLCOMP_ARRAYS()
-  if (Cld_Flag == sym%YES) then
+  if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
       Tau_Nlcomp = Missing_Value_Real4
       Reff_Nlcomp = Missing_Value_Real4
       Tau_Nlcomp_Cost = Missing_Value_Real4
@@ -3436,7 +3438,7 @@ subroutine RESET_NLCOMP_ARRAYS()
   endif
 end subroutine RESET_NLCOMP_ARRAYS
 subroutine DESTROY_NLCOMP_ARRAYS()
-  if (Cld_Flag == sym%YES) then
+  if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
      deallocate(Tau_Nlcomp)
      deallocate(Reff_Nlcomp)
      deallocate(Nlcomp_Info_Flag)

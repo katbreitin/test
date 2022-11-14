@@ -76,16 +76,24 @@ contains
       sensor_string = 'eos_1_modis'
       
     case ( 'VIIRS-SNPP')
-      
       chn_list(1:32) = [6,9,3,4,10,14,15,1,2,-1,-1,-1,-1,-1,7,-1,-1,-1,-1,17,  &
                         -1,18,-1,-1,-1,12,-1,-1,19,-1,20,22]
+      chn_list(39) = 1   ! I1
+      chn_list(40) = 2   ! I2
+      chn_list(41) = 13  ! I3
+      chn_list(42) = 16  ! I4
+      chn_list(43) = 21  ! I5
       list = chn_list(chn)
       sensor_string = 'jpss_0_viirs'
     
     case ( 'VIIRS-N20')
-      
       chn_list(1:32) = [6,9,3,4,10,14,15,1,2,-1,-1,-1,-1,-1,7,-1,-1,-1,-1,17,  &
                         -1,18,-1,-1,-1,12,-1,-1,19,-1,20,22]
+      chn_list(39) = 1   ! I1
+      chn_list(40) = 2   ! I2
+      chn_list(41) = 13  ! I3
+      chn_list(42) = 16  ! I4
+      chn_list(43) = 21  ! I5
       list = chn_list(chn)
       sensor_string = 'noaa_20_viirs'
       
