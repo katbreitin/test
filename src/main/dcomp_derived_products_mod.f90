@@ -893,6 +893,8 @@ subroutine COMPUTE_DCOMP_INSOLATION(Line_Idx_Min,Num_Lines,Sun_Earth_Distance)
   aod_380 = 0.1
   aod_550 = 0.1
 
+  if (Sensor%Chan_On_Flag_Default(1) == sym%NO) return
+
   line_loop: DO Line_Idx = Line_Idx_Min, Line_Idx_Max
     element_loop: DO Elem_Idx = Elem_Idx_Min, Elem_Idx_Max
 
