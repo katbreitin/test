@@ -26,7 +26,9 @@
       module tracer
 
         use pixel_common_mod, only: Sfc,Nav,Geo,Ch,CLDMASK,Tracer_Flag,Skip_Output,CCL, ACHA, &
-            Zen_Idx_RTM, NWP_PIX, Tau_DCOMP, Reff_DCOMP, Cld_Type, Cld_Phase, DCOMP_Quality_Flag, &
+            Zen_Idx_RTM, NWP_PIX, Tau_DCOMP, Tau_DCOMP_1, Tau_DCOMP_2, Tau_DCOMP_3, &
+            Reff_DCOMP, Reff_DCOMP_1, Reff_DCOMP_2, REFF_DCOMP_3, &
+            Cld_Type, Cld_Phase, DCOMP_Quality_Flag, &
             Insolation_DCOMP, Insolation_Diffuse_DCOMP, &
             Image, Temporary_Data_Dir, Tc_Opaque_Cloud, &
             Bad_Pixel_Mask, &
@@ -691,8 +693,14 @@
         call add_sym_r4_2d(NWP_PIX%Ozone, 'total_column_ozone_nwp')
         ! DCOMP
         call add_sym_r4_2d(Tau_DCOMP, 'cld_opd_dcomp')
+        call add_sym_r4_2d(Tau_DCOMP_1, 'cld_opd_dcomp_1')
+        call add_sym_r4_2d(Tau_DCOMP_2, 'cld_opd_dcomp_2')
+        call add_sym_r4_2d(Tau_DCOMP_3, 'cld_opd_dcomp_3')
         call add_sym_r4_2d(Reff_DCOMP, 'cld_reff_dcomp')
-        call add_sym_r4_2d(Reff_DCOMP, 'cld_cwp_dcomp')
+        call add_sym_r4_2d(Reff_DCOMP_1, 'cld_reff_dcomp_1')
+        call add_sym_r4_2d(Reff_DCOMP_2, 'cld_reff_dcomp_2')
+        call add_sym_r4_2d(Reff_DCOMP_3, 'cld_reff_dcomp_3')
+        call add_sym_r4_2d(Cwp_Dcomp, 'cld_cwp_dcomp')
         call add_sym_i1_2d(DCOMP_Quality_Flag, 'dcomp_quality')
         call add_sym_r4_2d(Insolation_DCOMP, 'insolation_dcomp')
         call add_sym_r4_2d(Insolation_Diffuse_DCOMP, 'insolation_diffuse_dcomp')
