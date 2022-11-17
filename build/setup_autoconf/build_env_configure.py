@@ -328,6 +328,23 @@ def main(cbenv_path, anchor_path, build_env_cfg_fpath, supp_defs_fpath,
 
       # Determine system defines ("-D" option arguments):
 
+      # Check for Linux and Darwin (i.e., Apple OSX/MacOS) explicitly;
+      #  otherwise just assume a UNIX or UNIX-like system.  MS-Windows is
+      #  currently <not> supported.
+    def_OS_dict = dict( \
+                        linux = "-DLINUX",
+                        darwin = "-DDARWIN",
+                        unknown_default = '-DUNIX' \
+                        )
+
+    try:
+        for key in def_OS_dict:
+            if key in pcfgd["sys_canonical_fullstr"]:
+                OS_def = def_OS_dict[key]
+                break
+    except:
+        OS_def = def_OS_dict["unknown_default"]
+
     def_Fortran_dict = dict( \
                             gfortran = "-DFC_GNU",
                             ifort = "-DFC_INTEL",
@@ -353,8 +370,6 @@ def main(cbenv_path, anchor_path, build_env_cfg_fpath, supp_defs_fpath,
         C_compiler_def = def_C_dict[C_compiler_bn]
     except:
         C_compiler_def = def_C_dict["unknown_default"]
-                      
-    sys_os_def = ' '   # Might be useful someday...
 
       # supp_defs_fpath is a sh-syntax file that contains any supplementary
       #  definitions to be added into the build environment at this final stage.
@@ -390,7 +405,7 @@ def main(cbenv_path, anchor_path, build_env_cfg_fpath, supp_defs_fpath,
 "app_C_compiler_flags=\"\";\n"+ \
 "\n"+ \
 "app_C_preproc_miscflags=\"\";\n"+ \
-"app_C_preproc_defines=\""+sdd["supp_C_defs"]+' '+C_compiler_def+' '+sys_os_def+' '+sdd["supp_C_includes"]+"\";\n"+ \
+"app_C_preproc_defines=\""+sdd["supp_C_defs"]+' '+C_compiler_def+' '+OS_def+' '+sdd["supp_C_includes"]+"\";\n"+ \
 "app_C_preproc_includes=\""+sdd["supp_C_includes"]+"\";\n"+ \
 "\n"+ \
 "app_C_linker_libs=\""+sdd["supp_C_linker_libs"]+"\";\n"+ \
@@ -400,7 +415,7 @@ def main(cbenv_path, anchor_path, build_env_cfg_fpath, supp_defs_fpath,
 "\n"+ \
 "app_CXX_compiler_flags=\"\";\n"+ \
 "app_CXX_preproc_miscflags=\"\";\n"+ \
-"app_CXX_preproc_defines=\"\";\n"+ \
+"app_CXX_preproc_defines=\""+OS_def+"\";\n"+ \
 "app_CXX_preproc_includes=\"\";\n"+ \
 "\n"+ \
 "app_CXX_linker_libs=\"\";\n"+ \
@@ -411,7 +426,7 @@ def main(cbenv_path, anchor_path, build_env_cfg_fpath, supp_defs_fpath,
 "app_Fortran_compiler_flags=\"\";\n"+ \
 "\n"+ \
 "app_Fortran_preproc_miscflags=\"\";\n"+ \
-"app_Fortran_preproc_defines=\""+sdd["supp_Fortran_defs"]+' '+Fortran_compiler_def+' '+sys_os_def+"\";\n"+ \
+"app_Fortran_preproc_defines=\""+sdd["supp_Fortran_defs"]+' '+Fortran_compiler_def+' '+OS_def+"\";\n"+ \
 "app_Fortran_preproc_includes=\""+sdd["supp_Fortran_includes"]+"\";\n"+ \
 "app_Fortran_modpaths=\""+sdd["supp_Fortran_modpaths"]+"\";\n"+ \
 "\n"+ \
@@ -433,7 +448,7 @@ def main(cbenv_path, anchor_path, build_env_cfg_fpath, supp_defs_fpath,
 "app_C_compiler_flags =\n"+ \
 "\n"+ \
 "app_C_preproc_miscflags =\n"+ \
-"app_C_preproc_defines = "+sdd["supp_C_defs"]+' '+C_compiler_def+' '+sys_os_def+' '+sdd["supp_C_includes"]+"\n"+ \
+"app_C_preproc_defines = "+sdd["supp_C_defs"]+' '+C_compiler_def+' '+OS_def+' '+sdd["supp_C_includes"]+"\n"+ \
 "app_C_preproc_includes = "+sdd["supp_C_includes"]+"\n"+ \
 "\n"+ \
 "app_C_linker_libs = "+sdd["supp_C_linker_libs"]+"\n"+ \
@@ -444,7 +459,7 @@ def main(cbenv_path, anchor_path, build_env_cfg_fpath, supp_defs_fpath,
 "app_CXX_compiler_flags =\n"+ \
 "\n"+ \
 "app_CXX_preproc_miscflags =\n"+ \
-"app_CXX_preproc_defines =\n"+ \
+"app_CXX_preproc_defines ="+OS_def+"\n"+ \
 "app_CXX_preproc_includes =\n"+ \
 "\n"+ \
 "app_CXX_linker_libs =\n"+ \
@@ -455,7 +470,7 @@ def main(cbenv_path, anchor_path, build_env_cfg_fpath, supp_defs_fpath,
 "app_Fortran_compiler_flags =\n"+ \
 "\n"+ \
 "app_Fortran_preproc_miscflags =\n"+ \
-"app_Fortran_preproc_defines = "+sdd["supp_Fortran_defs"]+' '+Fortran_compiler_def+' '+sys_os_def+"\n"+ \
+"app_Fortran_preproc_defines = "+sdd["supp_Fortran_defs"]+' '+Fortran_compiler_def+' '+OS_def+"\n"+ \
 "app_Fortran_preproc_includes = "+sdd["supp_Fortran_includes"]+"\n"+ \
 "app_Fortran_modpaths = "+sdd["supp_Fortran_modpaths"]+"\n"+ \
 "\n"+ \
