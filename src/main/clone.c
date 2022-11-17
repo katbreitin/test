@@ -1,4 +1,6 @@
+#ifdef LINUX
 #define _GNU_SOURCE
+#endif
 #include <sched.h>          /* Definition of CLONE_* constants */
 #include <sys/syscall.h>    /* Definition of SYS_* constants */
 #include <unistd.h>
@@ -32,11 +34,16 @@ void reopen_files(int parent_pid){
 }
 
 int sibling_clone(){
+#ifdef LINUX
     void *stack = 0;
     unsigned long flags = CLONE_PARENT;
     long pid;
 
     pid = syscall(SYS_clone, flags, stack);
     return (int) pid;
+#else
+    printf("ERROR: `sibling_clone` has been only implemented for Linux systems.");
+    exit(1);
+#endif
 }
 
