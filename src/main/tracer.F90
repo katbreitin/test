@@ -689,6 +689,7 @@
         call add_sym_r4_2d(NWP_PIX%Ttropo, 'tropopause_temperature_nwp')
         call add_sym_r4_2d(NWP_PIX%Tsfc, 'surface_temperature_nwp')
         call add_sym_r4_2d(NWP_PIX%Psfc, 'surface_pressure_nwp')
+        call add_sym_r4_2d(NWP_PIX%Rhsfc, 'surface_relative_humidity_nwp')
         call add_sym_r4_2d(NWP_PIX%Tpw, 'total_precipitable_water_nwp')
         call add_sym_r4_2d(NWP_PIX%Ozone, 'total_column_ozone_nwp')
         ! DCOMP
@@ -711,6 +712,10 @@
             ! surface emissivity
             write (varname, "(A,I0.2)") "emiss_sfc_ch", c
             call add_sym_r4_2d(Ch(c)%Sfc_Emiss,varname)
+
+            ! emissivity relative to 11um
+            write (varname, "(A,I0.2)") "emiss_ch", c
+            call add_sym_r4_2d(Ch(c)%Emiss_Rel_11um,varname)
 
             ! surface refl
             write (varname, "(A,I0.2)") "refl_sfc_white_sky_ch", c
