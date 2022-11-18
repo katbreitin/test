@@ -25,6 +25,7 @@
 
       module tracer
 
+        use univ_kind_defs_mod, only: i1, i4, i8, f4
         use pixel_common_mod, only: Sfc,Nav,Geo,Ch,CLDMASK,Tracer_Flag,Skip_Output,CCL, ACHA, &
             Zen_Idx_RTM, NWP_PIX, Tau_DCOMP, Tau_DCOMP_1, Tau_DCOMP_2, Tau_DCOMP_3, &
             Reff_DCOMP, Reff_DCOMP_1, Reff_DCOMP_2, REFF_DCOMP_3, &
@@ -56,97 +57,112 @@
         integer,parameter :: max_clones = 64
 
         integer, dimension(max_clones) :: sibling_pids
-        integer*8, volatile :: sibling_pids_addr
+        integer(i8), volatile :: sibling_pids_addr
 
-#ifdef __GFORTRAN__
-#define DECLARENAMES(TYPE,DIM) character(LEN=symbol_length_max), dimension(n_symbols_max) :: symbol_names_/**/TYPE/**/_/**/DIM/**/d
-#define DECLAREPTRS(TYPE,DIM) integer*8, dimension(n_symbols_max) :: symbol_ptrs_/**/TYPE/**/_/**/DIM/**/d
-#define DECLARESHAPES(TYPE,DIM) integer*8, dimension(DIM, n_symbols_max) :: symbol_shapes_/**/TYPE/**/_/**/DIM/**/d
-#define DECLAREHOOKS(TYPE,DIM) integer*8, volatile :: num_symbols_/**/TYPE/**/_/**/DIM/**/d, symbol_names_/**/TYPE/**/_/**/DIM/**/d_ptr, symbol_ptrs_/**/TYPE/**/_/**/DIM/**/d_ptr, symbol_shapes_/**/TYPE/**/_/**/DIM/**/d_ptr
-#else
-#endif
-        ! 8-bit Int (Integer*1) -- 3 dimensions
-        DECLARENAMES(i1,3)
-        DECLAREPTRS(i1,3)
-        DECLARESHAPES(i1,3)
-        DECLAREHOOKS(i1,3)
+        ! 8-bit Int (integer(i1)) -- 3 dimensions
+        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+             symbol_names_i1_3d
+        integer(i8), dimension(n_symbols_max) :: symbol_ptrs_i1_3d
+        integer(i8), dimension(3, n_symbols_max) :: symbol_shapes_i1_3d
+        integer(i8), volatile :: num_symbols_i1_3d, symbol_names_i1_3d_ptr,  &
+             symbol_ptrs_i1_3d_ptr, symbol_shapes_i1_3d_ptr
 
-        ! 32-bit Float (Real*4) -- 3 dimensions
-        DECLARENAMES(r4,3)
-        DECLAREPTRS(r4,3)
-        DECLARESHAPES(r4,3)
-        DECLAREHOOKS(r4,3)
+        ! 32-bit Float (real(f4)) -- 3 dimensions
+        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+             symbol_names_f4_3d
+        integer(i8), dimension(n_symbols_max) :: symbol_ptrs_f4_3d
+        integer(i8), dimension(3, n_symbols_max) :: symbol_shapes_f4_3d
+        integer(i8), volatile :: num_symbols_f4_3d, symbol_names_f4_3d_ptr,  &
+             symbol_ptrs_f4_3d_ptr, symbol_shapes_f4_3d_ptr
 
-        ! 32-bit Float (Real*4) -- 2 dimensions
-        DECLARENAMES(r4,2)
-        DECLAREPTRS(r4,2)
-        DECLARESHAPES(r4,2)
-        DECLAREHOOKS(r4,2)
+        ! 8-bit Int (integer(i1)) -- 2 dimensions
+        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+             symbol_names_i1_2d
+        integer(i8), dimension(n_symbols_max) :: symbol_ptrs_i1_2d
+        integer(i8), dimension(2, n_symbols_max) :: symbol_shapes_i1_2d
+        integer(i8), volatile :: num_symbols_i1_2d, symbol_names_i1_2d_ptr,  &
+             symbol_ptrs_i1_2d_ptr, symbol_shapes_i1_2d_ptr
 
-        ! 8-bit Int (Integer*1) -- 2 dimensions
-        DECLARENAMES(i1,2)
-        DECLAREPTRS(i1,2)
-        DECLARESHAPES(i1,2)
-        DECLAREHOOKS(i1,2)
+        ! 32-bit Int (integer(i4)) -- 2 dimensions
+        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+             symbol_names_i4_2d
+        integer(i8), dimension(n_symbols_max) :: symbol_ptrs_i4_2d
+        integer(i8), dimension(2, n_symbols_max) :: symbol_shapes_i4_2d
+        integer(i8), volatile :: num_symbols_i4_2d, symbol_names_i4_2d_ptr,  &
+             symbol_ptrs_i4_2d_ptr, symbol_shapes_i4_2d_ptr
 
-        ! 32-bit Int (Integer*4) -- 2 dimensions
-        DECLARENAMES(i4,2)
-        DECLAREPTRS(i4,2)
-        DECLARESHAPES(i4,2)
-        DECLAREHOOKS(i4,2)
+        ! 64-bit Int (integer(i8)) -- 2 dimensions
+        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+             symbol_names_i8_2d
+        integer(i8), dimension(n_symbols_max) :: symbol_ptrs_i8_2d
+        integer(i8), dimension(2, n_symbols_max) :: symbol_shapes_i8_2d
+        integer(i8), volatile :: num_symbols_i8_2d, symbol_names_i8_2d_ptr,  &
+             symbol_ptrs_i8_2d_ptr, symbol_shapes_i8_2d_ptr
 
-        ! 64-bit Int (Integer*8) -- 2 dimensions
-        DECLARENAMES(i8,2)
-        DECLAREPTRS(i8,2)
-        DECLARESHAPES(i8,2)
-        DECLAREHOOKS(i8,2)
+        ! 32-bit Float (real(f4)) -- 2 dimensions
+        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+             symbol_names_f4_2d
+        integer(i8), dimension(n_symbols_max) :: symbol_ptrs_f4_2d
+        integer(i8), dimension(2, n_symbols_max) :: symbol_shapes_f4_2d
+        integer(i8), volatile :: num_symbols_f4_2d, symbol_names_f4_2d_ptr,  &
+             symbol_ptrs_f4_2d_ptr, symbol_shapes_f4_2d_ptr
 
-        ! 8-bit Int (Integer*1) -- 1 dimension
-        DECLARENAMES(i1,1)
-        DECLAREPTRS(i1,1)
-        DECLARESHAPES(i1,1)
-        DECLAREHOOKS(i1,1)
+        ! 8-bit Int (integer(i1)) -- 1 dimension
+        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+             symbol_names_i1_1d
+        integer(i8), dimension(n_symbols_max) :: symbol_ptrs_i1_1d
+        integer(i8), dimension(1, n_symbols_max) :: symbol_shapes_i1_1d
+        integer(i8), volatile :: num_symbols_i1_1d, symbol_names_i1_1d_ptr,  &
+             symbol_ptrs_i1_1d_ptr, symbol_shapes_i1_1d_ptr
 
-        ! 32-bit Int (Integer*4) -- 1 dimension
-        DECLARENAMES(i4,1)
-        DECLAREPTRS(i4,1)
-        DECLARESHAPES(i4,1)
-        DECLAREHOOKS(i4,1)
+        ! 32-bit Int (integer(i4)) -- 1 dimension
+        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+             symbol_names_i4_1d
+        integer(i8), dimension(n_symbols_max) :: symbol_ptrs_i4_1d
+        integer(i8), dimension(1, n_symbols_max) :: symbol_shapes_i4_1d
+        integer(i8), volatile :: num_symbols_i4_1d, symbol_names_i4_1d_ptr,  &
+             symbol_ptrs_i4_1d_ptr, symbol_shapes_i4_1d_ptr
 
-        ! 64-bit Int (Integer*8) -- 1 dimension
-        DECLARENAMES(i8,1)
-        DECLAREPTRS(i8,1)
-        DECLARESHAPES(i8,1)
-        DECLAREHOOKS(i8,1)
+        ! 64-bit Int (integer(i8)) -- 1 dimension
+        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+             symbol_names_i8_1d
+        integer(i8), dimension(n_symbols_max) :: symbol_ptrs_i8_1d
+        integer(i8), dimension(1, n_symbols_max) :: symbol_shapes_i8_1d
+        integer(i8), volatile :: num_symbols_i8_1d, symbol_names_i8_1d_ptr,  &
+             symbol_ptrs_i8_1d_ptr, symbol_shapes_i8_1d_ptr
 
-        ! 32-bit Float (Real*4) -- 1 dimension
-        DECLARENAMES(r4,1)
-        DECLAREPTRS(r4,1)
-        DECLARESHAPES(r4,1)
-        DECLAREHOOKS(r4,1)
+        ! 32-bit Float (real(f4)) -- 1 dimension
+        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+             symbol_names_f4_1d
+        integer(i8), dimension(n_symbols_max) :: symbol_ptrs_f4_1d
+        integer(i8), dimension(1, n_symbols_max) :: symbol_shapes_f4_1d
+        integer(i8), volatile :: num_symbols_f4_1d, symbol_names_f4_1d_ptr,  &
+             symbol_ptrs_f4_1d_ptr, symbol_shapes_f4_1d_ptr
 
-        ! 32-bit Float (Real*4) -- 0 dimensions
-        DECLARENAMES(r4,0)
-        DECLAREPTRS(r4,0)
-        DECLAREHOOKS(r4,0)
+        ! 32-bit Float (real(f4)) -- 0 dimensions
+        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+             symbol_names_f4_0d
+        integer(i8), dimension(n_symbols_max) :: symbol_ptrs_f4_0d
+        integer(i8), volatile :: num_symbols_f4_0d, symbol_names_f4_0d_ptr,  &
+             symbol_ptrs_f4_0d_ptr, symbol_shapes_f4_0d_ptr
 
-        integer*4, volatile :: number_of_lines
-        integer*4, volatile :: wait_number
-        integer*4, volatile :: skip_processing = -1
+        integer(i4), volatile :: number_of_lines
+        integer(i4), volatile :: wait_number
+        integer(i4), volatile :: skip_processing = -1
 
 
         ! RTM data structure is terrible to access
         ! make copies with more accessible structure
-        integer*8, dimension(3) :: rtm_shape_3d
+        integer(i8), dimension(3) :: rtm_shape_3d
 
-        integer*8, volatile :: rtm_numel
-        integer*8, dimension(:), allocatable :: rtm_index_0, rtm_index_1,rtm_zen_index, rtm_sfc_index
-        real*4, dimension(:,:), allocatable :: rtm_t_prof, rtm_z_prof, rtm_q_prof, rtm_tpw_prof, rtm_o3_prof
+        integer(i8), volatile :: rtm_numel
+        integer(i8), dimension(:), allocatable :: rtm_index_0, rtm_index_1,rtm_zen_index, rtm_sfc_index
+        real(f4), dimension(:,:), allocatable :: rtm_t_prof, rtm_z_prof, rtm_q_prof, rtm_tpw_prof, rtm_o3_prof
         ! (45) channel dimension should be pretty sparse
         ! only virtual memory if we don't touch the missing channels
         ! dimensions (nlevels, rtm_numel_max, channels)
-        real*4, dimension(:,:,:),allocatable :: rtm_arad_prof, rtm_atran_prof
-        integer*1, dimension(rtm_num_channels_max) :: rtm_channel_allocated
+        real(f4), dimension(:,:,:), allocatable :: rtm_arad_prof, rtm_atran_prof
+        integer(i1), dimension(rtm_num_channels_max) :: rtm_channel_allocated
 
 
       interface
@@ -174,13 +190,20 @@
         end function mmap_heap
       end interface
 
+      interface
+        integer(c_int) function sigstop_to_pid(pid) bind(C, name="sigstop_to_pid")
+          use iso_c_binding, only: c_int, c_long
+          integer(c_long) :: pid
+        end function sigstop_to_pid
+      end interface
+
 
       contains
 
 
       subroutine calculate_rtm_shapes(num_channels)
-        integer*8,intent(out) :: num_channels
-        integer*8 i,j, c, z
+        integer(i8), intent(out) :: num_channels
+        integer(i8) :: i, j, c, z
 
         rtm_channel_allocated(:) = 0
 
@@ -212,7 +235,7 @@
       end subroutine
 
       subroutine rtm_realloc(num_channels)
-        integer*8, intent(in) :: num_channels
+        integer(i8), intent(in) :: num_channels
 
         if(allocated(rtm_t_prof)) deallocate(rtm_t_prof) 
         if(allocated(rtm_z_prof)) deallocate(rtm_z_prof) 
@@ -240,7 +263,7 @@
       end subroutine
 
       subroutine load_rtm_symbols()
-        integer*8 n, i, j, element, num_channels, ichan, c, z
+        integer(i8) :: n, i, j, element, num_channels, ichan, c, z
 
         rtm_numel = 0
 
@@ -298,17 +321,17 @@
           enddo
         enddo
 
-        call add_sym_r4_2d(rtm_t_prof, 'rtm_t_profile')
-        call add_sym_r4_2d(rtm_z_prof, 'rtm_z_profile')
-        call add_sym_r4_2d(rtm_q_prof, 'rtm_q_profile')
-        call add_sym_r4_2d(rtm_tpw_prof, 'rtm_tpw_profile')
-        call add_sym_r4_2d(rtm_o3_prof, 'rtm_o3_profile')
+        call add_sym_f4_2d(rtm_t_prof, 'rtm_t_profile')
+        call add_sym_f4_2d(rtm_z_prof, 'rtm_z_profile')
+        call add_sym_f4_2d(rtm_q_prof, 'rtm_q_profile')
+        call add_sym_f4_2d(rtm_tpw_prof, 'rtm_tpw_profile')
+        call add_sym_f4_2d(rtm_o3_prof, 'rtm_o3_profile')
         call add_sym_i8_1d(rtm_index_0, 'rtm_index_0')
         call add_sym_i8_1d(rtm_index_1, 'rtm_index_1')
         call add_sym_i8_1d(rtm_zen_index, 'rtm_zen_index')
         call add_sym_i8_1d(rtm_sfc_index, 'rtm_sfc_index')
-        call add_sym_r4_3d(rtm_atran_prof, 'rtm_atran_profile')
-        call add_sym_r4_3d(rtm_arad_prof, 'rtm_arad_profile')
+        call add_sym_f4_3d(rtm_atran_prof, 'rtm_atran_profile')
+        call add_sym_f4_3d(rtm_arad_prof, 'rtm_arad_profile')
         ! Not allocatable
         num_symbols_i1_1d = num_symbols_i1_1d + 1;
         symbol_ptrs_i1_1d(num_symbols_i1_1d) = loc(rtm_channel_allocated);
@@ -322,37 +345,37 @@
 
       end subroutine
 
-      subroutine add_sym_r4_3d(sym, nam)
-        real*4, dimension(:,:,:), allocatable, intent(in) :: sym
+      subroutine add_sym_f4_3d(sym, nam)
+        real(f4), dimension(:,:,:), allocatable, intent(in) :: sym
         character(LEN=*), intent(in) :: nam
 
         if(allocated(sym)) then;
-            num_symbols_r4_3d = num_symbols_r4_3d + 1;
-            symbol_ptrs_r4_3d(num_symbols_r4_3d) = loc(sym);
-            symbol_names_r4_3d(num_symbols_r4_3d) = nam;
+            num_symbols_f4_3d = num_symbols_f4_3d + 1;
+            symbol_ptrs_f4_3d(num_symbols_f4_3d) = loc(sym);
+            symbol_names_f4_3d(num_symbols_f4_3d) = nam;
             ! I want row-major shapes
-            symbol_shapes_r4_3d(1,num_symbols_r4_3d) = size(sym, 3)
-            symbol_shapes_r4_3d(2,num_symbols_r4_3d) = size(sym, 2)
-            symbol_shapes_r4_3d(3,num_symbols_r4_3d) = size(sym, 1)
+            symbol_shapes_f4_3d(1,num_symbols_f4_3d) = size(sym, 3)
+            symbol_shapes_f4_3d(2,num_symbols_f4_3d) = size(sym, 2)
+            symbol_shapes_f4_3d(3,num_symbols_f4_3d) = size(sym, 1)
         endif
-      end subroutine
+      end subroutine add_sym_f4_3d
 
-      subroutine add_sym_r4_2d(sym, nam)
-        real*4, dimension(:,:), allocatable, intent(in) :: sym
+      subroutine add_sym_f4_2d(sym, nam)
+        real(f4), dimension(:,:), allocatable, intent(in) :: sym
         character(LEN=*), intent(in) :: nam
 
         if(allocated(sym)) then;
-            num_symbols_r4_2d = num_symbols_r4_2d + 1;
-            symbol_ptrs_r4_2d(num_symbols_r4_2d) = loc(sym);
-            symbol_names_r4_2d(num_symbols_r4_2d) = nam;
+            num_symbols_f4_2d = num_symbols_f4_2d + 1;
+            symbol_ptrs_f4_2d(num_symbols_f4_2d) = loc(sym);
+            symbol_names_f4_2d(num_symbols_f4_2d) = nam;
             ! I want row-major shapes
-            symbol_shapes_r4_2d(1,num_symbols_r4_2d) = size(sym, 2)
-            symbol_shapes_r4_2d(2,num_symbols_r4_2d) = size(sym, 1)
+            symbol_shapes_f4_2d(1,num_symbols_f4_2d) = size(sym, 2)
+            symbol_shapes_f4_2d(2,num_symbols_f4_2d) = size(sym, 1)
         endif
       end subroutine
 
       subroutine add_sym_i1_2d(sym, nam)
-        integer*1, dimension(:,:), allocatable, intent(in) :: sym
+        integer(i1), dimension(:,:), allocatable, intent(in) :: sym
         character(LEN=*), intent(in) :: nam
 
         if(allocated(sym)) then;
@@ -366,7 +389,7 @@
       end subroutine
 
       subroutine add_sym_i4_2d(sym, nam)
-        integer*4, dimension(:,:), allocatable, intent(in) :: sym
+        integer(i4), dimension(:,:), allocatable, intent(in) :: sym
         character(LEN=*), intent(in) :: nam
 
         if(allocated(sym)) then;
@@ -380,7 +403,7 @@
       end subroutine
 
       subroutine add_sym_i8_2d(sym, nam)
-        integer*8, dimension(:,:), allocatable, intent(in) :: sym
+        integer(i8), dimension(:,:), allocatable, intent(in) :: sym
         character(LEN=*), intent(in) :: nam
 
         if(allocated(sym)) then;
@@ -394,7 +417,7 @@
       end subroutine
 
       subroutine add_sym_i1_3d(sym, nam)
-        integer*1, dimension(:,:,:), allocatable, intent(in) :: sym
+        integer(i1), dimension(:,:,:), allocatable, intent(in) :: sym
         character(LEN=*), intent(in) :: nam
 
         if(allocated(sym)) then;
@@ -408,21 +431,21 @@
         endif
       end subroutine
 
-      subroutine add_sym_r4_1d(sym, nam)
-        real*4, dimension(:), allocatable, intent(in) :: sym
+      subroutine add_sym_f4_1d(sym, nam)
+        real(f4), dimension(:), allocatable, intent(in) :: sym
         character(LEN=*), intent(in) :: nam
 
         if(allocated(sym)) then;
-            num_symbols_r4_1d = num_symbols_r4_1d + 1;
-            symbol_ptrs_r4_1d(num_symbols_r4_1d) = loc(sym);
-            symbol_names_r4_1d(num_symbols_r4_1d) = nam;
+            num_symbols_f4_1d = num_symbols_f4_1d + 1;
+            symbol_ptrs_f4_1d(num_symbols_f4_1d) = loc(sym);
+            symbol_names_f4_1d(num_symbols_f4_1d) = nam;
             ! I want row-major shapes
-            symbol_shapes_r4_1d(1,num_symbols_r4_1d) = size(sym)
+            symbol_shapes_f4_1d(1,num_symbols_f4_1d) = size(sym)
         endif
       end subroutine
 
       subroutine add_sym_i4_1d(sym, nam)
-        integer*4, dimension(:), allocatable, intent(in) :: sym
+        integer(i4), dimension(:), allocatable, intent(in) :: sym
         character(LEN=*), intent(in) :: nam
 
         if(allocated(sym)) then;
@@ -435,7 +458,7 @@
       end subroutine
 
       subroutine add_sym_i8_1d(sym, nam)
-        integer*8, dimension(:), allocatable, intent(in) :: sym
+        integer(i8), dimension(:), allocatable, intent(in) :: sym
         character(LEN=*), intent(in) :: nam
 
         if(allocated(sym)) then;
@@ -447,13 +470,13 @@
         endif
       end subroutine
 
-      subroutine add_sym_r4_0d(sym, nam)
-        real*4, intent(in) :: sym
+      subroutine add_sym_f4_0d(sym, nam)
+        real(f4), intent(in) :: sym
         character(LEN=*), intent(in) :: nam
 
-        num_symbols_r4_0d = num_symbols_r4_0d + 1;
-        symbol_ptrs_r4_0d(num_symbols_r4_1d) = loc(sym);
-        symbol_names_r4_0d(num_symbols_r4_1d) = nam;
+        num_symbols_f4_0d = num_symbols_f4_0d + 1;
+        symbol_ptrs_f4_0d(num_symbols_f4_1d) = loc(sym);
+        symbol_names_f4_0d(num_symbols_f4_1d) = nam;
       end subroutine
 
 
@@ -463,24 +486,24 @@
           integer c;
           character(LEN=symbol_length_max) varname
 
-          num_symbols_r4_3d = 0
-          symbol_shapes_r4_3d_ptr = loc(symbol_shapes_r4_3d)
-          symbol_ptrs_r4_3d_ptr = loc(symbol_ptrs_r4_3d)
-          symbol_names_r4_3d_ptr = loc(symbol_names_r4_3d)
+          num_symbols_f4_3d = 0
+          symbol_shapes_f4_3d_ptr = loc(symbol_shapes_f4_3d)
+          symbol_ptrs_f4_3d_ptr = loc(symbol_ptrs_f4_3d)
+          symbol_names_f4_3d_ptr = loc(symbol_names_f4_3d)
 
-          num_symbols_r4_2d = 0
-          symbol_shapes_r4_2d_ptr = loc(symbol_shapes_r4_2d)
-          symbol_ptrs_r4_2d_ptr = loc(symbol_ptrs_r4_2d)
-          symbol_names_r4_2d_ptr = loc(symbol_names_r4_2d)
+          num_symbols_f4_2d = 0
+          symbol_shapes_f4_2d_ptr = loc(symbol_shapes_f4_2d)
+          symbol_ptrs_f4_2d_ptr = loc(symbol_ptrs_f4_2d)
+          symbol_names_f4_2d_ptr = loc(symbol_names_f4_2d)
 
-          num_symbols_r4_1d = 0
-          symbol_shapes_r4_1d_ptr = loc(symbol_shapes_r4_1d)
-          symbol_ptrs_r4_1d_ptr = loc(symbol_ptrs_r4_1d)
-          symbol_names_r4_1d_ptr = loc(symbol_names_r4_1d)
+          num_symbols_f4_1d = 0
+          symbol_shapes_f4_1d_ptr = loc(symbol_shapes_f4_1d)
+          symbol_ptrs_f4_1d_ptr = loc(symbol_ptrs_f4_1d)
+          symbol_names_f4_1d_ptr = loc(symbol_names_f4_1d)
 
-          num_symbols_r4_0d = 0
-          symbol_ptrs_r4_0d_ptr = loc(symbol_ptrs_r4_0d)
-          symbol_names_r4_0d_ptr = loc(symbol_names_r4_0d)
+          num_symbols_f4_0d = 0
+          symbol_ptrs_f4_0d_ptr = loc(symbol_ptrs_f4_0d)
+          symbol_names_f4_0d_ptr = loc(symbol_names_f4_0d)
 
           num_symbols_i4_2d = 0
           symbol_shapes_i4_2d_ptr = loc(symbol_shapes_i4_2d)
@@ -525,48 +548,48 @@
 
         ! Non-allocatable must be added manually
         ! Planck_A1
-        num_symbols_r4_1d = num_symbols_r4_1d + 1;
-        symbol_ptrs_r4_1d(num_symbols_r4_1d) = loc(Planck_A1);
-        symbol_names_r4_1d(num_symbols_r4_1d) = 'planck_a1';
+        num_symbols_f4_1d = num_symbols_f4_1d + 1;
+        symbol_ptrs_f4_1d(num_symbols_f4_1d) = loc(Planck_A1);
+        symbol_names_f4_1d(num_symbols_f4_1d) = 'planck_a1';
         ! I want row-major shapes
-        symbol_shapes_r4_1d(1,num_symbols_r4_1d) = size(Planck_A1)
+        symbol_shapes_f4_1d(1,num_symbols_f4_1d) = size(Planck_A1)
 
         ! Planck_A2
-        num_symbols_r4_1d = num_symbols_r4_1d + 1;
-        symbol_ptrs_r4_1d(num_symbols_r4_1d) = loc(Planck_A2);
-        symbol_names_r4_1d(num_symbols_r4_1d) = 'planck_a2';
+        num_symbols_f4_1d = num_symbols_f4_1d + 1;
+        symbol_ptrs_f4_1d(num_symbols_f4_1d) = loc(Planck_A2);
+        symbol_names_f4_1d(num_symbols_f4_1d) = 'planck_a2';
         ! I want row-major shapes
-        symbol_shapes_r4_1d(1,num_symbols_r4_1d) = size(Planck_A2)
+        symbol_shapes_f4_1d(1,num_symbols_f4_1d) = size(Planck_A2)
 
         ! Planck_Nu
-        num_symbols_r4_1d = num_symbols_r4_1d + 1;
-        symbol_ptrs_r4_1d(num_symbols_r4_1d) = loc(Planck_Nu);
-        symbol_names_r4_1d(num_symbols_r4_1d) = 'planck_nu';
+        num_symbols_f4_1d = num_symbols_f4_1d + 1;
+        symbol_ptrs_f4_1d(num_symbols_f4_1d) = loc(Planck_Nu);
+        symbol_names_f4_1d(num_symbols_f4_1d) = 'planck_nu';
         ! I want row-major shapes
-        symbol_shapes_r4_1d(1,num_symbols_r4_1d) = size(Planck_Nu)
+        symbol_shapes_f4_1d(1,num_symbols_f4_1d) = size(Planck_Nu)
 
         ! sun_earth_distance
-        num_symbols_r4_0d = num_symbols_r4_0d + 1;
-        symbol_ptrs_r4_0d(num_symbols_r4_0d) = loc(Sun_Earth_Distance);
-        symbol_names_r4_0d(num_symbols_r4_0d) = 'sun_earth_distance';
+        num_symbols_f4_0d = num_symbols_f4_0d + 1;
+        symbol_ptrs_f4_0d(num_symbols_f4_0d) = loc(Sun_Earth_Distance);
+        symbol_names_f4_0d(num_symbols_f4_0d) = 'sun_earth_distance';
 
         call add_sym_i4_1d(Image%Scan_Number,'scan_line_number')
 
         call add_sym_i1_2d(CLDMASK%Cld_Mask,'cldmask')
-        call add_sym_r4_2d(CLDMASK%Posterior_Cld_Probability,'cloud_probability')
-        call add_sym_r4_2d(CLDMASK%Posterior_Ice_Probability,'ice_cloud_probability')
-        call add_sym_r4_2d(CLDMASK%Posterior_Water_Probability,'water_cloud_probability')
+        call add_sym_f4_2d(CLDMASK%Posterior_Cld_Probability,'cloud_probability')
+        call add_sym_f4_2d(CLDMASK%Posterior_Ice_Probability,'ice_cloud_probability')
+        call add_sym_f4_2d(CLDMASK%Posterior_Water_Probability,'water_cloud_probability')
         call add_sym_i1_2d(mask_lrc,'mask_lrc')
         call add_sym_i4_2d(i_lrc,'i_lrc')
         call add_sym_i4_2d(j_lrc,'j_lrc')
         call add_sym_i1_2d(Cld_Type,'cloud_type')
         call add_sym_i1_2d(Cld_Phase,'cloud_phase')
-        call add_sym_r4_2d(Nav%Lat, 'latitude')
-        call add_sym_r4_2d(Nav%Lon, 'longitude')
-        call add_sym_r4_2d(Geo%Solzen,'solar_zenith_angle')
-        call add_sym_r4_2d(Geo%Satzen,'sensor_zenith_angle')
-        call add_sym_r4_2d(Geo%Relaz,'relative_azimuth_angle')
-        call add_sym_r4_2d(Geo%Glintzen,'glint_zenith')
+        call add_sym_f4_2d(Nav%Lat, 'latitude')
+        call add_sym_f4_2d(Nav%Lon, 'longitude')
+        call add_sym_f4_2d(Geo%Solzen,'solar_zenith_angle')
+        call add_sym_f4_2d(Geo%Satzen,'sensor_zenith_angle')
+        call add_sym_f4_2d(Geo%Relaz,'relative_azimuth_angle')
+        call add_sym_f4_2d(Geo%Glintzen,'glint_zenith')
         call add_sym_i1_2d(Bad_Pixel_Mask, 'bad_pixel_mask')
         call add_sym_i1_2d(Sfc%Land_Mask,'land_mask')
         call add_sym_i1_2d(Sfc%Snow, 'snow_class')
@@ -574,206 +597,207 @@
         call add_sym_i1_2d(Sfc%Land,'land_class')
         call add_sym_i1_2d(CLDMASK%Bayes_Mask_Sfc_Type,'bayes_mask_sfc_type')
         call add_sym_i1_3d(CLDMASK%Cld_Test_Vector_Packed,'cloud_mask_test_packed_results')
-        call add_sym_r4_2d(Ch(1)%Ref_Toa,'refl_0_65um')
-        call add_sym_r4_2d(Ch(2)%Ref_Toa,'refl_0_85um')
-        call add_sym_r4_2d(Ch(3)%Ref_Toa,'refl_0_47um')
-        call add_sym_r4_2d(Ch(4)%Ref_Toa,'refl_0_55um')
-        call add_sym_r4_2d(Ch(5)%Ref_Toa,'refl_1_24um')
-        call add_sym_r4_2d(Ch(6)%Ref_Toa,'refl_1_61um')
-        call add_sym_r4_2d(Ch(7)%Ref_Toa,'refl_2_25um')
-        call add_sym_r4_2d(Ch(8)%Ref_Toa,'refl_0_41um')
-        call add_sym_r4_2d(Ch(9)%Ref_Toa,'refl_0_45um')
-        call add_sym_r4_2d(Ch(15)%Ref_Toa,'refl_0_75um')
-        call add_sym_r4_2d(Ch(20)%Ref_Toa,'refl_3_75um')
-        call add_sym_r4_2d(Ch(20)%Bt_Toa,'temp_3_75um')
-        call add_sym_r4_2d(Ch(22)%Bt_Toa,'temp_4_05um')
-        call add_sym_r4_2d(Ch(26)%Ref_Toa,'refl_1_37um')
-        call add_sym_r4_2d(Ch(29)%Bt_Toa,'temp_8_50um')
-        call add_sym_r4_2d(Ch(31)%Bt_Toa,'temp_11_0um')
-        call add_sym_r4_2d(Ch(32)%Bt_Toa,'temp_12_0um')
-        call add_sym_r4_2d(Ch(31)%Bt_Toa_Clear,'temp_11_0um_clear_sky')
-        call add_sym_r4_2d(Ch(31)%Rad_Toa_Clear,'rad_11_0um_clear_sky')
-        call add_sym_r4_2d(Ch(31)%Sfc_Emiss, 'emiss_sfc_11_0um_nom')
-        call add_sym_r4_2d(Ch(31)%Bt_Toa_Std_3x3, 'temp_11_0um_nom_stddev_3x3')
-        call add_sym_r4_2d(Ch(1)%Ref_Toa_Std_3x3, 'refl_0_65um_nom_stddev_3x3')
+        call add_sym_f4_2d(Ch(1)%Ref_Toa,'refl_0_65um')
+        call add_sym_f4_2d(Ch(2)%Ref_Toa,'refl_0_85um')
+        call add_sym_f4_2d(Ch(3)%Ref_Toa,'refl_0_47um')
+        call add_sym_f4_2d(Ch(4)%Ref_Toa,'refl_0_55um')
+        call add_sym_f4_2d(Ch(5)%Ref_Toa,'refl_1_24um')
+        call add_sym_f4_2d(Ch(6)%Ref_Toa,'refl_1_61um')
+        call add_sym_f4_2d(Ch(7)%Ref_Toa,'refl_2_25um')
+        call add_sym_f4_2d(Ch(8)%Ref_Toa,'refl_0_41um')
+        call add_sym_f4_2d(Ch(9)%Ref_Toa,'refl_0_45um')
+        call add_sym_f4_2d(Ch(15)%Ref_Toa,'refl_0_75um')
+        call add_sym_f4_2d(Ch(20)%Ref_Toa,'refl_3_75um')
+        call add_sym_f4_2d(Ch(20)%Bt_Toa,'temp_3_75um')
+        call add_sym_f4_2d(Ch(22)%Bt_Toa,'temp_4_05um')
+        call add_sym_f4_2d(Ch(26)%Ref_Toa,'refl_1_37um')
+        call add_sym_f4_2d(Ch(29)%Bt_Toa,'temp_8_50um')
+        call add_sym_f4_2d(Ch(31)%Bt_Toa,'temp_11_0um')
+        call add_sym_f4_2d(Ch(32)%Bt_Toa,'temp_12_0um')
+        call add_sym_f4_2d(Ch(31)%Bt_Toa_Clear,'temp_11_0um_clear_sky')
+        call add_sym_f4_2d(Ch(31)%Rad_Toa_Clear,'rad_11_0um_clear_sky')
+        call add_sym_f4_2d(Ch(31)%Sfc_Emiss, 'emiss_sfc_11_0um_nom')
+        call add_sym_f4_2d(Ch(31)%Bt_Toa_Std_3x3, 'temp_11_0um_nom_stddev_3x3')
+        call add_sym_f4_2d(Ch(1)%Ref_Toa_Std_3x3, 'refl_0_65um_nom_stddev_3x3')
 
-        call add_sym_r4_2d(Ch(1)%Sfc_Ref_White_Sky,'refl_sfc_white_sky_0_65um_nom')
+        call add_sym_f4_2d(Ch(1)%Sfc_Ref_White_Sky,'refl_sfc_white_sky_0_65um_nom')
 
-        call add_sym_r4_2d(Ch(20)%Rad_Toa,'rad_3_75um')
-        call add_sym_r4_2d(Ch(22)%Rad_Toa,'rad_4_05um')
-        call add_sym_r4_2d(Ch(29)%Rad_Toa,'rad_8_50um')
-        call add_sym_r4_2d(Ch(38)%Rad_Toa,'rad_10_4um')
-        call add_sym_r4_2d(Ch(31)%Rad_Toa,'rad_11_0um')
-        call add_sym_r4_2d(Ch(32)%Rad_Toa,'rad_12_0um')
+        call add_sym_f4_2d(Ch(20)%Rad_Toa,'rad_3_75um')
+        call add_sym_f4_2d(Ch(22)%Rad_Toa,'rad_4_05um')
+        call add_sym_f4_2d(Ch(29)%Rad_Toa,'rad_8_50um')
+        call add_sym_f4_2d(Ch(38)%Rad_Toa,'rad_10_4um')
+        call add_sym_f4_2d(Ch(31)%Rad_Toa,'rad_11_0um')
+        call add_sym_f4_2d(Ch(32)%Rad_Toa,'rad_12_0um')
 
-        call add_sym_r4_2d(CCL%Cloud_Fraction,'cloud_fraction')
+        call add_sym_f4_2d(CCL%Cloud_Fraction,'cloud_fraction')
 
         ! VIIRS
         if(allocated(viirs_out%mband)) then
-            call add_sym_r4_2d(viirs_out%mband(1)%ref,'viirs_m1_ref')
-            call add_sym_r4_2d(viirs_out%mband(2)%ref,'viirs_m2_ref')
-            call add_sym_r4_2d(viirs_out%mband(3)%ref,'viirs_m3_ref')
-            call add_sym_r4_2d(viirs_out%mband(4)%ref,'viirs_m4_ref')
-            call add_sym_r4_2d(viirs_out%mband(5)%ref,'viirs_m5_ref')
-            call add_sym_r4_2d(viirs_out%mband(6)%ref,'viirs_m6_ref')
-            call add_sym_r4_2d(viirs_out%mband(7)%ref,'viirs_m7_ref')
-            call add_sym_r4_2d(viirs_out%mband(8)%ref,'viirs_m8_ref')
-            call add_sym_r4_2d(viirs_out%mband(9)%ref,'viirs_m9_ref')
-            call add_sym_r4_2d(viirs_out%mband(10)%ref,'viirs_m10_ref')
-            call add_sym_r4_2d(viirs_out%mband(11)%ref,'viirs_m11_ref')
-            call add_sym_r4_2d(viirs_out%mband(12)%rad,'viirs_m12_rad')
-            call add_sym_r4_2d(viirs_out%mband(13)%rad,'viirs_m13_rad')
-            call add_sym_r4_2d(viirs_out%mband(14)%rad,'viirs_m14_rad')
-            call add_sym_r4_2d(viirs_out%mband(15)%rad,'viirs_m15_rad')
-            call add_sym_r4_2d(viirs_out%mband(16)%rad,'viirs_m16_rad')
+            call add_sym_f4_2d(viirs_out%mband(1)%ref,'viirs_m1_ref')
+            call add_sym_f4_2d(viirs_out%mband(2)%ref,'viirs_m2_ref')
+            call add_sym_f4_2d(viirs_out%mband(3)%ref,'viirs_m3_ref')
+            call add_sym_f4_2d(viirs_out%mband(4)%ref,'viirs_m4_ref')
+            call add_sym_f4_2d(viirs_out%mband(5)%ref,'viirs_m5_ref')
+            call add_sym_f4_2d(viirs_out%mband(6)%ref,'viirs_m6_ref')
+            call add_sym_f4_2d(viirs_out%mband(7)%ref,'viirs_m7_ref')
+            call add_sym_f4_2d(viirs_out%mband(8)%ref,'viirs_m8_ref')
+            call add_sym_f4_2d(viirs_out%mband(9)%ref,'viirs_m9_ref')
+            call add_sym_f4_2d(viirs_out%mband(10)%ref,'viirs_m10_ref')
+            call add_sym_f4_2d(viirs_out%mband(11)%ref,'viirs_m11_ref')
+            call add_sym_f4_2d(viirs_out%mband(12)%rad,'viirs_m12_rad')
+            call add_sym_f4_2d(viirs_out%mband(13)%rad,'viirs_m13_rad')
+            call add_sym_f4_2d(viirs_out%mband(14)%rad,'viirs_m14_rad')
+            call add_sym_f4_2d(viirs_out%mband(15)%rad,'viirs_m15_rad')
+            call add_sym_f4_2d(viirs_out%mband(16)%rad,'viirs_m16_rad')
         endif
         if(allocated(viirs_out%iband)) then
-            call add_sym_r4_2d(viirs_out%iband(1)%ref,'viirs_i1_ref')
-            call add_sym_r4_2d(viirs_out%iband(2)%ref,'viirs_i2_ref')
-            call add_sym_r4_2d(viirs_out%iband(3)%ref,'viirs_i3_ref')
-            call add_sym_r4_2d(viirs_out%iband(4)%bt,'viirs_i4_bt')
-            call add_sym_r4_2d(viirs_out%iband(5)%bt,'viirs_i5_bt')
+            call add_sym_f4_2d(viirs_out%iband(1)%ref,'viirs_i1_ref')
+            call add_sym_f4_2d(viirs_out%iband(2)%ref,'viirs_i2_ref')
+            call add_sym_f4_2d(viirs_out%iband(3)%ref,'viirs_i3_ref')
+            call add_sym_f4_2d(viirs_out%iband(4)%bt,'viirs_i4_bt')
+            call add_sym_f4_2d(viirs_out%iband(5)%bt,'viirs_i5_bt')
         endif
-        call add_sym_r4_2d(nasa_viirs_i1_ref, 'nasa_viirs_i1_ref')
-        call add_sym_r4_2d(nasa_viirs_i2_ref, 'nasa_viirs_i2_ref')
-        call add_sym_r4_2d(nasa_viirs_i3_ref, 'nasa_viirs_i3_ref')
-        call add_sym_r4_2d(nasa_viirs_i4_bt, 'nasa_viirs_i4_bt')
-        call add_sym_r4_2d(nasa_viirs_i5_bt, 'nasa_viirs_i5_bt')
+        call add_sym_f4_2d(nasa_viirs_i1_ref, 'nasa_viirs_i1_ref')
+        call add_sym_f4_2d(nasa_viirs_i2_ref, 'nasa_viirs_i2_ref')
+        call add_sym_f4_2d(nasa_viirs_i3_ref, 'nasa_viirs_i3_ref')
+        call add_sym_f4_2d(nasa_viirs_i4_bt, 'nasa_viirs_i4_bt')
+        call add_sym_f4_2d(nasa_viirs_i5_bt, 'nasa_viirs_i5_bt')
 
         ! AHI
-        call add_sym_r4_3d(ABHI_1km, 'ahi_rad_multich_1km')
-        call add_sym_r4_3d(ABHI_500m, 'ahi_rad_multich_500m')
-        call add_sym_r4_1d(ABHI_Rad_To_Ref_Fac, 'ahi_rad_to_refl_fac')
+        call add_sym_f4_3d(ABHI_1km, 'ahi_rad_multich_1km')
+        call add_sym_f4_3d(ABHI_500m, 'ahi_rad_multich_500m')
+        call add_sym_f4_1d(ABHI_Rad_To_Ref_Fac, 'ahi_rad_to_refl_fac')
 
         ! ABI
-        call add_sym_r4_3d(ABHI_1km, 'abi_rad_multich_1km')
-        call add_sym_r4_3d(ABHI_500m, 'abi_rad_multich_500m')
-        call add_sym_r4_1d(ABHI_Rad_To_Ref_Fac, 'abi_rad_to_refl_fac')
+        call add_sym_f4_3d(ABHI_1km, 'abi_rad_multich_1km')
+        call add_sym_f4_3d(ABHI_500m, 'abi_rad_multich_500m')
+        call add_sym_f4_1d(ABHI_Rad_To_Ref_Fac, 'abi_rad_to_refl_fac')
 
 
         ! ACHA solves
-        call add_sym_r4_2d(ACHA%Tc, 'cld_temp_acha')                      !x1
-        call add_sym_r4_2d(ACHA%Ec, 'cld_emis_acha')                      !x2
-        call add_sym_r4_2d(ACHA%Beta, 'cld_beta_acha')                    !x3
-        call add_sym_r4_2d(ACHA%Ice_Probability, 'ice_prob_acha')    !x5
+        call add_sym_f4_2d(ACHA%Tc, 'cld_temp_acha')                      !x1
+        call add_sym_f4_2d(ACHA%Ec, 'cld_emis_acha')                      !x2
+        call add_sym_f4_2d(ACHA%Beta, 'cld_beta_acha')                    !x3
+        call add_sym_f4_2d(ACHA%Ice_Probability, 'ice_prob_acha')    !x5
 
-        call add_sym_r4_2d(ACHA%Pc, 'cld_press_acha')
-        call add_sym_r4_2d(Tc_Opaque_Cloud, 'cld_temp_opaque')
+        call add_sym_f4_2d(ACHA%Pc, 'cld_press_acha')
+        call add_sym_f4_2d(Tc_Opaque_Cloud, 'cld_temp_opaque')
 
-        call add_sym_r4_2d(ACHA%Zc, 'cld_height_acha')
-        call add_sym_r4_2d(ACHA%Zc_Eff, 'cld_height_eff_acha')
-        call add_sym_r4_2d(ACHA%Zc_Base, 'cld_height_base_acha')
+        call add_sym_f4_2d(ACHA%Zc, 'cld_height_acha')
+        call add_sym_f4_2d(ACHA%Zc_Eff, 'cld_height_eff_acha')
+        call add_sym_f4_2d(ACHA%Zc_Base, 'cld_height_base_acha')
 
-        call add_sym_r4_2d(ACHA%Ec_11um, 'acha_ec_11um')
-        call add_sym_r4_2d(ACHA%Ec_104um, 'acha_ec_104um')
-        call add_sym_r4_2d(ACHA%Ec_12um, 'acha_ec_12um')
-        call add_sym_r4_2d(ACHA%Ec_85um, 'acha_ec_85um')
+        call add_sym_f4_2d(ACHA%Ec_11um, 'acha_ec_11um')
+        call add_sym_f4_2d(ACHA%Ec_104um, 'acha_ec_104um')
+        call add_sym_f4_2d(ACHA%Ec_12um, 'acha_ec_12um')
+        call add_sym_f4_2d(ACHA%Ec_85um, 'acha_ec_85um')
 
-        call add_sym_r4_2d(ACHA%Goodness, 'acha_goodness')
+        call add_sym_f4_2d(ACHA%Goodness, 'acha_goodness')
         call add_sym_i1_2d(ACHA%Quality_Flag, 'acha_quality')
         call add_sym_i1_2d(ACHA%Processing_Order, 'acha_proc_order')
         call add_sym_i1_2d(ACHA%Inversion_Flag, 'acha_inversion_flag')
-        call add_sym_r4_2d(ACHA%Lower_Tc, 'cld_temp_lower_acha')
+        call add_sym_f4_2d(ACHA%Lower_Tc, 'cld_temp_lower_acha')
         call add_sym_i1_2d(ACHA%Cld_Type,'cloud_type_acha')
-        call add_sym_r4_2d(ACHA%Tc_Ap,'cld_temp_prior_acha')
-        call add_sym_r4_2d(ACHA%Tc_Uncertainty, 'cld_temp_uncer_acha')
-        call add_sym_r4_2d(ACHA%Tc_Ap_Uncer, 'cld_temp_uncer_prior_acha')
-        call add_sym_r4_2d(ACHA%Ec_Ap,'cld_emis_prior_acha')
-        call add_sym_r4_2d(ACHA%Ec_Uncertainty,'cld_emis_uncer_acha')
-        call add_sym_r4_2d(ACHA%Ec_Ap_Uncer,'cld_emis_uncer_prior_acha')
+        call add_sym_f4_2d(ACHA%Tc_Ap,'cld_temp_prior_acha')
+        call add_sym_f4_2d(ACHA%Tc_Uncertainty, 'cld_temp_uncer_acha')
+        call add_sym_f4_2d(ACHA%Tc_Ap_Uncer, 'cld_temp_uncer_prior_acha')
+        call add_sym_f4_2d(ACHA%Ec_Ap,'cld_emis_prior_acha')
+        call add_sym_f4_2d(ACHA%Ec_Uncertainty,'cld_emis_uncer_acha')
+        call add_sym_f4_2d(ACHA%Ec_Ap_Uncer,'cld_emis_uncer_prior_acha')
 
         ! RTM / NWP
         call add_sym_i4_2d(Zen_Idx_Rtm, 'rtm_zenith_idx')
         call add_sym_i4_2d(NWP_PIX%I_Nwp, 'i_nwp')
         call add_sym_i4_2d(NWP_PIX%J_Nwp, 'j_nwp')
-        call add_sym_r4_2d(NWP_PIX%Ttropo, 'tropopause_temperature_nwp')
-        call add_sym_r4_2d(NWP_PIX%Tsfc, 'surface_temperature_nwp')
-        call add_sym_r4_2d(NWP_PIX%Psfc, 'surface_pressure_nwp')
-        call add_sym_r4_2d(NWP_PIX%Rhsfc, 'surface_relative_humidity_nwp')
-        call add_sym_r4_2d(NWP_PIX%Tpw, 'total_precipitable_water_nwp')
-        call add_sym_r4_2d(NWP_PIX%Ozone, 'total_column_ozone_nwp')
+        call add_sym_f4_2d(NWP_PIX%Ttropo, 'tropopause_temperature_nwp')
+        call add_sym_f4_2d(NWP_PIX%Tsfc, 'surface_temperature_nwp')
+        call add_sym_f4_2d(NWP_PIX%Psfc, 'surface_pressure_nwp')
+        call add_sym_f4_2d(NWP_PIX%Rhsfc, 'surface_relative_humidity_nwp')
+        call add_sym_f4_2d(NWP_PIX%Tpw, 'total_precipitable_water_nwp')
+        call add_sym_f4_2d(NWP_PIX%Ozone, 'total_column_ozone_nwp')
         ! DCOMP
-        call add_sym_r4_2d(Tau_DCOMP, 'cld_opd_dcomp')
-        call add_sym_r4_2d(Tau_DCOMP_1, 'cld_opd_dcomp_1')
-        call add_sym_r4_2d(Tau_DCOMP_2, 'cld_opd_dcomp_2')
-        call add_sym_r4_2d(Tau_DCOMP_3, 'cld_opd_dcomp_3')
-        call add_sym_r4_2d(Reff_DCOMP, 'cld_reff_dcomp')
-        call add_sym_r4_2d(Reff_DCOMP_1, 'cld_reff_dcomp_1')
-        call add_sym_r4_2d(Reff_DCOMP_2, 'cld_reff_dcomp_2')
-        call add_sym_r4_2d(Reff_DCOMP_3, 'cld_reff_dcomp_3')
-        call add_sym_r4_2d(Cwp_Dcomp, 'cld_cwp_dcomp')
+        call add_sym_f4_2d(Tau_DCOMP, 'cld_opd_dcomp')
+        call add_sym_f4_2d(Tau_DCOMP_1, 'cld_opd_dcomp_1')
+        call add_sym_f4_2d(Tau_DCOMP_2, 'cld_opd_dcomp_2')
+        call add_sym_f4_2d(Tau_DCOMP_3, 'cld_opd_dcomp_3')
+        call add_sym_f4_2d(Reff_DCOMP, 'cld_reff_dcomp')
+        call add_sym_f4_2d(Reff_DCOMP_1, 'cld_reff_dcomp_1')
+        call add_sym_f4_2d(Reff_DCOMP_2, 'cld_reff_dcomp_2')
+        call add_sym_f4_2d(Reff_DCOMP_3, 'cld_reff_dcomp_3')
+        call add_sym_f4_2d(Cwp_Dcomp, 'cld_cwp_dcomp')
         call add_sym_i1_2d(DCOMP_Quality_Flag, 'dcomp_quality')
-        call add_sym_r4_2d(Insolation_DCOMP, 'insolation_dcomp')
-        call add_sym_r4_2d(Insolation_Diffuse_DCOMP, 'insolation_diffuse_dcomp')
+        call add_sym_f4_2d(Insolation_DCOMP, 'insolation_dcomp')
+        call add_sym_f4_2d(Insolation_Diffuse_DCOMP, 'insolation_diffuse_dcomp')
 
         ! May alias the human-readable symbols, but converting between channels
         ! and names outside clavrx is very annoying
         do c=1,NCHAN_CLAVRX
             ! surface emissivity
             write (varname, "(A,I0.2)") "emiss_sfc_ch", c
-            call add_sym_r4_2d(Ch(c)%Sfc_Emiss,varname)
+            call add_sym_f4_2d(Ch(c)%Sfc_Emiss,varname)
 
             ! emissivity relative to 11um
             write (varname, "(A,I0.2)") "emiss_ch", c
-            call add_sym_r4_2d(Ch(c)%Emiss_Rel_11um,varname)
+            call add_sym_f4_2d(Ch(c)%Emiss_Rel_11um,varname)
 
             ! surface refl
             write (varname, "(A,I0.2)") "refl_sfc_white_sky_ch", c
-            call add_sym_r4_2d(Ch(c)%Sfc_Ref_White_Sky,varname)
+            call add_sym_f4_2d(Ch(c)%Sfc_Ref_White_Sky,varname)
 
             ! reflectance
             write (varname, "(A,I0.2)") "refl_ch", c
-            call add_sym_r4_2d(Ch(c)%Ref_Toa,varname)
+            call add_sym_f4_2d(Ch(c)%Ref_Toa,varname)
 
             ! reflectance stddev
             write (varname, "(A,I0.2)") "refl_stddev3x3_ch", c
-            call add_sym_r4_2d(Ch(c)%Ref_Toa_Std_3x3, varname)
+            call add_sym_f4_2d(Ch(c)%Ref_Toa_Std_3x3, varname)
 
             ! radiance
             write (varname, "(A,I0.2)") "rad_ch", c
-            call add_sym_r4_2d(Ch(c)%Rad_Toa,varname)
+            call add_sym_f4_2d(Ch(c)%Rad_Toa,varname)
 
             ! brightness temperature
             write (varname, "(A,I0.2)") "temp_ch", c
-            call add_sym_r4_2d(Ch(c)%Bt_Toa,varname)
+            call add_sym_f4_2d(Ch(c)%Bt_Toa,varname)
 
             ! brightness temp stddev
             write (varname, "(A,I0.2)") "temp_stddev3x3_ch", c
-            call add_sym_r4_2d(Ch(c)%Bt_Toa_Std_3x3, varname)
+            call add_sym_f4_2d(Ch(c)%Bt_Toa_Std_3x3, varname)
 
             ! brightness temp max
             write (varname, "(A,I0.2)") "temp_max3x3_ch", c
-            call add_sym_r4_2d(Ch(c)%Bt_Toa_Max_3x3, varname)
+            call add_sym_f4_2d(Ch(c)%Bt_Toa_Max_3x3, varname)
 
             ! brightness temp min
             write (varname, "(A,I0.2)") "temp_min3x3_ch", c
-            call add_sym_r4_2d(Ch(c)%Bt_Toa_Min_3x3, varname)
+            call add_sym_f4_2d(Ch(c)%Bt_Toa_Min_3x3, varname)
 
             ! clear sky BT
             write (varname, "(A,I0.2)") "temp_clear_sky_ch", c
-            call add_sym_r4_2d(Ch(c)%Bt_Toa_Clear, varname)
+            call add_sym_f4_2d(Ch(c)%Bt_Toa_Clear, varname)
 
             ! clear sky refl
             write (varname, "(A,I0.2)") "refl_clear_sky_ch", c
-            call add_sym_r4_2d(Ch(c)%Ref_Toa_Clear, varname)
+            call add_sym_f4_2d(Ch(c)%Ref_Toa_Clear, varname)
 
             ! atmospheric corrected refl
             write (varname, "(A,I0.2)") "refl_atmos_corr_ch", c
-            call add_sym_r4_2d(Ch(c)%Ref_Sfc, varname)
+            call add_sym_f4_2d(Ch(c)%Ref_Sfc, varname)
 
             ! atmospheric transmission
             write (varname, "(A,I0.2)") "trans_atm_ch", c
-            call add_sym_r4_2d(Ch(c)%Trans_Atm, varname)
+            call add_sym_f4_2d(Ch(c)%Trans_Atm, varname)
 
             ! Emissivity needed with troposphere temp to match obs
             write (varname, "(A,I0.2)") "emiss_tropo_ch", c
-            call add_sym_r4_2d(Ch(c)%Emiss_Tropo, varname)
+            call add_sym_f4_2d(Ch(c)%Emiss_Tropo, varname)
         enddo
 
       end subroutine
 
 
       subroutine maybe_clone()
+        use, intrinsic :: iso_fortran_env, only: output_unit
         integer my_pid, probe_pid, child_pid, i, l, num_clones, stat
         character(len=7):: Pid_String
         character(len=30):: Stdout_Filename, Stderr_Filename
@@ -791,7 +815,7 @@
             endif
             do i=1,num_clones
               print*, 'Cloning', my_pid
-              call flush(6)
+              flush output_unit
               child_pid = sibling_clone()
               if(child_pid == 0) then
                 call reopen_files(probe_pid)
@@ -824,19 +848,19 @@
       end subroutine
 
       subroutine stop_and_wait()
-          integer pid
-          integer ret
-          integer sigstop
-          sigstop = 19
-          print*, 'stop_and_wait'
-          pid = getpid_nocache() 
-          print*, 'SIGSTOP ',pid
-          ! flush stdout
-          flush(6)
-          ret = kill(pid, sigstop)
-          if(ret .ne. 0) then
-              call PERROR('error sending signal')
-          endif 
+          use iso_c_binding, only: c_int, c_long
+          use, intrinsic :: iso_fortran_env, only: output_unit, error_unit
+
+          integer(c_long) :: target_pid
+          integer(c_int) :: ret, pid
+
+          print *, 'stop_and_wait'
+          pid = getpid_nocache()
+          print *, 'SIGSTOP ', pid
+          flush output_unit  ! flush stdout
+          target_pid = pid
+          ret = sigstop_to_pid(target_pid)
+          if (ret /= 0) write (error_unit, *) 'error sending signal'
       end subroutine
 
       subroutine Set_Tracer_Flag()
@@ -858,7 +882,7 @@
       end subroutine
 
       subroutine waitpoint(num)
-          integer*4,intent(in) :: num
+          integer(i4), intent(in) :: num
           if (Tracer_Flag == 1) then
               wait_number = num
               call load_symbols()
@@ -869,7 +893,7 @@
       end subroutine
 
       subroutine update_skip_processing(Skip_Processing_Flag)
-          integer*4,intent(inout) :: Skip_Processing_Flag
+          integer(i4), intent(inout) :: Skip_Processing_Flag
           ! Check heap-allocated value, which may have been set during wait
           if(skip_processing == 1) then
             Skip_Processing_Flag = SYM%YES
