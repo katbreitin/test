@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <signal.h>
 
 
 int getpid_nocache(){
@@ -47,3 +48,17 @@ int sibling_clone(){
 #endif
 }
 
+
+/*```````````````````````````````````````````````````````````````````*/
+int sigstop_to_pid(long int pid_F) {   /* Input */
+
+/*
+!+ Send the SIGSTOP signal to a given process, relaying the return value of
+    the operation.
+*/
+
+  pid_t pid;
+
+  pid = (pid_t) pid_F;
+  return kill(pid, SIGSTOP);
+}
