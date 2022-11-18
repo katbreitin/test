@@ -193,7 +193,7 @@
       interface
         integer(c_int) function sigstop_to_pid(pid) bind(C, name="sigstop_to_pid")
           use iso_c_binding, only: c_int, c_long
-          integer(c_long) :: pid
+          integer(c_long), VALUE :: pid
         end function sigstop_to_pid
       end interface
 
