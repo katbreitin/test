@@ -15,4 +15,4 @@ export SSEC_NETCDF4_LIB=/root/netcdf/lib
 cd build
 cp CI/user_change_me.cfg env_settings
 ./admin clean ALL
-./admin build
+./admin build debug
