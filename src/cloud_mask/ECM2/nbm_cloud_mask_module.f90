@@ -730,6 +730,9 @@ Output%Posterior_Ice_Probability = Output%Posterior_Ice_Probability / Post_Sum
 
 ! --- make a cloud probability from the complement of the clear probability
 Output%Posterior_Cld_Probability = 1.0 - Post_Prob_Clear
+if (Output%Posterior_Cld_Probability < -0.1) then
+    print*, 'Negative cloud prob', Output%Posterior_Cld_Probability
+endif
 
 ! --- make the binary mask
 IF (Output%Posterior_Cld_Probability < Mask_Thresh%Prob_Clear_Prob_Cloudy_Thresh(Output%Sfc_Idx) .and. &

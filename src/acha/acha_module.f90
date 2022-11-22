@@ -539,6 +539,8 @@ module AWG_CLOUD_HEIGHT
   call COMPUTE_BOX_WIDTH(Input%Sensor_Resolution_KM,LOWER_BOX_WIDTH_KM, Box_Half_Width_Lower)
 
   !--- initialize output
+  Output%Tc_Ap =  MISSING_VALUE_REAL4
+  Output%Tc_Ap_Uncer =  MISSING_VALUE_REAL4
   Output%Tc =  MISSING_VALUE_REAL4
   Output%Ec =  MISSING_VALUE_REAL4
   Output%Beta =  MISSING_VALUE_REAL4
@@ -995,6 +997,10 @@ module AWG_CLOUD_HEIGHT
                   Elem_Idx,Line_Idx,Dump_Diag, Lun_Iter_Dump,Temperature_Cirrus, &
                   Tc_Ap,Tc_Ap_Uncer)
 
+
+  ! Tc_Ap_Uncer won't change past this point
+  Output%Tc_Ap_Uncer(Elem_Idx,Line_Idx) = Tc_Ap_Uncer
+
   !------------------------------------------------------------------------
   !  lower cloud (surface) a prior values
   !------------------------------------------------------------------------
@@ -1125,6 +1131,8 @@ if (FULL_RETRIEVAL) then
           Output%Goodness(Elem_Idx,Line_Idx),Convergence_Criteria, &
           ACHA_RTM_NWP%Z_Prof,Tsfc_Est,T_Tropo,Z_Tropo,P_Tropo, Cloud_Type, &
           Input%Cosine_Zenith_Angle(Elem_Idx,Line_Idx), &
+          Output%Zs(Elem_Idx,Line_Idx), &
+          Output%Zc_rtm(Elem_Idx,Line_Idx), &
           Output%Zc_Base(Elem_Idx,Line_Idx), &
           ACHA_RTM_NWP, &
           Beta_110um_142um_Coef_Water, &
@@ -1183,6 +1191,8 @@ if (FULL_RETRIEVAL) then
           Output%Goodness(Elem_Idx,Line_Idx),Convergence_Criteria_Simple, &
           ACHA_RTM_NWP%Z_Prof,Tsfc_Est,T_Tropo,Z_Tropo,P_Tropo, Cloud_Type, &
           Input%Cosine_Zenith_Angle(Elem_Idx,Line_Idx), &
+          Output%Zs(Elem_Idx,Line_Idx), &
+          Output%Zc_rtm(Elem_Idx,Line_Idx), &
           Output%Zc_Base(Elem_Idx,Line_Idx), &
           ACHA_RTM_NWP, &
           Beta_110um_142um_Coef_Water, &
@@ -1255,7 +1265,7 @@ if (FULL_RETRIEVAL) then
 
   !--- Save the OE to the Output Structure
   call SAVE_X_2_OUTPUT(Elem_Idx,Line_Idx,Symbol,Cloud_Type,Fail_Flag(Elem_Idx,Line_Idx), &
-                  x,x_ap,Sa,Sx,AKM,Meta_Data_Flags,Output)
+                  x,x_ap,f(1), Emiss_Sfc_110um, Sa,Sx,AKM,Meta_Data_Flags,Output)
 
   !--- set output packed quality flags
   call SET_OUTPUT_PACKED_QF(Output,Elem_Idx,Line_Idx)
@@ -1411,7 +1421,7 @@ subroutine COMPUTE_APRIORI_BASED_ON_TYPE( &
         Tc_Ap = Tc_Ap_Opaque
         Tc_Ap_Uncer = Tc_Ap_Uncer_Opaque
         Ec_Ap = 1.0 - exp(-1.0*Tau_Ap_Fog_Type/Mu)  !slow!
-        Ec_Ap_Uncer = Ec_Ap_Uncer_Opaque
+        Ec_Ap_Uncer = Ec_Ap_Uncer_Low
         Beta_Ap = Beta_Ap_Water
         Beta_Ap_Uncer = Beta_Ap_Uncer_Water
         return
@@ -1419,7 +1429,7 @@ subroutine COMPUTE_APRIORI_BASED_ON_TYPE( &
         Tc_Ap = Tc_Ap_Opaque
         Tc_Ap_Uncer = Tc_Ap_Uncer_Opaque
         Ec_Ap = 1.0 - exp(-1.0*Tau_Ap_Water_Type/Mu)  !slow!
-        Ec_Ap_Uncer = Ec_Ap_Uncer_Opaque
+        Ec_Ap_Uncer = Ec_Ap_Uncer_Low
         Beta_Ap = Beta_Ap_Water
         Beta_Ap_Uncer = Beta_Ap_Uncer_Water
         return
@@ -3945,11 +3955,13 @@ end subroutine CONVERT_TC_TO_PC_AND_ZC
 !--------------------------------------------------------------------------------------------------
 ! save the OE output for a pixel to the output structure.
 !--------------------------------------------------------------------------------------------------
-subroutine SAVE_X_2_OUTPUT(Elem_Idx,Line_Idx,Symbol,Cloud_Type,Fail_Flag,x,x_ap,Sa,Sx,AKM,Meta_Data_Flags,Output)
+subroutine SAVE_X_2_OUTPUT(Elem_Idx,Line_Idx,Symbol,Cloud_Type,Fail_Flag,x,x_ap,f,Es,Sa,Sx,AKM,Meta_Data_Flags,Output)
   integer, intent(in):: Elem_Idx, Line_Idx, Fail_Flag
   type(acha_symbol_struct), intent(in) :: Symbol
   integer (kind=int1), intent(in):: Cloud_Type
   real, intent(in), dimension(:):: x, x_ap
+  real, intent(in) :: f
+  real, intent(in) :: Es
   real, intent(in), dimension(:,:):: Sa
   real, intent(in), dimension(:,:):: Sx
   real, intent(in), dimension(:,:):: AKM
@@ -3966,6 +3978,9 @@ subroutine SAVE_X_2_OUTPUT(Elem_Idx,Line_Idx,Symbol,Cloud_Type,Fail_Flag,x,x_ap,
      Output%Tc(Elem_Idx,Line_Idx) = x(1)
      Output%Ec(Elem_Idx,Line_Idx) = x(2)   !note, this is slant
      Output%Beta(Elem_Idx,Line_Idx) = x(3)
+     Output%Ts(Elem_Idx,Line_Idx) = x(4)
+     Output%Tfm(Elem_Idx,Line_Idx) = f
+     Output%Es(Elem_Idx, Line_Idx) = Es
 
      if (Cloud_Type == Symbol%OVERLAP_TYPE) then
         !--- if no confidence, remove lower cloud since it might be fictuous
@@ -4008,6 +4023,7 @@ subroutine SAVE_X_2_OUTPUT(Elem_Idx,Line_Idx,Symbol,Cloud_Type,Fail_Flag,x,x_ap,
    Output%Ec(Elem_Idx,Line_Idx) = x_Ap(2)   !MISSING_VALUE_REAL4
    Output%Beta(Elem_Idx,Line_Idx) = x_Ap(3) !MISSING_VALUE_REAL4
    Output%Lower_Tc(Elem_Idx,Line_Idx) = x_Ap(4)
+   Output%Ts(Elem_Idx,Line_Idx) = x_Ap(4)
    Output%Ice_Probability(Elem_Idx,Line_Idx) = x_Ap(5)
    Output%Qf(Elem_Idx,Line_Idx) = CTH_DQF_RETREVIAL_ATTEMPTED
 

@@ -17,12 +17,17 @@ module dcomp_retrieval_mod
         real :: cloud_alb_vis
         real :: cloud_alb_vis_u
         real :: cloud_trans_sol_vis
+        real :: cloud_trans_sol_nir
         real :: cloud_trans_sat_vis
+        real :: cloud_trans_sat_nir
         real :: cloud_trans_sol_vis_u
         real :: cloud_trans_sat_vis_u
         real :: cloud_sph_alb_vis
+        real :: cloud_sph_alb_nir
         real :: cloud_sph_alb_vis_u
         real :: refl_vis_max
+        real :: fm_vis
+        real :: fm_nir
     end type dcomp_output_structure
 
 contains
@@ -133,6 +138,8 @@ contains
         output_str % cloud_sph_alb_vis = -999.
         output_str % cloud_sph_alb_vis_u  = -999.
         output_str % refl_vis_max = -999.
+        output_str % fm_vis = -999.
+        output_str % fm_nir = -999.
         ! -- observation
 
 
@@ -322,17 +329,17 @@ contains
                     , rfl_vis_max =  rfl_vis_max)
                 
                 
-                  if ( debug_mode > 4 ) then
-                print*
-                print*,'iter last = ',iteration_idx
-                print*, 'f = ', obs_fwd
-                print*, 'k = ',kernel
-                print*, 'Sx = ',S_x
-                print*,'delta x =', delta_x
-                print*, ' new x =', state_vec 
-                print*, 'conv test = ', conv_test
-                print*, 'sensor: ', sensor
-            end if
+                if ( debug_mode > 4 ) then
+                    print*
+                    print*,'iter last = ',iteration_idx
+                    print*, 'f = ', obs_fwd
+                    print*, 'k = ',kernel
+                    print*, 'Sx = ',S_x
+                    print*,'delta x =', delta_x
+                    print*, ' new x =', state_vec 
+                    print*, 'conv test = ', conv_test
+                    print*, 'sensor: ', sensor
+                end if
                 
                 output_str % statusOK = .true.
                 output_str % cod  = 10 ** state_vec(1)
@@ -344,12 +351,17 @@ contains
                 output_str % cloud_alb_vis = cld_albedo_vis
                 output_str % cloud_alb_vis_u = -999.
                 output_str % cloud_trans_sol_vis = cld_trans_sol(1)
+                output_str % cloud_trans_sol_nir = cld_trans_sol(2)
                 output_str % cloud_trans_sol_vis_u = -999.
                 output_str % cloud_trans_sat_vis = cld_trans_sat(1)
+                output_str % cloud_trans_sat_nir = cld_trans_sat(2)
                 output_str % cloud_trans_sat_vis_u = -999.
                 output_str % cloud_sph_alb_vis = cld_sph_alb(1)
+                output_str % cloud_sph_alb_nir = cld_sph_alb(2)
                 output_str % cloud_sph_alb_vis_u  = -999.
                 output_str % refl_vis_max = rfl_vis_max
+                output_str % fm_vis = obs_fwd(1)
+                output_str % fm_nir = obs_fwd(2)
       
                 if ( debug_mode > 4 ) then
                     print*,' y:                   ', obs_vec(1:2)
@@ -372,10 +384,6 @@ contains
                     exit
                 end if
                 
-                
-            
-            
-            
                 exit retrieval_loop
 
             end if
@@ -388,8 +396,19 @@ contains
                 output_str % codu = 1.0
                 output_str % cps = 10 ** state_vec(2)
                 output_str % cpsu = 1.0
+
+                output_str % cloud_alb_vis = cld_albedo_vis
+                output_str % cloud_trans_sol_vis = cld_trans_sol(1)
+                output_str % cloud_trans_sol_nir = cld_trans_sol(2)
+                output_str % cloud_trans_sat_vis = cld_trans_sat(1)
+                output_str % cloud_trans_sat_nir = cld_trans_sat(2)
+                output_str % cloud_sph_alb_vis = cld_sph_alb(1)
+                output_str % cloud_sph_alb_nir = cld_sph_alb(2)
+                output_str % refl_vis_max = rfl_vis_max
+                output_str % fm_vis = obs_fwd(1)
+                output_str % fm_nir = obs_fwd(2)
             
-                exit
+                exit retrieval_loop
             end if
  
 #ifdef NOMISSINGDCOMP
@@ -405,6 +424,8 @@ contains
                 output_str % cloud_trans_sat_vis = cld_trans_sat(1)
                 output_str % cloud_sph_alb_vis = cld_sph_alb(1)
                 output_str % refl_vis_max = rfl_vis_max
+                output_str % fm_vis = obs_fwd(1)
+                output_str % fm_nir = obs_fwd(2)
 
                 exit retrieval_loop
             endif

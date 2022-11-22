@@ -123,7 +123,14 @@ contains
             cld_albedo_vis =  lut_data % alb     
          end if 
         
+         ! Alb_Sfc is virtual surface albedo 
+         ! albsph is the spherical albedo of the cloud
+         ! Av / (1-Av S) is the surface albedo term (enhancement)
          Alb_Sfc_Term = max (0. , Alb_Sfc( i_channel ) / (1.0 - Alb_Sfc( i_channel ) * lut_data % albsph )) 
+         ! Walter and Heidinger 2012, equation (7)
+         ! Rc is the cloud reflectance
+         ! Trn_sol is the cloud transmission along the solar path
+         ! Trn_sat is the cloud transmission along the view path
          fm_vec(i_channel) = lut_data% Refl + Alb_Sfc_Term * lut_data%Trn_sol * lut_data%Trn_sat 
            
          kernel(i_channel,1) = lut_data%dRefl_dcod &
@@ -140,6 +147,8 @@ contains
                      & * lut_data%Dsph_alb_Dcps) &
                     /(( 1 - Alb_Sfc( i_channel ) * lut_data%albsph)**2))  
                     
+         ! convert R_TOC to R_TOA
+         ! Walter and Heidinger 2012, equation (8)
          trans_two_way = air_trans_ac( i_channel ) ** air_mass_two_way           
          fm_vec(i_channel) = fm_vec(i_channel) * trans_two_way
         

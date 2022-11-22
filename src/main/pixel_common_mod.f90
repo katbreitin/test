@@ -452,6 +452,11 @@ module PIXEL_COMMON_MOD
     real (kind=real4), dimension(:,:), allocatable:: Ice_Prob_Ap_Uncer
     real (kind=real4), dimension(:,:), allocatable:: Lower_Tc_Ap_Uncer
     real (kind=real4), dimension(:,:), allocatable:: Tc
+    real (kind=real4), dimension(:,:), allocatable:: Tfm
+    real (kind=real4), dimension(:,:), allocatable:: Es
+    real (kind=real4), dimension(:,:), allocatable:: Zc_rtm
+    real (kind=real4), dimension(:,:), allocatable:: Zs
+    real (kind=real4), dimension(:,:), allocatable:: Ts
     real (kind=real4), dimension(:,:), allocatable:: Ec
     real (kind=real4), dimension(:,:), allocatable:: Pc
     real (kind=real4), dimension(:,:), allocatable:: Pc_Median
@@ -989,12 +994,22 @@ module PIXEL_COMMON_MOD
 
      !--- pixel level radiative flux props from DCOMP
      real (kind=real4), dimension(:,:), allocatable, public, save,target:: Olr
-     real (kind=real4), dimension(:,:), allocatable, public, save,target:: Cloud_063um_Albedo
-     real (kind=real4), dimension(:,:), allocatable, public, save,target:: Cloud_063um_Spherical_Albedo
-     real (kind=real4), dimension(:,:), allocatable, public, save,target:: Cloud_063um_Transmission_View
-     real (kind=real4), dimension(:,:), allocatable, public, save,target:: Cloud_063um_Transmission_Solar
+     real (kind=real4), dimension(:,:), allocatable, public, save,target:: Cloud_VIS_Albedo
+     real (kind=real4), dimension(:,:), allocatable, public, save,target:: Cloud_VIS_Spherical_Albedo
+     real (kind=real4), dimension(:,:), allocatable, public, save,target:: Above_Cloud_VIS_Transmission
+     real (kind=real4), dimension(:,:), allocatable, public, save,target:: Cloud_VIS_Transmission_View
+     real (kind=real4), dimension(:,:), allocatable, public, save,target:: Cloud_VIS_Transmission_Solar
+     real (kind=real4), dimension(:,:), allocatable, public, save,target:: Cloud_VIS_Transmission_AC
+     real (kind=real4), dimension(:,:), allocatable, public, save,target:: Cloud_NIR_Spherical_Albedo
+     real (kind=real4), dimension(:,:), allocatable, public, save,target:: Above_Cloud_NIR_Transmission
+     real (kind=real4), dimension(:,:), allocatable, public, save,target:: Cloud_NIR_Transmission_View
+     real (kind=real4), dimension(:,:), allocatable, public, save,target:: Cloud_NIR_Transmission_Solar
+     real (kind=real4), dimension(:,:), allocatable, public, save,target:: Cloud_NIR_Transmission_AC
      real (kind=real4), dimension(:,:), allocatable, public, save,target:: Insolation_DCOMP
      real (kind=real4), dimension(:,:), allocatable, public, save,target:: Insolation_Diffuse_DCOMP
+
+     real (kind=real4), dimension(:,:), allocatable, public, save,target:: refl_vis_fm_dcomp
+     real (kind=real4), dimension(:,:), allocatable, public, save,target:: refl_nir_fm_dcomp
 
      !--- SASRAB output
      real (kind=real4), dimension(:,:), allocatable, public, save:: Insolation_All_Sky
@@ -2450,6 +2465,11 @@ subroutine CREATE_ACHA_ARRAYS(dim1,dim2)
     allocate(ACHA%Ice_Prob_Ap_Uncer(dim1,dim2))
     allocate(ACHA%Lower_Tc_Ap_Uncer(dim1,dim2))
     allocate(ACHA%Tc(dim1,dim2))
+    allocate(ACHA%Tfm(dim1,dim2))
+    allocate(ACHA%Es(dim1,dim2))
+    allocate(ACHA%Zc_rtm(dim1,dim2))
+    allocate(ACHA%Zs(dim1,dim2))
+    allocate(ACHA%Ts(dim1,dim2))
     allocate(ACHA%Ec(dim1,dim2))
     allocate(ACHA%Pc(dim1,dim2))
     allocate(ACHA%Pc_Median(dim1,dim2))
@@ -2532,6 +2552,11 @@ subroutine RESET_ACHA_ARRAYS()
     ACHA%Ice_Prob_Ap_Uncer = Missing_Value_Real4
     ACHA%Lower_Tc_Ap_Uncer = Missing_Value_Real4
     ACHA%Tc = Missing_Value_Real4
+    ACHA%Tfm = Missing_Value_Real4
+    ACHA%Es = Missing_Value_Real4
+    ACHA%Zc_rtm = Missing_Value_Real4
+    ACHA%Zs = Missing_Value_Real4
+    ACHA%Ts = Missing_Value_Real4
     ACHA%Ec = Missing_Value_Real4
     ACHA%Pc = Missing_Value_Real4
     ACHA%Pc_Median = Missing_Value_Real4
@@ -2609,6 +2634,11 @@ subroutine DESTROY_ACHA_ARRAYS()
     deallocate(ACHA%Ice_Prob_Ap_Uncer)
     deallocate(ACHA%Lower_Tc_Ap_Uncer)
     deallocate(ACHA%Tc)
+    deallocate(ACHA%Tfm)
+    deallocate(ACHA%Es)
+    deallocate(ACHA%Zc_rtm)
+    deallocate(ACHA%Zs)
+    deallocate(ACHA%Ts)
     deallocate(ACHA%Ec)
     deallocate(ACHA%Pc)
     deallocate(ACHA%Pc_Median)
@@ -2860,10 +2890,19 @@ subroutine CREATE_DCOMP_ARRAYS(dim1,dim2)
       allocate(Reff_DCOMP_Qf(dim1,dim2))
       allocate(DCOMP_Quality_Flag(dim1,dim2))
       allocate(DCOMP_Info_Flag(dim1,dim2))
-      allocate(Cloud_063um_Albedo(dim1,dim2))
-      allocate(Cloud_063um_Spherical_Albedo(dim1,dim2))
-      allocate(Cloud_063um_Transmission_View(dim1,dim2))
-      allocate(Cloud_063um_Transmission_Solar(dim1,dim2))
+      allocate(Cloud_VIS_Albedo(dim1,dim2))
+      allocate(refl_vis_fm_dcomp(dim1,dim2))
+      allocate(refl_nir_fm_dcomp(dim1,dim2))
+      allocate(Cloud_VIS_Spherical_Albedo(dim1,dim2))
+      allocate(Above_Cloud_VIS_Transmission(dim1,dim2))
+      allocate(Cloud_VIS_Transmission_View(dim1,dim2))
+      allocate(Cloud_VIS_Transmission_Solar(dim1,dim2))
+      allocate(Cloud_VIS_Transmission_AC(dim1,dim2))
+      allocate(Cloud_NIR_Spherical_Albedo(dim1,dim2))
+      allocate(Above_Cloud_NIR_Transmission(dim1,dim2))
+      allocate(Cloud_NIR_Transmission_View(dim1,dim2))
+      allocate(Cloud_NIR_Transmission_Solar(dim1,dim2))
+      allocate(Cloud_NIR_Transmission_AC(dim1,dim2))
       allocate(Insolation_DCOMP(dim1,dim2))
       allocate(Insolation_Diffuse_DCOMP(dim1,dim2))
       allocate(Cost_DCOMP(dim1,dim2))
@@ -2918,10 +2957,19 @@ subroutine RESET_DCOMP_ARRAYS()
       Reff_DCOMP_Qf = Missing_Value_Int1
       DCOMP_Quality_Flag = 0
       DCOMP_Info_Flag = 0
-      Cloud_063um_Albedo = Missing_Value_Real4
-      Cloud_063um_Spherical_Albedo = Missing_Value_Real4
-      Cloud_063um_Transmission_View = Missing_Value_Real4
-      Cloud_063um_Transmission_Solar = Missing_Value_Real4
+      Cloud_VIS_Albedo = Missing_Value_Real4
+      refl_vis_fm_dcomp = Missing_Value_Real4
+      refl_nir_fm_dcomp = Missing_Value_Real4
+      Cloud_VIS_Spherical_Albedo = Missing_Value_Real4
+      Above_Cloud_VIS_Transmission = Missing_Value_Real4
+      Cloud_VIS_Transmission_View = Missing_Value_Real4
+      Cloud_VIS_Transmission_Solar = Missing_Value_Real4
+      Cloud_VIS_Transmission_AC = Missing_Value_Real4
+      Cloud_NIR_Spherical_Albedo = Missing_Value_Real4
+      Above_Cloud_NIR_Transmission = Missing_Value_Real4
+      Cloud_NIR_Transmission_View = Missing_Value_Real4
+      Cloud_NIR_Transmission_Solar = Missing_Value_Real4
+      Cloud_NIR_Transmission_AC = Missing_Value_Real4
       Insolation_DCOMP = Missing_Value_Real4
       Insolation_Diffuse_DCOMP = Missing_Value_Real4
       Cost_DCOMP = Missing_Value_Real4
@@ -2976,10 +3024,19 @@ subroutine DESTROY_DCOMP_ARRAYS()
       deallocate(Reff_DCOMP_Qf)
       deallocate(DCOMP_Quality_Flag)
       deallocate(DCOMP_Info_Flag)
-      deallocate(Cloud_063um_Albedo)
-      deallocate(Cloud_063um_Spherical_Albedo)
-      deallocate(Cloud_063um_Transmission_View)
-      deallocate(Cloud_063um_Transmission_Solar)
+      deallocate(Cloud_VIS_Albedo)
+      deallocate(refl_vis_fm_dcomp)
+      deallocate(refl_nir_fm_dcomp)
+      deallocate(Cloud_VIS_Spherical_Albedo)
+      deallocate(Above_Cloud_VIS_Transmission)
+      deallocate(Cloud_VIS_Transmission_View)
+      deallocate(Cloud_VIS_Transmission_Solar)
+      deallocate(Cloud_VIS_Transmission_AC)
+      deallocate(Cloud_NIR_Spherical_Albedo)
+      deallocate(Above_Cloud_NIR_Transmission)
+      deallocate(Cloud_NIR_Transmission_View)
+      deallocate(Cloud_NIR_Transmission_Solar)
+      deallocate(Cloud_NIR_Transmission_AC)
       deallocate(Insolation_DCOMP)
       deallocate(Insolation_Diffuse_DCOMP)
       deallocate(Cost_DCOMP)

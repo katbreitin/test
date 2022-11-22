@@ -68,8 +68,8 @@ MODULE DCOMP_DERIVED_PRODUCTS_MOD
    , Cwp_Scwater_Layer_Dcomp &
    , Cwp_Ice_Layer_Dcomp &
    , Cwp_Water_Layer_Dcomp &
-   , Cloud_063um_Transmission_Solar &
-   , Cloud_063um_Spherical_Albedo &
+   , Cloud_VIS_Transmission_Solar &
+   , Cloud_VIS_Spherical_Albedo &
    , bad_pixel_mask &
    , image &
    , sfc &
@@ -884,6 +884,7 @@ subroutine COMPUTE_DCOMP_INSOLATION(Line_Idx_Min,Num_Lines,Sun_Earth_Distance)
   real:: aod_550
   real:: O3cm
 
+
   Elem_Idx_Min = 1
   Num_Elements = Image%Number_Of_Elements
   Elem_Idx_Max = Elem_Idx_Min + Num_Elements - 1
@@ -948,9 +949,9 @@ subroutine COMPUTE_DCOMP_INSOLATION(Line_Idx_Min,Num_Lines,Sun_Earth_Distance)
       !-- set cloud trans and albedo, if clear, set to transparent values
       if (Cloud_Optical_Depth > 0.0) then
 
-        Cloud_Spherical_Albedo = Cloud_063um_Spherical_Albedo(Elem_Idx,Line_Idx)
+        Cloud_Spherical_Albedo = Cloud_VIS_Spherical_Albedo(Elem_Idx,Line_Idx)
         Cloud_Transmission_Direct = exp( -1.0 * Cloud_Optical_Depth / Cosine_Solar_Zenith_Angle)
-        Cloud_Transmission_Diffuse = Cloud_063um_Transmission_Solar(Elem_Idx,Line_Idx)  - Cloud_Transmission_Direct
+        Cloud_Transmission_Diffuse = Cloud_VIS_Transmission_Solar(Elem_Idx,Line_Idx)  - Cloud_Transmission_Direct
        
         Insolation_Direct_Dcomp = Fo * Cloud_Transmission_Direct * Cosine_Solar_Zenith_Angle
 

@@ -39,11 +39,11 @@
 
  !---- CLAVR-x/PATMOS-x
  logical, private, parameter:: FULL_RETRIEVAL = .true.
- logical, private, parameter:: USE_LINEAR_IN_OPD_EMISSION = .true.
+ logical, private, parameter:: USE_LINEAR_IN_OPD_EMISSION = .false.
  integer(kind=int4), parameter, private:: MULTI_LAYER_LOGIC_Flag = 2
- logical, private, parameter :: USE_CIRRUS_FLAG = .true. 
+ logical, private, parameter :: USE_CIRRUS_FLAG = .false. 
  logical, private, parameter :: USE_LAPSE_RATE_FLAG = .true.  
- logical, private, parameter :: USE_LOWER_INTERP_FLAG = .true.  
+ logical, private, parameter :: USE_LOWER_INTERP_FLAG = .false.
  logical, private, parameter :: USE_LRC_FLAG = .false.
  integer, parameter, private:: Cloud_Type_Forced = -1 ! -1 = not used, 0-10 use this type
  logical, private, parameter :: USE_SOUNDER_VALUES = .false.
@@ -138,8 +138,9 @@ real(kind=real4), parameter, private:: Tc_Ap_Uncer_Cirrus_Default = 30.0  !!    
 
  real(kind=real4), parameter, private:: Ts_Ap_Uncer_Sfc = 5.0                !apriori uncertainty of Tsfc when not overlap
  real(kind=real4), parameter, private:: Ts_Ap_Uncer_Lower_Cld = 20.0         !apriori uncertainty of Tsfc when lower cloud below
- real(kind=real4), parameter, private:: Ec_Ap_Uncer_Opaque = 0.2 !0.1        !apriori uncertainty of ec for opaque clouds
- real(kind=real4), parameter, private:: Ec_Ap_Uncer_Cirrus = 0.8 !0.4
+ real(kind=real4), parameter, private:: Ec_Ap_Uncer_Opaque = 0.2             !apriori uncertainty of ec for opaque clouds
+ real(kind=real4), parameter, private:: Ec_Ap_Uncer_Low = 0.8              !apriori uncertainty of ec for water clouds
+ real(kind=real4), parameter, private:: Ec_Ap_Uncer_Cirrus = 0.8      
 
  real(kind=real4), parameter, private:: Beta_Ap_Water = 1.3
  real(kind=real4), parameter, private:: Beta_Ap_Uncer_Water = 0.2            !apriori uncertainty of  beta for ice

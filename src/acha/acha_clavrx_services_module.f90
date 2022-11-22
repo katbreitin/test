@@ -268,8 +268,14 @@ end type acha_rtm_nwp_struct
  type, public :: acha_output_struct
    real, dimension(:,:), pointer:: Latitude_Pc
    real, dimension(:,:), pointer:: Longitude_Pc
+   real, dimension(:,:), pointer:: Tc_Ap_Uncer
    real, dimension(:,:), pointer:: Tc_Ap
    real, dimension(:,:), pointer:: Tc
+   real, dimension(:,:), pointer:: Tfm
+   real, dimension(:,:), pointer:: Es
+   real, dimension(:,:), pointer:: Zc_rtm
+   real, dimension(:,:), pointer:: Zs
+   real, dimension(:,:), pointer:: Ts
    real, dimension(:,:), pointer:: Ec
    real, dimension(:,:), pointer:: Beta
    real, dimension(:,:), pointer:: Pc

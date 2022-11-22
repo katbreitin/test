@@ -117,15 +117,22 @@ module dncomp_interface_def_mod
    ! - DCOMP/NLCOMP output
 
    type dncomp_out_type
-      type ( d2_real4_type) :: cod
+      type ( d2_real4_type) :: cod  
+      type ( d2_real4_type) :: fm_vis
+      type ( d2_real4_type) :: fm_nir
+      type ( d2_real4_type) :: trans_ac
+      type ( d2_real4_type) :: trans_ac_nir
       ! real, pointer :: cod(:,:) => NULL()
       type ( d2_real4_type) :: cps
       type ( d2_real4_type) :: cod_unc
       type ( d2_real4_type) :: ref_unc
       type ( d2_real4_type) :: cld_trn_sol
+      type ( d2_real4_type) :: cld_trn_sol_nir
       type ( d2_real4_type) :: cld_trn_obs
+      type ( d2_real4_type) :: cld_trn_obs_nir
       type ( d2_real4_type) :: cld_alb
       type ( d2_real4_type) :: cld_sph_alb
+      type ( d2_real4_type) :: cld_sph_alb_nir
       type ( d2_int2_type) :: quality
       type ( d2_int2_type) :: info
       type ( d2_real4_type) :: iwp
@@ -217,13 +224,20 @@ contains
       type ( dncomp_out_type ) :: new_output
 
       allocate ( new_output % cod % d         ( dim_1 , dim_2))
+      allocate ( new_output % fm_vis % d         ( dim_1 , dim_2))
+      allocate ( new_output % fm_nir % d         ( dim_1 , dim_2))
+      allocate ( new_output % trans_ac % d         ( dim_1 , dim_2))
+      allocate ( new_output % trans_ac_nir % d         ( dim_1 , dim_2))
       allocate ( new_output % cps % d         ( dim_1 , dim_2))
       allocate ( new_output % cod_unc % d     ( dim_1 , dim_2))
       allocate ( new_output % ref_unc % d     ( dim_1 , dim_2))
       allocate ( new_output % cld_trn_sol % d ( dim_1 , dim_2))
+      allocate ( new_output % cld_trn_sol_nir % d ( dim_1 , dim_2))
       allocate ( new_output % cld_trn_obs % d ( dim_1 , dim_2))
+      allocate ( new_output % cld_trn_obs_nir % d ( dim_1 , dim_2))
       allocate ( new_output % cld_alb % d     ( dim_1 , dim_2))
       allocate ( new_output % cld_sph_alb % d ( dim_1 , dim_2))
+      allocate ( new_output % cld_sph_alb_nir % d ( dim_1 , dim_2))
       allocate ( new_output % info % d        ( dim_1 , dim_2))
       allocate ( new_output % quality % d     ( dim_1 , dim_2))
       allocate ( new_output % lwp % d         ( dim_1 , dim_2))
@@ -232,15 +246,21 @@ contains
       allocate ( new_output % rain_rate % d ( dim_1 , dim_2))
       allocate ( new_output % refl_vis_max % d ( dim_1 , dim_2))
 
-
-      new_output % cod % d           =  MISSING_REAL4
-      new_output % cps % d           =  MISSING_REAL4
+      new_output % cod % d           =  MISSING_REAL4 
+      new_output % fm_vis % d           =  MISSING_REAL4 
+      new_output % fm_nir % d           =  MISSING_REAL4 
+      new_output % trans_ac % d           =  MISSING_REAL4 
+      new_output % trans_ac_nir % d           =  MISSING_REAL4 
+      new_output % cps % d           =  MISSING_REAL4 
       new_output % cod_unc % d       =  MISSING_REAL4
-      new_output % ref_unc % d       =  MISSING_REAL4
-      new_output % cld_trn_sol % d   =  MISSING_REAL4
-      new_output % cld_trn_obs % d   =  MISSING_REAL4
-      new_output % cld_alb % d       =  MISSING_REAL4
-      new_output % cld_sph_alb % d   =  MISSING_REAL4
+      new_output % ref_unc % d       =  MISSING_REAL4 
+      new_output % cld_trn_sol % d   =  MISSING_REAL4  
+      new_output % cld_trn_sol_nir % d   =  MISSING_REAL4  
+      new_output % cld_trn_obs % d   =  MISSING_REAL4   
+      new_output % cld_trn_obs_nir % d   =  MISSING_REAL4   
+      new_output % cld_alb % d       =  MISSING_REAL4  
+      new_output % cld_sph_alb % d   =  MISSING_REAL4 
+      new_output % cld_sph_alb_nir % d   =  MISSING_REAL4 
       new_output % lwp % d          =  MISSING_REAL4
       new_output % lwp % d          =  MISSING_REAL4
       new_output % rain_probability % d       =  -999
@@ -302,13 +322,20 @@ contains
       type ( dncomp_out_type) :: this
 
       if ( allocated ( this % cod % d ) ) deallocate (  this % cod % d )
+      if ( allocated ( this % fm_vis % d ) ) deallocate (  this % fm_vis % d )
+      if ( allocated ( this % fm_nir % d ) ) deallocate (  this % fm_nir % d )
+      if ( allocated ( this % trans_ac % d ) ) deallocate (  this % trans_ac % d )
+      if ( allocated ( this % trans_ac_nir % d ) ) deallocate (  this % trans_ac_nir % d )
       if ( allocated ( this % cps % d )) deallocate ( this % cps % d)
       if ( allocated ( this % cod_unc % d ) ) deallocate (  this % cod_unc % d )
       if ( allocated ( this % ref_unc % d )) deallocate ( this % ref_unc % d)
-      if ( allocated ( this % cld_trn_sol % d ) ) deallocate (  this % cld_trn_sol % d )
+      if ( allocated ( this % cld_trn_sol % d ) ) deallocate (  this % cld_trn_sol % d ) 
+      if ( allocated ( this % cld_trn_sol_nir % d ) ) deallocate (  this % cld_trn_sol_nir % d ) 
       if ( allocated ( this % cld_trn_obs % d )) deallocate ( this % cld_trn_obs % d)
+      if ( allocated ( this % cld_trn_obs_nir % d )) deallocate ( this % cld_trn_obs_nir % d)
       if ( allocated ( this % cld_alb % d ) ) deallocate (  this % cld_alb % d )
       if ( allocated ( this % cld_sph_alb % d )) deallocate ( this % cld_sph_alb % d)
+      if ( allocated ( this % cld_sph_alb_nir % d )) deallocate ( this % cld_sph_alb_nir % d)
       if ( allocated ( this % quality % d ) ) deallocate (  this % quality % d )
       if ( allocated ( this % info % d )) deallocate ( this % info % d)
       if ( allocated ( this % iwp % d ) ) deallocate (  this % iwp % d )
@@ -375,7 +402,6 @@ contains
         if ( associated ( this % chn(i) % alb_sfc))  this % chn(i) % alb_sfc => null()
         if ( associated ( this % chn(i) % alb_sfc_dark_sky))  this % chn(i) % alb_sfc_dark_sky => null()
         if ( associated ( this % chn(i) % emiss_sfc))  this % chn(i) % emiss_sfc => null()
-        if ( associated ( this % chn(i) % trans_ac_nadir))  this % chn(i) % trans_ac_nadir => null()
         if ( associated ( this % chn(i) % rad_clear_sky_toa))  this % chn(i) % rad_clear_sky_toa => null()
         if ( associated ( this % chn(i) % rad_clear_sky_toc))  this % chn(i) % rad_clear_sky_toc => null()
 

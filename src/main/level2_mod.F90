@@ -2417,14 +2417,14 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Actual_Range = [0.0,1.0]
             Sds_Info(Var_Idx)%Long_Name = "cloud transmission at 0.65 microns nominal from DCOMP"
             Sds_Info(Var_Idx)%Units = "none"
-            if (allocated(Cloud_063um_Transmission_Solar)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Cloud_063um_Transmission_Solar
+            if (allocated(Cloud_VIS_Transmission_Solar)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Cloud_VIS_Transmission_Solar
 
          case("cloud_albedo_0_65um_nom")
             Sds_Info(Var_Idx)%Standard_Name = "cloud_albedo_0_65um_nom"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,1.0]
             Sds_Info(Var_Idx)%Long_Name = "cloud albedo at 0.65 microns nominal from DCOMP"
             Sds_Info(Var_Idx)%Units = "none"
-            if (allocated(Cloud_063um_Albedo)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Cloud_063um_Albedo
+            if (allocated(Cloud_VIS_Albedo)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Cloud_VIS_Albedo
 
          case("rain_rate")
             Sds_Info(Var_Idx)%Standard_Name = "rain_rate"

@@ -32,7 +32,7 @@ module ACHA_FULL_RETRIEVAL_MOD
  subroutine FULL_ACHA_RETRIEVAL(Input,Acha_Mode_Flag, Symbol, &
                           Num_Obs,Num_Param,y,y_variance,f,x_Ap,Sa_Inv,x,Sx,AKM, &
                           Conv_Test, Cost, Goodness, Convergence_Criteria, Hght_Prof,&
-                          Tsfc_Est,T_Tropo,Z_Tropo,P_Tropo, Cloud_Type, Cos_Zen, Zc_Base, &
+                          Tsfc_Est,T_Tropo,Z_Tropo,P_Tropo, Cloud_Type, Cos_Zen, Zs, Zc, Zc_Base, &
                           ACHA_RTM_NWP, &
                           Beta_110um_142um_Coef_Water, &
                           Beta_110um_139um_Coef_Water, &
@@ -133,6 +133,8 @@ module ACHA_FULL_RETRIEVAL_MOD
  real, intent(out):: Goodness
  integer, intent(out):: Converged_Flag, Fail_Flag
  real, intent(out):: Tc_Eff
+ real, intent(out):: Zs
+ real, intent(out):: Zc
  real, intent(out):: Zc_Base
 
  integer:: Lev_Idx
@@ -344,6 +346,12 @@ Retrieval_Loop: do
      write(unit=Lun_Iter_Dump,fmt=*) "Zc_Thick = ", Zc_Thick
      write(unit=Lun_Iter_Dump,fmt=*) "Zc_Base = ", Zc_Base 
      write(unit=Lun_Iter_Dump,fmt=*) "Tc_Base = ", Tc_Base 
+     write(unit=Lun_Iter_Dump,fmt=*) "Ts = ", Ts_Temp 
+     write(unit=Lun_Iter_Dump,fmt=*) "Es = ", Emiss_Sfc_110um
+     write(unit=Lun_Iter_Dump,fmt=*) "Rad Clear = ", Rad_Clear_110um
+     write(unit=Lun_Iter_Dump,fmt=*) "Rad Ac = ", Rad_Ac_110um
+     write(unit=Lun_Iter_Dump,fmt=*) "Trans Ac = ", Trans_Ac_110um
+     write(unit=Lun_Iter_Dump,fmt=*) "Trans Bc = ", Trans_Bc_110um
    endif
 
   !--------------------------------------------------
@@ -472,6 +480,10 @@ Retrieval_Loop: do
   if (Dump_Diag) write(unit=Lun_Iter_Dump,fmt=*) "constrained x = ", x
 
 end do Retrieval_Loop
+
+  ! Zc derived from Tc and used for slicing the RTM profiles
+  Zc = Zc_Temp
+  Zs = Zs_Temp
 
  if (Dump_Diag) then
      write(unit=Lun_Iter_Dump,fmt=*) "========================================================"

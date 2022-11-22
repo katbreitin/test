@@ -33,7 +33,11 @@
             Insolation_DCOMP, Insolation_Diffuse_DCOMP, &
             Image, Temporary_Data_Dir, Tc_Opaque_Cloud, Zc_Opaque_Cloud, &
             Bad_Pixel_Mask, Sensor, &
-            mask_lrc, i_lrc, j_lrc, &
+            cloud_vis_transmission_solar, cloud_vis_transmission_view, &
+            cloud_vis_spherical_albedo, above_cloud_vis_transmission, cloud_vis_albedo, &
+            cloud_nir_transmission_solar, cloud_nir_transmission_view, &
+            cloud_nir_spherical_albedo, above_cloud_nir_transmission, &
+            refl_vis_fm_dcomp, refl_nir_fm_dcomp, mask_lrc, i_lrc, j_lrc, &
             Cwp_Dcomp, Lwp_Dcomp, Iwp_Dcomp, Solar_Contamination_Mask, &
             Covar_Ch37_Ch31_5x5, Covar_Ch27_Ch38_5x5, Covar_Ch27_Ch31_5x5, &
             Bt_375um_Sounder,Bt_11um_Sounder,Bt_12um_Sounder
@@ -722,6 +726,7 @@
         call add_sym_f4_2d(ACHA%Tc, 'cld_temp_acha')                      !x1
         call add_sym_f4_2d(ACHA%Ec, 'cld_emis_acha')                      !x2
         call add_sym_f4_2d(ACHA%Beta, 'cld_beta_acha')                    !x3
+        call add_sym_f4_2d(ACHA%Ts, 'bb_temp_acha')            !x4
         call add_sym_f4_2d(ACHA%Ice_Probability, 'ice_prob_acha')    !x5
 
         call add_sym_f4_2d(ACHA%Pc, 'cld_press_acha')
@@ -731,6 +736,7 @@
         call add_sym_f4_2d(ACHA%Zc, 'cld_height_acha')
         call add_sym_f4_2d(ACHA%Zc_Eff, 'cld_height_eff_acha')
         call add_sym_f4_2d(ACHA%Zc_Base, 'cld_height_base_acha')
+        call add_sym_f4_2d(ACHA%Zc_rtm, 'cld_height_rtm_acha')
 
         call add_sym_f4_2d(ACHA%Ec_11um, 'acha_ec_11um')
         call add_sym_f4_2d(ACHA%Ec_104um, 'acha_ec_104um')
@@ -741,6 +747,9 @@
         call add_sym_i1_2d(ACHA%Quality_Flag, 'acha_quality')
         call add_sym_i1_2d(ACHA%Processing_Order, 'acha_proc_order')
         call add_sym_i1_2d(ACHA%Inversion_Flag, 'acha_inversion_flag')
+        call add_sym_f4_2d(ACHA%Tfm, 'temp_11_0um_fm_acha')
+        call add_sym_f4_2d(ACHA%Es, 'bb_emis_acha')
+        call add_sym_f4_2d(ACHA%Zs, 'bb_height_acha')
         call add_sym_f4_2d(ACHA%Lower_Tc, 'cld_temp_lower_acha')
         call add_sym_i1_2d(ACHA%Cld_Type,'cloud_type_acha')
         call add_sym_f4_2d(ACHA%Tc_Ap,'cld_temp_prior_acha')
@@ -775,6 +784,17 @@
         call add_sym_i1_2d(DCOMP_Quality_Flag, 'dcomp_quality')
         call add_sym_f4_2d(Insolation_DCOMP, 'insolation_dcomp')
         call add_sym_f4_2d(Insolation_Diffuse_DCOMP, 'insolation_diffuse_dcomp')
+        call add_sym_f4_2d(cloud_vis_transmission_solar, 'cloud_vis_tran_solar_dcomp')
+        call add_sym_f4_2d(cloud_vis_transmission_view, 'cloud_vis_tran_view_dcomp')
+        call add_sym_f4_2d(cloud_vis_spherical_albedo, 'cloud_vis_spherical_albedo_dcomp')
+        call add_sym_f4_2d(above_cloud_nir_transmission, 'above_cloud_nir_transmission_dcomp')
+        call add_sym_f4_2d(cloud_vis_albedo, 'cloud_albedo_dcomp')
+        call add_sym_f4_2d(cloud_nir_transmission_solar, 'cloud_nir_tran_solar_dcomp')
+        call add_sym_f4_2d(cloud_nir_transmission_view, 'cloud_nir_tran_view_dcomp')
+        call add_sym_f4_2d(above_cloud_vis_transmission, 'above_cloud_vis_transmission_dcomp')
+        call add_sym_f4_2d(cloud_nir_spherical_albedo, 'cloud_nir_spherical_albedo_dcomp')
+        call add_sym_f4_2d(refl_vis_fm_dcomp, 'refl_vis_fm_dcomp')
+        call add_sym_f4_2d(refl_nir_fm_dcomp, 'refl_nir_fm_dcomp')
 
         ! May alias the human-readable symbols, but converting between channels
         ! and names outside clavrx is very annoying

@@ -64,15 +64,21 @@ module dncomp_clavrx_bridge_mod
        , cld_type &
        , bad_pixel_mask &
        , lwp_dcomp, reff_dcomp, tau_dcomp, iwp_dcomp &
+       , refl_vis_fm_dcomp, refl_nir_fm_dcomp &
        , tau_dcomp_1, tau_dcomp_2, tau_dcomp_3 &
        , reff_dcomp_1, reff_dcomp_2, reff_dcomp_3 &
        , tau_dcomp_qf, reff_dcomp_qf &
        , tau_dcomp_cost , reff_dcomp_cost &
        , dcomp_info_flag, dcomp_quality_flag &
-       , cloud_063um_transmission_solar &
-       , cloud_063um_transmission_view &
-       , cloud_063um_spherical_albedo &
-       , cloud_063um_albedo &
+       , cloud_vis_transmission_solar &
+       , cloud_vis_transmission_view &
+       , cloud_vis_spherical_albedo &
+       , above_cloud_vis_transmission &
+       , cloud_vis_albedo &
+       , cloud_nir_transmission_solar &
+       , cloud_nir_transmission_view &
+       , above_cloud_nir_transmission &
+       , cloud_nir_spherical_albedo &
        , ancil_data_dir &
        , ch &
        , dcomp_mode &
@@ -351,6 +357,8 @@ contains
             
           tau_dcomp (1:dim_1,1:dim_2)   = dncomp_output % cod % d(1:dim_1,1:dim_2)
           reff_dcomp  (1:dim_1,1:dim_2) = dncomp_output % cps % d(1:dim_1,1:dim_2)
+          refl_vis_fm_dcomp  (1:dim_1,1:dim_2) = dncomp_output % fm_vis % d(1:dim_1,1:dim_2)
+          refl_nir_fm_dcomp  (1:dim_1,1:dim_2) = dncomp_output % fm_nir % d(1:dim_1,1:dim_2)
             
             
           select case (dcomp_mode_local)
@@ -377,10 +385,16 @@ contains
           dcomp_quality_flag(1:dim_1,1:dim_2) = dncomp_output % quality % d(1:dim_1,1:dim_2)
           dcomp_info_flag(1:dim_1,1:dim_2)    = dncomp_output % info % d(1:dim_1,1:dim_2)
       
-          cloud_063um_transmission_solar(1:dim_1,1:dim_2) = dncomp_output % cld_trn_sol % d(1:dim_1,1:dim_2)
-          cloud_063um_transmission_view(1:dim_1,1:dim_2)  = dncomp_output % cld_trn_obs % d(1:dim_1,1:dim_2)
-          cloud_063um_albedo(1:dim_1,1:dim_2)             = dncomp_output % cld_alb % d(1:dim_1,1:dim_2)
-          cloud_063um_spherical_albedo(1:dim_1,1:dim_2)   = dncomp_output % cld_sph_alb % d(1:dim_1,1:dim_2)
+          cloud_vis_transmission_solar(1:dim_1,1:dim_2) = dncomp_output % cld_trn_sol % d(1:dim_1,1:dim_2)
+          cloud_vis_transmission_view(1:dim_1,1:dim_2)  = dncomp_output % cld_trn_obs % d(1:dim_1,1:dim_2)
+          cloud_vis_albedo(1:dim_1,1:dim_2)             = dncomp_output % cld_alb % d(1:dim_1,1:dim_2)
+          cloud_vis_spherical_albedo(1:dim_1,1:dim_2)   = dncomp_output % cld_sph_alb % d(1:dim_1,1:dim_2)
+          above_cloud_vis_transmission(1:dim_1,1:dim_2) = dncomp_output % trans_ac % d(1:dim_1,1:dim_2)
+
+          cloud_nir_transmission_solar(1:dim_1,1:dim_2) = dncomp_output % cld_trn_sol_nir % d(1:dim_1,1:dim_2)
+          cloud_nir_transmission_view(1:dim_1,1:dim_2)  = dncomp_output % cld_trn_obs_nir % d(1:dim_1,1:dim_2)
+          cloud_nir_spherical_albedo(1:dim_1,1:dim_2)   = dncomp_output % cld_sph_alb_nir % d(1:dim_1,1:dim_2)
+          above_cloud_nir_transmission(1:dim_1,1:dim_2) = dncomp_output % trans_ac_nir % d(1:dim_1,1:dim_2)
             
           refl_asym_dcomp  (1:dim_1,1:dim_2)   =   dncomp_output % refl_vis_max  % d(1:dim_1,1:dim_2)
          

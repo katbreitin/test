@@ -305,6 +305,11 @@ call chronos_acha % tic(4)
      Output%Longitude_Pc =>  null()
      Output%Tc_Ap =>  null()
      Output%Tc =>  null()
+     Output%Tfm =>  null()
+     Output%Es =>  null()
+     Output%Zc_rtm =>  null()
+     Output%Zs =>  null()
+     Output%Ts =>  null()
      Output%Ec =>  null()
      Output%Beta =>  null()
      Output%Pc =>  null()
@@ -419,7 +424,13 @@ call chronos_acha % tic(4)
    Output%Latitude_Pc => Nav%Lat_Pc
    Output%Longitude_Pc => Nav%Lon_Pc
    Output%Tc => ACHA%Tc
+   Output%Tfm => ACHA%Tfm
+   Output%Es => ACHA%Es
+   Output%Zc_rtm => ACHA%Zc_rtm
+   Output%Zs => ACHA%Zs
+   Output%Ts => ACHA%Ts
    Output%Tc_Ap => ACHA%Tc_Ap
+   Output%Tc_Ap_Uncer => ACHA%Tc_Ap_Uncer
    Output%Ec => ACHA%Ec
    Output%Beta => ACHA%Beta
    Output%Pc => ACHA%Pc

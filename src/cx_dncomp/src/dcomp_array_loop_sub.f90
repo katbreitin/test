@@ -252,10 +252,10 @@ subroutine dcomp_array_loop ( input, output , debug_mode_user)
                )
 
             refl_toc( chn_idx ) = refl_toa  /  trans_total (chn_idx )
-
             alb_sfc( chn_idx ) =  ( input % chn( chn_idx) % alb_sfc  (elem_idx,line_idx) ) / 100.
-
-            alb_sfc( chn_idx ) = max ( alb_sfc( chn_idx ) , ALBEDO_OCEAN (chn_idx) )
+            
+            if(alb_sfc(chn_idx) /= -999) &
+                alb_sfc( chn_idx ) = max ( alb_sfc( chn_idx ) , ALBEDO_OCEAN (chn_idx) )
 
             alb_unc_sfc  (chn_idx) = 0.05
 
@@ -382,14 +382,21 @@ subroutine dcomp_array_loop ( input, output , debug_mode_user)
          end if
 
          output % cod % d (elem_idx,line_idx) = dcomp_out % cod
-         output % cps % d (elem_idx, line_idx) = dcomp_out % cps
-
+         output % cps % d (elem_idx, line_idx) = dcomp_out % cps 
+         output % fm_vis % d (elem_idx, line_idx) = dcomp_out % fm_vis 
+         output % fm_nir % d (elem_idx, line_idx) = dcomp_out % fm_nir 
+         output % trans_ac % d (elem_idx, line_idx) = trans_vec(1) 
+         output % trans_ac_nir % d (elem_idx, line_idx) = trans_vec(2) 
+     
          output % cod_unc % d ( elem_idx, line_idx) = dcomp_out % codu
          output % ref_unc % d ( elem_idx, line_idx) = dcomp_out % cpsu
-         output % cld_trn_sol % d ( elem_idx, line_idx) = dcomp_out % cloud_trans_sol_vis
-         output % cld_trn_obs % d ( elem_idx, line_idx) = dcomp_out % cloud_trans_sat_vis
-         output % cld_alb % d ( elem_idx, line_idx)  = dcomp_out % cloud_alb_vis
-         output % cld_sph_alb % d ( elem_idx, line_idx)  = dcomp_out % cloud_sph_alb_vis
+         output % cld_trn_sol % d ( elem_idx, line_idx) = dcomp_out % cloud_trans_sol_vis  
+         output % cld_trn_sol_nir % d ( elem_idx, line_idx) = dcomp_out % cloud_trans_sol_nir  
+         output % cld_trn_obs % d ( elem_idx, line_idx) = dcomp_out % cloud_trans_sat_vis   
+         output % cld_trn_obs_nir % d ( elem_idx, line_idx) = dcomp_out % cloud_trans_sat_nir
+         output % cld_alb % d ( elem_idx, line_idx)  = dcomp_out % cloud_alb_vis 
+         output % cld_sph_alb % d ( elem_idx, line_idx)  = dcomp_out % cloud_sph_alb_vis 
+         output % cld_sph_alb_nir % d ( elem_idx, line_idx)  = dcomp_out % cloud_sph_alb_nir
          output % refl_vis_max % d ( elem_idx, line_idx)  = dcomp_out % refl_vis_max
          ! - Water Path
          if ( dcomp_out % cod .gt. 0 .and. dcomp_out % cps .gt. 0) then
