@@ -304,16 +304,20 @@ subroutine COMPUTE_CLOUD_WATER_PATH(jmin,jmax)
               Iphase = -1
      endif 
 
+#ifdef NOMISSINGCWP
+#else
      !--- check conditions where this calc should be skipped
      if (Iphase == -1) cycle
+#endif
+
+     Lwp_Dcomp(Elem_Idx,Line_Idx) = 0.55*Tau*Reff*Rho_Water
+     Iwp_Dcomp(Elem_Idx,Line_Idx) = 0.667*Tau*Reff*Rho_Ice
 
      !--- compute cloud water path
      if (Iphase == 0) then
-      Cwp_Dcomp(Elem_Idx,Line_Idx) = 0.55*Tau*Reff*Rho_Water
-      Lwp_Dcomp(Elem_Idx,Line_Idx) = 0.55*Tau*Reff*Rho_Water
-     else
-      Cwp_Dcomp(Elem_Idx,Line_Idx) = 0.667*Tau*Reff*Rho_Ice
-      Iwp_Dcomp(Elem_Idx,Line_Idx) = 0.667*Tau*Reff*Rho_Ice
+      Cwp_Dcomp(Elem_Idx,Line_Idx) = Lwp_Dcomp(Elem_Idx,Line_Idx)
+     else if(Iphase == 1) then
+      Cwp_Dcomp(Elem_Idx,Line_Idx) = Iwp_Dcomp(Elem_Idx,Line_Idx)
      endif
 
      !--- Partition into Ice, Water and Scwater Layers

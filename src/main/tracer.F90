@@ -34,7 +34,7 @@
             Image, Temporary_Data_Dir, Tc_Opaque_Cloud, &
             Bad_Pixel_Mask, &
             mask_lrc, i_lrc, j_lrc, &
-            Cwp_Dcomp
+            Cwp_Dcomp, Lwp_Dcomp, Iwp_Dcomp
         use calibration_constants_mod, only: Planck_A1, Planck_A2, Planck_Nu, Sun_Earth_Distance
         use viirs_clavrx_bridge, only: viirs_out => out
         use viirs_nasa_read_module, only: nasa_viirs_i5_bt, nasa_viirs_i4_bt, &
@@ -725,6 +725,8 @@
         call add_sym_f4_2d(Reff_DCOMP_2, 'cld_reff_dcomp_2')
         call add_sym_f4_2d(Reff_DCOMP_3, 'cld_reff_dcomp_3')
         call add_sym_f4_2d(Cwp_Dcomp, 'cld_cwp_dcomp')
+        call add_sym_f4_2d(Lwp_Dcomp, 'cld_lwp_dcomp')
+        call add_sym_f4_2d(Iwp_Dcomp, 'cld_iwp_dcomp')
         call add_sym_i1_2d(DCOMP_Quality_Flag, 'dcomp_quality')
         call add_sym_f4_2d(Insolation_DCOMP, 'insolation_dcomp')
         call add_sym_f4_2d(Insolation_Diffuse_DCOMP, 'insolation_diffuse_dcomp')
