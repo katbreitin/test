@@ -133,6 +133,7 @@ module USER_OPTIONS
     , Verb_Lev
 
    use AWG_CLOUD_HEIGHT, only: Num_ACHA_Modes, ACHA_Mode_Max_Length, ACHA_Mode_Values
+   use default_options_file, only: print_default_options
 
    implicit none
 
@@ -542,6 +543,9 @@ contains
             &'$Header: https://svn.ssec.wisc.edu/repos/cloud_team_clavrx/trunk/main_src/user_options.f90 4076 2021-01-26 20:34:35Z dbotambekov $'
             stop
         
+         else if  ( trim(fargv) == "--generate-options" ) then
+             call print_default_options()
+             stop
          else if (trim(fargv) == "-no_default") then 
             Use_Default = sym%NO
             !Different default file used

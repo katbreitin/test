@@ -49,6 +49,7 @@ main/cx_string_tools_mod.f90
 main/cx_vgac_mod.f90
 main/dcomp_derived_products_mod.f90
 main/dcomp_rtm_module.f90
+main/default_options_file.f90
 main/dnb_retrievals_mod.f90
 main/dncomp_clavrx_bridge_mod.f90
 main/file_utils.f90
