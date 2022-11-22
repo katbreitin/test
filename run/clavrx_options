@@ -11,7 +11,7 @@ default !E1 ALG ACHA (off, default or select combinations like 110_120_133)
 0   !E1 ALG NLCOMP (0=off, 1=on)
 0   !E1 ALG Aerosol (0=off, 1=on)
 1   !E2 OUTPUT Level-2  file output flag (0= no, 1 = yes)
-0   !E2 OUTPUT format flag (0= hdf4, 1 = netcdf4)
+1   !E2 OUTPUT format flag (0= hdf4, 1 = netcdf4)
 1   !E2 PRC Cloud flag  
 200 !E2 Num scan lines
 0   !E2 SASRAB switch on/off SASRAB parameters 
