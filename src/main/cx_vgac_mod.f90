@@ -190,14 +190,27 @@ subroutine CHECK_IF_FUSION_VGAC(Fusion)
      !VgacCrIS_rad_fusion_19hirsBands_2019122_0700to0836.nc
      if (Sensor%Platform_Name == 'NOAA-20') then
        Files => FILE_SEARCH(trim(Image%Level1b_Path), &
-                   'VgacCrIS_rad_fusion_19hirsBands_'//trim(Image%Level1b_Name(16:27))//'*.nc',count=Num_Files)
+                   'VJ1CrIS_rad_fusion_19hirsBands_'//trim(Image%Level1b_Name(16:27))//'*.nc',count=Num_Files)
 
        if (Num_Files == 0) then
           File_2_Read = "no_file"
+          print*, 'NO SNPP FUSION FILE: ', trim(Image%Level1b_Path), &
+                   'VJ1CrIS_rad_fusion_19hirsBands_'//trim(Image%Level1b_Name(16:27))//'*.nc'
        else
           File_2_Read = Files(1)
        endif
 
+     else if (Sensor%Platform_Name == 'SNPP') then
+       Files => FILE_SEARCH(trim(Image%Level1b_Path), &
+                   'VNPCrIS_rad_fusion_19hirsBands_'//trim(Image%Level1b_Name(16:27))//'*.nc',count=Num_Files)
+
+       if (Num_Files == 0) then
+          File_2_Read = "no_file"
+          print*, 'NO SNPP FUSION FILE: ', trim(Image%Level1b_Path), &
+                   'VNPCrIS_rad_fusion_19hirsBands_'//trim(Image%Level1b_Name(16:27))//'*.nc'
+       else
+          File_2_Read = Files(1)
+       endif
      else
        call MESG ( "FUSION CHECK IS NOT DESIGNED FOR THIS PLATFORM = "//trim(Sensor%Platform_Name), &
                    level = verb_lev % DEFAULT)
@@ -392,10 +405,23 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
      !VgacCrIS_rad_fusion_19hirsBands_2019122_0700to0836.nc
      if (Sensor%Platform_Name == 'NOAA-20') then
        Files => FILE_SEARCH(trim(Image%Level1b_Path), &
-                   'VgacCrIS_rad_fusion_19hirsBands_'//trim(Image%Level1b_Name(16:27))//'*.nc',count=Num_Files)
+                   'VJ1CrIS_rad_fusion_19hirsBands_'//trim(Image%Level1b_Name(16:27))//'*.nc',count=Num_Files)
 
        if (Num_Files == 0) then
           Fusion_File = "no_file"
+          print*, 'Could not find file:',trim(Image%Level1b_Path), &
+                   'VJ1CrIS_rad_fusion_19hirsBands_'//trim(Image%Level1b_Name(16:27))//'*.nc' 
+       else
+          Fusion_File = Files(1)
+       endif
+     else if (Sensor%Platform_Name == 'SNPP') then
+       Files => FILE_SEARCH(trim(Image%Level1b_Path), &
+                   'VNPCrIS_rad_fusion_19hirsBands_'//trim(Image%Level1b_Name(16:27))//'*.nc',count=Num_Files)
+
+       if (Num_Files == 0) then
+          Fusion_File = "no_file"
+          print*, 'Could not find file:',trim(Image%Level1b_Path), &
+                   'VNPCrIS_rad_fusion_19hirsBands_'//trim(Image%Level1b_Name(16:27))//'*.nc'
        else
           Fusion_File = Files(1)
        endif
@@ -445,7 +471,7 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
         endif
         Sds_Name = 'VC_Fusion_Rad_Chan'//trim(Fusion_Band_Str)
 
-        call READ_NETCDF(Ncid_Fusion, Sds_Start, Sds_Stride, Sds_Count, Sds_Name, Sds_Data_2d)
+        call READ_AND_UNSCALE_NETCDF_2D(Ncid_Fusion, Sds_Start, Sds_Stride, Sds_Count, Sds_Name, Sds_Data_2d)
 
         where((Sds_Data_2d .ltr. 0.0))
            Sds_Data_2d = MISSING_VALUE_REAL4

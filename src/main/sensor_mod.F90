@@ -1742,6 +1742,13 @@ module SENSOR_MOD
          Sensor%Spatial_Resolution_Meters = 3900
          Sensor%Platform_Name = 'SNPP'
          Sensor%WMO_Id = 224
+         ! - check if it is FUSION
+         Sensor%Fusion_Flag = .false.
+         call CHECK_IF_FUSION_VGAC(Sensor%Fusion_Flag)
+         if (Sensor%Fusion_Flag) then
+           Sensor%Instr_Const_File = 'fusion_npp_instr.dat'
+           exit test_loop
+         endif
          Sensor%Instr_Const_File = 'viirs_npp_instr.dat'
          exit test_loop
       endif
