@@ -250,6 +250,13 @@ def test_avhrr_get_goes_header_bug():
 
 
 @save
+def test_vgac(out_dir=None):
+    VGAC = Path('/ships19/cloud/scratch/VGAC/sample_2018/2018_04/VGAC_VJ102MOD_A2018091_0000_n001898_K005.nc')
+    override = {'lut':'ecm2_vgac_v1_lut.nc'}
+    return _run_it(VGAC, [], config_override=override, out_dir=out_dir, only_1seg=True)
+
+
+@save
 def test_fusion(out_dir=None):
     FUSION = Path('/ships19/cloud/archive/Satellite_Input/HIRS-FUSION/NN/2020/001/NSS.GHRR.NN.D20001.S0000.E0143.B7532324.WI.fusion.nc')
     AVHRR = Path('/arcdata/polar/noaa/noaa18/2020/2020_01_01_001/avhrr/NSS.GHRR.NN.D20001.S0000.E0143.B7532324.WI')
