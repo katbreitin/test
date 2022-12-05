@@ -34,7 +34,9 @@ module CX_NETCDF4_MOD
    , NF90_GET_VAR &
    , NF90_INQUIRE_VARIABLE   &
    , NF90_INQ_NCID &
-   , NF90_INQUIRE_ATTRIBUTE
+   , NF90_INQUIRE_ATTRIBUTE &
+   , NF90_FLOAT &
+   , NF90_DOUBLE
 
  use LEVEL2_STRUCTURES_MOD, only: Sds_Struct, L2_Glob_Attr_Definition, Clavrx_Global_Attr
  
@@ -567,7 +569,7 @@ module CX_NETCDF4_MOD
 
       integer(kind=2):: Fill_Value
 
-      integer :: nc_var_id
+      integer :: nc_var_id, xtype
       integer :: status
 
       status = nf90_inq_varid(nc_file_id, trim(var_name), nc_var_id)
@@ -575,6 +577,20 @@ module CX_NETCDF4_MOD
             print *, "Error: Unable to get variable id for ", trim(var_name)
             return
       endif
+
+      status = nf90_inquire_variable(nc_file_id, nc_var_id, xtype=xtype)
+      if(status /= nf90_noerr) then
+            print *, "Unable to determine variable type", trim(var_name)
+            STOP 51
+      endif
+      if(xtype .eq. NF90_FLOAT) then
+            print *, "TypeError: Do not use READ_AND_UNSCALE() on float variable: ", trim(var_name)
+            STOP 52
+      else if(xtype .eq. NF90_DOUBLE) then
+            print *, "TypeError: Do not use READ_AND_UNSCALE() on double variable: ", trim(var_name)
+            STOP 52
+      endif
+
 
       status = nf90_get_att(nc_file_id, nc_var_id, "add_offset", add_offset)
       if (status /= 0) add_offset = 0.0
@@ -634,13 +650,25 @@ module CX_NETCDF4_MOD
 
       integer(kind=2):: Fill_Value
 
-      integer :: nc_var_id
+      integer :: nc_var_id, xtype
       integer :: status
 
       status = nf90_inq_varid(nc_file_id, trim(var_name), nc_var_id)
       if (status /= nf90_noerr) then
             print *, "Error: Unable to get variable id for ", trim(var_name)
             return
+      endif
+      status = nf90_inquire_variable(nc_file_id, nc_var_id, xtype=xtype)
+      if(status /= nf90_noerr) then
+            print *, "Unable to determine variable type", trim(var_name)
+            STOP 51
+      endif
+      if(xtype .eq. NF90_FLOAT) then
+            print *, "TypeError: Do not use READ_AND_UNSCALE() on float variable: ", trim(var_name)
+            STOP 52
+      else if(xtype .eq. NF90_DOUBLE) then
+            print *, "TypeError: Do not use READ_AND_UNSCALE() on double variable: ", trim(var_name)
+            STOP 52
       endif
 
       status = nf90_get_att(nc_file_id, nc_var_id, "add_offset", add_offset)
@@ -702,13 +730,25 @@ module CX_NETCDF4_MOD
 
       integer(kind=2):: Fill_Value
 
-      integer :: nc_var_id
+      integer :: nc_var_id, xtype
       integer :: status
 
       status = nf90_inq_varid(nc_file_id, trim(var_name), nc_var_id)
       if (status /= nf90_noerr) then
             print *, "Error: Unable to get variable id for ", trim(var_name)
             return
+      endif
+      status = nf90_inquire_variable(nc_file_id, nc_var_id, xtype=xtype)
+      if(status /= nf90_noerr) then
+            print *, "Unable to determine variable type", trim(var_name)
+            STOP 51
+      endif
+      if(xtype .eq. NF90_FLOAT) then
+            print *, "TypeError: Do not use READ_AND_UNSCALE() on float variable: ", trim(var_name)
+            STOP 52
+      else if(xtype .eq. NF90_DOUBLE) then
+            print *, "TypeError: Do not use READ_AND_UNSCALE() on double variable: ", trim(var_name)
+            STOP 52
       endif
 
       status = nf90_get_att(nc_file_id, nc_var_id, "add_offset", add_offset)
@@ -771,13 +811,25 @@ module CX_NETCDF4_MOD
 
       integer(kind=2):: Fill_Value
 
-      integer :: nc_var_id
+      integer :: nc_var_id, xtype
       integer :: status
 
       status = nf90_inq_varid(nc_file_id, trim(var_name), nc_var_id)
       if (status /= nf90_noerr) then
             print *, "Error: Unable to get variable id for ", trim(var_name)
             return
+      endif
+      status = nf90_inquire_variable(nc_file_id, nc_var_id, xtype=xtype)
+      if(status /= nf90_noerr) then
+            print *, "Unable to determine variable type", trim(var_name)
+            STOP 51
+      endif
+      if(xtype .eq. NF90_FLOAT) then
+            print *, "TypeError: Do not use READ_AND_UNSCALE() on float variable: ", trim(var_name)
+            STOP 52
+      else if(xtype .eq. NF90_DOUBLE) then
+            print *, "TypeError: Do not use READ_AND_UNSCALE() on double variable: ", trim(var_name)
+            STOP 52
       endif
 
       status = nf90_get_att(nc_file_id, nc_var_id, "add_offset", add_offset)
