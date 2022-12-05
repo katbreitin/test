@@ -6,10 +6,12 @@
    Shell script to load AFTER (un)loading modules :  
    Purge any currently-loaded modules? :  yes
   # The below "Modules to ..." line(s) may be commented out, if desired:
-   Modules to (un)load (in order) :  module load gcc/8.3
-                                     module load hdf/4.2.14-nocdf
+   Modules to (un)load (in order) :  module load gcc/10.2
+                                     module load hdf/4.2.15-nocdf
                                      module load hdf5/1.8.21
-                                     module load netcdf4/4.6.2
+                                     module load netcdf4/4.8.1
+                                     module load himawari/2019
+                                     module load rttov/13.1
 
 [Capabilities Which Require Special External Libraries]
  # For each capability that is desired, further specifications may need to be
@@ -57,16 +59,16 @@
    F linker options (e.g. libraries) :  -leccodes_f90  -leccodes 
 
 [Specs, libHimawari]
-   F include dirs :  ${HOME}/misc-git-repos/libHimawari_GCC/include ${HOME}/misc-git-repos/libHimawari_GCC/src
-   F library dirs :  ${HOME}/misc-git-repos/libHimawari_GCC/src
+   F include dirs :  ${SSEC_HIMAWARI_INC}
+   F library dirs :  ${SSEC_HIMAWARI_LIB}
    F preprocessor options (e.g. -D, but not -I or -L) :  -DLIBHIM
-   F linker options (e.g. libraries) :  -Wl,-rpath,${HOME}/misc-git-repos/libHimawari_GCC/src -lHimawari
+   F linker options (e.g. libraries) :  -Wl,-rpath,${SSEC_HIMAWARI_LIB} -lHimawari
 
 [Specs, RTTOV]
-   F include dirs :  /apollo/cloud/Ancil_Data/SOFTWARE/RTM/RTTOV123/include /apollo/cloud/Ancil_Data/SOFTWARE/RTM/RTTOV123/mod
-   F library dirs :  /apollo/cloud/Ancil_Data/SOFTWARE/RTM/RTTOV123/lib
+   F include dirs :  ${SSEC_RTTOV_INC}
+   F library dirs :  ${SSEC_RTTOV_LIB}
    F preprocessor options (e.g. -D, but not -I or -L) :  -DLIBRTTOV
-   F linker options (e.g. libraries) :  -Wl,-rpath,/apollo/cloud/Ancil_Data/SOFTWARE/RTM/RTTOV123/lib -lrttov_brdf_atlas -lrttov_emis_atlas -lrttov_mw_scatt -lrttov_other -lrttov_coef_io -lrttov_parallel -lrttov_hdf -lrttov_main
+   F linker options (e.g. libraries) :  -Wl,-rpath,${SSEC_RTTOV_LIB} -lrttov_brdf_atlas -lrttov_emis_atlas -lrttov_mw_scatt -lrttov_other -lrttov_coef_io -lrttov_parallel -lrttov_hdf -lrttov_main
 
 [Specs, CRTM]
    F include dirs :      

@@ -16,7 +16,7 @@
  #  set in its associated "Specs" section further below.
  # NOTE: HDF4, HDF5, and NetCDF are always needed
    NWP input can be in GRIB format? :  no
-   Use libHimawari (needed for HSD-format files only)? :  yes
+   Use libHimawari (needed for HSD-format files only)? :  no
    Use RTTOV (radiative transfer code/data) when possible? :  yes
    Use CRTM (radiative transfer code/data) when possible? :  no
 
