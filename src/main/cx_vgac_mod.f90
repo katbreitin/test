@@ -280,11 +280,11 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
   endif
 
   !--- read geolocation
-  call READ_AND_UNSCALE_NETCDF_2D(Ncid_Vgac, Sds_Start, Sds_Stride, Sds_Count, "lat", Sds_Data_2d)
+  call READ_NETCDF(Ncid_Vgac, Sds_Start, Sds_Stride, Sds_Count, "lat", Sds_Data_2d)
   Nav%Lat_1b(1:Sds_Count(1),1:Sds_Count(2)) = Sds_Data_2d
   Nav%Lat = Nav%Lat_1b
 
-  call READ_AND_UNSCALE_NETCDF_2D(Ncid_Vgac, Sds_Start, Sds_Stride, Sds_Count, "lon", Sds_Data_2d)
+  call READ_NETCDF(Ncid_Vgac, Sds_Start, Sds_Stride, Sds_Count, "lon", Sds_Data_2d)
   where((Sds_Data_2d .ltr. -180.0) .and. (Sds_Data_2d .ner.  MISSING_VALUE_REAL4))  !need to flip
     Sds_Data_2d = Sds_Data_2d + 360.0
   endwhere
