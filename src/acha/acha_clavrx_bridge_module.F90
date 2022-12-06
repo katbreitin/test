@@ -129,10 +129,20 @@ module ACHA_CLAVRX_BRIDGE
    !-----------------------------------------------------------------------
    !--- Call to AWG Cloud Height Algorithm (ACHA)
    !-----------------------------------------------------------------------
+#ifdef ACHADIAG
+#ifdef ACHADUMP
+   call AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol, Output, Dump=Dump, Diag=Diag)
+#else
+   call AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol, Output, Diag=Diag)
+#endif
+#else
+#ifdef ACHADUMP
+   call AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol, Output, Dump=Dump)
+#else
    call AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol, Output)
-   !call AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol, Output, Dump=Dump)
-   !call AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol, Output, Diag=Diag)
-   !call AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol, Output, Dump=Dump, Diag=Diag)
+#endif
+#endif
+   
 
    !-----------------------------------------------------------------------
    !--- Call algorithm to make ACHA optical and microphysical properties
