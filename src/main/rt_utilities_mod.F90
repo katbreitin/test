@@ -1087,6 +1087,22 @@ contains
          end if
       end if
 
+      if ((trim (Sensorname) == 'VGAC') .and. Sensor%Fusion_Flag)  then
+         if ( any ( Chan_Idx ==  [27,28,33,34,35,36] ) ) then
+              select case(WMO_Id)
+                case(224) !VIIRS - SNPP
+                   Sensor_Name_Rtm = 'HIRS-METOPA'
+                case(225)  !VIIRS NOAA-20
+                   Sensor_Name_Rtm = 'HIRS-METOPA'
+                case default
+                   print*,'sensor for WMO number not found in RT Utils for VGAC  ', WMO_id  
+                   print*,'stopping ... Please fix this in rt_utils.F90'
+                   print*,' better tell andi.walther@ssec.wisc.edu'
+                   stop    
+              end select
+         end if
+      end if
+   
       if (trim ( Sensorname) == 'VIIRS-IFF') then
 
          !  sensor for channels 27:28 and 33:36 is CRISP this is similar to MODIS-AQUA
