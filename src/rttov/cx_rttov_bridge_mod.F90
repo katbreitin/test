@@ -21,13 +21,13 @@ module cx_rttov_bridge_mod
   USE parkind1, ONLY : jpim, jprb, jplm
 
   USE rttov_unix_env, ONLY : rttov_exit
-  
+
   use cx_rttov_mapping_mod, only: channel_map
 
   use PIXEL_COMMON_MOD, only: Geo
 
   use CONSTANTS_MOD, only: Sym
-  
+
 
   IMPLICIT NONE
 
@@ -62,10 +62,10 @@ module cx_rttov_bridge_mod
   TYPE(rttov_transmission)         :: transmission             ! Output transmittances
   TYPE(rttov_radiance)             :: radiance                 ! Output radiances
 
+
   INTEGER(KIND=jpim)               :: errorstatus              ! Return error status of RTTOV subroutine calls
 
   INTEGER(KIND=jpim) :: alloc_status
-  CHARACTER(LEN=11)  :: NameOfRoutine = 'test_rttovv'
 
   ! variables for input
   !====================
@@ -84,11 +84,11 @@ module cx_rttov_bridge_mod
   INTEGER(KIND=jpim) :: ilev, nprint
   INTEGER(KIND=jpim) :: iprof, joff
   INTEGER            :: ios
-  
-  
-  
-  
-  
+
+
+
+
+
 contains
 
 
@@ -99,34 +99,34 @@ subroutine compute_transmission_rttov ( &
        & , pstd &
        & ,temp &
        & ,wvmr &
-       & ,ozmr & 
+       & ,ozmr &
        & ,theta  &
        & ,sensor &
        & ,kban_in &
        & ,taut &
        & , use_modis_channel_equivalent )
-       
-       
-       
-  implicit none    
-     
-  character(len = * ) , intent(in) :: ancil_data_path  
+
+
+
+  implicit none
+
+  character(len = * ) , intent(in) :: ancil_data_path
   real, intent(in)  :: pstd (:,:)
   real, intent(in)  :: temp (:,:)
   real, intent(in)  :: wvmr(:,:)
   real, intent(in)  :: ozmr(:,:)
   real, intent(in)  :: theta (:)
   character (len =* ), intent(in) :: sensor
-  integer, intent(in)  :: kban_in 
-  logical , optional , intent(in) :: use_modis_channel_equivalent 
-  real, intent(out)  :: taut (:,:)  
+  integer, intent(in)  :: kban_in
+  logical , optional , intent(in) :: use_modis_channel_equivalent
+  real, intent(out)  :: taut (:,:)
   integer :: lll
    real, parameter :: Q_MIXRATIO_TO_PPMV = 1.60771704e+6
    real :: max_satzen
-   
-   
+
+
   opts % rt_ir % addsolar = .FALSE.
-         
+
   opts % interpolation % addinterp   = .TRUE.  ! Allow interpolation of input profile
   opts % interpolation % interp_mode = 1       ! Set interpolation method
   opts % rt_all % addrefrac          = .TRUE.  ! Include refraction in path calc
@@ -161,24 +161,29 @@ subroutine compute_transmission_rttov ( &
   opts % rt_mw % clw_scheme          = 0
   opts % config % verbose            = .FALSE.  ! Enable printing of warnings
 
- 
-   lll  = channel_map (sensor,ancil_data_path, kban_in , coef_filename,cld_coef_filename,max_satzen)
-   
- 
+
+   lll  = channel_map (sensor &
+    , ancil_data_path &
+    , kban_in &
+    , coef_filename &
+    , cld_coef_filename &
+    , max_satzen)
+
+
   nprof = size(temp(1,:))
   nlevels = size(temp(:,1))
-  
+
   nthreads = 1
   nchannels = 1
-  
+
   allocate(channel_list(nchannels))
-  
+
   if ( lll .lt. 0 ) then
     if ( allocated(channel_list)) deallocate(channel_list)
     return
   end if
   channel_list = [lll]
-  
+
   ! --------------------------------------------------------------------------
   ! 2. Read coefficients
   ! --------------------------------------------------------------------------
@@ -200,7 +205,7 @@ subroutine compute_transmission_rttov ( &
     CALL rttov_exit(errorstatus)
   ENDIF
 
-  
+
    ! --------------------------------------------------------------------------
   ! 3. Allocate RTTOV input and output structures
   ! --------------------------------------------------------------------------
@@ -210,7 +215,7 @@ subroutine compute_transmission_rttov ( &
   ! in general one can simulate a different number of channels for each profile.
 
   nchanprof = nchannels * nprof
- 
+
   ! Allocate structures for rttov_direct
   CALL rttov_alloc_direct( &
         errorstatus,             &
@@ -233,9 +238,9 @@ subroutine compute_transmission_rttov ( &
     WRITE(*,*) 'allocation error for rttov_direct structures'
     CALL rttov_exit(errorstatus)
   ENDIF
-  
-  
-  
+
+
+
   ! --------------------------------------------------------------------------
   ! 4. Build the list of profile/channel indices in chanprof
   ! --------------------------------------------------------------------------
@@ -246,40 +251,40 @@ subroutine compute_transmission_rttov ( &
       nch = nch + 1_jpim
       chanprof(nch)%prof = j
       chanprof(nch)%chan = channel_list(jch)
-      
-      
-      
+
+
+
     ENDDO
   ENDDO
-  
+
   deallocate ( channel_list)
-  
+
   ! --------------------------------------------------------------------------
   ! 5. Read profile data
   ! --------------------------------------------------------------------------
 
-  
 
- 
-  profiles(:) % gas_units = 2  ! 
-  
+
+
+  profiles(:) % gas_units = 2  !
+
   ! Gas units (must be same for all profiles)
 ! 0 => ppmv over dry air
 ! 1 => kg/kg over moist air
 ! 2 => ppmv over moist air
 !
-  
+
 
   ! Loop over all profiles and read data for each one
   DO iprof = 1, nprof
-    
-    
+
+
     profiles(iprof) % t(:) = temp(:,iprof)
     profiles(iprof) % p(:) = pstd(:,iprof)
- 
+
     profiles(iprof) % o3(:) = max(ozmr(:,iprof),0.1001E-10)
-   
-    profiles(iprof) % q(:) = wvmr(:, iprof) * Q_MIXRATIO_TO_PPMV /1000. 
+
+    profiles(iprof) % q(:) = wvmr(:, iprof) * Q_MIXRATIO_TO_PPMV /1000.
     profiles(iprof) % s2m % p =pstd(96,iprof)
     profiles(iprof) % s2m % t = temp(96,iprof)
     profiles(iprof) % s2m % q = wvmr(96,iprof)  * Q_MIXRATIO_TO_PPMV /1000.
@@ -291,11 +296,11 @@ subroutine compute_transmission_rttov ( &
     profiles(iprof) % azangle = 0.
     profiles(iprof) % latitude = 45.
     profiles(iprof) % longitude = 19.
-  
+
   ENDDO
   CLOSE(iup)
- 
-  
+
+
   ! --------------------------------------------------------------------------
   ! 6. Specify surface emissivity and reflectance
   ! --------------------------------------------------------------------------
@@ -316,12 +321,12 @@ subroutine compute_transmission_rttov ( &
 
   ! Use default cloud top BRDF for simple cloud in VIS/NIR channels
   reflectance(:) % refl_cloud_top = 0._jprb
-  
- 
+
+
   ! --------------------------------------------------------------------------
   ! 7. Call RTTOV forward model
   ! --------------------------------------------------------------------------
- 
+
     CALL rttov_direct(                &
             errorstatus,              &! out   error flag
             chanprof,                 &! in    channel and profile index structure
@@ -334,19 +339,19 @@ subroutine compute_transmission_rttov ( &
             emissivity  = emissivity, &! inout input/output emissivities per channel
             calcrefl    = calcrefl,   &! in    flag for internal BRDF calcs
             reflectance = reflectance) ! inout input/output BRDFs per channel
- 
+
 
   IF (errorstatus /= errorstatus_success) THEN
     WRITE (*,*) 'rttov_direct error'
     CALL rttov_exit(errorstatus)
   ENDIF
- 
 
-   
+
+
   taut = transmission % tau_levels
 
 
- 
+
   ! Deallocate structures for rttov_direct
   CALL rttov_alloc_direct( &
         errorstatus,             &

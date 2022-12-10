@@ -91,7 +91,7 @@ module SENSOR_MOD
       , NCHAN_CLAVRX &
       , DTOR &
       , EXE_PROMPT
-   
+
    use AVHRR_MOD,only: &
       assign_avhrr_sat_id_num_internal &
       , define_1b_data &
@@ -1758,7 +1758,9 @@ module SENSOR_MOD
          Sensor%Sensor_Name = 'METIMAGE'
          Sensor%Spatial_Resolution_Meters = 500
          Sensor%Platform_Name = 'EPS-SG'
-         Sensor%WMO_Id = 384 ! TODO This needs to be change to real #, Fake for now
+         Sensor%WMO_Id = 840 ! changed from fake (384) to non-FAKE
+         !  information from https://space.oscar.wmo.int/satellites
+         ! AW 7 Dec 2022
          !Sensor%Instr_Const_File = 'metimage_1_instr.dat'
          Sensor%Instr_Const_File = 'metimage_1_instr_terra.dat'
          exit test_loop
@@ -2769,7 +2771,8 @@ module SENSOR_MOD
          Sensor%Num_Chan_Sensor = 16
          if (.not. allocated(Sensor%CLAVRx_Chan_Map)) allocate(Sensor%Clavrx_Chan_Map(Sensor%Num_Chan_Sensor))
          Sensor%CLAVRx_Chan_Map = (/8,9,3,4,1,15,2,5,26,6,7,20,22,29,31,32/)
-      case(384) !ESP-SG - METIMAGE TODO Change to real WMO ID when available
+      case(840) !ESP-SG - METIMAGE TODO Change to real WMO ID when available
+        ! changed from fake 384 to 840 WMO ID 8 Dec 2022 AW
          Sensor%Num_Chan_Sensor = 20
          if (.not. allocated(Sensor%CLAVRx_Chan_Map)) allocate(Sensor%Clavrx_Chan_Map(Sensor%Num_Chan_Sensor))
          Sensor%CLAVRx_Chan_Map = (/3,4,1,15,45,2,18,5,26,6,7,20,22,23,27,28,29,31,32,33/)

@@ -1,7 +1,7 @@
 !$Id: cx_netcdf4_mod.f90 3961 2020-09-10 18:08:37Z heidinger $
 !----------------------------------------------------------------------
 ! MODULE name: CX_NETCDF4_MOD
-! 
+!
 ! Routines for reading in netCDF files, such as AHI data
 !
 ! Authors: Andrew Heidinger, NOAA/NESDIS
@@ -39,13 +39,13 @@ module CX_NETCDF4_MOD
    , NF90_DOUBLE
 
  use LEVEL2_STRUCTURES_MOD, only: Sds_Struct, L2_Glob_Attr_Definition, Clavrx_Global_Attr
- 
+
  use CONSTANTS_MOD
 
  implicit none
 
  private
- 
+
  public :: read_netcdf
  public :: read_and_unscale_netcdf_1d
  public :: read_and_unscale_netcdf_2d
@@ -117,13 +117,13 @@ module CX_NETCDF4_MOD
 
  integer, parameter, private :: sds_rank_1d = 1
  integer, dimension(sds_rank_1d), private :: sds_start_1d, sds_edge_1d, sds_stride_1d
-   
+
  integer, parameter, private :: sds_rank_2d = 2
  integer, dimension(sds_rank_2d), private :: sds_start_2d, sds_edge_2d, sds_stride_2d, sds_dims_2d
-   
+
  integer, parameter, private :: sds_rank_3d = 3
  integer, dimension(sds_rank_3d), private :: sds_start_3d, sds_edge_3d, sds_stride_3d, sds_dims_3d
-   
+
  integer, parameter, private :: sds_rank_4d = 4
  integer, dimension(sds_rank_4d), private :: sds_start_4d, sds_edge_4d, sds_stride_4d, sds_dims_4d
 
@@ -367,7 +367,7 @@ module CX_NETCDF4_MOD
    status = nf90_inq_varid(sd_id,trim(sds_name), sds_id)
    status = nf90_get_att(sd_id, sds_id, trim(attr_name), attr_value)
    status = nf90_close(sd_id)
- 
+
  end subroutine read_netcdf_variable_attribute_real
 
  !------------------------------------------------------------------------------
@@ -381,7 +381,7 @@ module CX_NETCDF4_MOD
    integer:: status
 
    status = nf90_get_att(nc_file_id, attribute_id, trim(var_name), attr)
- 
+
  end subroutine read_netcdf_attribute_real
  !------------------------------------------------------------------------------
  ! read a double attribute from a variable
@@ -394,7 +394,7 @@ module CX_NETCDF4_MOD
    integer:: status
 
    status = nf90_get_att(nc_file_id, attribute_id, trim(var_name), attr)
- 
+
  end subroutine read_netcdf_attribute_double
  !------------------------------------------------------------------------------
  ! read ahi nav coeff
@@ -494,7 +494,7 @@ module CX_NETCDF4_MOD
       call gmtime(int(time_temp), time_values)
       Scanline_Time_Ms(i) = 1000.0*(time_values(1) + time_values(2)*60.0 + time_values(3)*60.0*60.0)
    enddo
-    
+
    Read_Time = .false.
 
  end subroutine read_abi_time
@@ -503,37 +503,37 @@ module CX_NETCDF4_MOD
  ! read ahi nav coeff
  !------------------------------------------------------------------------------
  subroutine read_ahi_nav_coeff ( ncdf_file, CFAC, COFF, LFAC, LOFF)
- 
+
  !, CFAC, COFF, LFAC, LOFF, Sub_point)
- 
+
    character (len =*) , intent(in) :: ncdf_file
    REAL(KIND(0.0d0)) , INTENT (OUT) :: CFAC
    REAL(KIND(0.0d0)) , INTENT (OUT) :: COFF
    REAL(KIND(0.0d0)) , INTENT (OUT) :: LFAC
    REAL(KIND(0.0d0)) , INTENT (OUT) :: LOFF
 !   REAL(KIND(0.0d0)) , INTENT (OUT) :: Sub_point
- 
+
    integer :: nc_file_id
    integer :: nc_var_id
    integer :: status
    REAL :: attr
-   
+
 !open netCDF file
     status = nf90_open(path = trim(ncdf_file), mode = nf90_nowrite, ncid = nc_file_id)
-    if (status .ne. nf90_noerr) then 
+    if (status .ne. nf90_noerr) then
             print *, "Error: Unable to open netCDF file ", trim(ncdf_file)
-            stop  
-    endif  
-    
+            stop
+    endif
+
     status = nf90_inq_varid(nc_file_id, trim('x_cgms'), nc_var_id)
-    
+
     call read_netcdf_attribute_real(nc_file_id, nc_var_id, 'CFAC', attr)
     CFAC = DBLE(attr)
     call read_netcdf_attribute_real(nc_file_id, nc_var_id, 'COFF', attr)
     COFF = DBLE(attr)
- 
+
     status = nf90_inq_varid(nc_file_id, trim('y_cgms'), nc_var_id)
-    
+
     call read_netcdf_attribute_real(nc_file_id, nc_var_id, 'LFAC', attr)
     LFAC = DBLE(attr)
     call read_netcdf_attribute_real(nc_file_id, nc_var_id, 'LOFF', attr)
@@ -541,11 +541,11 @@ module CX_NETCDF4_MOD
 
 !close netCDF file
     status = nf90_close(nc_file_id)
-    if (status .ne. nf90_noerr) then 
+    if (status .ne. nf90_noerr) then
             print *, "Error: Unable to open netCDF file ", trim(ncdf_file)
-            stop  
+            stop
     endif
- 
+
  end subroutine  read_ahi_nav_coeff
 
    ! ----------------------------------------------------------
@@ -584,7 +584,8 @@ module CX_NETCDF4_MOD
             STOP 51
       endif
       if(xtype .eq. NF90_FLOAT) then
-            print *, "TypeError: Do not use READ_AND_UNSCALE() on float variable: ", trim(var_name)
+            print *, "TypeError: Do not use READ_AND_UNSCALE() on float variable: " &
+              , trim(var_name), ' ',xtype
             STOP 52
       else if(xtype .eq. NF90_DOUBLE) then
             print *, "TypeError: Do not use READ_AND_UNSCALE() on double variable: ", trim(var_name)
@@ -635,7 +636,7 @@ module CX_NETCDF4_MOD
    subroutine read_and_unscale_netcdf_2d (nc_file_id, var_start, var_stride, &
         var_dim, var_name, var_output_unscaled)
 
-      use univ_kind_defs_mod, only: i2
+      use univ_kind_defs_mod, only: i2, i4
 
       integer, intent(in) :: nc_file_id
       integer, dimension(2), intent(in) :: var_start
@@ -643,7 +644,7 @@ module CX_NETCDF4_MOD
       integer, dimension(2), intent(in) :: var_dim
       character(len=*), intent(in) :: var_name
 
-      integer(kind=i2), dimension(var_dim(1),var_dim(2)) :: var_output_scaled
+      integer(kind=i4), dimension(var_dim(1),var_dim(2)) :: var_output_scaled
       real(kind=4) , intent(out), dimension(:,:) :: var_output_unscaled
       real(kind=4) , dimension(var_dim(1),var_dim(2)) :: var_output_unscaled_temp
       real(kind=4):: add_offset, scale_factor
@@ -683,6 +684,8 @@ module CX_NETCDF4_MOD
       !get Variable
       status = nf90_get_var(nc_file_id, nc_var_id, var_output_scaled, start=var_start, &
                             count=var_dim, stride=var_stride)
+
+                          
       if ((status /= nf90_noerr)) then
             print *,'Error: ',  trim(nf90_strerror(status)),'   ', trim(var_name)
              print *, "in read_and_unscale_netcdf_2d"
@@ -868,13 +871,13 @@ module CX_NETCDF4_MOD
       var_output_unscaled(1:var_dim(1),1:var_dim(2),1:var_dim(3),1:var_dim(4)) = var_output_unscaled_temp
 
    end subroutine read_and_unscale_netcdf_4d
-  
+
    ! ----------------------------------------------------------
    ! Read in 1D Real arrays
    ! ----------------------------------------------------------
    subroutine read_netcdf_1d_real (nc_file_id, var_start, var_stride, &
                                   var_dim, var_name, var_output)
-                                  
+
       integer, intent(in) :: nc_file_id
       integer, dimension(:), intent(in) :: var_start
       integer, dimension(:), intent(in) :: var_stride
@@ -896,11 +899,11 @@ module CX_NETCDF4_MOD
       status = nf90_get_var(nc_file_id, nc_var_id, var_output, start=var_start, &
                             count=var_dim, stride=var_stride)
       if (status /= nf90_noerr) then
-            print *,'Error: ',  trim(nf90_strerror(status)),'   ', trim(var_name)
+            print *,'Error 1d real: ',  trim(nf90_strerror(status)),'   ', trim(var_name)
             return
       endif
 
-   end subroutine read_netcdf_1d_real                                                                                                                           
+   end subroutine read_netcdf_1d_real
 
    ! ----------------------------------------------------------
    ! Read in 1D Double arrays
@@ -931,10 +934,10 @@ module CX_NETCDF4_MOD
             return
       endif
 
-   end subroutine read_netcdf_1d_double                                                                                                                  
+   end subroutine read_netcdf_1d_double
 
    ! ----------------------------------------------------------
-   ! Read in 1D integer arrays 
+   ! Read in 1D integer arrays
    ! ----------------------------------------------------------
    subroutine read_netcdf_1d_int (nc_file_id, var_start, var_stride, &
                                   var_dim, var_name, var_output)
@@ -949,7 +952,7 @@ module CX_NETCDF4_MOD
       integer :: status
 
       status = nf90_inq_varid(nc_file_id,trim(var_name), nc_var_id)
-      if (status /= nf90_noerr) then 
+      if (status /= nf90_noerr) then
             print *, "Error: Unable to get variable id for ", trim(var_name)
             return
       endif
@@ -957,7 +960,7 @@ module CX_NETCDF4_MOD
       !get Variable
       status = nf90_get_var(nc_file_id, nc_var_id, var_output, start=var_start, &
                             count=var_dim, stride=var_stride)
-                            
+
       if (status /= nf90_noerr) then
             print *,'Error: ',  trim(nf90_strerror(status)),'   ', trim(var_name)
             return
@@ -1135,7 +1138,7 @@ module CX_NETCDF4_MOD
       !extract and save classifier names to the final array
       do i = 1, tmp2
         if ((var(i,1) .ge. 'a' .and. var(i,1) .le. 'z') &
-        .or.(var(i,1) .ge. 'A' .and. var(i,1) .le. 'Z')) then 
+        .or.(var(i,1) .ge. 'A' .and. var(i,1) .le. 'Z')) then
            var_output(i,:) = trim(var(i,1))
         endif
       enddo
@@ -1322,7 +1325,7 @@ module CX_NETCDF4_MOD
   end subroutine read_netcdf_dimension
 
   !------------------------------------------------------------------------------
-  ! read abi kappa0 
+  ! read abi kappa0
   !------------------------------------------------------------------------------
   subroutine read_abi_kappa0 (nc_file_id, var_output)
     integer, intent(in):: nc_file_id
@@ -1401,9 +1404,9 @@ module CX_NETCDF4_MOD
 ! version history 4.2 - demonstrated on METOP
 ! version history 4.3 - included surface emissivity fields
 ! version history 4.4 - included lrc
-! version history 5.0 - included modis white sky and ash protoype 
-! version history 5.1 - rtm structures now 101 levels and 
-!                       reorganized level-1b ingest to 
+! version history 5.0 - included modis white sky and ash protoype
+! version history 5.1 - rtm structures now 101 levels and
+!                       reorganized level-1b ingest to
 !                       read segment all at once prior to processing
 !                       first version with working volcanic ash
 ! version history 5.2    bayesian cloud mask and DCOMP
@@ -1418,7 +1421,7 @@ module CX_NETCDF4_MOD
  character(len=100):: Status_String
  character(len=100):: Institution_String
  character(len=100):: Program_String
- character(len=500):: Summary_String 
+ character(len=500):: Summary_String
  character(len=200):: Variable_String
  character(len=500):: Keywords_String
  character(len=200):: Keywords_Vocabulary_String
@@ -1595,7 +1598,7 @@ contains
       integer(kind=C_INT), intent(in) :: ncid
       character(len=*), intent(in) :: name
       !character(:), allocatable, intent(out) :: string
-      character(len=*), intent(out) :: string      
+      character(len=*), intent(out) :: string
 
       integer :: name_len
       integer(kind=C_INT),target :: attlen
@@ -1614,5 +1617,5 @@ contains
       string = trim(tmp_str)
       deallocate(c_name)
  end function pfio_get_gatt_string
- 
+
 end module CX_NETCDF4_MOD

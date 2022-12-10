@@ -5,10 +5,10 @@
 ! NAME: clavrx_olr_module.f90 (src)
 !       clavrx_olr_module.f90 (program)
 !
-! PURPOSE: 
-!       compute Outgoing Longwave Radiation (OLR) 
+! PURPOSE:
+!       compute Outgoing Longwave Radiation (OLR)
 !
-! DESCRIPTION: 
+! DESCRIPTION:
 !
 ! AUTHORS:
 !  Andrew Heidinger, Andrew.Heidinger@noaa.gov
@@ -27,7 +27,7 @@
 !           memory in PIXEL_COMMON_MOD and CONSTANTS
 !
 ! Public Routines:
-!  COMPUTE_OLR 
+!  COMPUTE_OLR
 !
 ! Private Routines:
 !  AVHRR_OLR
@@ -61,7 +61,7 @@ subroutine SETUP_OLR()
 olr_coef = MISSING_VALUE_REAL4
 olr_type = "none"
 
-!--- 
+!---
 select case (Sensor%WMO_Id)
 
       case(4) !METOP-A
@@ -125,42 +125,42 @@ select case (Sensor%WMO_Id)
       case(204) !NOAA-12 AVHRR
          olr_type = 'avhrr'
          olr_coef(1:4) = (/-60.24969, 0.92879,  0.00522, 0.59537/)
-         olr_coef(5:9) = (/107.55368, 0.76867, -4.90049, 1.41152, -0.00285/) 
+         olr_coef(5:9) = (/107.55368, 0.76867, -4.90049, 1.41152, -0.00285/)
 
       case(205) !NOAA-14 AVHRR
          olr_type = 'avhrr'
          olr_coef(1:4) = (/-60.36504, 0.92936, 0.00517, 0.54885/)
-         olr_coef(5:9) = (/107.45860, 0.76914,-4.37248, 1.24385, -0.00278/) 
+         olr_coef(5:9) = (/107.45860, 0.76914,-4.37248, 1.24385, -0.00278/)
 
       case(206) !NOAA-15 AVHRR
          olr_type = 'avhrr'
          olr_coef(1:4) = (/-60.07516, 0.92778,  0.00539, 0.61436/)
-         olr_coef(5:9) = (/108.56152, 0.76234, -5.30072, 1.59413, -0.00277/) 
+         olr_coef(5:9) = (/108.56152, 0.76234, -5.30072, 1.59413, -0.00277/)
 
       case(207) !NOAA-16 AVHRR
          olr_type = 'avhrr'
          olr_coef(1:4) = (/-60.42642, 0.92973,  0.00510, 0.55280/)
-         olr_coef(5:9) = (/106.94872, 0.77204, -4.27699, 1.18709, -0.00271/) 
+         olr_coef(5:9) = (/106.94872, 0.77204, -4.27699, 1.18709, -0.00271/)
 
       case(208) !NOAA-17 AVHRR
          olr_type = 'avhrr'
          olr_coef(1:4) = (/-60.07043, 0.92775,  0.00540, 0.60629/)
-         olr_coef(5:9) = (/108.59656, 0.76195, -5.20385, 1.56456, -0.00271/) 
+         olr_coef(5:9) = (/108.59656, 0.76195, -5.20385, 1.56456, -0.00271/)
 
       case(209) !NOAA-18 AVHRR
          olr_type = 'avhrr'
          olr_coef(1:4) = (/-60.48009, 0.92993,  0.00510, 0.53741/)
-         olr_coef(5:9) = (/107.19191, 0.77077, -4.15499, 1.16309, -0.00276/) 
+         olr_coef(5:9) = (/107.19191, 0.77077, -4.15499, 1.16309, -0.00276/)
 
       case(223) !NOAA-19 AVHRR
          olr_type = 'avhrr'
          olr_coef(1:4) = (/-60.75243, 0.93132,  0.00497, 0.50949/)
-         olr_coef(5:9) = (/106.38530, 0.77575, -3.74003, 1.00011, -0.00272/) 
+         olr_coef(5:9) = (/106.38530, 0.77575, -3.74003, 1.00011, -0.00272/)
 
       case(224,225,226) !NPP-VIIRS, NOAA-20, NOAA-21 VIIRS
          olr_type = 'avhrr'
          olr_coef(1:4) = (/-59.97073, 0.92727,  0.00545, 0.60347/)
-         olr_coef(5:9) = (/108.71840, 0.76120, -5.44672, 1.64156, -0.00269/) 
+         olr_coef(5:9) = (/108.71840, 0.76120, -5.44672, 1.64156, -0.00269/)
 
       case(252) !GOES-8
          olr_type = 'goes'
@@ -206,8 +206,6 @@ select case (Sensor%WMO_Id)
          olr_type = 'goes'
          olr_coef(1:5) = (/17.8305,0.553769,0.340907,0.00937766,0.00653376/)
 
-      case(384) !EPS-SG TODO FAKE NUMBER ADJUST WHEN KNOWN
-         olr_type = 'none'
 
       case(523) !FY3D
          olr_type = 'none'
@@ -222,28 +220,31 @@ select case (Sensor%WMO_Id)
       case(707) !NOAA-7
          olr_type = 'avhrr'
          olr_coef(1:4) = (/-60.09697, 0.92794,  0.00535, 0.59990/)
-         olr_coef(5:9) = (/108.26270, 0.76421, -5.18247, 1.53830, -0.00279/) 
+         olr_coef(5:9) = (/108.26270, 0.76421, -5.18247, 1.53830, -0.00279/)
 
       case(708) !NOAA-5
          olr_type = 'avhrr'
 
-      case(783) !TERRA-MODIS 
+      case(783) !TERRA-MODIS
          olr_type = 'avhrr'
          olr_coef(1:4) = (/-60.10922, 0.92743,  0.00570, 0.75807/)
-         olr_coef(5:9) = (/110.84430, 0.74922, -7.00103, 2.31716, -0.00280/) 
+         olr_coef(5:9) = (/110.84430, 0.74922, -7.00103, 2.31716, -0.00280/)
 
-      case(784) !AQUA-MODIS 
+      case(784) !AQUA-MODIS
          olr_type = 'avhrr'
          olr_coef(1:4) = (/-60.11890, 0.92744,  0.00572, 0.76198/)
-         olr_coef(5:9) = (/110.90846, 0.74883, -7.06467, 2.34522,-0.00280/) 
+         olr_coef(5:9) = (/110.90846, 0.74883, -7.06467, 2.34522,-0.00280/)
 
       case(810) !COMS
          olr_type = 'none'
 
-      case(514) !FY2D      
+       case(840) !EPS-SG
+         olr_type = 'none'     
+
+      case(514) !FY2D
          olr_type = 'none'
 
-      case(515) !FY2E          
+      case(515) !FY2E
          olr_type = 'none'
 
       case default
@@ -253,7 +254,7 @@ select case (Sensor%WMO_Id)
 
 end subroutine SETUP_OLR
 !-----------------------------------------------------------------
-! 
+!
 !-----------------------------------------------------------------
 subroutine COMPUTE_OLR()
 
@@ -267,12 +268,12 @@ subroutine COMPUTE_OLR()
              Sensor%Chan_On_Flag_Default(32)==sym%YES) then
 
           where(ch(31)%Bt_Toa /= MISSING_VALUE_REAL4 .and.  &
-                ch(32)%Bt_Toa /= MISSING_VALUE_REAL4) 
+                ch(32)%Bt_Toa /= MISSING_VALUE_REAL4)
 
              Olr = SPLIT_WINDOW_OLR(ch(31)%Bt_Toa,ch(32)%Bt_Toa,Geo%Seczen)
 
           endwhere
- 
+
          endif
 
 
@@ -282,12 +283,12 @@ subroutine COMPUTE_OLR()
 
 
           where(ch(27)%Bt_Toa /= MISSING_VALUE_REAL4 .and.  &
-                ch(31)%Bt_Toa /= MISSING_VALUE_REAL4) 
-   
+                ch(31)%Bt_Toa /= MISSING_VALUE_REAL4)
+
              Olr = GOES_OLR(ch(27)%Bt_Toa,ch(31)%Bt_Toa,Geo%Seczen)
 
           endwhere
- 
+
          endif
 
 
@@ -314,7 +315,7 @@ real elemental function SPLIT_WINDOW_OLR(bt11,bt12,seczen)
   split_window_olr = olr_coef(1) +  &
                      olr_coef(2)*bt12  + &
                      olr_coef(3)*bt12*seczen  + &
-                     olr_coef(4)*(bt11-bt12)*seczen 
+                     olr_coef(4)*(bt11-bt12)*seczen
 
   !--- this make the Olr temp (K)
   split_window_olr = olr_coef(5) + olr_coef(6)*split_window_olr + &
@@ -345,7 +346,7 @@ real elemental function GOES_OLR(bt67,bt11,seczen)
              olr_coef(2)*bt11  + &
              olr_coef(3)*bt67  + &
              olr_coef(4)*bt11*seczen  + &
-             olr_coef(5)*(bt67-bt11)*seczen 
+             olr_coef(5)*(bt67-bt11)*seczen
 
   !--- this make the Olr  flux (W/m^2)
   goes_olr = stefan_boltzmann_constant * (goes_olr)**4

@@ -5,10 +5,10 @@
 ! NAME: clavrx_sst_module.f90 (src)
 !       clavrx_sst_module.f90 (program)
 !
-! PURPOSE: 
-!       compute Sea Surface Temperature (SST) 
+! PURPOSE:
+!       compute Sea Surface Temperature (SST)
 !
-! DESCRIPTION: 
+! DESCRIPTION:
 !
 ! AUTHORS:
 !  Andrew Heidinger, Andrew.Heidinger@noaa.gov
@@ -61,7 +61,7 @@ subroutine SETUP_SST()
 sst_coef = MISSING_VALUE_REAL4
 acspo_coef = MISSING_VALUE_REAL4
 
-!--- 
+!---
 select case (Sensor%WMO_Id)
 
       case(4) !METOP-A
@@ -122,7 +122,7 @@ select case (Sensor%WMO_Id)
       case(223) !NOAA-19
          sst_coef = (/1.037, 1.574, 0.984, -283.552/)
 
-      case(224,225,226) !VIIRS 
+      case(224,225,226) !VIIRS
          sst_coef = (/1.0563,    1.5878,    2.0775, -287.0832 /)
 
       case(252) !GOES-8
@@ -150,7 +150,7 @@ select case (Sensor%WMO_Id)
       case(272) !GOES-18 TODO FAKE NUMBER ADJUST WHEN KNOWN
          acspo_coef = (/74.574503,0.751711,2.81401,0.2970021,1.3209088,0.014818,0.108972,0.153607/)
 
-      case(384) !EPS-SG TODO FAKE NUMBER ADJUST WHEN KNOWN
+
 
       case(706) !NOAA-6
 
@@ -159,17 +159,19 @@ select case (Sensor%WMO_Id)
 
       case(708) !NOAA-5
 
-      case(783) !MODIS 
+      case(783) !MODIS
          sst_coef = (/1.0557,    1.3826,    3.8160, -287.1476/)
 
-      case(784) !MODIS 
+      case(784) !MODIS
          sst_coef = (/1.0252,    3.1114,    1.9334, -279.5697/)
 
       case(810) !COMS
 
-      case(514) !FY2D      
+      case(840) !EPS-SG 
 
-      case(515) !FY2E          
+      case(514) !FY2D
+
+      case(515) !FY2E
 
       case(523) !FY3D
 
@@ -182,7 +184,7 @@ select case (Sensor%WMO_Id)
 
 end subroutine SETUP_SST
 !-----------------------------------------------------------------
-! 
+!
 !-----------------------------------------------------------------
 subroutine COMPUTE_SST()
 
@@ -217,12 +219,12 @@ subroutine COMPUTE_SST()
 
       endif
 
-      
+
 
       !--- mask bad pixels, land and snow/ice
       where(Bad_Pixel_Mask == sym%YES .or.  &
             Sfc%Land == sym%Land .or. Sfc%Land == sym%COASTLINE .or. &
-            Sfc%Snow /= sym%NO_SNOW) 
+            Sfc%Snow /= sym%NO_SNOW)
 
               Sst_Retrieved = MISSING_VALUE_REAL4
 

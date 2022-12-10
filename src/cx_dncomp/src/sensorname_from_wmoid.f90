@@ -55,8 +55,7 @@ function sensorname_from_wmoid (id) result(sensor_name)
          sensor_name = 'GOES-14'
       case(259)
          sensor_name = 'GOES-15'
-      case(384)
-          sensor_name = 'METIMAGE'
+
       case(523)
          sensor_name = 'FY3D'
       case(530)
@@ -81,6 +80,8 @@ function sensorname_from_wmoid (id) result(sensor_name)
          sensor_name = 'MODIS-AQUA'
       case(810)
          sensor_name = 'COMS-1'
+       case(840)
+           sensor_name = 'METIMAGE'
       case default
          print*,'sensor wmo id: ', id
          stop 'please inform  andi.walther@ssec.wisc.edu wmo id: '
