@@ -129,34 +129,47 @@ module ACHA_CLAVRX_BRIDGE
    !-----------------------------------------------------------------------
    !--- Call to AWG Cloud Height Algorithm (ACHA)
    !-----------------------------------------------------------------------
+#ifdef ACHADIAG
+#ifdef ACHADUMP
+   call AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol, Output, Dump=Dump, Diag=Diag)
+#else
+   call AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol, Output, Diag=Diag)
+#endif
+#else
+#ifdef ACHADUMP
+   call AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol, Output, Dump=Dump)
+#else
    call AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol, Output)
-   !call AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol, Output, Dump=Dump)
-   !call AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol, Output, Diag=Diag)
-   !call AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol, Output, Dump=Dump, Diag=Diag)
+#endif
+#endif
+   
 
    !-----------------------------------------------------------------------
    !--- Call algorithm to make ACHA optical and microphysical properties
    !-----------------------------------------------------------------------
    call ACHA_COMP_ALGORITHM(Input, Symbol, Output)
 
+
+#ifdef SHADOWON
    !-----------------------------------------------------------------------
    !--- Call to Geometrical Shadow Algorithm
    !-----------------------------------------------------------------------
   
-   !call CLOUD_SHADOW_RETR (  &
-   !        ACHA%Zc &
-   !      , Geo%Solaz &
-   !      , Geo%Solzen &
-   !      , Nav%Lat &
-   !      , Nav%Lon &
-   !      , Nav%Lat_Pc &
-   !      , Nav%Lon_Pc &
-   !      , CLDMASK%Shadow_Mask ) 
+   call CLOUD_SHADOW_RETR (  &
+           ACHA%Zc &
+         , Geo%Solaz &
+         , Geo%Solzen &
+         , Nav%Lat &
+         , Nav%Lon &
+         , Nav%Lat_Pc &
+         , Nav%Lon_Pc &
+         , CLDMASK%Shadow_Mask ) 
  
    !!---- copy shadow result into cloud mask test bits
-   !where (CLDMASK%Shadow_Mask == 1 .and. CLDMASK%Cld_Mask == 0 )  
-   !        CLDMASK%Cld_Test_Vector_Packed ( 2 , :, : )  = ibset (CLDMASK%Cld_Test_Vector_Packed ( 2 , :, : )  , 6 )
-   !end where
+   where (CLDMASK%Shadow_Mask == 1 .and. CLDMASK%Cld_Mask == 0 )  
+           CLDMASK%Cld_Test_Vector_Packed ( 2 , :, : )  = ibset (CLDMASK%Cld_Test_Vector_Packed ( 2 , :, : )  , 6 )
+   end where
+#endif
 
    !-----------------------------------------------------------------------
    !--- Null pointers after algorithm is finished
