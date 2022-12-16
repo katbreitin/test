@@ -136,7 +136,7 @@ module RT_UTILITIES_MOD
       , Ozmr_Std_Rtm
 
    use CX_PFAAST_MOD, only: &
-       COMPUTE_TRANSMISSION_PFAAST , PSTD
+        PSTD
 
    use CLAVRX_MESSAGE_MOD, only: MESG, verb_lev
 
@@ -165,7 +165,7 @@ module RT_UTILITIES_MOD
     integer, parameter, public:: RTM_NVZEN = 50
 
     integer, parameter :: Chan_Idx_Min = 1
-    integer, parameter :: Chan_Idx_Max = 44
+    integer, parameter :: Chan_Idx_Max = 45
 
     real, dimension(NLevels_Rtm,Chan_Idx_Min:Chan_Idx_Max),  save:: Trans_Atm_Solar_Prof
     real, dimension(NLevels_Rtm,Chan_Idx_Min:Chan_Idx_Max),  save:: Trans_Atm_Total_Prof
@@ -525,17 +525,20 @@ contains
 
         if (Sensor%Chan_On_Flag_Default(Chan_Idx) == sym%NO) cycle
         if (ch(Chan_Idx)%Obs_Type == LUNAR_OBS_TYPE) cycle  !  save this for later
-
+           print*,chan_idx,ch(Chan_Idx)%Obs_Type
           select case ( ch(Chan_Idx)%Obs_Type )
 
           case ( SOLAR_OBS_TYPE)
             allocate ( trans_prof_rtm_chn (NLEVELS_RTM,n_val_pixels) )
             do ii_pixel = 1, n_val_pixels
 
-              call SOLAR_TRANS(rtm_inp % tpw_prof(:, ii_pixel),chan_idx,rtm_inp % sat_bin( ii_pixel),trans_profile, error_status)
+              call SOLAR_TRANS(rtm_inp % tpw_prof(:, ii_pixel),chan_idx &
+                 ,rtm_inp % sat_bin( ii_pixel),trans_profile, error_status)
 
               trans_prof_rtm_chn (:,ii_pixel) = Trans_profile
             end do
+
+            
 
 
           case ( THERMAL_OBS_TYPE , MIXED_OBS_TYPE)
@@ -561,8 +564,10 @@ contains
           do x_nwp = 1, nwp_size_arr(1)
             do y_nwp =1,nwp_size_arr(2)
               if ( rtm(x_nwp,y_nwp) % is_allocated ) then
+
                 do z_nwp =1,RTM_NVZEN
                   if ( rtm(x_nwp,y_nwp) % d(z_nwp) % is_allocated ) then
+
                     ii_pixel = ii_pixel + 1
                     rtm(x_nwp,y_nwp) % d(z_nwp) % ch(chan_idx) % Trans_Atm_Profile &
                         & = Trans_Prof_Rtm_chn(:,ii_pixel)** Gamma_Factor(Chan_Idx)
@@ -571,11 +576,11 @@ contains
               end if
             end do
           end do
-
-
+print*,chan_idx,nwp_size_arr
+   print*,rtm(180,346) % d(22) % ch(chan_idx) % Trans_Atm_Profile
           deallocate ( Trans_Prof_Rtm_chn)
       end do ! - channel loop
-
+    stop
       deallocate (rtm_inp % p_std)
       deallocate (rtm_inp % t_prof)
       deallocate (rtm_inp % w_prof)
