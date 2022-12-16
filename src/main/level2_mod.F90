@@ -304,6 +304,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Level2_Data_Type_HDF =  DFNT_INT8
             Sds_Info(Var_Idx)%Level2_Data_Type_NETCDF = NF90_BYTE
             Sds_Info(Var_Idx)%Units = "none"
+            Sds_Info(Var_Idx)%Fill_Value = -128
             if (allocated(CLDMASK%Shadow_Mask)) Sds_Info(Var_Idx)%Sds_Data_2d_I1 => CLDMASK%Shadow_Mask
          !----------------------------------------------------------------------------------------------------
          !  Unscaled 2D Reals

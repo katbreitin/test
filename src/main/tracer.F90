@@ -579,6 +579,7 @@
         call add_sym_f4_2d(CLDMASK%Posterior_Cld_Probability,'cloud_probability')
         call add_sym_f4_2d(CLDMASK%Posterior_Ice_Probability,'ice_cloud_probability')
         call add_sym_f4_2d(CLDMASK%Posterior_Water_Probability,'water_cloud_probability')
+        call add_sym_i1_2d(CLDMASK%Shadow_Mask,'shadow_mask')
         call add_sym_i1_2d(mask_lrc,'mask_lrc')
         call add_sym_i4_2d(i_lrc,'i_lrc')
         call add_sym_i4_2d(j_lrc,'j_lrc')
