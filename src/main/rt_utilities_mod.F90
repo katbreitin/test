@@ -173,14 +173,6 @@ module RT_UTILITIES_MOD
     real, dimension(NLevels_Rtm,Chan_Idx_Min:Chan_Idx_Max),  save:: Rad_Atm_Dwn_Prof
     real, dimension(NLevels_Rtm,Chan_Idx_Min:Chan_Idx_Max),  save:: Rad_BB_Cloud_Prof
 
-    integer, parameter:: Ilon_Stride = 0
-    integer, parameter:: Ilat_Stride = 0
-    integer, parameter:: Ivza_Stride = 0
-
-
-
-
-
     character(len=20),  save:: Sc_Name_Rtm
 
     real, parameter::  Rtm_Vza_Binsize = 0.02
@@ -525,7 +517,7 @@ contains
 
         if (Sensor%Chan_On_Flag_Default(Chan_Idx) == sym%NO) cycle
         if (ch(Chan_Idx)%Obs_Type == LUNAR_OBS_TYPE) cycle  !  save this for later
-           print*,chan_idx,ch(Chan_Idx)%Obs_Type
+
           select case ( ch(Chan_Idx)%Obs_Type )
 
           case ( SOLAR_OBS_TYPE)
@@ -538,7 +530,7 @@ contains
               trans_prof_rtm_chn (:,ii_pixel) = Trans_profile
             end do
 
-            
+
 
 
           case ( THERMAL_OBS_TYPE , MIXED_OBS_TYPE)
@@ -576,11 +568,10 @@ contains
               end if
             end do
           end do
-print*,chan_idx,nwp_size_arr
-   print*,rtm(180,346) % d(22) % ch(chan_idx) % Trans_Atm_Profile
+
           deallocate ( Trans_Prof_Rtm_chn)
       end do ! - channel loop
-    stop
+
       deallocate (rtm_inp % p_std)
       deallocate (rtm_inp % t_prof)
       deallocate (rtm_inp % w_prof)
@@ -1100,14 +1091,14 @@ print*,chan_idx,nwp_size_arr
                 case(225)  !VIIRS NOAA-20
                    Sensor_Name_Rtm = 'HIRS-METOPA'
                 case default
-                   print*,'sensor for WMO number not found in RT Utils for VGAC  ', WMO_id  
+                   print*,'sensor for WMO number not found in RT Utils for VGAC  ', WMO_id
                    print*,'stopping ... Please fix this in rt_utils.F90'
                    print*,' better tell andi.walther@ssec.wisc.edu'
-                   stop    
+                   stop
               end select
          end if
       end if
-   
+
       if (trim ( Sensorname) == 'VIIRS-IFF') then
 
          !  sensor for channels 27:28 and 33:36 is CRISP this is similar to MODIS-AQUA
