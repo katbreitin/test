@@ -1,5 +1,5 @@
 ! $Id: pixel_routines_mod.f90 4044 2020-11-10 21:52:49Z heidinger $
-!-------------------------------------------------------------------------------------- 
+!--------------------------------------------------------------------------------------
 ! Clouds from AVHRR Extended (CLAVR-x) 1b PROCESSING SOFTWARE Version 6.0
 !
 ! NAME: pixel_routines.f90 (src)
@@ -7,7 +7,7 @@
 !
 ! PURPOSE: this module houses routines for computing some needed pixel-level arrays
 !
-! DESCRIPTION: 
+! DESCRIPTION:
 !
 ! AUTHORS:
 !  Andrew Heidinger, Andrew.Heidinger@noaa.gov
@@ -24,7 +24,7 @@
 !
 ! Public routines used in this MODULE:
 ! COMPUTE_PIXEL_ARRAYS - compute some commonly used arrays
-! COMPUTE_TSFC - derive pixel-level surface temperature 
+! COMPUTE_TSFC - derive pixel-level surface temperature
 ! NORMALIZE_REFLECTANCES - divide reflectances by cosine solar zenith angle
 ! CH20_PSEUDO_REFLECTANCE - compute the channel 20 reflectance
 ! SPECTRAL_CORRECT_NDVI - apply a spectral correct to Ndvi to look like NOAA14
@@ -42,9 +42,9 @@ module PIXEL_ROUTINES_MOD
     , sym , int1, int2, exe_prompt  &
     , real4, missing_value_int1, missing_value_int2, int4, mixed_obs_type, NChan_Clavrx, SOLAR_OBS_TYPE &
     , THERMAL_OBS_TYPE, PI, terminator_reflectance_sol_zen_thresh, DTOR
- 
+
  use ALGORITHM_CONSTANTS_MOD,only: glint_zen_thresh, Ref_Sfc_White_Sky_Water
- 
+
  use PIXEL_COMMON_MOD, only: &
     sensor , image, ch, nwp_pix &
     , cldmask, geo, sfc, nav, acha, solar_rtm &
@@ -77,30 +77,34 @@ module PIXEL_ROUTINES_MOD
     , Btd_Ch31_Ch32, Btd_Ch38_Ch32 &
     , ndsi_sfc, nddi_toa, ndsi_toa, Ndvi_Sfc, Ndvi_Sfc_White_Sky,Ndvi_Toa &
     , nonconfident_cloud_mask_fraction
- 
+
  use NUMERICAL_ROUTINES_MOD,only:
- 
+
+use univ_kind_defs_mod, only: i1
+
  use NWP_COMMON_MOD,only: &
   nwp
- 
+
  use PLANCK_MOD, only: &
   planck_temp_fast &
   , planck_rad_fast
- 
+
  use LAND_SFC_PROPERTIES_MOD, only: &
   Land_grid_description &
   , read_land_sfc_hdf
-  
+
  use FILE_UTILS,only: get_lun
- 
+
  use SURFACE_PROPERTIES_MOD, only:
- 
+
  use CALIBRATION_CONSTANTS_MOD,only:
- 
+
  use ECM2_CLOUD_MASK_CLAVRX_BRIDGE, only: COMPUTE_TYPE_FROM_PHASE
- 
+
  use CLAVRX_MESSAGE_MOD, only: MESG, verb_lev
- 
+
+ use Compare_Float_Numbers
+
 !use RT_UTILITIES_MOD, only: COMPUTE_CLEAR_SKY_SCATTER
 
  implicit none
@@ -147,18 +151,18 @@ module PIXEL_ROUTINES_MOD
   subroutine DAYTIME_REFL_BALANCE_CLOUD_FRACTION(Refl,Refl_Cloudy,Refl_Clear, &
                                                  Solar_Zen,Refl_Balance_Cloud_Fraction)
 
-     real(kind=real4), dimension(:,:), intent(in):: Refl_Clear, Refl_Cloudy, Refl, Solar_Zen  
-     real(kind=real4), dimension(:,:), intent(out)::  Refl_Balance_Cloud_Fraction  
+     real(kind=real4), dimension(:,:), intent(in):: Refl_Clear, Refl_Cloudy, Refl, Solar_Zen
+     real(kind=real4), dimension(:,:), intent(out)::  Refl_Balance_Cloud_Fraction
      real(kind=real4), parameter:: Solar_Zen_Max = 80.0
 
      Refl_Balance_Cloud_Fraction = Missing_Value_Real4
 
-     where(Refl_Clear /= Missing_Value_Real4 .and.  &
-           Refl_Cloudy /= Missing_Value_Real4 .and. & 
-           Refl /= Missing_Value_Real4 .and.        &
-           Solar_Zen /= Missing_Value_Real4 .and.   &
-           Solar_Zen < Solar_Zen_Max .and.          &
-           Refl_Cloudy > Refl_Clear) 
+     where(.not. (Refl_Clear .EqualTo. Missing_Value_Real4) .and.  &
+           .not. (Refl_Cloudy .EqualTo. Missing_Value_Real4) .and. &
+           .not. (Refl .EqualTo. Missing_Value_Real4) .and.        &
+           .not. (Solar_Zen .EqualTo. Missing_Value_Real4) .and.   &
+             ( Solar_Zen .LessThan. Solar_Zen_Max) .and.          &
+             (Refl_Cloudy .GreaterThan. Refl_Clear))
 
            Refl_Balance_Cloud_Fraction = (Refl - Refl_Clear) / &
                                          (Refl_Cloudy - Refl_Clear)
@@ -184,12 +188,12 @@ module PIXEL_ROUTINES_MOD
       integer:: Number_of_Elements
       integer:: Number_of_Lines
       integer:: Line_Idx
-     
-      logical :: dcomp_first_valid_line_avhrr_set = .false. 
+
+      logical :: dcomp_first_valid_line_avhrr_set = .false.
 
       Number_of_Elements = Image%Number_Of_Elements
       Number_of_Lines = Image%Number_Of_Lines_Read_This_Segment
-    
+
       line_loop: do Line_Idx = 1, Number_Of_Lines
           ! - change dcomp _mode according ch3a_on flag
           ! - this change of dcomp_mode is only possible once for one file
@@ -201,58 +205,60 @@ module PIXEL_ROUTINES_MOD
             if (Ch3a_On_Avhrr(Line_Idx) == sym%YES) then
                 dcomp_first_valid_line_avhrr_set = .true.
                 if (dcomp_mode .ne. 0  ) dcomp_mode = 1
-                
+
             end if
             if (Ch3a_On_Avhrr(Line_Idx) == sym%NO) then
                dcomp_first_valid_line_avhrr_set = .true.
                if (dcomp_mode .ne. 0  )  dcomp_mode = 3
-            
+
             end if
-         end if   
-         
-         ! - for all sensors : set chan_on_flag ( dimension [n_chn, n_lines] to default ) 
-         Chan_On_Flag_Per_Line(:,Line_Idx) = Chan_On_Flag_Default   
-         
+         end if
+
+         ! - for all sensors : set chan_on_flag ( dimension [n_chn, n_lines] to default )
+         Chan_On_Flag_Per_Line(:,Line_Idx) = Chan_On_Flag_Default
+
          ! two exceptions
          if (trim(Sensor%Platform_Name)=='AQUA' .and. Chan_On_Flag_Default(6) == sym%YES ) then
             if (minval(ch(6)%DQF(:,Line_Idx)) >= 15) then
-                 Chan_On_Flag_Per_Line(6,Line_Idx) = sym%NO 
-            end if  
+                 Chan_On_Flag_Per_Line(6,Line_Idx) = sym%NO
+            end if
          end if
-         
+
          if (index(Sensor%Sensor_Name,'AVHRR') > 0) then
             if (Ch3a_On_Avhrr(Line_Idx) == sym%YES) then
-               Chan_On_Flag_Per_Line(6,Line_Idx) = Chan_On_Flag_Default(6)   
-               Chan_On_Flag_Per_Line(20,Line_Idx) = sym%NO   
+               Chan_On_Flag_Per_Line(6,Line_Idx) = Chan_On_Flag_Default(6)
+               Chan_On_Flag_Per_Line(20,Line_Idx) = sym%NO
             end if
             if (Ch3a_On_Avhrr(Line_Idx) == sym%NO) then
-               Chan_On_Flag_Per_Line(6,Line_Idx) = sym%NO   
-               Chan_On_Flag_Per_Line(20,Line_Idx) = Chan_On_Flag_Default(20)   
+               Chan_On_Flag_Per_Line(6,Line_Idx) = sym%NO
+               Chan_On_Flag_Per_Line(20,Line_Idx) = Chan_On_Flag_Default(20)
             end if
          endif
 
       end do line_loop
-      
-      
-      if ( is_last_segment) dcomp_first_valid_line_avhrr_set = .false. 
-      
+
+
+      if ( is_last_segment) dcomp_first_valid_line_avhrr_set = .false.
+
    end subroutine SET_CHAN_ON_FLAG
 
 
 
 !======================================================================
-! Modify the space mask based the limits on lat, lon, satzen and solzen 
+! Modify the space mask based the limits on lat, lon, satzen and solzen
 ! Space mask was initially determined in the Level-1b Navigation
 !======================================================================
 subroutine EXPAND_SPACE_MASK_FOR_USER_LIMITS(Seg_Idx, Space_Mask)
 
    use CALIOP_COLLOCATION_MOD, only: CALIOP_COLLOCATION
 
+
    integer(kind=int4), intent(in):: Seg_Idx
    logical, dimension(:,:), intent(inout):: Space_Mask
 
    !--- check for latitudinal bounds
-   where(Nav%Lat_1b == Missing_Value_Real4 .or. Nav%Lon_1b == Missing_Value_Real4)
+   where((Nav%Lat_1b .EqualTo. Missing_Value_Real4) .or. &
+        (Nav%Lon_1b .EqualTo. Missing_Value_Real4))
         Space_Mask = .true.
    end where
 
@@ -285,8 +291,10 @@ subroutine EXPAND_SPACE_MASK_FOR_USER_LIMITS(Seg_Idx, Space_Mask)
       end where
 
       !--- Solzen limit
-      where (Geo%Solzen < Geo%Solzen_Min_Limit .or. Geo%Solzen > Geo%Solzen_Max_Limit .or. Geo%Satzen == Missing_Value_Real4)
-         Space_Mask = .true.
+      where ((Geo%Solzen .LessThan. Geo%Solzen_Min_Limit) .or. &
+         (Geo%Solzen .GreaterThan. Geo%Solzen_Max_Limit) .or. &
+         (Geo%Satzen .EqualTo. Missing_Value_Real4))
+              Space_Mask = .true.
       end where
 
    endif
@@ -296,16 +304,16 @@ subroutine EXPAND_SPACE_MASK_FOR_USER_LIMITS(Seg_Idx, Space_Mask)
       call CALIOP_COLLOCATION(Seg_Idx)
    end if
 
-   !--- test if any valid data, if not, print a warning 
+   !--- test if any valid data, if not, print a warning
    if (ALL(Space_Mask)) then
       print *, EXE_PROMPT, "WARNING: All Data in Segment are Classified as Space "
    endif
 
 end subroutine EXPAND_SPACE_MASK_FOR_USER_LIMITS
- 
+
 !======================================================================
 ! Check for solar contamination of what should be nighttime data
-! 
+!
 ! this is common in AVHRR and GOES.  Pixels with solar contamination
 !
 ! are treated as bad pixel in the bad_pixel_mask
@@ -314,7 +322,7 @@ end subroutine EXPAND_SPACE_MASK_FOR_USER_LIMITS
 ! from them.
 !
 !======================================================================
-subroutine SET_SOLAR_CONTAMINATION_MASK(Solar_Contamination_Mask) 
+subroutine SET_SOLAR_CONTAMINATION_MASK(Solar_Contamination_Mask)
 
    integer(kind=int1), dimension(:,:), intent(out):: Solar_Contamination_Mask
    integer:: Number_of_Elements
@@ -327,7 +335,7 @@ subroutine SET_SOLAR_CONTAMINATION_MASK(Solar_Contamination_Mask)
    Number_of_Elements = Image%Number_Of_Elements
    Number_of_Lines = Image%Number_Of_Lines_Read_This_Segment
 
-   !--- initialize 
+   !--- initialize
    Solar_Contamination_Mask(:,1:Number_Of_Lines) = sym%NO
 
    !---  loop through lines and elements
@@ -341,17 +349,17 @@ subroutine SET_SOLAR_CONTAMINATION_MASK(Solar_Contamination_Mask)
 
             if ((Geo%Solzen(Elem_Idx,Line_Idx) > 90.0) .and. (Geo%Scatangle(Elem_Idx,Line_Idx) < 60.0)) then
               if (therm_cal_1b == sym%NO) then
-                if (Ch1_Counts(Elem_Idx,Line_Idx) > Solar_Contamination_Thresh_AVHRR) then 
+                if (Ch1_Counts(Elem_Idx,Line_Idx) > Solar_Contamination_Thresh_AVHRR) then
                    Solar_Contamination_Mask(Elem_Idx,Line_Idx) = sym%YES
                 endif
               else
-                if (Ch1_Counts(Elem_Idx,Line_Idx) > Solar_Contamination_Thresh_AVHRR) then 
+                if (Ch1_Counts(Elem_Idx,Line_Idx) > Solar_Contamination_Thresh_AVHRR) then
                    Solar_Contamination_Mask(Elem_Idx,Line_Idx) = sym%YES
-                endif 
+                endif
               endif
 
             endif
-  
+
           endif
 
           !--- check for solar contamination of nighttime data in GOES
@@ -359,7 +367,7 @@ subroutine SET_SOLAR_CONTAMINATION_MASK(Solar_Contamination_Mask)
              if ((Geo%Solzen(Elem_Idx,Line_Idx) > 90.0) .and. (Geo%Scatangle(Elem_Idx,Line_Idx) < 60.0)) then
                 if (Ch1_Counts(Elem_Idx,Line_Idx) > Solar_Contamination_Thresh_GEO) then
                    Solar_Contamination_Mask(Elem_Idx,Line_Idx) = sym%YES
-                endif 
+                endif
              endif
           endif
 
@@ -378,7 +386,7 @@ subroutine SET_SOLAR_CONTAMINATION_MASK(Solar_Contamination_Mask)
         !until a more robust fix can be found, for now we will set all night
         ! pixels to have Solar_Contamination_Mask = sym%YES due to telescope
         ! contamination in 3.9um channel. Exists for FY-2C/D/E/G - WCS3
-        
+
         if (index(Sensor%Sensor_Name,'FY2-IMAGER') > 0) then
           if ((Geo%Solzen(Elem_Idx,Line_Idx) > 90.0)) then
               Solar_Contamination_Mask(Elem_Idx,Line_Idx) = sym%YES
@@ -406,9 +414,9 @@ end subroutine SET_SOLAR_CONTAMINATION_MASK
 !
 ! Also, if many pixels in a line are bad, the whole line is set to bad
 !
-! Output:  Bad_Pixel_Mask 
+! Output:  Bad_Pixel_Mask
 ! Input: taken from pixel common
-!  
+!
 !======================================================================
 subroutine SET_BAD_PIXEL_MASK(Bad_Pixel_Mask,ABI_Use_104um_Flag)
 
@@ -426,7 +434,7 @@ subroutine SET_BAD_PIXEL_MASK(Bad_Pixel_Mask,ABI_Use_104um_Flag)
    Number_of_Elements = Image%Number_Of_Elements
    Number_of_Lines = Image%Number_Of_Lines_Read_This_Segment
 
-   Number_Bad_Pixels_Thresh = 0.9 * Image%Number_Of_Elements
+   Number_Bad_Pixels_Thresh = ceiling(0.9 * real(Image%Number_Of_Elements))
 
 !----------------------------------------------------------------------
 !--- assign bad pixel mask based on scanline fatal flag
@@ -448,7 +456,7 @@ subroutine SET_BAD_PIXEL_MASK(Bad_Pixel_Mask,ABI_Use_104um_Flag)
 
       !--- if not a bad scan, check pixels on this scan
       element_loop: do Elem_Idx = 1, Number_of_Elements
-   
+
 
         !--- set space to bad
         if (Geo%Space_Mask(Elem_Idx,Line_Idx) ) then
@@ -464,7 +472,7 @@ subroutine SET_BAD_PIXEL_MASK(Bad_Pixel_Mask,ABI_Use_104um_Flag)
         endif
 
         !--- Bad Relazimuth
-        if (Geo%Relaz(Elem_Idx,Line_Idx) == Missing_Value_Real4) then
+        if (Geo%Relaz(Elem_Idx,Line_Idx) .EqualTo. Missing_Value_Real4) then
            Bad_Pixel_Mask(Elem_Idx,Line_Idx) = sym%YES
            !print *, "Bad Relaz"
         endif
@@ -472,7 +480,7 @@ subroutine SET_BAD_PIXEL_MASK(Bad_Pixel_Mask,ABI_Use_104um_Flag)
         if ((Sensor%Chan_On_Flag_Default(31) == sym%YES) .and. &
           (Sensor%Chan_On_Flag_Default(32) == sym%YES)) then
 
-          !--- CALL any scan with a ridiculous pixel as bad 
+          !--- CALL any scan with a ridiculous pixel as bad
           !--- this is attempt data like NOAA-16 2004 023 where
           !--- large fractions of scans are bad but not flagged as so
 !         if (abs(ch(31)%Bt_Toa(Elem_Idx,Line_Idx) - ch(32)%Bt_Toa(Elem_Idx,Line_Idx)) > 20.0) then
@@ -540,7 +548,7 @@ subroutine SET_BAD_PIXEL_MASK(Bad_Pixel_Mask,ABI_Use_104um_Flag)
 !            endif
 !           endif
 !       endif
-        
+
 
         !--- check for solar zenith angle limits
         if ((Geo%Solzen(Elem_Idx,Line_Idx) < Geo%Solzen_Min_Limit) .or. &
@@ -581,7 +589,7 @@ subroutine SET_BAD_PIXEL_MASK(Bad_Pixel_Mask,ABI_Use_104um_Flag)
 !        Bad_Scan_Flag(Line_Idx) = sym%YES
 !        Bad_Pixel_Mask(:,Line_Idx) = sym%YES
 !    endif
-     
+
 
    end do line_loop
 
@@ -645,8 +653,8 @@ end subroutine QUALITY_CONTROL_ANCILLARY_DATA
 !
 ! output - only into shared memory
 !   seczen - secant of zenith angle
-!   Btd_Ch31_Ch32 - brightness temperature difference between Bt_Ch31 and Bt_Ch32 
-!   Btd_Ch20_Ch31 - brightness temperature difference between Bt_Ch20 and Bt_Ch31 
+!   Btd_Ch31_Ch32 - brightness temperature difference between Bt_Ch31 and Bt_Ch32
+!   Btd_Ch20_Ch31 - brightness temperature difference between Bt_Ch20 and Bt_Ch31
 !   Ref_ratio_Ch6_Ch1 - ratio of Ref_Ch6 / Ref_Ch1
 !   Ref_ratio_Ch20_Ch1 - ratio of Ref_Ch20 / Ref_Ch1
 !--------------------------------------------------------------------------
@@ -664,11 +672,12 @@ end subroutine QUALITY_CONTROL_ANCILLARY_DATA
    Geo%Cossolzen(:,j1:j2) = cos(Geo%Solzen(:,j1:j2)*dtor)
 
    Geo%Airmass(:,j1:j2) = 1.0
-   where(Geo%Solzen(:,j1:j2) /= 0.0 .and. Geo%Coszen(:,j1:j2) /= 0.0) 
+   where(.not. (Geo%Solzen(:,j1:j2) .EqualTo. 0.0) &
+      .and. .not. (Geo%Coszen(:,j1:j2) .EqualTo. 0.0) )
     Geo%Airmass(:,j1:j2) = 1.0/Geo%Cossolzen(:,j1:j2) + 1.0/Geo%Coszen(:,j1:j2)
    endwhere
 
-!--- other useful arrays 
+!--- other useful arrays
 
    !--- channel 31 and channel 32 brightness temperature difference
    if ((Sensor%Chan_On_Flag_Default(31) == sym%YES) .and. &
@@ -683,42 +692,49 @@ end subroutine QUALITY_CONTROL_ANCILLARY_DATA
    endif
 
    !--- channel 20 and channel 31 brightness temperature difference
-    if (Sensor%Chan_On_Flag_Default(20) == sym%YES .and. Sensor%Chan_On_Flag_Default(31) == sym%YES) then
+    if (Sensor%Chan_On_Flag_Default(20) == sym%YES &
+         .and. Sensor%Chan_On_Flag_Default(31) == sym%YES) then
      Btd_Ch20_Ch31 = ch(20)%Bt_Toa - ch(31)%Bt_Toa
-     where(ch(20)%Bt_Toa == Missing_Value_Real4 .or. ch(31)%Bt_Toa == Missing_Value_Real4)
+     where((ch(20)%Bt_Toa .equalTo. Missing_Value_Real4) &
+         .or. (ch(31)%Bt_Toa .equalTo. Missing_Value_Real4))
        Btd_Ch20_Ch31 = Missing_Value_Real4
      endwhere
     endif
 
    !--- channel 20 and channel 38 brightness temperature difference
-    if (Sensor%Chan_On_Flag_Default(20) == sym%YES .and. Sensor%Chan_On_Flag_Default(38) == sym%YES) then
+    if (Sensor%Chan_On_Flag_Default(20) == sym%YES &
+        .and. Sensor%Chan_On_Flag_Default(38) == sym%YES) then
      Btd_Ch20_Ch38 = ch(20)%Bt_Toa - ch(38)%Bt_Toa
-     where(ch(20)%Bt_Toa == Missing_Value_Real4 .or. ch(38)%Bt_Toa == Missing_Value_Real4)
+     where((ch(20)%Bt_Toa .equalTo. Missing_Value_Real4) &
+          .or. (ch(38)%Bt_Toa .equalTo. Missing_Value_Real4))
        Btd_Ch20_Ch38 = Missing_Value_Real4
      endwhere
     endif
 
    !--- channel 20 and channel 32 brightness temperature difference
-    if (Sensor%Chan_On_Flag_Default(20) == sym%YES .and. Sensor%Chan_On_Flag_Default(32) == sym%YES) then
-     Btd_Ch20_Ch32 = ch(20)%Bt_Toa - ch(32)%Bt_Toa
-     where(ch(20)%Bt_Toa == Missing_Value_Real4 .or. ch(32)%Bt_Toa == Missing_Value_Real4)
-       Btd_Ch20_Ch32 = Missing_Value_Real4
-     endwhere
-    endif
+    if (Sensor%Chan_On_Flag_Default(20) == sym%YES &
+       .and. Sensor%Chan_On_Flag_Default(32) == sym%YES) then
+
+      Btd_Ch20_Ch32 = ch(20)%Bt_Toa - ch(32)%Bt_Toa
+      where((ch(20)%Bt_Toa .EqualTo. Missing_Value_Real4) &
+        .or. (ch(32)%Bt_Toa .EqualTo. Missing_Value_Real4))
+            Btd_Ch20_Ch32 = Missing_Value_Real4
+      end where
+    end if
 
  end subroutine COMPUTE_PIXEL_ARRAYS
 
 !------------------------------------------------------------------
-! Compute a surface temperature by using the observed 
+! Compute a surface temperature by using the observed
 ! 11 micron radiance, the rtm calculations and the surface emissivity
 !
 ! July 2009 - made AVHRR/1 compliant
 !
 ! Author: Andrew Heidinger
 !
-! Sept 2021 Eva Borbas:  NOAA dual channel Enterprise Algorithm is added 
+! Sept 2021 Eva Borbas:  NOAA dual channel Enterprise Algorithm is added
 !                        for Himawari-AHI and SNPP-VIIRS
-!             
+!
 !------------------------------------------------------------------
  subroutine COMPUTE_TSFC(jmin,jmax,ABI_Use_104um_Flag)
 
@@ -731,21 +747,21 @@ end subroutine QUALITY_CONTROL_ANCILLARY_DATA
   integer:: Coef_Idx,RegCoef_Idx
   integer:: xnwp
   integer:: ynwp
-  integer:: tpwcls,angcls,dnflag 
-  integer(kind=int4):: Coef_Lun  
+  integer:: tpwcls,angcls,dnflag
+  integer(kind=int4):: Coef_Lun
   integer:: ios, ERR
-  
+
   INTEGER, PARAMETER :: ncoef=6
   INTEGER, PARAMETER :: nbtpwcls=3
   INTEGER, PARAMETER :: nbangcls=4
   INTEGER, PARAMETER :: nbdn=2
   INTEGER, PARAMETER :: leng=ncoef*nbtpwcls*nbangcls*nbdn
-      
+
   REAL :: Coef(ncoef)
   REAL :: Regcoef(leng)
-                  
+
   CHARACTER(LEN=200) :: Coef_Fn
-  
+
   real:: Rad11
   real:: Rad11_Atm
   real:: Trans11_Atm
@@ -753,10 +769,10 @@ end subroutine QUALITY_CONTROL_ANCILLARY_DATA
   real:: Emiss_Sfc11, Emiss_Sfc12, Emiss_mean, Emiss_Diff
   real:: Rad11_Sfc
   real:: B11_Sfc, B12_Sfc, Bdiff
-  real:: Sec_Sat_Zen, Sat_Zen
+  real::  Sat_Zen
   real:: Sol_Zen
   real:: TPW
-    
+
   logical :: tsfc_onechannel = .true.
   logical :: first_segment = .true.
 
@@ -764,18 +780,18 @@ end subroutine QUALITY_CONTROL_ANCILLARY_DATA
   ! Loop over pixels and derive surface temp
   !------------------------------------------------------------------
 
-  
+
   if (Sensor%Platform_Name == 'SNPP' .and. trim(Sensor%Sensor_Name) == 'VIIRS' ) then
             coef_fn=trim(Ancil_Data_Dir)//'/static/sfc_data/cx_lstrc_jpss_0_viirs.bin'
             tsfc_onechannel = .false.
             tsfc_onechannel = .true. ! VIIRS coefs are still off AW 13 Oct.2021
   end if
-   
+
   if (Sensor%Platform_Name == 'HIM8' .and. trim(Sensor%Sensor_Name) == 'AHI ') then
             coef_fn=trim(Ancil_Data_Dir)//'/static/sfc_data/cx_lstrc_himawari_8_ahi.bin'
             tsfc_onechannel = .false.
   end if
-    
+
   if ( first_segment)  then
     if (tsfc_onechannel)  call MESG ('tsfc_onechannel TRUE', level = verb_lev %DEFAULT)
     if ( .not. tsfc_onechannel)  call MESG ('tsfc_onechannel FALSE', level = verb_lev %DEFAULT)
@@ -783,19 +799,19 @@ end subroutine QUALITY_CONTROL_ANCILLARY_DATA
   !--- initialize
   Tsfc_Retrieved = Missing_Value_Real4
   Trad_Retrieved = Missing_Value_Real4
-  Tsfc_Qf = 0
+  Tsfc_Qf = 0_i1
 
   if (ABI_Use_104um_Flag) then
     !--- if no ch38, abort
     if (Sensor%Chan_On_Flag_Default(38) == sym%NO) then
-      return 
+      return
     end if
-    
+
   else if (tsfc_onechannel) then
     if ( first_segment)  call MESG ('LST Retrieval with single channel method ', level = verb_lev %DEFAULT)
     !--- if no ch31, abort
     if (Sensor%Chan_On_Flag_Default(31) == sym%NO) then
-      return 
+      return
     end if
   else
    !--- read LST regcoefs from binary file
@@ -805,8 +821,8 @@ end subroutine QUALITY_CONTROL_ANCILLARY_DATA
       write(*,*) 'ERROR: Opening LST Coef binary file', TRIM(Coef_Fn)
       stop
     endif
-            
-    READ(unit=Coef_Lun,rec=1, iostat=ERR) Regcoef       
+
+    READ(unit=Coef_Lun,rec=1, iostat=ERR) Regcoef
     close(Coef_Lun)
     if ( first_segment) then
       print*, "LST Retrieval with dual channel method -EB "
@@ -869,59 +885,57 @@ end subroutine QUALITY_CONTROL_ANCILLARY_DATA
 
         !--- compute to a temperature
         Tsfc_Retrieved(Elem_Idx,Line_Idx) = PLANCK_TEMP_FAST(31,B11_Sfc)
-      
+
       else
-      
+
         !--- aliases for visual convenience
-        !Sec_Sat_Zen=Geo%Seczen(Elem_Idx,Line_Idx)	
-        Sat_Zen=Geo%Satzen(Elem_Idx,Line_Idx)	
-        Sol_Zen=Geo%Solzen(Elem_Idx,Line_Idx)	
-	      TPW = NWP_PIX%Tpw(Elem_Idx,Line_Idx)      
+        Sat_Zen=Geo%Satzen(Elem_Idx,Line_Idx)
+        Sol_Zen=Geo%Solzen(Elem_Idx,Line_Idx)
+        TPW = NWP_PIX%Tpw(Elem_Idx,Line_Idx)
         Emiss_Sfc11 = ch(31)%Sfc_Emiss(Elem_Idx,Line_Idx)       !11 micron surface emissivity
         Emiss_Sfc12 = ch(32)%Sfc_Emiss(Elem_Idx,Line_Idx)       !12 micron surface emissivity
-           
 
-	      ! day/night TPW and viewing angle classification -to set index 	
-	      dnflag=0
-	      if (Sol_Zen <=  85.) dnflag=1
-	
-	      if (TPW <= 1.5) tpwcls=1
-	      if (TPW > 1.5 .and. TPW <= 3.0) tpwcls=2
-	      if (TPW > 3.0) tpwcls=3
-	
-	      if ( Sat_Zen <= 25.) angcls=1
-	      if ( Sat_Zen > 25. .and. Sat_Zen <= 45.) angcls=2
-	      if ( Sat_Zen > 45. .and. Sat_Zen <= 55.) angcls=3
-	      if ( Sat_Zen > 55.) angcls=4
+	      ! day/night TPW and viewing angle classification -to set index
+        dnflag=0
+        if (Sol_Zen <=  85.) dnflag=1
+
+        tpwcls=1
+        if (TPW > 1.5 .and. TPW <= 3.0) tpwcls=2
+        if (TPW > 3.0) tpwcls=3
+
+        angcls=1
+        if ( Sat_Zen > 25. .and. Sat_Zen <= 45.) angcls=2
+        if ( Sat_Zen > 45. .and. Sat_Zen <= 55.) angcls=3
+        if ( Sat_Zen > 55.) angcls=4
 
         do Coef_Idx = 1,ncoef
-	        RegCoef_Idx = dnflag*nbtpwcls*nbangcls*ncoef + &
+           RegCoef_Idx = dnflag*nbtpwcls*nbangcls*ncoef + &
                              (tpwcls-1)*nbangcls*ncoef + (angcls - 1) * ncoef + Coef_Idx
           Coef(Coef_Idx) = Regcoef(RegCoef_Idx)
         end do
-		
+
         !--- compute emiss mean
-	      Emiss_Mean=(Emiss_Sfc11+Emiss_Sfc12)/2.
-	      Emiss_Diff=Emiss_Sfc11-Emiss_Sfc12
-	 	
+        Emiss_Mean=(Emiss_Sfc11+Emiss_Sfc12)/2.
+        Emiss_Diff=Emiss_Sfc11-Emiss_Sfc12
+
          !--- adjust for surface emissivity - this is now the black body emission at Tsfc
- 	      B11_Sfc = ch(31)%BT_toa(Elem_Idx,Line_Idx)
-	      B12_Sfc = ch(32)%BT_toa(Elem_Idx,Line_Idx)
-	      Bdiff=B11_Sfc - B12_Sfc
-	 
+        B11_Sfc = ch(31)%BT_toa(Elem_Idx,Line_Idx)
+        B12_Sfc = ch(32)%BT_toa(Elem_Idx,Line_Idx)
+        Bdiff = B11_Sfc - B12_Sfc
+
         !--- compute to a temperature
         Tsfc_Retrieved(Elem_Idx,Line_Idx) =   Coef(1) * B11_Sfc &
                                             + Coef(2) * Bdiff &
                                             + Coef(3) * Emiss_Mean &
-	                                          + Coef(4) * Emiss_Mean*Bdiff &
+                                            + Coef(4) * Emiss_Mean*Bdiff &
                                             + Coef(5) * Emiss_Diff &
                                             + Coef(6)
-      
+
       endif
 
     end do element_loop
   end do line_loop
-  
+
   first_segment = .false.
 
 end subroutine COMPUTE_TSFC
@@ -935,10 +949,10 @@ end subroutine COMPUTE_TSFC
   real:: Factor
 
   ! for these sensors, no correction is needed
-  if (trim(Sensor%Sensor_Name) == 'VIIRS') return 
-  if (trim(Sensor%Sensor_Name) == 'VIIRS-ifF') return 
-  if (trim(Sensor%Sensor_Name) == 'AVHRR-ifF') return 
-  if (trim(Sensor%Sensor_Name) == 'METIMAGE') return 
+  if (trim(Sensor%Sensor_Name) == 'VIIRS') return
+  if (trim(Sensor%Sensor_Name) == 'VIIRS-ifF') return
+  if (trim(Sensor%Sensor_Name) == 'AVHRR-ifF') return
+  if (trim(Sensor%Sensor_Name) == 'METIMAGE') return
 
   !--------------------------------------------------------------------
   ! loop through pixels and apply normalization factor
@@ -964,23 +978,23 @@ end subroutine COMPUTE_TSFC
             (trim(Sensor%Sensor_Name) == 'COMS-IMAGER') .or. &
             (trim(Sensor%Sensor_Name) == 'FY2-IMAGER')) then
 
-            Factor = Factor * (Sun_Earth_Distance**2) 
+            Factor = Factor * (Sun_Earth_Distance**2)
 
        endif
 
        ! apply correction
        do Chan_Idx = 1,19
           if (Sensor%Chan_On_Flag_Default(Chan_Idx) == sym%YES) then
-            if (ch(Chan_Idx)%Ref_Toa(i,j) /= Missing_Value_Real4) then
+            if (.not. (ch(Chan_Idx)%Ref_Toa(i,j) .EqualTo. Missing_Value_Real4)) then
              ch(Chan_Idx)%Ref_Toa(i,j) = ch(Chan_Idx)%Ref_Toa(i,j) * Factor
             endif
             if (allocated(ch(Chan_Idx)%Ref_Toa_Min_Sub)) then
-               if (ch(Chan_Idx)%Ref_Toa_Min_Sub(i,j) /= Missing_Value_Real4) then
+               if (.not. (ch(Chan_Idx)%Ref_Toa_Min_Sub(i,j) .EqualTo. Missing_Value_Real4)) then
                   ch(Chan_Idx)%Ref_Toa_Min_Sub(i,j) = ch(Chan_Idx)%Ref_Toa_Min_Sub(i,j) * Factor
                endif
             endif
             if (allocated(ch(Chan_Idx)%Ref_Toa_Max_Sub)) then
-               if (ch(Chan_Idx)%Ref_Toa_Max_Sub(i,j) /= Missing_Value_Real4) then
+               if (.not. (ch(Chan_Idx)%Ref_Toa_Max_Sub(i,j) .EqualTo. Missing_Value_Real4)) then
                   ch(Chan_Idx)%Ref_Toa_Max_Sub(i,j) = ch(Chan_Idx)%Ref_Toa_Max_Sub(i,j) * Factor
                endif
             endif
@@ -988,14 +1002,14 @@ end subroutine COMPUTE_TSFC
        enddo
 
        if (Sensor%Chan_On_Flag_Default(26) == sym%YES) then
-          if (ch(26)%Ref_Toa(i,j) /= Missing_Value_Real4) then
+          if (.not. (ch(26)%Ref_Toa(i,j) .EqualTo. Missing_Value_Real4)) then
             ch(26)%Ref_Toa(i,j) = ch(26)%Ref_Toa(i,j) * Factor
           endif
        endif
 
        !  normalize by sun angle the dark sky composite
        if ((Sensor%Chan_On_Flag_Default(1) == sym%YES)) then
-         if (Ref_Ch1_Dark_Composite(i,j) /= Missing_Value_Real4) then
+         if (.not. (Ref_Ch1_Dark_Composite(i,j) .EqualTo. Missing_Value_Real4 )) then
            Ref_Ch1_Dark_Composite(i,j) = Ref_Ch1_Dark_Composite(i,j) * Factor
          endif
        endif
@@ -1009,7 +1023,7 @@ end subroutine COMPUTE_TSFC
        endif
 
        !--- in terminator region, renormalize Channel 1 (maybe extend to all?)
-       if (Geo%Solzen(i,j) > TERMINATOR_REFLECTANCE_SOL_ZEN_THRESH) then
+       if (Geo%Solzen(i,j) .GreaterThan. TERMINATOR_REFLECTANCE_SOL_ZEN_THRESH) then
           if (Sensor%Chan_On_Flag_Default(1) == sym%YES)  &
               ch(1)%Ref_Toa(i,j) = TERM_REFL_NORM(Geo%Cossolzen(i,j),ch(1)%Ref_Toa(i,j))
        endif
@@ -1018,14 +1032,15 @@ end subroutine COMPUTE_TSFC
 
        !--- set to missing
        do Chan_Idx = 1,19
-          if (Sensor%Chan_On_Flag_Default(Chan_Idx) == sym%YES) ch(Chan_Idx)%Ref_Toa(i,j) = Missing_Value_Real4
-       enddo
-       if (Sensor%Chan_On_Flag_Default(26) == sym%YES) ch(26)%Ref_Toa(i,j) = Missing_Value_Real4
-
-      endif
+          if (Sensor%Chan_On_Flag_Default(Chan_Idx) == sym%YES) &
+                  ch(Chan_Idx)%Ref_Toa(i,j) = Missing_Value_Real4
+       end do
+       if (Sensor%Chan_On_Flag_Default(26) == sym%YES) &
+          ch(26)%Ref_Toa(i,j) = Missing_Value_Real4
+       endif
 
      end do
-     
+
    end do
 
 end subroutine NORMALIZE_REFLECTANCES
@@ -1102,7 +1117,7 @@ subroutine CH20_PSEUDO_REFLECTANCE(Solar_Ch20_Nu,Cos_Solzen,Rad_Ch20,Ref_Chan_Id
            Rad_Ch20_Ems = Missing_Value_Real4
            Emiss_Ch20(Elem_Idx,Line_Idx) = Missing_Value_Real4
         endif
-         
+
         if ((Rad_Ch20_Ems>0.0).and.(Rad_Ch20(Elem_Idx,Line_Idx)>0.0)) then
            Solar_Irradiance = max (0.0, (Solar_Ch20_Nu*Cos_Solzen(Elem_Idx,Line_Idx))/(Sun_Earth_Distance**2))
            Ref_Ch20(Elem_Idx,Line_Idx) = 100.0*pi*(Rad_Ch20(Elem_Idx,Line_Idx)-Rad_Ch20_Ems) /  &
@@ -1110,7 +1125,7 @@ subroutine CH20_PSEUDO_REFLECTANCE(Solar_Ch20_Nu,Cos_Solzen,Rad_Ch20,Ref_Chan_Id
         endif
 
         !--- constrain values
-        if (Ref_Ch20(Elem_Idx,Line_Idx) /= Missing_Value_Real4) then
+        if (.not. (Ref_Ch20(Elem_Idx,Line_Idx) .EqualTo. Missing_Value_Real4)) then
               Ref_Ch20(Elem_Idx,Line_Idx) = max(-50.0,min(100.0,Ref_Ch20(Elem_Idx,Line_Idx)))
         endif
 
@@ -1125,123 +1140,125 @@ end subroutine CH20_PSEUDO_REFLECTANCE
 !------------------------------------------------------------------------
 subroutine ASSIGN_CLEAR_SKY_QUALITY_FLAGS(jmin,jmax)
 
+   implicit none
+
     integer, intent(in):: jmin,jmax
-    integer:: i, j, i1, i2, j1, j2, n, max_Mask
+    integer:: i, j, i_1, i_2, j1, j2, n, max_Mask
 
 !-- determine size of box for spatial filter
  n = 1
-                                                                                                                                                
+
 !--- initialize
- Tsfc_Qf = 0
- Ndvi_Qf = 0
- Rsr_Qf = 0
+ Tsfc_Qf = 0_i1
+ Ndvi_Qf = 0_i1
+ Rsr_Qf = 0_i1
 
 
  do j = jmin, jmin+jmax-1
-                                                                                                                                                
+
    !--- determine y-dimensions of array to check
    j1 = max(jmin,j-n)
    j2 = min(jmax,j+n)
-                                                                                                                                                
+
     do i = 1, Image%Number_Of_Elements
 
       !--- check for bad scans
       if (Bad_Pixel_Mask(i,j) == sym%YES) then
         cycle
       endif
-                                                                                                                                                
+
       !--- determine x-dimensions of array to check
-      i1 = max(1,i-n)
-      i2 = min(Image%Number_Of_Elements,i+n)
-        
+      i_1 = max(1,i-n)
+      i_2 = min(Image%Number_Of_Elements,i+n)
+
       !--- initial cloud mask based
       if (CLDMASK%Cld_Mask(i,j) == sym%CLEAR) then
-         Tsfc_Qf(i,j) = 3
-         Ndvi_Qf(i,j) = 3
-         Rsr_Qf(i,j) = 3
+         Tsfc_Qf(i,j) = 3_i1
+         Ndvi_Qf(i,j) = 3_i1
+         Rsr_Qf(i,j) = 3_i1
       endif
       if (CLDMASK%Cld_Mask(i,j) == sym%PROB_CLEAR) then
-         Tsfc_Qf(i,j) = 2
-         Ndvi_Qf(i,j) = 2
-         Rsr_Qf(i,j) = 2
+         Tsfc_Qf(i,j) = 2_i1
+         Ndvi_Qf(i,j) = 2_i1
+         Rsr_Qf(i,j) = 2_i1
       endif
       if (CLDMASK%Cld_Mask(i,j) == sym%PROB_CLOUDY) then
-         Tsfc_Qf(i,j) = 1
-         Ndvi_Qf(i,j) = 1
-         Rsr_Qf(i,j) = 1
+         Tsfc_Qf(i,j) = 1_i1
+         Ndvi_Qf(i,j) = 1_i1
+         Rsr_Qf(i,j) = 1_i1
       endif
       if (CLDMASK%Cld_Mask(i,j) == sym%CLOUDY) then
-         Tsfc_Qf(i,j) = 0
-         Ndvi_Qf(i,j) = 0
-         Rsr_Qf(i,j) = 0
+         Tsfc_Qf(i,j) = 0_i1
+         Ndvi_Qf(i,j) = 0_i1
+         Rsr_Qf(i,j) = 0_i1
       endif
 
       !--- assign Ndvi over water to be low quality
       if (Sfc%Land_Mask(i,j) == sym%NO) then
-        Ndvi_Qf(i,j) = 0
+        Ndvi_Qf(i,j) = 0_i1
       endif
 
       !--- assign Ndvi at high angles to be low quality
       if (Geo%Solzen(i,j) > 75.0) then
-       Ndvi_Qf(i,j) = min(1,int(Ndvi_Qf(i,j)))
+       Ndvi_Qf(i,j) = min(1_i1,int(Ndvi_Qf(i,j),i1))
       endif
 
       !--- modifcations of Rsr quality
       if (Sfc%Land_Mask(i,j) == sym%YES) then    !ocean only
-        Rsr_Qf(i,j) = 0
+        Rsr_Qf(i,j) = 0_i1
       endif
       if (Geo%Solzen(i,j) > 75.0) then    !sufficient light
-        Rsr_Qf(i,j) = min(1,int(Rsr_Qf(i,j)))
+        Rsr_Qf(i,j) = min(1_i1,int(Rsr_Qf(i,j),i1))
       endif
       if (Geo%Glintzen(i,j) < Glint_Zen_Thresh) then   !outside glint
-       Rsr_Qf(i,j) = min(1,int(Rsr_Qf(i,j)))
+       Rsr_Qf(i,j) = min(1_i1,int(Rsr_Qf(i,j),i1))
       endif
       if (Sfc%Snow(i,j) /= sym%NO_SNOW) then    !Snow
-       Rsr_Qf(i,j) = min(1,int(Rsr_Qf(i,j)))
+       Rsr_Qf(i,j) = min(1_i1,int(Rsr_Qf(i,j),i1))
       endif
 
 
-      !--- aot 
+      !--- aot
        if (Aerosol_Mode > 0) then
 
-        Aot_Qf(i,j) = 0
-        
+        Aot_Qf(i,j) = 0_i1
+
         if ((CLDMASK%Cld_Mask(i,j) == sym%CLEAR) .and.  &
             (Sfc%Land_Mask(i,j) == sym%NO) .and.  &
             (Geo%Solzen(i,j) < 70.00) .and.  &
             (Sfc%Snow(i,j) == sym%NO_SNOW)) then
-          Aot_Qf(i,j) = 1
+          Aot_Qf(i,j) = 1_i1
           if (Geo%Glintzen(i,j) > Glint_Zen_Thresh) then
             if (Geo%Relaz(i,j) > 90.0) then
-              Aot_Qf(i,j) = 3
+              Aot_Qf(i,j) = 3_i1
             else
-             Aot_Qf(i,j) = 2 !- 1
+             Aot_Qf(i,j) = 2_i1 !- 1
            endif
          endif
         endif
-                                                                                                                              
+
         !--- assign aerosol over Snow to be of low quality
         if (Sfc%Snow(i,j) /= sym%NO_SNOW) then
-         Aot_Qf(i,j) = 0
+         Aot_Qf(i,j) = 0_i1
         endif
 
         !--- assign high quality pixels around a cloudy results as qf = 2
-        max_Mask = maxval(CLDMASK%Cld_Mask(i1:i2,j1:j2))
+        max_Mask = maxval(CLDMASK%Cld_Mask(i_1:i_2,j1:j2))
         if (max_Mask >= 2) then
-         if (Aot_Qf(i,j) == 3) then
-           Aot_Qf(i,j) = 2
+         if (Aot_Qf(i,j) == 3_i1) then
+           Aot_Qf(i,j) = 2_i1
          endif
-         if (Ndvi_Qf(i,j) == 3) then
-           Ndvi_Qf(i,j) = 2
+         if (Ndvi_Qf(i,j) == 3_i1) then
+           Ndvi_Qf(i,j) = 2_i1
          endif
-         if (Tsfc_Qf(i,j) == 3) then
-           Tsfc_Qf(i,j) = 2
+         if (Tsfc_Qf(i,j) == 3_i1) then
+           Tsfc_Qf(i,j) = 2_i1
          endif
         endif
 
      !--- forcing the reporting of aerosol for this condition (A. Evan)
      if (CLDMASK%Dust_Mask(i,j) == sym%YES) then
-         Aot_Qf(i,j) = 3
+         Aot_Qf(i,j) = 3_i1
      endif
 
   endif ! end of Aerosol  QF
@@ -1254,7 +1271,7 @@ subroutine ASSIGN_CLEAR_SKY_QUALITY_FLAGS(jmin,jmax)
 
 !----------------------------------------------------------------------
 !--- Compute a mask identifying presence of oceanic glint
-!--- 
+!---
 !--- input and output passed through global arrays
 !----------------------------------------------------------------------
 subroutine COMPUTE_GLINT(Source_GLintzen, Source_Ref_Toa, Source_Ref_Std_3x3, &
@@ -1340,7 +1357,7 @@ subroutine COMPUTE_GLINT(Source_GLintzen, Source_Ref_Toa, Source_Ref_Std_3x3, &
           endif   !--- ABI Use 104 Flag
 
           !-turn off if non-uniform - but not near limb
-          if (Geo%Satzen(Elem_Idx,Line_Idx) < 45.0) then 
+          if (Geo%Satzen(Elem_Idx,Line_Idx) < 45.0) then
             if (ABI_Use_104um_Flag) then
               if (Sensor%Chan_On_Flag_Default(38) == sym%YES) then
                 if (ch(38)%Bt_Toa_Std_3x3(Elem_Idx,Line_Idx) > 1.0) then
@@ -1423,13 +1440,13 @@ subroutine READ_MODIS_WHITE_SKY_ALBEDO(modis_alb_id,modis_alb_str,Ref_Sfc_White_
     real(kind=real4), dimension(:,:), intent(out):: Ref_Sfc_White_Sky
     integer(kind=int2), dimension(:,:),allocatable :: raw
     integer :: dim_arr(2)
-    
+
     dim_arr = shape(nav%lat)
     allocate ( raw(dim_arr(1),dim_arr(2)))
-    
+
     CALL READ_LAND_SFC_HDF(modis_alb_id, modis_alb_str, Nav%Lat, &
                           Nav%Lon, Geo%Space_Mask, raw)
-                       
+
     where(raw /= Missing_Value_Int2)
         Ref_Sfc_White_Sky = 0.1* raw
     endwhere
@@ -1451,7 +1468,7 @@ end subroutine READ_MODIS_WHITE_SKY_ALBEDO
 !
 !==============================================================================
  subroutine DETERMINE_LEVEL1B_COMPRESSION(File_1b_Original,L1b_Gzip,L1b_Bzip2)
- 
+
    character(len=*), intent(in):: File_1b_Original
    integer(kind=int4), intent(out):: L1b_Gzip
    integer(kind=int4), intent(out):: L1b_Bzip2
@@ -1535,7 +1552,6 @@ subroutine MODIFY_LAND_CLASS_WITH_NDVI(Line_Idx_Min,Num_Lines)
   real, parameter:: Ndvi_Land_Threshold = 0.25
   real, parameter:: Ndvi_Water_Threshold = -0.25
   real, parameter:: Solzen_Threshold = 60.0
-  real, parameter:: Ref_Ch2_Threshold = 60.0
 
   !--- do not do this for advanced geos since sampling can cause issues
   if (Sensor%WMO_ID == 173) return
@@ -1561,7 +1577,7 @@ subroutine MODIFY_LAND_CLASS_WITH_NDVI(Line_Idx_Min,Num_Lines)
     if (index(Sensor%Sensor_Name,'GOES-RU-IMAGER') > 0) cycle
 
     Ndvi_Temp = (ch(2)%Ref_Toa(Elem_Idx,Line_Idx) - ch(1)%Ref_Toa(Elem_idx,Line_Idx)) / &
-                (ch(2)%Ref_Toa(Elem_Idx,Line_Idx) + ch(1)%Ref_Toa(Elem_idx,Line_Idx)) 
+                (ch(2)%Ref_Toa(Elem_Idx,Line_Idx) + ch(1)%Ref_Toa(Elem_idx,Line_Idx))
 
     if (Ndvi_Temp > Ndvi_Land_Threshold) then
       Sfc%Land(Elem_Idx,Line_Idx) = sym%LAND
@@ -1580,19 +1596,19 @@ end subroutine MODIFY_LAND_CLASS_WITH_NDVI
 ! Function Name: TERM_REFL_NORM
 !
 ! Function:
-!    Renormalize reflectances to improve performance near the terminator 
+!    Renormalize reflectances to improve performance near the terminator
 ! using the parameteization given by Li et. al. 2006
 !
 ! Description: Renormalizes reflectances in the terminator region
-!   
+!
 ! Calling Sequence: Refl_Chn2 = TERM_REFL_NORM(Cos_Sol_Zen,Refl_Chn2)
-!   
+!
 !
 ! Inputs:
 !   Cosine of the Solar Zenith Angle
 !   Channel 2 reflectance that is normalized by cosine of solar zenith
 !
-! Outputs: 
+! Outputs:
 !   Renormalized reflectance
 !
 ! Dependencies:
@@ -1627,11 +1643,11 @@ end subroutine MODIFY_LAND_CLASS_WITH_NDVI
 ! Merge the high resolution and low resolution surface elevation
 ! fields into one single field
 !
-! Inputs: 
+! Inputs:
 !    Zsfc_Hires - passed via global arrays
 !    Zsfc_Nwp - passed via global arrays
 !
-! Outputs: 
+! Outputs:
 !    Zsfc - passed via global arrays
 !====================================================================
 subroutine MERGE_NWP_HIRES_ZSFC(Line_Idx_Min,Num_Lines)
@@ -1661,9 +1677,9 @@ subroutine MERGE_NWP_HIRES_ZSFC(Line_Idx_Min,Num_Lines)
           Sfc%Zsfc(Elem_Idx,Line_Idx) = Missing_Value_Real4
           cycle
       endif
- 
+
       !--- if hires value available use it, or try NWP
-      if (Sfc%Zsfc_Hires(Elem_Idx,Line_Idx) /= Missing_Value_Real4) then 
+      if (.not. (Sfc%Zsfc_Hires(Elem_Idx,Line_Idx) .EqualTo. Missing_Value_Real4)) then
 
            Sfc%Zsfc(Elem_Idx,Line_Idx) = Sfc%Zsfc_Hires(Elem_Idx,Line_Idx)
 
@@ -1672,7 +1688,7 @@ subroutine MERGE_NWP_HIRES_ZSFC(Line_Idx_Min,Num_Lines)
               Sfc%Land(Elem_Idx,Line_Idx) == sym%MODERATE_OCEAN .or. &
               Sfc%Land(Elem_Idx,Line_Idx) == sym%DEEP_OCEAN) then
 
-              Sfc%Zsfc(Elem_Idx,Line_Idx) = 0.0     
+              Sfc%Zsfc(Elem_Idx,Line_Idx) = 0.0
 
       !--- try NWP
       else
@@ -1684,11 +1700,11 @@ subroutine MERGE_NWP_HIRES_ZSFC(Line_Idx_Min,Num_Lines)
          if (Lon_Nwp_Idx > 0 .and. Lat_Nwp_Idx > 0) then
            Sfc%Zsfc(Elem_Idx,Line_Idx) = NWP%Zsfc(Lon_Nwp_Idx, Lat_Nwp_Idx)
          else
-           Sfc%Zsfc(Elem_Idx,Line_Idx) = 0.0     
+           Sfc%Zsfc(Elem_Idx,Line_Idx) = 0.0
          endif
 
       endif
-          
+
     enddo element_loop
   enddo line_loop
 
@@ -1755,7 +1771,7 @@ end subroutine ADJACENT_PIXEL_CLOUD_MASK
 ! 4 - Valid beta Retrieval (1 = yes, 0 = no)
 ! 5 - degraded Tc Retrieval (1 = yes, 0 = no)
 ! 6 - degraded ec Retrieval (1 = yes, 0 = no)
-! 7 - degraded beta Retrieval (1 = yes, 0 = no)! 
+! 7 - degraded beta Retrieval (1 = yes, 0 = no)!
 !-----------------------------------------------------------
 subroutine COMPUTE_ACHA_PERFORMANCE_METRICS(Processed_Count,Valid_Count,Success_Fraction)
 
@@ -1771,14 +1787,14 @@ subroutine COMPUTE_ACHA_PERFORMANCE_METRICS(Processed_Count,Valid_Count,Success_
   Valid_Count_Segment = count((btest(int(ACHA%Packed_Quality_Flags),1)) .and.  &
                               (btest(int(ACHA%Packed_Quality_Flags),2)) .and. &
                               (btest(int(ACHA%Packed_Quality_Flags),3)))
-  
+
   Processed_Count = Processed_Count + Processed_Count_Segment
   Valid_Count = Valid_Count + Valid_Count_Segment
 
   if (Processed_Count > Count_Min) then
     Success_Fraction = Valid_Count / Processed_Count
   else
-    Success_Fraction = Missing_Value_Real4 
+    Success_Fraction = Missing_Value_Real4
   endif
 
 end subroutine COMPUTE_ACHA_PERFORMANCE_METRICS
@@ -1818,14 +1834,14 @@ subroutine COMPUTE_DCOMP_PERFORMANCE_METRICS(Dcomp_Processed_Count,Dcomp_Valid_C
                               (.not. btest(Dcomp_Quality_Flag,2)) .and. &
                               btest(Dcomp_Quality_Flag,0) )
 
-  
+
   Dcomp_Processed_Count = Dcomp_Processed_Count + Processed_Count_Segment
   Dcomp_Valid_Count = Dcomp_Valid_Count + Valid_Count_Segment
 
   if (DCOMP_Processed_Count > Count_Min) then
     DCOMP_Success_Fraction = DCOMP_Valid_Count / DCOMP_Processed_Count
   else
-    DCOMP_Success_Fraction = Missing_Value_Real4 
+    DCOMP_Success_Fraction = Missing_Value_Real4
   endif
 
 end subroutine COMPUTE_DCOMP_PERFORMANCE_METRICS
@@ -1835,8 +1851,8 @@ end subroutine COMPUTE_DCOMP_PERFORMANCE_METRICS
    !
    !-----------------------------------------------------------
    subroutine COMPUTE_CLOUD_MASK_PERFORMANCE_METRICS(Cloud_Mask_Count,Nonconfident_Cloud_Mask_Count)
-      
-     
+
+
       integer:: Num_Elements
       integer:: Num_Lines
       real(kind=real4), intent(inout):: Cloud_Mask_Count
@@ -1846,51 +1862,51 @@ end subroutine COMPUTE_DCOMP_PERFORMANCE_METRICS
       integer, parameter:: Count_Min = 10
       real:: Count_Segment
       real:: Nonconfident_Count_Segment
-  
+
       Num_Elements = Image%Number_Of_Elements  !make local copy of a global variable
       Num_Lines = Image%Number_Of_Lines_Per_Segment  !make local copy of a global variable
 
       allocate(Mask_local(Num_Elements,Num_Lines))
       allocate(Nonconfident_Mask_local(Num_Elements,Num_Lines))
 
-      Mask_local = 0
-      Nonconfident_Mask_local = 0
+      Mask_local = 0_i1
+      Nonconfident_Mask_local = 0_i1
 
       where(CLDMASK%Cld_Mask == sym%CLEAR .or. CLDMASK%Cld_Mask == sym%PROB_CLEAR .or.  &
             CLDMASK%Cld_Mask == sym%PROB_CLOUDY .or. CLDMASK%Cld_Mask == sym%Cloudy)
-         Mask_local = 1
+         Mask_local = 1_i1
       end where
 
       where(CLDMASK%Cld_Mask == sym%PROB_CLEAR .or. CLDMASK%Cld_Mask == sym%PROB_CLOUDY)
-         Nonconfident_Mask_local = 1
+         Nonconfident_Mask_local = 1_i1
       end where
 
       Count_Segment = sum(real(Mask_local))
       if (Count_Segment < Count_Min) then
          return
       end if
-  
+
       deallocate ( mask_local)
 
       Nonconfident_Count_Segment = sum(real(Nonconfident_Mask_local))
-   
-      deallocate (Nonconfident_Mask_local) 
-   
+
+      deallocate (Nonconfident_Mask_local)
+
       Cloud_Mask_Count = Cloud_Mask_Count + Count_Segment
       Nonconfident_Cloud_Mask_Count = Nonconfident_Cloud_Mask_Count + Nonconfident_Count_Segment
 
       if (Cloud_Mask_Count > Count_Min) then
          Nonconfident_Cloud_Mask_Fraction = Nonconfident_Cloud_Mask_Count / Cloud_Mask_Count
       else
-         Nonconfident_Cloud_Mask_Fraction = Missing_Value_Real4 
+         Nonconfident_Cloud_Mask_Fraction = Missing_Value_Real4
       end if
-  
+
    end subroutine COMPUTE_CLOUD_MASK_PERFORMANCE_METRICS
 
 
 !==============================================================================
 !
-! remote sensing reflectance - for ocean applications 
+! remote sensing reflectance - for ocean applications
 !
 ! Reference: (Smyth, Tyrrell and Tarrant, 2004 GRL, 31)
 !
@@ -1901,7 +1917,7 @@ end subroutine COMPUTE_DCOMP_PERFORMANCE_METRICS
                                              atmos_corrected_086_reflectance, &
                                              air_mass, &
                                              solar_zenith)
- 
+
 
   real, intent(in):: atmos_corrected_063_reflectance
   real, intent(in):: atmos_corrected_086_reflectance
@@ -1929,7 +1945,7 @@ end subroutine COMPUTE_DCOMP_PERFORMANCE_METRICS
                                              atmos_corrected_063_reflectance, &
                                              atmos_corrected_086_reflectance, &
                                              solar_zenith)
- 
+
 
   real, intent(in):: atmos_corrected_063_reflectance
   real, intent(in):: atmos_corrected_086_reflectance
@@ -1939,7 +1955,7 @@ end subroutine COMPUTE_DCOMP_PERFORMANCE_METRICS
   if (solar_zenith < solar_zenith_max_threshold) then
     normalized_difference_vegetation_index =  &
                    (atmos_corrected_086_reflectance - atmos_corrected_063_reflectance) /  &
-                   (atmos_corrected_086_reflectance + atmos_corrected_063_reflectance) 
+                   (atmos_corrected_086_reflectance + atmos_corrected_063_reflectance)
   else
     normalized_difference_vegetation_index = Missing_Value_Real4
   endif
@@ -1955,7 +1971,7 @@ end subroutine COMPUTE_DCOMP_PERFORMANCE_METRICS
                                              atmos_corrected_063_reflectance, &
                                              atmos_corrected_160_reflectance, &
                                              solar_zenith)
- 
+
 
   real, intent(in):: atmos_corrected_063_reflectance
   real, intent(in):: atmos_corrected_160_reflectance
@@ -1965,7 +1981,7 @@ end subroutine COMPUTE_DCOMP_PERFORMANCE_METRICS
   if (solar_zenith < solar_zenith_max_threshold) then
     normalized_difference_snow_index =  &
                    (atmos_corrected_063_reflectance - atmos_corrected_160_reflectance) /  &
-                   (atmos_corrected_063_reflectance + atmos_corrected_160_reflectance) 
+                   (atmos_corrected_063_reflectance + atmos_corrected_160_reflectance)
   else
     normalized_difference_snow_index = Missing_Value_Real4
   endif
@@ -1981,7 +1997,7 @@ end subroutine COMPUTE_DCOMP_PERFORMANCE_METRICS
                                              atmos_corrected_063_reflectance, &
                                              atmos_corrected_160_reflectance, &
                                              solar_zenith)
- 
+
 
   real, intent(in):: atmos_corrected_063_reflectance
   real, intent(in):: atmos_corrected_160_reflectance
@@ -1991,7 +2007,7 @@ end subroutine COMPUTE_DCOMP_PERFORMANCE_METRICS
   if (solar_zenith < solar_zenith_max_threshold) then
     normalized_difference_desert_index =  &
                    (atmos_corrected_160_reflectance - atmos_corrected_063_reflectance) /  &
-                   (atmos_corrected_160_reflectance + atmos_corrected_063_reflectance) 
+                   (atmos_corrected_160_reflectance + atmos_corrected_063_reflectance)
   else
     normalized_difference_desert_index = Missing_Value_Real4
   endif
@@ -2084,7 +2100,7 @@ integer(kind=int1) elemental function DESERT_MASK_FOR_CLOUD_DETECTION( &
    integer(kind=int1), intent(in):: Snow
    integer(kind=int1), intent(in):: Surface_Type
 
-   Desert_Mask_For_Cloud_Detection = 0
+   Desert_Mask_For_Cloud_Detection = 0_i1
 
    if ( Snow == sym%NO_SNOW .and.  &
         Surface_Type > 0 .and.         &
@@ -2095,7 +2111,7 @@ integer(kind=int1) elemental function DESERT_MASK_FOR_CLOUD_DETECTION( &
          (Surface_Type == sym%GRASSES_SFC) .or.  &
          (Surface_Type == sym%BARE_SFC)) ) then
 
-         Desert_Mask_For_Cloud_Detection = 1
+         Desert_Mask_For_Cloud_Detection = 1_i1
 
    endif
 
@@ -2116,11 +2132,11 @@ integer(kind=int1) elemental function CITY_MASK_FOR_CLOUD_DETECTION( &
 
    real, parameter:: Radiance_Lunar_City_Thresh = 2.5e-08
 
-   City_Mask_For_Cloud_Detection = 0
+   City_Mask_For_Cloud_Detection = 0_i1
 
    !--- use surface type information
    if (Surface_Type == sym%URBAN_SFC) then
-      City_Mask_For_Cloud_Detection = 0
+      City_Mask_For_Cloud_Detection = 0_i1
    endif
 
    !----------------------------------------------------------------------------
@@ -2130,7 +2146,7 @@ integer(kind=int1) elemental function CITY_MASK_FOR_CLOUD_DETECTION( &
    !----------------------------------------------------------------------------
    if (allocated(ch(44)%Rad_Toa)) then
      if (Rad_Lunar > Radiance_Lunar_City_Thresh) then
-       City_Mask_For_Cloud_Detection = 1
+       City_Mask_For_Cloud_Detection = 1_i1
      endif
    endif
 
@@ -2175,15 +2191,15 @@ end function CITY_MASK_FOR_CLOUD_DETECTION
      !--- initialize
      Fire_Test = 0
 
-     
+
      !--- check if all needed data are non-missing
-     if (T375 /= Missing_Value_Real4 .and. &
-         T375_Std /= Missing_Value_Real4 .and. &
-         T11 /= Missing_Value_Real4 .and. &
-         T11_Std /= Missing_Value_Real4) then
+     if (.not. (T375 .EqualTo. Missing_Value_Real4) .and. &
+         .not. (T375_Std .EqualTo. Missing_Value_Real4) .and. &
+         .not. ( T11 .EqualTo. Missing_Value_Real4) .and. &
+         .not. (T11_Std .EqualTo. Missing_Value_Real4)) then
 
          !Day
-         if (Solzen < EumetCAST_Fire_Day_Solzen_Thresh) then
+         if (Solzen .LessThan. EumetCAST_Fire_Day_Solzen_Thresh) then
             Bt_375um_Eumet_Fire_Thresh = Bt_375um_Eumet_Fire_day_Thresh
             Bt_Diff_Eumet_Fire_Thresh = Bt_Diff_Eumet_Fire_day_Thresh
             Stddev_11um_Eumet_Fire_Thresh = Stddev_11um_Eumet_Fire_Day_Thresh
@@ -2206,7 +2222,7 @@ end function CITY_MASK_FOR_CLOUD_DETECTION
              Bt_375um_Eumet_Fire_Thresh = ((-1.0)* Solzen) + 380.0
              Bt_Diff_Eumet_Fire_Thresh = ((-0.4)* Solzen) + 36.0
 
-             !These two don't change, but 
+             !These two don't change, but
              Stddev_11um_Eumet_Fire_Thresh = STDDEV_11UM_EUMET_FIRE_NIGHT_THRESH
              Stddev_375um_Eumet_Fire_Thresh = STDDEV_375UM_EUMET_FIRE_NIGHT_THRESH
 
@@ -2225,7 +2241,7 @@ end function CITY_MASK_FOR_CLOUD_DETECTION
   end function FIRE_TEST
 !-----------------------------------------------------------
 ! make VIIRS look like MODIS interms of spatial sampling
-! 
+!
 ! this is accomplished by averaging in the along scan direction
 ! appropriately to acheive a pixel size that grows with
 ! scan angle - as would be the case with MODIS or AVHRR
@@ -2261,7 +2277,7 @@ subroutine VIIRS_TO_MODIS()
 
       do Line_Idx = 1, Number_of_Lines
          do Elem_Idx = 2, Number_of_Elements-1
-  
+
            i1 = Elem_Idx - 1
            i2 = Elem_Idx + 1
 
@@ -2269,12 +2285,12 @@ subroutine VIIRS_TO_MODIS()
            weight = weight_1_5
            if (Elem_Idx <= 640 .or. Elem_Idx >= 2561) weight = weight_3_0
            if (Elem_Idx >= 1009 .and. Elem_Idx <= 2192) weight = weight_1_0
-  
+
            !-- apply weighting
            Temp_Pix_Array_1(Elem_Idx,Line_Idx) = sum(weight*Ch(Chan_Idx)%Ref_Toa(i1:i2,Line_Idx)) / sum(weight)
 
          enddo
-      enddo 
+      enddo
 
       !--- copy back
       ch(Chan_Idx)%Ref_Toa = Temp_Pix_Array_1
@@ -2290,17 +2306,17 @@ subroutine VIIRS_TO_MODIS()
 
            i1 = Elem_Idx - 1
            i2 = Elem_Idx + 1
-  
+
            !--- pick weighting scheme
            weight = weight_1_5
            if (Elem_Idx <= 640 .or. Elem_Idx >= 2561) weight = weight_3_0
            if (Elem_Idx >= 1009 .and. Elem_Idx <= 2192) weight = weight_1_0
-  
+
            !-- apply weighting
            Temp_Pix_Array_1(Elem_Idx,Line_Idx) = sum(weight*Ch(Chan_Idx)%Rad_Toa(i1:i2,Line_Idx)) / sum(weight)
-  
+
          enddo
-      enddo 
+      enddo
 
       !--- copy back
       ch(Chan_Idx)%Rad_Toa = Temp_Pix_Array_1
@@ -2310,12 +2326,12 @@ subroutine VIIRS_TO_MODIS()
          do Elem_Idx = 2, Number_of_Elements-1
             ch(Chan_Idx)%Bt_Toa(Elem_Idx,Line_Idx) = PLANCK_TEMP_FAST(Chan_Idx,ch(Chan_Idx)%Rad_Toa(Elem_Idx,Line_Idx))
          enddo
-      enddo 
+      enddo
 
     endif
 
   enddo
-  
+
 end subroutine VIIRS_TO_MODIS
 !-----------------------------------------------------------
 ! Modify the MODIS AUX Phase and make a Type

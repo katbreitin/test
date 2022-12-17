@@ -1,5 +1,5 @@
 ! $Id: process_clavrx.f90 4129 2021-04-19 19:30:41Z heidinger $
-  program PROCESS_CLAVRX 
+  program PROCESS_CLAVRX
 !-----------------------------------------------------------------------------
 ! Clouds from AVHRR Extended (CLAVR-x) 1b PROCESSING SOFTWARE Version 6.0
 !
@@ -9,8 +9,8 @@
 !
 ! PURPOSE:
 !
-! DESCRIPTION: This code serves as the NESDIS operational cloud 
-!      processing system (CLAVR-x). This code also serves as the cloud 
+! DESCRIPTION: This code serves as the NESDIS operational cloud
+!      processing system (CLAVR-x). This code also serves as the cloud
 !      climate data generation system (PATMOS-x)
 !
 ! AUTHORS:
@@ -32,8 +32,8 @@
 !
 ! REVISION HISTORY:
 ! Version 5.0 - 2010 GEWEX submission
-! Version 5.2 - Code Delivered to NCDC 
-! Version 5.2.1 - MODIS Capability 
+! Version 5.2 - Code Delivered to NCDC
+! Version 5.2.1 - MODIS Capability
 ! Version 5.2.2 - GOES imager Capability, GlobSnow and CFSR capability
 ! Version 5.2.3 - Istvan Laszlo's Insolation (SASRAB) added
 ! Version 5.2.4 - Volcanic Ash added
@@ -58,9 +58,9 @@
 !    CLAVRXORB can
 !       - use AVHRR level-1b calibration or apply new calibration routines
 !       - use AVHRR level-1b geolocation or apply new geolocation routines
-!       - process NESDIS or AAPP AVHRR Level1b 
+!       - process NESDIS or AAPP AVHRR Level1b
 !       - process MYD021KM or MYD02SSH MODIS Level1b files
-!       - process band-separated AREA files from GOES Imager/Sounder,  
+!       - process band-separated AREA files from GOES Imager/Sounder,
 !         SEVIRI, MTSAT-1R, MTSAT-2, COMS, FY-2
 !       - generate pixel level cloud, aerosol and surface products
 !       - write to a series of pixel-level hdf files
@@ -70,7 +70,7 @@
 !
 ! Note, comments the begin with "Marker" refer to flowchart delivered to NCDC
 !
-! Web-page:  http://cimss.ssec.wisc.edu/clavr or 
+! Web-page:  http://cimss.ssec.wisc.edu/clavr or
 !            http://cimss.ssec.wisc.edu/patmosx
 !
 ! Channels 1 - 36 refer to MODIS or their analogs on other sensors
@@ -85,30 +85,30 @@
 ! Channel 44 - VIIRS DNB - 0.7 micron
 !
 !-------------------------------------------------------------------------
- 
+
 !*****************************************************************************
-! Marker: ACCESS MODULES 
+! Marker: ACCESS MODULES
 !******************************************************************************
    use ACHA_CLAVRX_BRIDGE,only: &
       awg_cloud_height_bridge &
       , LOCAL_LINEAR_RADIATIVE_CENTER
-   
+
    use AEROSOL_PROPERTIES, only: &
       pixel_aer_ret_ocean &
       , read_aer_ch123a_ref_luts
-    
+
    use ASOS_CLAVRX_BRIDGE, only: ASOS_BRIDGE
-   
+
    use AVHRR_REPOSITION_MOD,only: &
       interpolate_clock_error &
       , reposition_for_clock_error &
       , setup_clock_corrections
-   
+
    use BASELINE_CLOUD_HEIGHT,only: &
       baseline_cloud_height_main &
       , populate_planck_tables &
       , populate_planck_tables
-   
+
    use BASELINE_CLOUD_MASK, only: BASELINE_CLOUD_MASK_MAIN
 
    use CALIBRATION_CONSTANTS_MOD, only: &
@@ -123,17 +123,17 @@
       , Ch3a_Switch_Count_Cal,Ch3a_Dark_Count_Cal &
       , Solar_Ch20_Nu &
       , MITIGATE_CH20_NOISE
-    
+
    use CCL_CLAVRX_BRIDGE, only: CCL_BRIDGE
-   
+
    use CLAVRX_MESSAGE_MOD, only: MESG, VERB_LEV
-   
-   use CLAVRX_OLR_MOD, only: COMPUTE_OLR, SETUP_OLR 
-      
+
+   use CLAVRX_OLR_MOD, only: COMPUTE_OLR, SETUP_OLR
+
    use CLAVRX_SST_MOD, only: SETUP_SST, COMPUTE_SST
-     
+
    use CLOUD_BASE_CLAVRX_BRIDGE,only: CLOUD_BASE_BRIDGE
-    
+
    use CLOUD_HEIGHT_ROUTINES, only: &
       co2_slicing_cloud_height &
       , co2irw_cloud_height &
@@ -150,7 +150,7 @@
       , sounder_emissivity &
       , splitwin_cloud_height &
       , supercooled_cloud_probability
-   
+
    use CLOUD_TYPE_BRIDGE_MODULE,only: &
     cloud_type_bridge &
     , set_cloud_type_version
@@ -161,23 +161,23 @@
       , COMPUTE_MIN_MAX_MEAN_STD_METRICS &
       , COMPUTE_SPATIAL_CORRELATION_ARRAYS &
       , COMPUTE_RADIATIVE_CENTER_ARRAYS
-  
-  use CX_REAL_BOOLEAN_MOD 
-  
-   use CONSTANTS_MOD 
-      
+
+  use CX_REAL_BOOLEAN_MOD
+
+   use CONSTANTS_MOD
+
    use CX_DATE_TIME_TOOLS_MOD, only: &
       LEAP_YEAR_FCT &
       , COMPUTE_MONTH &
       , COMPUTE_DAY &
       , COMPUTE_TIME_HOURS
-   
+
    use CX_MURI_CLAVRX_BRIDGE_MOD, only: &
         MURI &
       , CX_MURI_ALGORITHM
 
    use CX_SEA_IR_EMISS_MOD, only: &
-    forget_sea_ir_emiss 
+    forget_sea_ir_emiss
 
    use CX_REAL_BOOLEAN_MOD
 
@@ -189,7 +189,7 @@
    use CX_NUCAPS_MOD, only: &
         VIIRS_NUCAPS &
       , CONVERT_SMOOTH_NUCAPS_TEMP
-   
+
    use DCOMP_DERIVED_PRODUCTS_MOD,only: &
         ADJUST_DCOMP_LWP &
       , COMPUTE_ADIABATIC_CLOUD_PROPS &
@@ -199,47 +199,47 @@
       , COMPUTE_PRECIPITATION_AHI &
       , COMPUTE_MASS_CONCENTRATION &
       , COMPUTE_SUBPIXEL_MAX_MIN_COD
-   
+
    use DNB_RETRIEVALS_MOD, only: &
       COMPUTE_LUNAR_REFLECTANCE
-   
+
    use DNCOMP_CLAVRX_BRIDGE_MOD, only: &
       AWG_CLOUD_DNCOMP_ALGORITHM
-  
+
    use FILE_UTILS, only: FILE_TEST, GET_LUN
 
    use GFS_HDF_MOD, only: READ_GFS_DATA
-   
+
    use GLOBSNOW_READ_ROUTINES,only: &
       GET_GLOBSNOW_FILENAME &
    , GET_PIXEL_GLOBSNOW_ANALYSIS &
    , READ_GLOBSNOW_ANALYSIS_MAP
-   
+
     use GOES_MOD,only: &
       Area_Struct &
       , GVAR_NAV &
       , DARK_COMPOSITE_CLOUD_MASK &
       , DETERMINE_DARK_COMPOSITE_NAME &
       , POST_PROCESS_GOES_DARK_COMPOSITE
-   
+
    use HIRS_FUSION_MOD, only: &
-      SET_REPLACED_AVHRR_TO_MISSING &     
+      SET_REPLACED_AVHRR_TO_MISSING &
     , HIRS_AVHRR_FUSION_PREPERATION
-   
+
    use IR_CLOUD_TYPE_BAUM_MODULE, only: &
        IR_CLOUD_TYPE_BAUM &
        , SET_IR_CLOUD_TYPE_VERSION
-   
+
    use LAND_SFC_PROPERTIES_MOD, only: &
        Land_grid_Description &
     , OPEN_LAND_SFC_HDF &
     ,  GET_SNOW_MAP_FILENAME &
     , close_land_sfc_hdf &
     , read_land_sfc_hdf
-   
+
     use LASZLO_INSOLATION_MOD,only: &
       insolation
-   
+
    use LEVEL2_MOD,only: &
         CLOSE_PIXEL_HDF_FILES &
       , DEFINE_HDF_FILE_STRUCTURES &
@@ -247,13 +247,13 @@
       , WRITE_SEGMENT_LEVEL2 &
       , READ_LEVEL2_VAR_LIST &
       , SETUP_LEVEL2_SDS_INFO
-   
+
    use NB_CLOUD_MASK_CLAVRX_BRIDGE, only: NB_CLOUD_MASK_BRIDGE
-   
+
    use ECM2_CLOUD_MASK_CLAVRX_BRIDGE, only: ECM2_CLOUD_MASK_BRIDGE
-   
+
    use NCEP_REANALYSIS,only: READ_NCEP_REANALYSIS_DATA
-   
+
    use NWP_COMMON_MOD, only: &
        NWP &
        , compute_coast_mask_nwp &
@@ -265,15 +265,15 @@
        , modify_tsfc_nwp_pix &
        , qc_nwp &
        , temporal_interp_tmpsfc_nwp
-   
+
    use OCA_MOD, only: &
        Read_OCA
-    
+
    use OISST_ANALYSIS,only: &
         Get_OISST_Map_Filename &
       , Get_pixel_sst_analysis &
-      , Read_oisst_analysis_map  
-   
+      , Read_oisst_analysis_map
+
    use PIXEL_COMMON_MOD,only: &
       ! - major global structures
       Ch &
@@ -291,7 +291,7 @@
       ! - routines
     , Destroy_Pixel_Arrays &
     , Create_Pixel_Arrays &
-    , Reset_Pixel_Arrays_To_Missing  &  
+    , Reset_Pixel_Arrays_To_Missing  &
     , nav_opt &
     , file_list &
     , dir_level2 &
@@ -322,8 +322,8 @@
     , Ref_Cal_1b &
     , Level2_File_Flag &
     , AVHRR_Fusion_Flag &
-    , Pc_Co2,Tc_Co2,Zc_Co2, Ec_Co2 &   
-    , Pc_H2O,Tc_H2O,Zc_H2O  &   
+    , Pc_Co2,Tc_Co2,Zc_Co2, Ec_Co2 &
+    , Pc_H2O,Tc_H2O,Zc_H2O  &
     , Nonconfident_Cloud_Mask_Count &
     , cloud_mask_count &
     , Cloud_Mask_Bayesian_Flag &
@@ -333,7 +333,6 @@
     , Cloud_Type_Aux_Read_Flag &
     , Cloud_Mask_Aux_Read_Flag &
     , cld_flag &
-    , Tracer_Flag &
     , Skip_Output &
     , Cld_Phase_IR &
     , Use_IR_Cloud_Type_Flag &
@@ -387,7 +386,7 @@
     , Static_Ref_065um_Dark_Composite &
     , Subpixel_Cloud_Fraction &
     , Static_Dark_Sky_Flag
-   
+
    use SNOW_ROUTINES_MOD, only: &
       COMPUTE_SNOW_CLASS &
       , COMPUTE_SNOW_CLASS_NWP &
@@ -421,30 +420,30 @@
 
    use CITY_MASK_MOD, only: &
       READ_CITY_MASK
-      
+
    use PLANCK_MOD, only: &
     populate_planck_tables_sounder
-    
+
    use RTM_COMMON_MOD, only: &
       NLEVELS_RTM &
       , p_std_rtm  &
       , rtm &
       , ALLOCATE_RTM &
-      , DEALLOCATE_RTM 
-   
+      , DEALLOCATE_RTM
+
    use CX_ATMOSPHERIC_CORRECTION_VIS_MOD , only: &
        ATMOS_CORR &
-      , SETUP_SOLAR_RTM 
-      
+      , SETUP_SOLAR_RTM
+
    use CX_NWP_RTM_MOD, only: &
       MAP_NWP_RTM &
       , CREATE_TEMP_NWP_VECTORS &
-      , DESTROY_TEMP_NWP_VECTORS 
-      
+      , DESTROY_TEMP_NWP_VECTORS
+
    use RT_UTILITIES_MOD, only: &
         RTM_NVZEN &
-      , GET_PIXEL_NWP_RTM 
-   
+      , GET_PIXEL_NWP_RTM
+
    use SENSOR_MOD, only: &
       detect_sensor_from_file &
     , output_image_to_screen &
@@ -455,24 +454,24 @@
     , set_data_date_and_time &
     , set_file_dimensions, &
       SET_SENSOR_CHANNEL_MAPPING
-   
+
    use SFC_EMISS, only: close_seebor_emiss
-#ifdef LIBRTTOV    
+#ifdef LIBRTTOV
     use CX_RTTOV_SFC_EMISS, only: &
         destroy_rttov_emiss
-#endif   
+#endif
     use SIMPLE_COD_065um_MOD,only: &
-    compute_simple_solar_cod_065um 
-    
+    compute_simple_solar_cod_065um
+
     use SIMPLE_COD_LUNAR_MOD, only: &
       compute_simple_lunar_cod_065um
-   
+
    use SIMPLE_COD_138um_MOD,only: &
     compute_simple_solar_cod_138um
 
    use SIMPLE_COD_160um_MOD,only: &
     compute_simple_solar_cod_160um
-          
+
    use SURFACE_PROPERTIES_MOD,only: &
       COMPUTE_BINARY_LAND_COAST_MASKS &
       , setup_umd_props &
@@ -481,26 +480,26 @@
     use USER_OPTIONS,only: &
       setup_user_defined_options &
     , update_configuration
-  
+
    use CX_SFC_EMISSIVITY_MOD, only: &
     cx_sfc_emiss_populate_ch &
     , cx_sfc_emiss_correct_for_sfctype
-  
-   ! obviously unused modules    
+
+   ! obviously unused modules
    use MODIS_MOD,only:
-   
+
    use IFF_CLAVRX_BRIDGE, only:
-   
+
    use ABI_MOD, only:
-   
+
    use SEVIRI_MOD,only:
-       
+
    use MTSAT_MOD, only:
-   
+
    use COMS_MOD, only:
-   
+
    use FY2_MOD ,only:
-   
+
    use UNIVERSAL_CLOUD_TYPE_MODULE, only: UNIVERSAL_CLOUD_TYPE
 
    use CLAVRX_STATIC_NAV_MODULE, only: &
@@ -514,14 +513,14 @@
    use cleanup, only: cleanup_tempdir, cleanup_tempdir__exit
 
    use tracer, only: waitpoint, Set_Tracer_Flag, maybe_clone, update_skip_processing
-   
-   implicit none 
-  
+
+   implicit none
+
    !***********************************************************************
    ! Marker: DECLARE VARIABLES
    !***********************************************************************
    integer(kind=int4):: Nrec_Avhrr_Header
-   integer(kind=int4):: Ifile    
+   integer(kind=int4):: Ifile
    integer(kind=int4):: File_List_Lun                 !logical unit number for File_list
    integer(kind=int4):: Segment_Number
    integer(kind=int4):: Skip_Processing_Flag
@@ -550,13 +549,13 @@
    integer(kind=int4):: erstat
    real(kind=real4):: Time_Since_Launch
    integer(kind=int4):: err_reposnx_Flag
-  
- 
+
+
    integer(kind=int4):: ios, nc
    integer(kind=int4):: File_Number
    integer(kind=int4):: Ierror_Level1b
    integer(kind=int4):: ierror_Nwp
-   integer(kind=int4):: iperiod16   
+   integer(kind=int4):: iperiod16
    integer(kind=int4) :: ierror
    character(len=3):: Day_String
    character(len=1020):: Modis_White_Sky_0_66_Name
@@ -592,57 +591,55 @@
    type(Land_grid_Description) :: Modis_Alb_1_64_Str
    type(Land_grid_Description) :: Modis_Alb_2_13_Str
    type(Land_grid_Description) :: Snow_Mask_Str
-  
+
    ! GOES header structures
    TYPE (AREA_STRUCT) :: AREAstr
    TYPE (GVAR_NAV)    :: NAVstr
-   
+
    logical :: NLCOMP_Run
    logical :: DCOMP_Run
-   
+
    character (len = 30) :: string_30
    character (len = 100) :: string_100
-   
+
    integer:: Chan_Idx
    integer, parameter :: Chan_Idx_Min = 1
    integer, parameter :: Chan_Idx_Max = 44
-   
-   
+
+
    character(len = 1024) ::string
    integer :: narg,cptArg
    character(len=30) :: arg_name
 
    real, parameter, dimension(3):: Dnb_Coef = [-0.118767,0.962452,-0.000144502]
-   integer*8, parameter :: SIG_ERR = -1
-
 
    !***********************************************************************
    ! Begin Executable Code
    !***********************************************************************
     narg=command_argument_count()
-    
+
     if(narg>0)then
     !loop across options
       do cptArg=1,narg
         call get_command_argument(cptArg,arg_name)
-      
+
         select case(adjustl(arg_name))
         case("--compile_info","-ci")
           write(*,*)"This is CLAVR-x : Version $Id: process_clavrx.f90 4129 2021-04-19 19:30:41Z heidinger $"
           write(*,*)"Binary compiled on the ",__DATE__," at ",__TIME__
-          
+
           stop
         case default
-          
+
         end select
       end do
     end if
-    
+
 
    call MESG( '<----------  Start of CLAVRXORB ----------> $Id: process_clavrx.f90 4129 2021-04-19 19:30:41Z heidinger $' &
-      , level = verb_lev % DEFAULT , color = 4 ) 
+      , level = verb_lev % DEFAULT , color = 4 )
    write(string,*)"Compiled on ",__DATE__//' '//__TIME__
-   call MESG( trim(string),level=verb_lev % DEFAULT, color=2)   
+   call MESG( trim(string),level=verb_lev % DEFAULT, color=2)
 
    !----------------------------------------------------------------------------
    ! Initialize some flags
@@ -659,9 +656,9 @@
    !------------------------------------------------------------------------------
    ! initialize previous date variables
    !-------------------------------------------------------------------------------
-  
+
    Sensor%WMO_Id_Previous = 0
-  
+
 
    !*************************************************************************
    ! Marker: Read and Quality Check User Defined Options
@@ -684,10 +681,10 @@
     call OPEN_STATIC_ANCIL_FILES()
 
    !-----------------------------------------------------------------------
-   !--- set up surface radiative properties 
+   !--- set up surface radiative properties
    !-----------------------------------------------------------------------
    call SETUP_UMD_PROPS()
- 
+
 
    !--- NO LOGIC FOR CH 38.
    call READ_ABI_DUST_LUT()
@@ -703,20 +700,20 @@
    ! Marker: Read level2 variables in LEVEL2_LIST
    !**********************************************************************
    call READ_LEVEL2_VAR_LIST()
-   
+
    !**********************************************************************
    ! Marker: Read file directories in FILE_LIST
    !**********************************************************************
 
    !--- print to screen which file list is used
-   call MESG( "CLAVR-x FILE LIST FILE USED: "//trim(File_list) , level = verb_lev % VERBOSE ) 
+   call MESG( "CLAVR-x FILE LIST FILE USED: "//trim(File_list) , level = verb_lev % VERBOSE )
 
    !--- open file containing list of level1b data to process
    File_List_Lun = GET_LUN()
    open(unit=File_List_Lun, file = trim(File_List),status="old",action="read",iostat=ios)
    if (ios /= 0) then
       write ( string_30, '(i8)') ios
-      call MESG("ERROR: Opening clavrxorb_file_list, iostat = "//trim(string_30) , level = verb_lev % ERROR) 
+      call MESG("ERROR: Opening clavrxorb_file_list, iostat = "//trim(string_30) , level = verb_lev % ERROR)
       write(*,*) "Stopped in ",__FILE__," at line ",__LINE__
       stop
    endif
@@ -734,7 +731,7 @@
    File_Loop: do
 
       !----------------------------------------------------------------------
-      ! Marker: READ IN CLAVRXORB_FILE_LIST AND SET FLAGS 
+      ! Marker: READ IN CLAVRXORB_FILE_LIST AND SET FLAGS
       !----------------------------------------------------------------------
       read(unit=File_List_Lun,fmt="(a)",iostat=Ios) File_1b_Temp
       if ( File_1b_Temp == "") exit
@@ -743,13 +740,13 @@
             !-- non eof error
             Erstat = 8
             call MESG( "ERROR: Problem reading orbit names from control file" &
-               , level = verb_lev % QUIET , color = 1 ) 
+               , level = verb_lev % QUIET , color = 1 )
             call cleanup_tempdir
             stop 8
          else
             !-- end of orbits
             if (File_Number == 1) then
-               call MESG( "ERROR: No orbits to process, stopping" , level = verb_lev % QUIET , color = 1 ) 
+               call MESG( "ERROR: No orbits to process, stopping" , level = verb_lev % QUIET , color = 1 )
                call cleanup_tempdir
                stop 404
             endif
@@ -780,10 +777,10 @@
          print*,trim(Image%Level1b_Path)//trim(File_1b_Temp)
          cycle file_loop
       endif
-      
-      ! --- 
+
+      ! ---
       !  check if this file is a AVHRR-HIRS File
-      !  if so Level1b file is changed to AVHRR file, HIRS File is added to 
+      !  if so Level1b file is changed to AVHRR file, HIRS File is added to
       !   Image structure to Image%Level1b_Fusion_Name
       if (index(trim(File_1b_Temp),'fusion') > 0) then
          call HIRS_AVHRR_FUSION_PREPERATION(File_1b_Temp)    !mispelled
@@ -807,7 +804,7 @@
       endif
 
       !------------------------------------------------------------------------
-      ! Having determined the SENSOR, populate information about the 
+      ! Having determined the SENSOR, populate information about the
       ! Sensor and Satellite in the sensor and ch structures.  This is needed for each
       ! channel since CLAVR-x supports multi-instrument files (i.e. SSEC Fusion)
       !------------(------------------------------------------------------------
@@ -834,7 +831,7 @@
       call READ_INSTR_CONSTANTS()
 
       !------------------------------------------------------------------
-      ! update settings according sensor ( algo mode and channel settings 
+      ! update settings according sensor ( algo mode and channel settings
       ! including turn-on and off)
       !------------------------------------------------------------------
 
@@ -843,7 +840,7 @@
       call SET_FILE_DIMENSIONS(Image%Level1b_Full_Name &
                ,AREAstr &
                ,Nrec_Avhrr_Header &
-               ,Ierror) 
+               ,Ierror)
 
       if (Ierror == sym%YES) then
          call MESG ("ERROR:  Could not set file dimensions, skipping file " , &
@@ -854,7 +851,7 @@
       if (Image%Number_Of_Lines <= 0) then
          call MESG ("File dimensions were not set correctly for this sensor "// &
                      sensor%sensor_name , level = verb_lev % ERROR)
-         cycle file_loop    
+         cycle file_loop
       endif
 
       !-----------------------------------------------------------------------
@@ -863,7 +860,7 @@
       !--- determine segment size here
       Line_Idx_Min_Segment = 1
       Line_Idx_Max_Segment = Image % Number_Of_Lines_Per_Segment
- 
+
       !*************************************************************************
       ! Marker:  READ IN HEADER AND DETERMINE SOME CONSTANTS
       !*************************************************************************
@@ -899,7 +896,7 @@
       if (Read_Dark_Comp == sym%YES) then
          call DETERMINE_DARK_COMPOSITE_NAME(AREAstr)
       endif
-   
+
 
       !*************************************************************************
       ! Marker:  READ IN SENSOR-SPECIFIC CONSTANTS
@@ -912,7 +909,7 @@
       !--------------------------------------------------------------------
       ! read in sst analysis file
       !--------------------------------------------------------------------
- 
+
       !Set to use default options. This will be turned off if there is NO daily OISST data
       Oisst_File_Name= GET_OISST_MAP_FILENAME(Image%Start_Year,Image%Start_Doy, &
                                                  trim(OiSst_Data_Dir) )
@@ -923,7 +920,7 @@
           call READ_OISST_ANALYSIS_MAP(OISST_File_Name)
           Use_Sst_Anal = sym%YES
       endif
-      
+
       !----------------------------------------------------------------------
       ! Open Modis White Sky Albedo Map appropriate for this day
       !----------------------------------------------------------------------
@@ -943,7 +940,7 @@
       !--- GFS
       if (NWP_PIX%Nwp_Opt == 1) then
          call READ_GFS_DATA(NWP_PIX%Nwp_Opt, Image%Start_Year, Image%Start_Doy, Image%Start_Time, &
-                           Image%End_Year, Image%End_Doy, Image%End_Time, Gfs_Data_Dir, ierror_Nwp) 
+                           Image%End_Year, Image%End_Doy, Image%End_Time, Gfs_Data_Dir, ierror_Nwp)
       endif
 
       !--- NCEP Reanalysis
@@ -955,15 +952,15 @@
       !--- CFSR
       if (NWP_PIX%Nwp_Opt == 3) then
          call READ_GFS_DATA(NWP_PIX%Nwp_Opt, Image%Start_Year, Image%Start_Doy, Image%Start_Time, &
-                            Image%End_Year, Image%End_Doy, Image%End_Time, Cfsr_Data_Dir, ierror_Nwp) 
+                            Image%End_Year, Image%End_Doy, Image%End_Time, Cfsr_Data_Dir, ierror_Nwp)
       endif
 
       !--- GDAS
       if (NWP_PIX%Nwp_Opt == 4) then
          call READ_GFS_DATA(NWP_PIX%Nwp_Opt, Image%Start_Year, Image%Start_Doy, Image%Start_Time,  &
-                            Image%End_Year, Image%End_Doy, Image%End_Time, Gdas_Data_Dir, ierror_Nwp) 
+                            Image%End_Year, Image%End_Doy, Image%End_Time, Gdas_Data_Dir, ierror_Nwp)
       endif
-     
+
       !--- MERRA
       if (NWP_PIX%Nwp_Opt == 5) then
          call READ_GFS_DATA(NWP_PIX%Nwp_Opt, Image%Start_Year, Image%Start_Doy, Image%Start_Time,  &
@@ -990,19 +987,19 @@
 
       !---- if NWP is being read in, then proceeed in allocating RTM, NWP arrays
       if (NWP_PIX%Nwp_Opt /= 0) then
-         
+
          !--- Quality control NWP fields
          call QC_NWP()
-        
+
          !--- create temporary NWP vectors needed for RTM
          call CREATE_TEMP_NWP_VECTORS()
- 
+
          !--- Compute mappings for NWP and RTM vertical coordinates
          call MAP_NWP_RTM(NWP%NLevels, &
                           NWP%P_Std, &
                           NLevels_Rtm, &
                           P_Std_Rtm)
-         
+
          !--- allocate RTM structures
          call ALLOCATE_RTM(NWP%Nlon,NWP%Nlat)
 
@@ -1012,7 +1009,7 @@
       !*************************************************************************
       ! Marker: Populate or read in other lookup tables
       !*************************************************************************
-       
+
       !--- planck and aerosol tables
       if (Sensor%WMO_Id /= Sensor%WMO_Id_Previous) then
 
@@ -1024,21 +1021,21 @@
              trim(Sensor%Sensor_Name) == 'VIIRS-IFF') then
             call POPULATE_PLANCK_TABLES_SOUNDER()
          endif
- 
+
          if (Aerosol_Mode > 0 .and. index(Sensor%Sensor_Name,'AVHRR') > 0) then
             call READ_AER_CH123A_REF_LUTS(Ancil_Data_Dir,Sensor%WMO_Id)
          endif
 
          Sensor%WMO_Id_Previous = Sensor%WMO_Id
- 
+
       endif
- 
+
       !--- compute Sun-Earth distance
       Sun_Earth_Distance = 1.0 - 0.016729*cos(0.9856*(Image%Start_Doy-4.0)*dtor)
-     
+
       !--- compute time since launch needed for reflectance calibration
       Time_Since_Launch = Image%Start_Year + Image%Start_Doy / 365.25  - launch_Date
- 
+
       !--------------------------------------------------------------
       !-- Marker: Interpolate a clock correction for this orbit
       !--------------------------------------------------------------
@@ -1052,7 +1049,7 @@
                                    Image%End_Year, Image%End_Time, &
                                    Sensor%WMO_Id,Nav%Timerr_Seconds)
            print *, EXE_PROMPT, "Clock Error = ", Nav%Timerr_Seconds
-         endif  
+         endif
       endif
 
       !*************************************************************************
@@ -1065,7 +1062,7 @@
       call MESG ( " ")
       call MESG ("Started Processing All Orbital Segments")
 
-      !--- compute number of segments in this orbit 
+      !--- compute number of segments in this orbit
       if (mod(Image%Number_Of_Lines,Image%Number_Of_Lines_Per_Segment) == 0) then
          Image%Number_Of_Segments = Image%Number_Of_Lines / Image%Number_Of_Lines_Per_Segment
       else
@@ -1075,13 +1072,13 @@
       !--- initialize time counters
       Segment_Time_Point_Seconds = 0.0
       Segment_Time_Point_Seconds_temp = 0.0
-    
+
       Segment_loop: do Segment_Number = 1,Image%Number_Of_Segments
-        
+
          !--- save the segment number in a global structure
          Image%Segment_Number  = Segment_Number
 
-         !--- reset skip processing flag 
+         !--- reset skip processing flag
          Skip_Processing_Flag = sym%NO
 
          !--- reset Goes_Scan_Line_Flag
@@ -1109,7 +1106,7 @@
                  Cost_Aux,Pc_Top1_Aux,Pc_Top2_Aux,Pc_Uncertainty1_Aux,Pc_Uncertainty2_Aux, &
                  Tau_Aux,Cld_Phase_Aux)
          endif
-         
+
          !------------------------------------------------------------------
          ! Apply spatial limits
          !------------------------------------------------------------------
@@ -1121,7 +1118,7 @@
          if (Skip_L1b_File_Flag) then
              exit
          endif
-  
+
          !-------------------------------------------------------------------
          ! Modify Chan_On flags to account for channels read in
          !-------------------------------------------------------------------
@@ -1146,7 +1143,7 @@
 
 
            !TEST - EMPIRICAL FIT TO NASA Reflectances to match NOAA - AKH
-          if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA') then 
+          if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA') then
             where(Ch(44)%Ref_Toa .NER. Missing_Value_Real4)
               Ch(44)%Ref_Lunar_Toa = Dnb_Coef(1) + &
                                      Dnb_Coef(2)*Ch(44)%Ref_Lunar_Toa + &
@@ -1177,7 +1174,7 @@
 
          !---- go no further if no data is read in
          if (Skip_Processing_Flag == sym%NO) then    !skip_Processing_Flag
-   
+
             !*******************************************************************
             ! Marker: Recompute geolocation
             !*******************************************************************
@@ -1193,7 +1190,7 @@
               if (Nav_Opt == 2) then
 
                if ((Nav%Timerr_Seconds .ner. Missing_Value_Real4) .and. &
-                   (Nav%Timerr_Seconds .ner. 0.0)) then 
+                   (Nav%Timerr_Seconds .ner. 0.0)) then
 
                   call REPOSITION_FOR_CLOCK_ERROR(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment, &
                                                   Nav%Timerr_Seconds,Err_Reposnx_Flag)
@@ -1205,8 +1202,8 @@
              endif
 
             endif
-   
-           
+
+
 
             if (NWP_PIX%Nwp_Opt /= 0) then
 
@@ -1216,11 +1213,11 @@
                !--- compute needed NWP levels (sfc, tropo, inversion, ...)
                call COMPUTE_NWP_LEVELS_SEGMENT(Image%Number_Of_Elements,Image%Number_Of_Lines_Read_This_Segment)
 
-               !--- compute desired nwp parameters 
+               !--- compute desired nwp parameters
                call COMPUTE_SEGMENT_NWP_CLOUD_PARAMETERS()
 
             endif
-   
+
             !--- determine a pixel-level mask to exclude data solar contaminiation
             call SET_SOLAR_CONTAMINATION_MASK(Solar_Contamination_Mask)
 
@@ -1228,18 +1225,18 @@
             !--- determine a pixel-level mask to exclude bad or unprocessible data
             !--- call SET_BAD_PIXEL_MASK(Bad_Pixel_Mask)
             call SET_BAD_PIXEL_MASK(Bad_Pixel_Mask,ABI_Use_104um_Flag)
-  
+
             !*******************************************************************
             ! Marker: Interpolate ancillary data to each pixel in this segment
             !*******************************************************************
 
             !--- map nwp parameters to pixel projection
             call COMPUTE_PIXEL_NWP_PARAMETERS(NWP_PIX%Smooth_Nwp_Flag)
-            
-           
+
+
             !--- map non-nwp ancillary data to the pixel projection
             call MAP_ANCIL_DATA_TO_PIXEL_GRID()
-            
+
              ! - set surface emissivity
             call  CX_SFC_EMISS_POPULATE_CH
 
@@ -1254,12 +1251,12 @@
             !-----------------------------------------------------------------------
             !--- Marker: Compute some fundamental pixel-level arrays
             !-----------------------------------------------------------------------
-            !--- compute some common used pixel arrays 
+            !--- compute some common used pixel arrays
             call COMPUTE_PIXEL_ARRAYS(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)
 
             !--- normalize reflectances by the solar zenith angle and sun-earth distance
             call NORMALIZE_REFLECTANCES(Sun_Earth_Distance)
-   
+
             !--- do we want to change reflectances only if 10_4 flag is used?
             !--- compute the channel 20 pseudo reflectance
             if (Sensor%Chan_On_Flag_Default(20) == sym%YES .and.  Sensor%Chan_On_Flag_Default(31) == sym%YES) then
@@ -1296,20 +1293,20 @@
                                        Sfc%Snow_IMS,Sfc%Snow_GLOB, &
                                        Sfc%Land,Sfc%Snow,ABI_Use_104um_Flag)
             endif
-            
-            
-           
+
+
+
 
             !--- SST if possible for this sensor (needs snow info for masking)
             !--- This subroutine uses bt85, bt104, bt11, bt12).  Will fail in
             !--- LHP events.
-            
+
             call COMPUTE_SST()
 
             !--- fill in holes in surface emiss and surface refl with default
             !--- values based on surface type
             call CX_SFC_EMISS_CORRECT_FOR_SFCTYPE()
-            
+
             !--- compute desert mask cloud detection
             Sfc%Desert_Mask =  DESERT_MASK_FOR_CLOUD_DETECTION(ch(20)%Sfc_Emiss, Nav%Lat, Sfc%Snow, Sfc%Sfc_Type)
 
@@ -1347,14 +1344,14 @@
                if   (Use_Sst_Anal == sym%YES) then
                   where ((Sfc%Land_Mask == sym%NO) .and.  &
                     (Sfc%Snow == sym%NO_SNOW) .and.  &
-                    (Sst_Anal > 270.0 )) 
-              
+                    (Sst_Anal > 270.0 ))
+
                     NWP_PIX%Tsfc = Sst_Anal
-            
-                  end where 
+
+                  end where
                end if
-               
-               !--- compute pixel-level rtm parameters 
+
+               !--- compute pixel-level rtm parameters
                call GET_PIXEL_NWP_RTM(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)
                call COMPUTE_MEDIAN_METRICS_L2()
                if (ABI_Use_104um_Flag) then
@@ -1434,7 +1431,7 @@
             endif
 
             !*******************************************************************
-            ! Marker: Definition of pixel hdf files 
+            ! Marker: Definition of pixel hdf files
             !  if first segment, define pixel hdf files
             ! this has to be here because cal coefficients are only known
             ! after data has been read in and calibrated
@@ -1452,13 +1449,13 @@
                !----------------------------------------------------------------------
                ! -----------
                !  All level2 output variables have to allocated before Setup_level2_sds_info
-               !  Also Muri 
-               ! - 
-               
+               !  Also Muri
+               ! -
+
                if ( (trim(Sensor%Sensor_Name) == 'AHI' .or. trim(Sensor%Sensor_Name) == 'AHI9') .and. Aerosol_Mode == 1) then
                   call muri % allocate (Image%Number_of_elements , Image%Number_Of_Lines_Read_This_Segment)
                end if
-               
+
                !----------------------------------------------------------------------
                ! set up level2 file
                !----------------------------------------------------------------------
@@ -1543,14 +1540,14 @@
 
                !--- WAITPOINT before cloud mask
                call waitpoint(5)
-              
+
                !--- cloud mask
                if (Use_Aux_Flag == sym%USE_AUX .and. Cloud_Mask_Aux_Read_Flag == sym%YES) then
 
                   CLDMASK%Cld_Mask = CLDMASK%Cld_Mask_Aux
 
                else
-                  
+
                   if (Cloud_Mask_Bayesian_Flag == sym%ECM1) then
                      Cloud_Mask_Mode = 'ecm1'
                      call NB_CLOUD_MASK_BRIDGE(Segment_Number)
@@ -1568,9 +1565,9 @@
 
                   else
                      call MESG("Only the Enterprise and Baseline Cloud Masks are available, check selection",level=verb_lev % ERROR)
-                     stop 
+                     stop
                   endif
-   
+
                   if (Use_Aux_Flag == sym%USE_AUX .and. Cloud_Mask_Aux_Read_Flag == sym%NO) then
                      call MESG("Auxilliary Cloud Mask Selected but Unavailable ", level=verb_lev % WARNING)
                   endif
@@ -1582,8 +1579,8 @@
 
                !--- compute datyime reflectance balance subpixel cloud fraction
 
-               if (Sensor%Chan_On_Flag_Default(1) == sym%YES .and. & 
-                   Ch(1)%Sub_Pixel_On_Flag .and. Static_Dark_Sky_Flag ) then 
+               if (Sensor%Chan_On_Flag_Default(1) == sym%YES .and. &
+                   Ch(1)%Sub_Pixel_On_Flag .and. Static_Dark_Sky_Flag ) then
 
                    call DAYTIME_REFL_BALANCE_CLOUD_FRACTION(Ch(1)%Ref_Toa, &
                                                             Ch(1)%Ref_Toa_Max_Sub, &
@@ -1596,7 +1593,7 @@
                if (Use_ABI_Dust == sym%YES) then
                   if (Sensor%WMO_Id == 270 .or. Sensor%WMO_Id == 271 .or. Sensor%WMO_Id == 272) then
                     CLDMASK%Dust_Mask = sym%NO
-                    call GET_SEGMENT_ABI_DUST_PROB() 
+                    call GET_SEGMENT_ABI_DUST_PROB()
                   endif
                endif
 
@@ -1615,7 +1612,7 @@
                      & 60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
 
 
-               !--- cloud type 
+               !--- cloud type
                Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
 
                !--- make sure MODIS aux phase/type conforms to CLAVR-x expectations
@@ -1628,7 +1625,7 @@
                   Cld_Type = Cld_Type_Aux
                   Cld_Phase = Cld_Phase_Aux
 
-               else  
+               else
 
                   !--- if ECM2 is not called, compute type and phase here
                   if (Cloud_Mask_Bayesian_Flag /= sym%ECM2) then
@@ -1707,7 +1704,7 @@
                endif
 
                !--- General ACHA Solution
-               if (trim(ACHA%Mode) /= "off" .and. trim(ACHA%MODE) /= "baseline") then 
+               if (trim(ACHA%Mode) /= "off" .and. trim(ACHA%MODE) /= "baseline") then
 
                   !--- AWG CLoud Height Algorithm (ACHA) and associated products
                   call AWG_CLOUD_HEIGHT_BRIDGE()
@@ -1750,7 +1747,7 @@
                End_Time_Point_Hours = COMPUTE_TIME_HOURS()
                Segment_Time_Point_Seconds(8) =  Segment_Time_Point_Seconds(8) + &
                    &   60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
-    
+
                !-----------------------------------------------------------------------------------
                ! NLCOMP Section
                !-----------------------------------------------------------------------------------
@@ -1761,27 +1758,27 @@
                   if ( count (ch(44)%Ref_Lunar_Toa > 0) > 0 ) then
                      call AWG_CLOUD_DNCOMP_ALGORITHM( Iseg_In = Segment_Number , NLCOMP_Mode = .true. &
                         , algorithm_started = NLCOMP_Run)
-                  endif   
-               endif   
-          
+                  endif
+               endif
+
                End_Time_Point_Hours = COMPUTE_TIME_HOURS()
                Segment_Time_Point_Seconds(9) =  Segment_Time_Point_Seconds(9) + &
-                     & 60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)  
-     
+                     & 60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
+
                !-----------------------------------------------------------------------------------
                ! DCOMP Section
                !-----------------------------------------------------------------------------------
                Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
-               
+
                DCOMP_Run = .false.
-             
+
                if (DCOMP_Mode > 0) then
-           
+
                   call AWG_CLOUD_DNCOMP_ALGORITHM( Iseg_In = Segment_Number , algorithm_started = dcomp_run, version = dcomp_version )
-                 
+
 
                  !call COMPUTE_SUBPIXEL_MAX_MIN_COD()
-                    
+
                endif
 
                End_Time_Point_Hours = COMPUTE_TIME_HOURS()
@@ -1801,9 +1798,9 @@
                      call COMPUTE_PRECIPITATION(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)
 
                   if (trim(Sensor%Sensor_Name) == 'AHI' .or. trim(Sensor%Sensor_Name) == 'AHI9') then
-                     call COMPUTE_PRECIPITATION_AHI(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)   
+                     call COMPUTE_PRECIPITATION_AHI(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)
                   end if
- 
+
                endif
 
                End_Time_Point_Hours = COMPUTE_TIME_HOURS()
@@ -1814,7 +1811,7 @@
                ! Cloud Altitude, Base and CCL Section (if ACHA was executed)
                !-----------------------------------------------------------------------------------
                Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
-               if (trim(ACHA%Mode) /= "off") then 
+               if (trim(ACHA%Mode) /= "off") then
 
                  call CLOUD_BASE_BRIDGE()
 
@@ -1836,19 +1833,19 @@
                    60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
 
             endif
-           
+
             !-----------------------------------------------------------------------------------
             ! - MURI = Multidisciplinary Reseach Initiative  Aerosol
             !-----------------------------------------------------------------------------------
             if ( (trim(Sensor%Sensor_Name) == 'AHI' .or. trim(Sensor%Sensor_Name) == 'AHI9') .and. Aerosol_Mode == 1) then
                Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
-                            
+
                call CX_MURI_ALGORITHM (Image%Number_Of_Elements,Image%Number_Of_Lines_Read_This_Segment)
 
                End_Time_Point_Hours = COMPUTE_TIME_HOURS()
                Segment_Time_Point_Seconds(13) =  Segment_Time_Point_Seconds(13) + &
                    60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
-              
+
             endif
 
 
@@ -1891,7 +1888,7 @@
             if(Skip_Output == 0) then
             call WRITE_SEGMENT_LEVEL2(Level2_File_Flag)
             endif
-            
+
             End_Time_Point_Hours = COMPUTE_TIME_HOURS()
             Segment_Time_Point_Seconds(15) =  Segment_Time_Point_Seconds(15) + &
                    60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
@@ -1935,7 +1932,7 @@
                      if ((Lon_Idx >= 0) .and. (Lon_Idx <= NWP%Nlon) .and. &
                            & (Lat_Idx >= 0) .and. (Lat_Idx <= NWP%Nlat)) then
                           call Rtm(Lon_Idx,Lat_Idx)% DEALLOC()
-                        
+
 
                      endif
                   end do
@@ -1980,12 +1977,12 @@
       if (Modis_Alb_1_24_Id > 0) call CLOSE_LAND_SFC_HDF(Modis_Alb_1_24_Id)
       if (Modis_Alb_1_64_Id > 0) call CLOSE_LAND_SFC_HDF(Modis_Alb_1_64_Id)
       if (Modis_Alb_2_13_Id > 0) call CLOSE_LAND_SFC_HDF(Modis_Alb_2_13_Id)
-#ifdef LIBRTTOV      
+#ifdef LIBRTTOV
       if (Use_Land_IR_Emiss > 1) then
             call DESTROY_RTTOV_EMISS
             call MESG("DESTROY RTTOV_EMIS ")
        endif
-#endif      
+#endif
 
       !*************************************************************************
       !Marker: Deallocate remaining arrays
@@ -2006,7 +2003,7 @@
       endif
 
       !--- remove files in temporary directory and then the directory
-      if (Number_Of_Temporary_Files > 0) then 
+      if (Number_Of_Temporary_Files > 0) then
          do Ifile = 1, Number_Of_Temporary_Files
             call MESG("Removing Temporary File: "//trim(Temporary_File_Name(Ifile)))
             cmd = trim(Temporary_Data_Dir)//  &
@@ -2049,12 +2046,12 @@
                                                            level=verb_lev % MINIMAL)
 
       !--- add processing time to global attributes
-  
+
 
       !*************************************************************************
       ! Marker: End loop over files
       !*************************************************************************
- 
+
    end do File_Loop
 
    !*************************************************************************
@@ -2111,12 +2108,12 @@ contains
 !*************************************************************************
 
 !*************************************************************************
-! open modis white sky reflectance files 
+! open modis white sky reflectance files
 !*************************************************************************
 subroutine OPEN_MODIS_WHITE_SKY_SFC_REFLECTANCE_FILES()
 
          !--- determine 16 day period and its string value
-         iperiod16 = 16 * ((Image%Start_Doy-1) / 16) + 1 
+         iperiod16 = 16 * ((Image%Start_Doy-1) / 16) + 1
          write(Day_String,fmt="(i3.3)") iperiod16
 
          !--- Open Modis white sky 0.66 um albedo
@@ -2157,7 +2154,7 @@ subroutine OPEN_MODIS_WHITE_SKY_SFC_REFLECTANCE_FILES()
             Modis_Alb_1_64_Id = OPEN_LAND_SFC_HDF(trim(Ancil_Data_Dir)//"/static/sfc_data/", &
                                         trim(Modis_White_Sky_1_64_Name), &
                                         grid_Str=Modis_Alb_1_64_Str)
-         endif                                    
+         endif
 
          !--- Open Modis white sky 2.13 um albedo
          if (Sensor%Chan_On_Flag_Default(7) == sym%YES) then
@@ -2167,7 +2164,7 @@ subroutine OPEN_MODIS_WHITE_SKY_SFC_REFLECTANCE_FILES()
          Modis_Alb_2_13_Id = OPEN_LAND_SFC_HDF(trim(Ancil_Data_Dir)//"/static/sfc_data/", &
                                         trim(Modis_White_Sky_2_13_Name), &
                                         grid_Str=Modis_Alb_2_13_Str)
-         endif                                    
+         endif
 
   end subroutine OPEN_MODIS_WHITE_SKY_SFC_REFLECTANCE_FILES
   !****************************************************************************
@@ -2200,7 +2197,7 @@ subroutine OPEN_MODIS_WHITE_SKY_SFC_REFLECTANCE_FILES()
       endif
 
 
-      if (Read_Snow_Mask == sym%READ_SNOW_GLOB) THEN 
+      if (Read_Snow_Mask == sym%READ_SNOW_GLOB) THEN
          Failed_Glob_Snow_Mask_Flag = sym%NO
 
          Snow_Mask_File_Name = GET_GLOBSNOW_FILENAME(Image%Start_Year,Image%Start_Doy, &
@@ -2219,12 +2216,12 @@ subroutine OPEN_MODIS_WHITE_SKY_SFC_REFLECTANCE_FILES()
   !****************************************************************************
   subroutine OPEN_STATIC_ANCIL_FILES()
    !------------------------------------------------------------------------------
-   !--- Read elevation data 
+   !--- Read elevation data
    !------------------------------------------------------------------------------
    if (Read_Surface_Elevation /= 0) then
       call MESG  ( "Opening surface elevation file", level = verb_lev % VERBOSE)
       Surface_Elev_Str%sds_Name = SURFACE_ELEV_SDS_NAME
-     
+
       !--- read in which elevation type that is specified.
       if (Read_Surface_Elevation == 1) then
          Surface_Elev_Id = OPEN_LAND_SFC_HDF(trim(Ancil_Data_Dir)//"static/sfc_data/", &
@@ -2275,7 +2272,7 @@ subroutine OPEN_MODIS_WHITE_SKY_SFC_REFLECTANCE_FILES()
                                     "lw_geo_2001001_v03m.hdf", &
                                      grid_Str=Land_Mask_Str)
    endif
- 
+
    !------------------------------------------------------------------
    ! Open volcano mask file
    !------------------------------------------------------------------
@@ -2289,14 +2286,14 @@ subroutine OPEN_MODIS_WHITE_SKY_SFC_REFLECTANCE_FILES()
 
   end subroutine OPEN_STATIC_ANCIL_FILES
   !*******************************************************************************************************
-  ! Read in various ancillary data and map it to the pixel grid for each segment 
+  ! Read in various ancillary data and map it to the pixel grid for each segment
   !*******************************************************************************************************
   subroutine  MAP_ANCIL_DATA_TO_PIXEL_GRID()
 
         ! - emiss surface is gone to cx_sfc_emissivity_mod.f90
 
-        !--- mandatory fields - check for substitution of Bad_Pixel for space 
- 
+        !--- mandatory fields - check for substitution of Bad_Pixel for space
+
         !--- surface type
         call READ_LAND_SFC_HDF(Sfc_Type_Id, Sfc_Type_Str, Nav%Lat, Nav%Lon, Geo%Space_Mask, Sfc%Sfc_Type)
 
@@ -2342,13 +2339,13 @@ subroutine OPEN_MODIS_WHITE_SKY_SFC_REFLECTANCE_FILES()
         if (Read_Snow_Mask == sym%READ_SNOW_HIRES .and. Failed_IMS_Snow_Mask_Flag == sym%NO) then
              call READ_LAND_SFC_HDF(Snow_Mask_Id, Snow_Mask_Str, Nav%Lat, Nav%Lon, Geo%Space_Mask, Sfc%Snow_IMS)
         endif
-   
+
         if (Read_Snow_Mask == sym%READ_SNOW_GLOB .and. Failed_Glob_Snow_Mask_Flag == sym%NO ) then
             call GET_PIXEL_GLOBSNOW_ANALYSIS(Nav%Lat,Nav%Lon,Sfc%Land,Bad_Pixel_Mask,Sfc%Snow_Glob)
         endif
-   
+
         !--- define binary land and coast masks (yes/no) from land and coast flags
-        call COMPUTE_BINARY_LAND_COAST_MASKS(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)   
+        call COMPUTE_BINARY_LAND_COAST_MASKS(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)
 
         !--- interpolate sst analyses to each pixel
         if (Use_Sst_Anal == 1) then
@@ -2369,7 +2366,7 @@ subroutine OPEN_MODIS_WHITE_SKY_SFC_REFLECTANCE_FILES()
         endif
 
         !---- ensure missing values for space scenes
-        where (Geo%Space_Mask ) 
+        where (Geo%Space_Mask )
                Sfc%Zsfc_Hires = Missing_Value_Real4
                Sfc%Coast = Missing_Value_Int1
                Sfc%Land = Missing_Value_Int1

@@ -35,6 +35,7 @@
 ! Channels 37-38 are ABI channels not on MODIS
 ! Channels 39-43 are the VIIRS I-bands
 ! Channel 44 is the VIIRS DNB
+! channel 45 is EPS-SG channel for 0.73um
 !
 ! Not all members of the RTM structure are populated for all channels.
 ! However, all members are allocated for any active cell
@@ -175,7 +176,7 @@ module RT_UTILITIES_MOD
 
     character(len=20),  save:: Sc_Name_Rtm
 
-    real, parameter::  Rtm_Vza_Binsize = 0.02
+
 
 contains
 
@@ -332,7 +333,7 @@ contains
                      Wvmr_Prof_Rtm,  &
                      Ozmr_Prof_Rtm, &
                      Tpw_Prof_Rtm
-
+     real, parameter::  Rtm_Vza_Binsize = 0.02
 
 
       logical, allocatable :: is_valid_pixel(:,:)
@@ -590,9 +591,6 @@ contains
       end do
 
       ! now we have IR ( RTTOV) IR Trans_Atm_Profile   profiles
-
-
-
 
       ! = we have some things t calculate for which we need sensor pixels
       line_loop: do Line_Idx = Line_Idx_Min, Num_Lines + Line_Idx_Min - 1

@@ -198,7 +198,7 @@ subroutine CLOUD_SHADOW_RETR (  &
             idx_1 = i + sign(k,ii)
             if (idx_1 < 1 .or. idx_1 > dim_1 ) cycle
 
-            short_idx_arr = CEILING ( short_idx * sign(k,jj) / (1.* long_idx ) )
+            short_idx_arr = CEILING ( real(short_idx) * sign(k,jj) /  real(long_idx)  )
 
             idx_2 = j + short_idx_arr
             if ( idx_2 > 0 .and. idx_2 <= dim_2 ) shad_arr( idx_1 , idx_2 )   = 1
