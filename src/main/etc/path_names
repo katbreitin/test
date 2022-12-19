@@ -106,7 +106,7 @@ main/simple_cod_lunar_mod.f90
 main/snow_routines_mod.f90
 main/sort_module.f90
 main/surface_properties_mod.f90
-main/timer_mod.f90
+main/timer_mod.F90
 main/tracer.F90
 main/user_options.F90
 main/univ_sys_interface.c
