@@ -81,6 +81,7 @@ contains
        integer :: i
        integer :: idx
        character(len= 12) :: time_word
+       character(len =50) :: FMT
 
         allocate(sec_array(self %n_class ))
         allocate(sort_array(self %n_class ))
@@ -95,13 +96,13 @@ contains
           sec_array = sec_array/60.
           time_word = ' (minute): '
       end if
-
+      FMT = "(I3,I3,I3, A, A, F10.5)"
       print*,'<--------   TIMING RESULTS ---------->'
-      print*,'           RNK      CLASS        COUNT         TOTAL TIME '
+      print*,'           RNK      NR      COUNT      DESCRIPTION                    TOTAL TIME '
        do i =  self % n_class , 1, -1
            idx = sort_array(i)
 
-          print*,self % n_class - i + 1,idx,self % class_count(idx),trim(self % class_list(idx)) &
+          write(*,FMT) self % n_class - i + 1,idx,self % class_count(idx),trim(self % class_list(idx)) &
              ,trim(time_word),sec_array(i)
 
        end do
