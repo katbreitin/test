@@ -87,6 +87,9 @@ contains
         allocate(sort_array(self %n_class ))
 
        sec_array = self % sec_per_class
+       do i=1,self %n_class
+         sort_array(i) = i
+       end do
 
        if (present(sort)) then
            call quicksort(sec_array, sort_array)
