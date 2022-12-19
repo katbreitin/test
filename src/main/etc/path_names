@@ -46,6 +46,7 @@ main/cx_sea_ir_emiss_mod.f90
 main/cx_sfc_emissivity_mod.F90
 main/cx_spatial_metrics_mod.f90
 main/cx_string_tools_mod.f90
+main/cx_timer_mod.f90
 main/cx_vgac_mod.f90
 main/dcomp_derived_products_mod.F90
 main/dcomp_rtm_module.f90
@@ -105,6 +106,7 @@ main/simple_cod_lunar_mod.f90
 main/snow_routines_mod.f90
 main/sort_module.f90
 main/surface_properties_mod.f90
+main/timer_mod.f90
 main/tracer.F90
 main/user_options.F90
 main/univ_sys_interface.c

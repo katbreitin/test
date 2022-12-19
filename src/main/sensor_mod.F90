@@ -290,8 +290,6 @@ module SENSOR_MOD
       integer :: year, doy
 
       !--- Static Navigation additions
-      type ( date_type ) :: abi_time_start
-      type ( date_type ) :: abi_time_end
       character(len=1020):: L1b_Full_File_Name
       character(len=1020):: Start_Year_Mon_Day_HH_MM_Tmp
       character(len=1020):: End_Year_Mon_Day_HH_MM_Tmp

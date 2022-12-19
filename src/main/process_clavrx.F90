@@ -485,20 +485,8 @@
     cx_sfc_emiss_populate_ch &
     , cx_sfc_emiss_correct_for_sfctype
 
-   ! obviously unused modules
-   use MODIS_MOD,only:
-
-   use IFF_CLAVRX_BRIDGE, only:
-
-   use ABI_MOD, only:
-
-   use SEVIRI_MOD,only:
-
-   use MTSAT_MOD, only:
-
-   use COMS_MOD, only:
-
-   use FY2_MOD ,only:
+   use TIMER_MOD
+   use CX_TIMER_MOD, only: timer_set_up, timer_set_up_all
 
    use UNIVERSAL_CLOUD_TYPE_MODULE, only: UNIVERSAL_CLOUD_TYPE
 
@@ -611,11 +599,19 @@
    integer :: narg,cptArg
    character(len=30) :: arg_name
 
+   type(timer) :: chrono
+   type(timer) :: chrono_all
+
    real, parameter, dimension(3):: Dnb_Coef = [-0.118767,0.962452,-0.000144502]
 
    !***********************************************************************
    ! Begin Executable Code
    !***********************************************************************
+
+    call timer_set_up_all (chrono_all)
+    call timer_set_up (chrono)
+
+
     narg=command_argument_count()
 
     if(narg>0)then
@@ -652,6 +648,8 @@
    ! Determine time of the start of all processing
    !----------------------------------------------------------------------------
    Total_Processing_Start_Time_Hours = COMPUTE_TIME_HOURS()
+
+   call chrono_all%tic(1)
 
    !------------------------------------------------------------------------------
    ! initialize previous date variables
@@ -729,6 +727,8 @@
    ! Marker: BEGIN LOOP OVER FILES
    !----------------------------------------------------------------------
    File_Loop: do
+     call chrono%tic(16)
+     call chrono%tic(1)
 
       !----------------------------------------------------------------------
       ! Marker: READ IN CLAVRXORB_FILE_LIST AND SET FLAGS
@@ -1091,6 +1091,8 @@
          !---- Marker: Read level-1b data
          !-----------------------------------------------------------------
          Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
+         call chrono % tic(1)
+
          call READ_LEVEL1B_DATA(Image%Level1b_Full_Name,Segment_Number, &
                                 Time_Since_Launch,AREAstr,NAVstr,Nrec_Avhrr_Header,Ierror_Level1b)
          if (Ierror_Level1b /= 0) then
@@ -1162,7 +1164,7 @@
          !--- update time summation for level-1b processing
          Segment_Time_Point_Seconds(1) =  Segment_Time_Point_Seconds(1) + &
               60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
-
+         call chrono % tac(1)
          !--- check to see that some data was read in
          if (Image%Number_Of_Lines_Read_This_Segment == 0) then
             call MESG ("WARNING: no scans read in, exiting segment processing loop ",level = verb_lev% WARNING)
@@ -1171,7 +1173,7 @@
          endif
 
          Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
-
+         call chrono % tic(2)
          !---- go no further if no data is read in
          if (Skip_Processing_Flag == sym%NO) then    !skip_Processing_Flag
 
@@ -1320,7 +1322,7 @@
             End_Time_Point_Hours = COMPUTE_TIME_HOURS()
             Segment_Time_Point_Seconds(2) =  Segment_Time_Point_Seconds(2) + &
                 60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
-
+            call chrono % tac(2)
             !*******************************************************************
             ! Marker: Compute nwp mapping and rtm values for each pixel in segment
             !*******************************************************************
@@ -1329,6 +1331,7 @@
             if (NWP_PIX%Nwp_Opt /= 0) then
 
                Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
+               call chrono % tic(3)
                !-- temporally interp skin temp for each segment (only ncep reanalysis)
                if (NWP_PIX%Nwp_Opt == 2) then
                   call TEMPORAL_INTERP_TMPSFC_NWP(Image%Scan_Time_Ms(Line_Idx_Min_Segment),  &
@@ -1385,13 +1388,14 @@
                End_Time_Point_Hours = COMPUTE_TIME_HOURS()
                Segment_Time_Point_Seconds(3) =  Segment_Time_Point_Seconds(3) + &
                   &  60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
+              call chrono % tac(3)
             endif
 
             !*******************************************************************
             ! Marker: Spatial metrics processing
             !*******************************************************************
             Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
-
+            call chrono % tic(4)
             !------------------------------------------------------------------------------
             ! compute glint masks for use in cloud detection
             !------------------------------------------------------------------------------
@@ -1485,7 +1489,7 @@
             End_Time_Point_Hours = COMPUTE_TIME_HOURS()
             Segment_Time_Point_Seconds(4) =  Segment_Time_Point_Seconds(4) + &
                &  60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
-
+            call chrono % tac(4)
             !*******************************************************************
             ! Marker: Generate pixel-level products
             !*******************************************************************
@@ -1494,19 +1498,20 @@
             if (index(Sensor%Sensor_Name,'AVHRR') > 0 .and. Aerosol_Mode > 0) then
 
                Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
-
+               call chrono % tic(5)
                call PIXEL_AER_RET_OCEAN(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)
 
                End_Time_Point_Hours = COMPUTE_TIME_HOURS()
                Segment_Time_Point_Seconds(5) =  Segment_Time_Point_Seconds(5) + &
                     60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
+                call chrono % tac(5)
             endif
 
             !--- only apply cloud mask and type routines if nwp/rtm information available
             if (Cld_Flag == sym%YES .and. NWP_PIX%Nwp_Opt > 0) then
 
                Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
-
+              call chrono % tic(6)
                !--- simple cloud optical depths (no effective radius or atmos corr). Used for masking
                if (Sensor%Chan_On_Flag_Default(1) == sym%YES) then
                   call COMPUTE_SIMPLE_SOLAR_COD_065um(Image%Number_Of_Elements,Image%Number_Of_Lines_Read_This_Segment)
@@ -1610,11 +1615,11 @@
                End_Time_Point_Hours = COMPUTE_TIME_HOURS()
                Segment_Time_Point_Seconds(6) =  Segment_Time_Point_Seconds(6) + &
                      & 60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
-
+               call chrono % tac(6)
 
                !--- cloud type
                Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
-
+              call chrono % tic(7)
                !--- make sure MODIS aux phase/type conforms to CLAVR-x expectations
                if (Cloud_Type_Aux_Read_Flag == sym%YES .and. Sensor%Sensor_Name == 'MODIS') then
                   call MODIFY_AUX_CLOUD_TYPE()
@@ -1650,7 +1655,7 @@
                End_Time_Point_Hours = COMPUTE_TIME_HOURS()
                   Segment_Time_Point_Seconds(7) =  Segment_Time_Point_Seconds(7) + &
                   & 60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
-
+                call chrono % tac(7)
             endif   !end of Cld_Flag check
 
             !--------------------------------------------------------------------
@@ -1662,7 +1667,7 @@
                ! ACHA Section
                !---------------------------------------------------------------------
                Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
-
+                call chrono % tic(8)
                !--->call CTP_MULTILAYER()  !WHAT IS THIS???
 
                !-------------------------------------------------------------------
@@ -1747,11 +1752,12 @@
                End_Time_Point_Hours = COMPUTE_TIME_HOURS()
                Segment_Time_Point_Seconds(8) =  Segment_Time_Point_Seconds(8) + &
                    &   60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
-
+                call chrono % tac(8)
                !-----------------------------------------------------------------------------------
                ! NLCOMP Section
                !-----------------------------------------------------------------------------------
                Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
+                 call chrono % tic(9)
                NLCOMP_Run = .false.
                if ((trim(Sensor%Sensor_Name) == 'VIIRS' .or. trim(Sensor%Sensor_Name) == 'VIIRS-NASA') &
                        .and. Sensor%Chan_On_Flag_Default(44) == sym % yes .and. NLCOMP_Mode > 0) then
@@ -1764,12 +1770,12 @@
                End_Time_Point_Hours = COMPUTE_TIME_HOURS()
                Segment_Time_Point_Seconds(9) =  Segment_Time_Point_Seconds(9) + &
                      & 60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
-
+                call chrono % tac(9)
                !-----------------------------------------------------------------------------------
                ! DCOMP Section
                !-----------------------------------------------------------------------------------
                Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
-
+                 call chrono % tic(10)
                DCOMP_Run = .false.
 
                if (DCOMP_Mode > 0) then
@@ -1784,11 +1790,12 @@
                End_Time_Point_Hours = COMPUTE_TIME_HOURS()
                Segment_Time_Point_Seconds(10) =  Segment_Time_Point_Seconds(10) + &
                    60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
-
+                call chrono % tac(10)
                !-----------------------------------------------------------------------------------
                ! Derived Product Section
                !-----------------------------------------------------------------------------------
                Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
+               call chrono % tic(11)
                if ( DCOMP_Run .or. NLCOMP_Run) then
                      call COMPUTE_CLOUD_WATER_PATH(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)
                      call COMPUTE_DCOMP_INSOLATION(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment,Sun_Earth_Distance)
@@ -1806,11 +1813,12 @@
                End_Time_Point_Hours = COMPUTE_TIME_HOURS()
                Segment_Time_Point_Seconds(11) =  Segment_Time_Point_Seconds(11) + &
                                                 60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
-
+                call chrono % tac(11)
                !-----------------------------------------------------------------------------------
                ! Cloud Altitude, Base and CCL Section (if ACHA was executed)
                !-----------------------------------------------------------------------------------
                Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
+               call chrono % tic(12)
                if (trim(ACHA%Mode) /= "off") then
 
                  call CLOUD_BASE_BRIDGE()
@@ -1831,7 +1839,7 @@
                End_Time_Point_Hours = COMPUTE_TIME_HOURS()
                Segment_Time_Point_Seconds(12) =  Segment_Time_Point_Seconds(12) + &
                    60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
-
+                   call chrono % tac(12)
             endif
 
             !-----------------------------------------------------------------------------------
@@ -1839,13 +1847,13 @@
             !-----------------------------------------------------------------------------------
             if ( (trim(Sensor%Sensor_Name) == 'AHI' .or. trim(Sensor%Sensor_Name) == 'AHI9') .and. Aerosol_Mode == 1) then
                Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
-
+               call chrono % tic(13)
                call CX_MURI_ALGORITHM (Image%Number_Of_Elements,Image%Number_Of_Lines_Read_This_Segment)
 
                End_Time_Point_Hours = COMPUTE_TIME_HOURS()
                Segment_Time_Point_Seconds(13) =  Segment_Time_Point_Seconds(13) + &
                    60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
-
+                   call chrono % tac(13)
             endif
 
 
@@ -1853,7 +1861,7 @@
             !--- radiative flux parameters
             !-----------------------------------------------------------------------------------
             Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
-
+            call chrono % tic(14)
             !---  OLR
             call COMPUTE_OLR()
 
@@ -1863,7 +1871,7 @@
             End_Time_Point_Hours = COMPUTE_TIME_HOURS()
             Segment_Time_Point_Seconds(14) =  Segment_Time_Point_Seconds(14) + &
                    60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
-
+            call chrono % tac(14)
             !--- assign quality flags for things like sst and aerosol (clear-sky)
             if (NWP_PIX%Nwp_Opt > 0 .and. Cld_Flag == sym%YES) then
                !--- assign clear sky quality flags
@@ -1884,7 +1892,7 @@
             ! Marker: Write to output files (pixel-level)
             !*******************************************************************
             Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
-
+            call chrono % tic(15)
             if(Skip_Output == 0) then
             call WRITE_SEGMENT_LEVEL2(Level2_File_Flag)
             endif
@@ -1892,7 +1900,7 @@
             End_Time_Point_Hours = COMPUTE_TIME_HOURS()
             Segment_Time_Point_Seconds(15) =  Segment_Time_Point_Seconds(15) + &
                    60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
-
+            call chrono % tac(15)
             !*************************************************************************
             ! Marker: RTM Structure Memory Deallocation
             !*************************************************************************
@@ -2052,6 +2060,9 @@
       ! Marker: End loop over files
       !*************************************************************************
 
+      call chrono % tac(16)
+      call chrono % summary(sort = .true.)
+      call chrono % reset()
    end do File_Loop
 
    !*************************************************************************
@@ -2091,6 +2102,8 @@
                                               Total_Processing_Start_Time_Hours)
    call MESG ("Total Time for All Processing (minutes) = ", Total_Processing_Time_minutes, &
                                            level=verb_lev % MINIMAL)
+   call chrono_all % tac(1)
+   call chrono_all % summary(minute=.true.)
 
    !---- print to screen that processing is done
    call MESG (  "<--------- End of CLAVRXORB ---------->",level=verb_lev % MINIMAL)
