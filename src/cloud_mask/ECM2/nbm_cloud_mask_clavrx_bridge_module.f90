@@ -116,6 +116,7 @@ module ECM2_CLOUD_MASK_CLAVRX_BRIDGE
    private :: BETA_11_12_OVERLAP_TEST
    private :: BETA_11_133_OVERLAP_TEST
    private :: WATER_EDGE_FILTER
+   private :: UNCERTAIN_PHASE_FILTER
    private :: MODIS_AQUA_SBAF
    private :: ABI_GOES16_SBAF
    private :: SBAF_QUAD
@@ -441,20 +442,21 @@ contains
 
             endif
 
-            !-- this logic could extend supercooled to water erroneously
-            if ((Cld_Phase(i,j) == sym%SUPERCOOLED_PHASE) .and. (Tc_Opaque_Cloud(i,j) .ger. 273.0)) then
-               Cld_Phase(i,j) = sym%WATER_PHASE
-            endif
-
         endif
 
       end do elem_loop_lrc
    end do line_loop_lrc
 
-   !--- try to remove water edges around cirrus that impacts AMVs
+   !--- apply median filter to pixels with uncertain phase
+   call UNCERTAIN_PHASE_FILTER(Cld_Phase,Cld_Phase_Uncertainty,5)
 
-   call WATER_EDGE_FILTER(Cld_Phase,2)
-
+   !--- account for supercooled and water phase consistency
+   where((Cld_Phase == sym%SUPERCOOLED_PHASE) .and. (Tc_Opaque_Cloud .ger. 273.0))
+          Cld_Phase = sym%WATER_PHASE
+   end where
+   where((Cld_Phase == sym%WATER_PHASE) .and. (Tc_Opaque_Cloud .ltr. 273.0))
+          Cld_Phase = sym%SUPERCOOLED_PHASE
+   end where
 
    !---  WAITPOINT cloud mask done
    call waitpoint(2)
@@ -1029,6 +1031,133 @@ subroutine WATER_EDGE_FILTER(Phase,N)
   Phase = Phase_Temp
 
 end subroutine WATER_EDGE_FILTER
+
+!-----------------------------------------------------------------------
+! implement a simple median filter to replace the phase of uncertain
+! pixels with the most common phase of surrounding certain pixels
+! Input
+!    Phase = ECM phase array
+!    Phase_Uncer = ECM phase uncertainty  (0.0 - 0.5)
+!    N = 1/2 width of processing box, full width = 2N+1
+! Output
+!   Phase = ECM phase array modified by this routine
+!
+! Important Variables
+!   N_Cert_Ice = number of certain ice pixels in the box 
+!   N_Cert_Water =  number of certain water pixels in the box
+!   N_Cert_Thresh = number of certain pixels needed to contribute
+!   Dominant_Cert_Phase = chosen certain phase for this box
+!   Phase_Uncer_Thresh = phase uncer values greater than this are uncertain
+!   Phase_Cert_Thresh = phase uncer values less than this are certain
+!
+!-----------------------------------------------------------------------
+subroutine UNCERTAIN_PHASE_FILTER(Phase,Phase_Uncer, N)
+  integer(kind=int1), intent(inout), dimension(:,:):: Phase
+  real(kind=real4), intent(in), dimension(:,:):: Phase_Uncer
+  integer, intent(in):: N
+  integer, dimension(size(Phase,1),size(Phase,2)):: Phase_Temp
+  logical, dimension(2*N+1,2*N+1):: Mask
+  integer, dimension(2*N+1,2*N+1):: Phase_Sub
+  real, dimension(2*N+1,2*N+1):: Phase_Uncer_Sub
+  integer:: Nx, Ny
+  integer:: i,i1,i2,j,j1,j2
+  integer:: N_Cert_Ice, N_Cert_Water, Dominant_Cert_Phase
+  integer:: N_Cert_Thresh
+
+  !--- set PHASE numbering
+  integer, parameter:: CLEAR_PHASE = 0
+  integer, parameter:: WATER_PHASE = 1
+  integer, parameter:: SUPERCOOLED_PHASE = 2
+  integer, parameter:: MIXED_PHASE = 3
+  integer, parameter:: ICE_PHASE = 4
+  integer, parameter:: UNKNOWN_PHASE = 5
+
+  integer:: N_Water_Before, N_Water_After
+  real,parameter :: Phase_Uncer_Thresh = 1.0 !numbers greater than this are uncertain
+  real,parameter :: Phase_Cert_Thresh = 0.1 !numbers less than this are certain
+
+  !--- determine segment size
+  Nx = size(Phase,1)
+  Ny = size(Phase,2)
+
+  !--- make a copy
+  Phase_Temp = Phase
+
+  !--- set thresholds of numbers of clear and ice pixels for filter
+  N_Cert_Thresh = max(1,nint(0.1*N**2))
+
+  !--- loop over segment
+  do i =  1, Nx
+
+   i1 = max(1, i - N)
+   i2 = min(Nx,i + N)
+
+   do j = 1, Ny
+
+     !--- if not uncertain, skip
+     if (Phase(i,j) == CLEAR_PHASE) cycle
+     if (Phase_Uncer(i,j) .ler. Phase_Cert_Thresh) cycle
+     if (Phase_Uncer(i,j) .eqr. MISSING_VALUE_REAL4) cycle
+
+     j1 = max(1, j - N)
+     j2 = min(Ny,j + N)
+
+     !--- initialize subarrays
+     Mask = .false.
+     Phase_Sub = UNKNOWN_PHASE
+     Phase_Sub(1:i2-i1+1,1:j2-j1+1) = Phase(i1:i2,j1:j2)
+     Phase_Uncer_Sub(1:i2-i1+1,1:j2-j1+1) = Phase_Uncer(i1:i2,j1:j2)
+
+     !--- determine number of certain ice in subarray
+     Mask = .false.
+     where((Phase_Sub == ICE_PHASE) .and. (Phase_Uncer_Sub .ler. Phase_Cert_Thresh))
+            Mask = .true.
+     endwhere
+     N_Cert_Ice = count(Mask)
+
+     !--- determine number of certain water in subarray
+     Mask = .false.
+     where((Phase_Sub == WATER_PHASE .or. Phase_Sub == SUPERCOOLED_PHASE) .and.  &
+           (Phase_Uncer_Sub .ler. Phase_Cert_Thresh))
+           Mask = .true.
+     endwhere
+     N_Cert_Water = count(Mask)
+
+     !--- set dominant phase
+ 
+     !--- option 1: take the winner only if no contender
+     Dominant_Cert_Phase = -1
+     if (N_Cert_Water < N_Cert_Thresh .and. N_Cert_Ice >= N_Cert_Thresh) then
+        Dominant_Cert_Phase = ICE_PHASE
+     endif
+     if (N_Cert_Ice < N_Cert_Thresh .and. N_Cert_Water >= N_Cert_Thresh) then
+        Dominant_Cert_Phase = WATER_PHASE
+     endif
+
+     !--- option 2: take the winner unconditionally
+     !Dominant_Cert_Phase = WATER_PHASE
+     !if (N_Cert_Ice >= N_Cert_Water) then
+     !   Dominant_Cert_Phase = ICE_PHASE
+     !endif
+
+     !--- apply filter
+     if (Dominant_Cert_Phase > 0) then
+       where((Phase_Sub /= CLEAR_PHASE) .and. (Phase_Uncer_Sub .ler. Phase_Uncer_Thresh))
+              Phase_Sub = Dominant_Cert_Phase
+       endwhere
+     endif
+
+     !--- copy sub-array back into full array
+     Phase_Temp(i1:i2,j1:j2) = Phase_Sub(1:i2-i1+1,1:j2-j1+1)
+
+   enddo
+  enddo
+
+  !--- copy back
+  Phase = Phase_Temp
+
+end subroutine UNCERTAIN_PHASE_FILTER
+
 !==============================================================
 ! Median filter
 !

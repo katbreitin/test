@@ -8,7 +8,6 @@
 
  !--- Number of Tests
  integer, parameter, private:: NUMBER_OF_CLOUD_FLAGS = 35
- !integer, parameter, private:: NUMBER_OF_FLAG_BYTES = 7
  integer, parameter, private:: NUMBER_OF_NONCLOUD_FLAGS = 19
 
  !--- Angular and Temperature Limit Thresholds

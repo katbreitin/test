@@ -169,6 +169,7 @@ MODULE ECM2_CLOUD_MASK_MODULE
     REAL (KIND=REAL4):: Airmass
     INTEGER, PARAMETER:: Spare_Value = 0
     INTEGER (KIND=INT1):: Use_104_Flag
+    integer:: Bit_Number
 
     !-- local pointers that point to global variables
     INTEGER(KIND=INT1), DIMENSION(NUMBER_OF_CLOUD_FLAGS+NUMBER_OF_NONCLOUD_FLAGS):: Cld_Flags
@@ -383,6 +384,12 @@ MODULE ECM2_CLOUD_MASK_MODULE
              CASE('logrefl160')
                  if (Input%Ref_160um > 0.0) Value_Dim = alog10(Input%Ref_160um)
                  if (Input%Ref_160um < 0.0 .and. Input%Ref_160um /= MISSING_VALUE_REAL4) Value_Dim = -2.0
+             CASE('bt73')
+                 Value_Dim = Input%Bt_73um
+                 if (Input%Chan_On_73um == 0) Value_Dim = MISSING_VALUE_REAL4
+             CASE('bt85')
+                 Value_Dim = Input%Bt_85um
+                 if (Input%Chan_On_85um == 0) Value_Dim = MISSING_VALUE_REAL4
              CASE('bt10')
                  Value_Dim = Input%Bt_10um
                  if (Input%Chan_On_10um == 0) Value_Dim = MISSING_VALUE_REAL4
@@ -428,6 +435,9 @@ MODULE ECM2_CLOUD_MASK_MODULE
              CASE('bt11std')
                  Value_Dim = Input%Bt_11um_Std 
                  if (Input%Chan_On_11um == 0) Value_Dim = MISSING_VALUE_REAL4
+             CASE('bt12')
+                 Value_Dim = Input%Bt_12um
+                 if (Input%Chan_On_12um == 0) Value_Dim = MISSING_VALUE_REAL4
              CASE('btdclr10')
                  Value_Dim = Input%Bt_10um_Clear - Input%Bt_10um
                  if (Input%Chan_On_10um == 0) Value_Dim = MISSING_VALUE_REAL4
@@ -461,6 +471,10 @@ MODULE ECM2_CLOUD_MASK_MODULE
                  Value_Dim = Input%Emiss_375um - Input%Emiss_11um_Tropo
                  if (Input%Chan_On_375um == 0) Value_Dim = MISSING_VALUE_REAL4
                  if (Input%Chan_On_11um == 0) Value_Dim = MISSING_VALUE_REAL4
+             CASE('btd3885')
+                 Value_Dim = Input%Bt_375um - Input%Bt_85um
+                 if (Input%Chan_On_375um == 0) Value_Dim = MISSING_VALUE_REAL4
+                 if (Input%Chan_On_85um == 0) Value_Dim = MISSING_VALUE_REAL4
              CASE('btd8573')
                  Value_Dim = Input%Bt_85um - Input%Bt_73um
                  if (Input%Chan_On_85um == 0) Value_Dim = MISSING_VALUE_REAL4
@@ -497,6 +511,10 @@ MODULE ECM2_CLOUD_MASK_MODULE
                  Value_Dim = Input%Bt_11um - Input%Bt_10um
                  if (Input%Chan_On_11um == 0) Value_Dim = MISSING_VALUE_REAL4
                  if (Input%Chan_On_10um == 0) Value_Dim = MISSING_VALUE_REAL4
+             CASE('btd8512')
+                 Value_Dim = Input%Bt_85um - Input%Bt_12um
+                 if (Input%Chan_On_85um == 0) Value_Dim = MISSING_VALUE_REAL4
+                 if (Input%Chan_On_12um == 0) Value_Dim = MISSING_VALUE_REAL4
              CASE('btd1112')
                  Value_Dim = Input%Bt_11um - Input%Bt_12um
                  if (Input%Chan_On_11um == 0) Value_Dim = MISSING_VALUE_REAL4
@@ -796,11 +814,13 @@ IF (Do_By_Class_Flag == symbol%YES) THEN
 
    DO Class_Idx = 1, Nclass
 
+     Bit_Number = min(NUMBER_OF_NONCLOUD_FLAGS+Class_Idx,NUMBER_OF_NONCLOUD_FLAGS+NUMBER_OF_CLOUD_FLAGS)
+
       IF (Posterior_Cld_Probability_By_Class(Class_Idx) < Mask_Thresh%Prob_Clear_Prob_Cloudy_Thresh(Output%Sfc_Idx)) THEN
-         Cld_Flags(NUMBER_OF_NONCLOUD_FLAGS+Class_Idx) = symbol%CLEAR_BINARY
+         Cld_Flags(Bit_Number) = symbol%CLEAR_BINARY
 
       ELSEIF (Posterior_Cld_Probability_By_Class(Class_Idx) >= Mask_Thresh%Prob_Clear_Prob_Cloudy_Thresh(Output%Sfc_Idx)) THEN
-         Cld_Flags(NUMBER_OF_NONCLOUD_FLAGS+Class_Idx) = symbol%CLOUDY_BINARY
+         Cld_Flags(Bit_Number) = symbol%CLOUDY_BINARY
       ENDIF
 
    ENDDO
