@@ -31,10 +31,12 @@
             Reff_DCOMP, Reff_DCOMP_1, Reff_DCOMP_2, REFF_DCOMP_3, &
             Cld_Type, Cld_Phase, DCOMP_Quality_Flag, &
             Insolation_DCOMP, Insolation_Diffuse_DCOMP, &
-            Image, Temporary_Data_Dir, Tc_Opaque_Cloud, &
-            Bad_Pixel_Mask, &
+            Image, Temporary_Data_Dir, Tc_Opaque_Cloud, Zc_Opaque_Cloud, &
+            Bad_Pixel_Mask, Sensor, &
             mask_lrc, i_lrc, j_lrc, &
-            Cwp_Dcomp, Lwp_Dcomp, Iwp_Dcomp
+            Cwp_Dcomp, Lwp_Dcomp, Iwp_Dcomp, Solar_Contamination_Mask, &
+            Covar_Ch37_Ch31_5x5, Covar_Ch27_Ch38_5x5, Covar_Ch27_Ch31_5x5, &
+            Bt_375um_Sounder,Bt_11um_Sounder,Bt_12um_Sounder
         use calibration_constants_mod, only: Planck_A1, Planck_A2, Planck_Nu, Sun_Earth_Distance
         use viirs_clavrx_bridge, only: viirs_out => out
         use viirs_nasa_read_module, only: nasa_viirs_i5_bt, nasa_viirs_i4_bt, &
@@ -444,6 +446,20 @@
         endif
       end subroutine
 
+      subroutine add_sym_i1_1d(sym, nam)
+        integer(i1), dimension(:), allocatable, intent(in) :: sym
+        character(LEN=*), intent(in) :: nam
+
+        if(allocated(sym)) then;
+            num_symbols_i1_1d = num_symbols_i1_1d + 1;
+            symbol_ptrs_i1_1d(num_symbols_i1_1d) = loc(sym);
+            symbol_names_i1_1d(num_symbols_i1_1d) = nam;
+            ! I want row-major shapes
+            symbol_shapes_i1_1d(1,num_symbols_i4_1d) = size(sym)
+        endif
+      end subroutine
+
+
       subroutine add_sym_i4_1d(sym, nam)
         integer(i4), dimension(:), allocatable, intent(in) :: sym
         character(LEN=*), intent(in) :: nam
@@ -573,9 +589,15 @@
         symbol_ptrs_f4_0d(num_symbols_f4_0d) = loc(Sun_Earth_Distance);
         symbol_names_f4_0d(num_symbols_f4_0d) = 'sun_earth_distance';
 
+        ! chan_on_flag_default
+        num_symbols_i1_1d = num_symbols_i1_1d + 1;
+        symbol_ptrs_i1_1d(num_symbols_i1_1d) = loc(Sensor%Chan_On_Flag_Default);
+        symbol_names_i1_1d(num_symbols_i1_1d) = 'chan_on_flag_default';
+
         call add_sym_i4_1d(Image%Scan_Number,'scan_line_number')
 
         call add_sym_i1_2d(CLDMASK%Cld_Mask,'cldmask')
+        call add_sym_f4_2d(CLDMASK%Prior_Cld_Probability,'prior_cloud_probability')
         call add_sym_f4_2d(CLDMASK%Posterior_Cld_Probability,'cloud_probability')
         call add_sym_f4_2d(CLDMASK%Posterior_Ice_Probability,'ice_cloud_probability')
         call add_sym_f4_2d(CLDMASK%Posterior_Water_Probability,'water_cloud_probability')
@@ -587,14 +609,26 @@
         call add_sym_i1_2d(Cld_Phase,'cloud_phase')
         call add_sym_f4_2d(Nav%Lat, 'latitude')
         call add_sym_f4_2d(Nav%Lon, 'longitude')
+        call add_sym_i1_2d(Solar_Contamination_Mask,'solar_contamination_mask')
         call add_sym_f4_2d(Geo%Solzen,'solar_zenith_angle')
+        call add_sym_f4_2d(Geo%Solaz,'solar_azimuth_angle')
+        call add_sym_f4_2d(Geo%Lunzen,'lunar_zenith_angle')
         call add_sym_f4_2d(Geo%Satzen,'sensor_zenith_angle')
+        call add_sym_f4_2d(Geo%Coszen,'cos_sensor_zenith_angle')
         call add_sym_f4_2d(Geo%Relaz,'relative_azimuth_angle')
+        call add_sym_f4_2d(Geo%Scatangle,'scattering_angle')
         call add_sym_f4_2d(Geo%Glintzen,'glint_zenith')
+        call add_sym_f4_2d(Geo%Glintzen_Lunar,'lunar_glint_zenith')
         call add_sym_i1_2d(Bad_Pixel_Mask, 'bad_pixel_mask')
+        call add_sym_i1_2d(Sfc%Glint_Mask,'glint_mask')
+        call add_sym_i1_2d(Sfc%Glint_Mask_Lunar,'lunar_glint_mask')
         call add_sym_i1_2d(Sfc%Land_Mask,'land_mask')
+        call add_sym_i1_2d(Sfc%City_Mask,'city_mask')
+        call add_sym_i1_2d(Sfc%Coast_Mask,'coast_mask')
         call add_sym_i1_2d(Sfc%Snow, 'snow_class')
         call add_sym_i1_2d(Sfc%Sfc_Type, 'surface_type')
+        call add_sym_f4_2d(Sfc%Zsfc, 'surface_elevation')
+        call add_sym_f4_2d(Sfc%Zsfc_Std, 'surface_elevation_stddev3x3')
         call add_sym_i1_2d(Sfc%Land,'land_class')
         call add_sym_i1_2d(CLDMASK%Bayes_Mask_Sfc_Type,'bayes_mask_sfc_type')
         call add_sym_i1_3d(CLDMASK%Cld_Test_Vector_Packed,'cloud_mask_test_packed_results')
@@ -664,6 +698,15 @@
         call add_sym_f4_2d(nasa_viirs_i4_bt, 'nasa_viirs_i4_bt')
         call add_sym_f4_2d(nasa_viirs_i5_bt, 'nasa_viirs_i5_bt')
 
+        call add_sym_f4_2d(Bt_375um_Sounder, 'temp_sounder_ch20')
+        call add_sym_f4_2d(Bt_11um_Sounder, 'temp_sounder_ch31')
+        call add_sym_f4_2d(Bt_12um_Sounder, 'temp_sounder_ch32')
+
+        ! Covariances
+        call add_sym_f4_2d(Covar_Ch27_Ch31_5x5, 'temp_covar5x5_ch27_ch31')
+        call add_sym_f4_2d(Covar_Ch37_Ch31_5x5, 'temp_covar5x5_ch37_ch31')
+        call add_sym_f4_2d(Covar_Ch27_Ch38_5x5, 'temp_covar5x5_ch27_ch38')
+
         ! AHI
         call add_sym_f4_3d(ABHI_1km, 'ahi_rad_multich_1km')
         call add_sym_f4_3d(ABHI_500m, 'ahi_rad_multich_500m')
@@ -683,6 +726,7 @@
 
         call add_sym_f4_2d(ACHA%Pc, 'cld_press_acha')
         call add_sym_f4_2d(Tc_Opaque_Cloud, 'cld_temp_opaque')
+        call add_sym_f4_2d(Zc_Opaque_Cloud, 'cld_height_opaque')
 
         call add_sym_f4_2d(ACHA%Zc, 'cld_height_acha')
         call add_sym_f4_2d(ACHA%Zc_Eff, 'cld_height_eff_acha')
@@ -743,6 +787,10 @@
             write (varname, "(A,I0.2)") "emiss_ch", c
             call add_sym_f4_2d(Ch(c)%Emiss_Rel_11um,varname)
 
+            ! emissivity relative to 11um Clear-Sky
+            write (varname, "(A,I0.2)") "emiss_clear_sky_ch", c
+            call add_sym_f4_2d(Ch(c)%Emiss_Rel_11um_Clear,varname)
+
             ! surface refl
             write (varname, "(A,I0.2)") "refl_sfc_white_sky_ch", c
             call add_sym_f4_2d(Ch(c)%Sfc_Ref_White_Sky,varname)
@@ -751,9 +799,45 @@
             write (varname, "(A,I0.2)") "refl_ch", c
             call add_sym_f4_2d(Ch(c)%Ref_Toa,varname)
 
+            ! reflectance max
+            write (varname, "(A,I0.2)") "refl_max3x3_ch", c
+            call add_sym_f4_2d(Ch(c)%Ref_Toa_Max_3x3, varname)
+
+            ! reflectance min
+            write (varname, "(A,I0.2)") "refl_min3x3_ch", c
+            call add_sym_f4_2d(Ch(c)%Ref_Toa_Min_3x3, varname)
+
             ! reflectance stddev
             write (varname, "(A,I0.2)") "refl_stddev3x3_ch", c
             call add_sym_f4_2d(Ch(c)%Ref_Toa_Std_3x3, varname)
+
+            ! reflectance min sub-pixel
+            write (varname, "(A,I0.2)") "refl_submin_ch", c
+            call add_sym_f4_2d(Ch(c)%Ref_Toa_Min_Sub, varname)
+
+            ! reflectance max sub-pixel
+            write (varname, "(A,I0.2)") "refl_submax_ch", c
+            call add_sym_f4_2d(Ch(c)%Ref_Toa_Max_Sub, varname)
+
+            ! reflectance stddev sub-pixel
+            write (varname, "(A,I0.2)") "refl_substddev_ch", c
+            call add_sym_f4_2d(Ch(c)%Ref_Toa_Std_Sub, varname)
+
+            ! lunar reflectance
+            write (varname, "(A,I0.2)") "refl_lunar_ch", c
+            call add_sym_f4_2d(Ch(c)%Ref_Lunar_Toa, varname)
+
+            ! lunar min reflectance
+            write (varname, "(A,I0.2)") "refl_lunar_min3x3_ch", c
+            call add_sym_f4_2d(Ch(c)%Ref_Lunar_Min_3x3, varname)
+
+            ! lunar std reflectance
+            write (varname, "(A,I0.2)") "refl_lunar_stddev3x3_ch", c
+            call add_sym_f4_2d(Ch(c)%Ref_Lunar_Std_3x3, varname)
+
+            ! lunar clear-sky reflectance
+            write (varname, "(A,I0.2)") "refl_lunar_clear_sky_ch", c
+            call add_sym_f4_2d(Ch(c)%Ref_Lunar_Toa_Clear, varname)
 
             ! radiance
             write (varname, "(A,I0.2)") "rad_ch", c
@@ -774,6 +858,18 @@
             ! brightness temp min
             write (varname, "(A,I0.2)") "temp_min3x3_ch", c
             call add_sym_f4_2d(Ch(c)%Bt_Toa_Min_3x3, varname)
+
+            ! brightness temp stddev sub-pixel
+            write (varname, "(A,I0.2)") "temp_substddev_ch", c
+            call add_sym_f4_2d(Ch(c)%Bt_Toa_Std_Sub, varname)
+
+            ! brightness temp min sub-pixel
+            write (varname, "(A,I0.2)") "temp_submin_ch", c
+            call add_sym_f4_2d(Ch(c)%Bt_Toa_Min_Sub, varname)
+
+            ! brightness temp max sub-pixel
+            write (varname, "(A,I0.2)") "temp_submax_ch", c
+            call add_sym_f4_2d(Ch(c)%Bt_Toa_Max_Sub, varname)
 
             ! clear sky BT
             write (varname, "(A,I0.2)") "temp_clear_sky_ch", c
