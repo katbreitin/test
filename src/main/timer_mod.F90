@@ -32,6 +32,15 @@ contains
     allocate(self % class_count(self % n_class))
     allocate(self % class_list(self % n_class))
     self % class_list = class_list
+    self % class_start = 0
+    self % sec_per_class = 0.
+    self % class_count = 0
+    self % class_rate = 1000
+
+
+
+
+
 
 
   end subroutine
@@ -39,15 +48,15 @@ contains
   subroutine Tic(self,class)
      class (Timer), intent(inout) :: self
      integer, intent(in) :: class
-     integer :: start !, rate
+     integer :: start , rate
 
-     !call system_clock(count_rate=rate)
+     call system_clock(count_rate=rate)
      call system_clock(start)
      self % start=start
-     self % rate=1000
+     self % rate=rate
 
     self % class_start(class) = start
-    self % class_rate(class) = 1000
+    self % class_rate(class) = rate
     self % class_count(class) = self % class_count(class) + 1
    end subroutine tic
 
@@ -67,7 +76,7 @@ contains
       self % sec_per_class(class) =  self % sec_per_class(class) &
                     +  float(finish-self%class_start(class))/self%class_rate(class)
 
-    print*,class,   self % sec_per_class(class) 
+  !  print*,class,   self % sec_per_class(class)
     end subroutine Tac
 
 
@@ -90,13 +99,13 @@ contains
          sort_array(i) = i
        end do
 
-       print *, sort_array
+
 
        if (present(sort)) then
            call quicksort(sec_array, sort_array)
        end if
 
-       print *, sort_array
+       
        time_word = ' (sec): '
        if (present(minute)) then
           sec_array = sec_array/60.
