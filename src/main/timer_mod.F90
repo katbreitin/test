@@ -67,7 +67,7 @@ contains
       self % sec_per_class(class) =  self % sec_per_class(class) &
                     +  float(finish-self%class_start(class))/self%class_rate(class)
 
-
+    print*,class,   self % sec_per_class(class) 
     end subroutine Tac
 
 
@@ -90,9 +90,13 @@ contains
          sort_array(i) = i
        end do
 
+       print *, sort_array
+
        if (present(sort)) then
            call quicksort(sec_array, sort_array)
        end if
+
+       print *, sort_array
        time_word = ' (sec): '
        if (present(minute)) then
           sec_array = sec_array/60.
