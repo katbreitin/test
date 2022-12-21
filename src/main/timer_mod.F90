@@ -22,7 +22,7 @@ contains
   subroutine  init(self, class_list)
     class (Timer), intent(inout) :: self
     character(len=*), intent(in) :: class_list(:)
-    integer :: i
+
 
     self % n_class = size(class_list)
 
@@ -39,15 +39,15 @@ contains
   subroutine Tic(self,class)
      class (Timer), intent(inout) :: self
      integer, intent(in) :: class
-     integer :: start, rate
+     integer :: start !, rate
 
-     call system_clock(count_rate=rate)
+     !call system_clock(count_rate=rate)
      call system_clock(start)
      self % start=start
-     self % rate=rate
+     self % rate=1000
 
     self % class_start(class) = start
-    self % class_rate(class) = rate
+    self % class_rate(class) = 1000
     self % class_count(class) = self % class_count(class) + 1
    end subroutine tic
 
@@ -66,7 +66,6 @@ contains
       !print*, 'Elapsed time in seconds:', float(finish-self%start)/self%rate
       self % sec_per_class(class) =  self % sec_per_class(class) &
                     +  float(finish-self%class_start(class))/self%class_rate(class)
-
 
 
     end subroutine Tac
@@ -99,14 +98,14 @@ contains
           sec_array = sec_array/60.
           time_word = ' (minute): '
       end if
-      FMT = "(I3,I3,I3, A, A, F10.5)"
+      FMT = "(I3, 2X,A, A, F10.5,2X, I3)"
       print*,'<--------   TIMING RESULTS ---------->'
-      print*,'           RNK      NR      COUNT      DESCRIPTION                    TOTAL TIME '
+      print*,'RNK DESCRIPTION                                TOTAL TIME  COUNT'
        do i =  self % n_class , 1, -1
            idx = sort_array(i)
 
-          write(*,FMT) self % n_class - i + 1,idx,self % class_count(idx),trim(self % class_list(idx)) &
-             ,trim(time_word),sec_array(i)
+          write(*,FMT) self % n_class - i + 1 ,trim(self % class_list(idx)) &
+             ,trim(time_word),sec_array(i),self % class_count(idx)
 
        end do
 
