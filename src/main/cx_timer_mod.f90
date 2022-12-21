@@ -1,5 +1,9 @@
 module cx_timer_mod
 use timer_mod
+
+type(timer) :: chronos_rttov
+
+
 contains
 subroutine timer_set_up (timer_obj)
 
@@ -27,8 +31,9 @@ subroutine timer_set_up (timer_obj)
 
    call timer_obj % init (class_list)
 
-
 end subroutine
+
+
 subroutine timer_set_up_all (timer_obj)
 
    type(timer), intent(inout) :: timer_obj

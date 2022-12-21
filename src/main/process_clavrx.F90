@@ -162,7 +162,7 @@
       , COMPUTE_SPATIAL_CORRELATION_ARRAYS &
       , COMPUTE_RADIATIVE_CENTER_ARRAYS
 
-  use CX_REAL_BOOLEAN_MOD
+   use CX_REAL_BOOLEAN_MOD
 
    use CONSTANTS_MOD
 
@@ -212,10 +212,10 @@
 
    use GLOBSNOW_READ_ROUTINES,only: &
       GET_GLOBSNOW_FILENAME &
-   , GET_PIXEL_GLOBSNOW_ANALYSIS &
-   , READ_GLOBSNOW_ANALYSIS_MAP
+     , GET_PIXEL_GLOBSNOW_ANALYSIS &
+     , READ_GLOBSNOW_ANALYSIS_MAP
 
-    use GOES_MOD,only: &
+   use GOES_MOD,only: &
       Area_Struct &
       , GVAR_NAV &
       , DARK_COMPOSITE_CLOUD_MASK &
@@ -460,10 +460,10 @@
     use CX_RTTOV_SFC_EMISS, only: &
         destroy_rttov_emiss
 #endif
-    use SIMPLE_COD_065um_MOD,only: &
+   use SIMPLE_COD_065um_MOD,only: &
     compute_simple_solar_cod_065um
 
-    use SIMPLE_COD_LUNAR_MOD, only: &
+   use SIMPLE_COD_LUNAR_MOD, only: &
       compute_simple_lunar_cod_065um
 
    use SIMPLE_COD_138um_MOD,only: &
@@ -486,7 +486,8 @@
     , cx_sfc_emiss_correct_for_sfctype
 
    use TIMER_MOD
-   use CX_TIMER_MOD, only: timer_set_up, timer_set_up_all
+
+   use CX_TIMER_MOD, only: timer_set_up, timer_set_up_all, chronos_rttov
 
    use UNIVERSAL_CLOUD_TYPE_MODULE, only: UNIVERSAL_CLOUD_TYPE
 
@@ -608,31 +609,30 @@
    ! Begin Executable Code
    !***********************************************************************
 
-    call timer_set_up_all (chrono_all)
-    call timer_set_up (chrono)
+   call timer_set_up_all (chrono_all)
+   call timer_set_up (chrono)
 
+   call chronos_rttov % init(['clear_sky','sfc_emis '])
 
-    narg=command_argument_count()
+   narg=command_argument_count()
 
-    if(narg>0)then
-    !loop across options
+   if (narg>0) then
+     !loop across options
       do cptArg=1,narg
-        call get_command_argument(cptArg,arg_name)
+         call get_command_argument(cptArg,arg_name)
 
-        select case(adjustl(arg_name))
-        case("--compile_info","-ci")
-          write(*,*)"This is CLAVR-x : Version $Id: process_clavrx.f90 4129 2021-04-19 19:30:41Z heidinger $"
-          write(*,*)"Binary compiled on the ",__DATE__," at ",__TIME__
+         select case(adjustl(arg_name))
+         case("--compile_info","-ci")
+             write(*,*)"This is CLAVR-x"
+             write(*,*)"Binary compiled on the ",__DATE__," at ",__TIME__
+             stop
+         case default
 
-          stop
-        case default
-
-        end select
+         end select
       end do
-    end if
+   end if
 
-
-   call MESG( '<----------  Start of CLAVRXORB ----------> $Id: process_clavrx.f90 4129 2021-04-19 19:30:41Z heidinger $' &
+   call MESG( '<----------  Start of CLAVRXORB ---------->  $' &
       , level = verb_lev % DEFAULT , color = 4 )
    write(string,*)"Compiled on ",__DATE__//' '//__TIME__
    call MESG( trim(string),level=verb_lev % DEFAULT, color=2)
@@ -676,7 +676,7 @@
    !*************************************************************************
    ! Marker: Open high spatial resolution ancillary data files
    !*************************************************************************
-    call OPEN_STATIC_ANCIL_FILES()
+   call OPEN_STATIC_ANCIL_FILES()
 
    !-----------------------------------------------------------------------
    !--- set up surface radiative properties
@@ -727,8 +727,8 @@
    ! Marker: BEGIN LOOP OVER FILES
    !----------------------------------------------------------------------
    File_Loop: do
-     call chrono%tic(16)
-     call chrono%tic(1)
+      call chrono%tic(16)
+      call chrono%tic(1)
 
       !----------------------------------------------------------------------
       ! Marker: READ IN CLAVRXORB_FILE_LIST AND SET FLAGS
@@ -746,7 +746,8 @@
          else
             !-- end of orbits
             if (File_Number == 1) then
-               call MESG( "ERROR: No orbits to process, stopping" , level = verb_lev % QUIET , color = 1 )
+               call MESG( "ERROR: No orbits to process, stopping" &
+                , level = verb_lev % QUIET , color = 1 )
                call cleanup_tempdir
                stop 404
             endif
@@ -799,7 +800,8 @@
       call DETECT_SENSOR_FROM_FILE(AREAstr,NAVstr,Ierror)
 
       if (Ierror == sym%YES) then
-         call MESG ("ERROR: Sensor could not be detected, skipping file " , level = verb_lev % ERROR)
+         call MESG ("ERROR: Sensor could not be detected, skipping file " &
+            , level = verb_lev % ERROR)
          cycle file_loop
       endif
 
@@ -812,7 +814,8 @@
 
       !--- print to screen the file name
       call MESG (" " )
-      call MESG ("<------------- Next Orbit ---------------> ",level = verb_lev % DEFAULT , color = 4)
+      call MESG ("<------------- Next Orbit ---------------> "  &
+            ,level = verb_lev % DEFAULT , color = 4)
 
       !-------------------------------------------------------
       ! reset record counters
@@ -1135,7 +1138,7 @@
 
            ! - check the angles if this is a good lunar scene
            ! - lun and solar zenith angle
-           call COMPUTE_LUNAR_REFLECTANCE (Ch (44) % Rad_Toa &
+            call COMPUTE_LUNAR_REFLECTANCE (Ch (44) % Rad_Toa &
                       , Geo % Solzen, Geo%Lunzen &
                       , Image % time_start % Year, Image % time_start % Month &
                       , Image % time_start % Day, Image % time_start % msec_of_day &
@@ -1145,21 +1148,21 @@
 
 
            !TEST - EMPIRICAL FIT TO NASA Reflectances to match NOAA - AKH
-          if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA') then
-            where(Ch(44)%Ref_Toa .NER. Missing_Value_Real4)
-              Ch(44)%Ref_Lunar_Toa = Dnb_Coef(1) + &
+            if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA') then
+               where(Ch(44)%Ref_Toa .NER. Missing_Value_Real4)
+                  Ch(44)%Ref_Lunar_Toa = Dnb_Coef(1) + &
                                      Dnb_Coef(2)*Ch(44)%Ref_Lunar_Toa + &
                                      Dnb_Coef(3)*Ch(44)%Ref_Lunar_Toa**2
-             endwhere
-          endif
+               endwhere
+            endif
 
          end if
 
          End_Time_Point_Hours = COMPUTE_TIME_HOURS()
 
-           call maybe_clone()
-           call waitpoint(1)
-           call update_skip_processing(Skip_Processing_Flag)
+         call maybe_clone()
+         call waitpoint(1)
+         call update_skip_processing(Skip_Processing_Flag)
 
          !--- update time summation for level-1b processing
          Segment_Time_Point_Seconds(1) =  Segment_Time_Point_Seconds(1) + &
@@ -1189,23 +1192,21 @@
                 trim(Sensor%Sensor_Name) == 'AVHRR-2' .or. &
                 trim(Sensor%Sensor_Name) == 'AVHRR-3' ) then
 
-              if (Nav_Opt == 2) then
+               if (Nav_Opt == 2) then
 
-               if ((Nav%Timerr_Seconds .ner. Missing_Value_Real4) .and. &
+                  if ((Nav%Timerr_Seconds .ner. Missing_Value_Real4) .and. &
                    (Nav%Timerr_Seconds .ner. 0.0)) then
 
-                  call REPOSITION_FOR_CLOCK_ERROR(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment, &
+                     call REPOSITION_FOR_CLOCK_ERROR(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment, &
                                                   Nav%Timerr_Seconds,Err_Reposnx_Flag)
-               else
-                  Nav%Lat = Nav%Lat_1b
-                  Nav%Lon = Nav%Lon_1b
+                  else
+                     Nav%Lat = Nav%Lat_1b
+                     Nav%Lon = Nav%Lon_1b
+                  endif
+
                endif
 
-             endif
-
             endif
-
-
 
             if (NWP_PIX%Nwp_Opt /= 0) then
 
@@ -1349,7 +1350,7 @@
                     (Sfc%Snow == sym%NO_SNOW) .and.  &
                     (Sst_Anal > 270.0 ))
 
-                    NWP_PIX%Tsfc = Sst_Anal
+                     NWP_PIX%Tsfc = Sst_Anal
 
                   end where
                end if
@@ -1373,13 +1374,30 @@
                call ATMOS_CORR(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)
 
                !--- compute the channel 20 pseudo reflectance for clear-skies
-               if (Sensor%Chan_On_Flag_Default(20) == sym%YES .and.  Sensor%Chan_On_Flag_Default(31) == sym%YES) then
-                  call CH20_PSEUDO_REFLECTANCE(Solar_Ch20_Nu,Geo%CosSolzen,ch(20)%Rad_Toa_Clear,31,ch(31)%Bt_Toa_Clear,Sun_Earth_Distance, &
-                                               ch(20)%Ref_Toa_Clear,ch(20)%Emiss_Rel_11um_Clear)
+               if (Sensor%Chan_On_Flag_Default(20) == sym%YES &
+                  .and.  Sensor%Chan_On_Flag_Default(31) == sym%YES) then
+
+                  call CH20_PSEUDO_REFLECTANCE(Solar_Ch20_Nu &
+                                             , Geo%CosSolzen &
+                                             , ch(20)%Rad_Toa_Clear &
+                                             , 31 &
+                                             , ch(31)%Bt_Toa_Clear &
+                                             , Sun_Earth_Distance &
+                                             , ch(20)%Ref_Toa_Clear &
+                                             , ch(20)%Emiss_Rel_11um_Clear)
                endif
-               if (Sensor%Chan_On_Flag_Default(20) == sym%YES .and.  Sensor%Chan_On_Flag_Default(38) == sym%YES) then
-                  call CH20_PSEUDO_REFLECTANCE(Solar_Ch20_Nu,Geo%CosSolzen,ch(20)%Rad_Toa_Clear,38,ch(38)%Bt_Toa_Clear,Sun_Earth_Distance, &
-                                               ch(20)%Ref_Toa_Clear,ch(20)%Emiss_Rel_10_4um_Clear)
+
+               if (Sensor%Chan_On_Flag_Default(20) == sym%YES &
+                   .and.  Sensor%Chan_On_Flag_Default(38) == sym%YES) then
+
+                  call CH20_PSEUDO_REFLECTANCE(Solar_Ch20_Nu &
+                                              ,Geo%CosSolzen &
+                                              ,ch(20)%Rad_Toa_Clear &
+                                              ,38 &
+                                              ,ch(38)%Bt_Toa_Clear &
+                                              ,Sun_Earth_Distance &
+                                              ,ch(20)%Ref_Toa_Clear &
+                                              ,ch(20)%Emiss_Rel_10_4um_Clear)
                endif
 
                !--- compute surface products (Tsfc,Ndvi,Rsr ...)
@@ -1388,7 +1406,7 @@
                End_Time_Point_Hours = COMPUTE_TIME_HOURS()
                Segment_Time_Point_Seconds(3) =  Segment_Time_Point_Seconds(3) + &
                   &  60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
-              call chrono % tac(3)
+               call chrono % tac(3)
             endif
 
             !*******************************************************************
@@ -1401,37 +1419,37 @@
             !------------------------------------------------------------------------------
 
             if (ABI_Use_104um_Flag) then
-              if (Sensor%Chan_On_Flag_Default(38) == sym%YES) then
-                !--- solar glint mask
-                if (Sensor%Chan_On_Flag_Default(1) == sym%YES) then
-                  call COMPUTE_GLINT(Geo%Glintzen, Ch(1)%Ref_Toa, ch(1)%Ref_Toa_Std_3x3, &
+               if (Sensor%Chan_On_Flag_Default(38) == sym%YES) then
+                  !--- solar glint mask
+                  if (Sensor%Chan_On_Flag_Default(1) == sym%YES) then
+                     call COMPUTE_GLINT(Geo%Glintzen, Ch(1)%Ref_Toa, ch(1)%Ref_Toa_Std_3x3, &
                                      Sfc%Glint_Mask,ABI_Use_104um_Flag)
-                endif
+                  endif
 
-                !--- lunar glint mask
-                if (Sensor%Chan_On_Flag_Default(44) == sym%YES) then
-                  call COMPUTE_GLINT(Geo%Glintzen_Lunar,ch(44)%Ref_Lunar_Toa,  &
+                  !--- lunar glint mask
+                  if (Sensor%Chan_On_Flag_Default(44) == sym%YES) then
+                     call COMPUTE_GLINT(Geo%Glintzen_Lunar,ch(44)%Ref_Lunar_Toa,  &
                                      ch(44)%Ref_Lunar_Std_3x3, Sfc%Glint_Mask_Lunar, &
                                      ABI_Use_104um_Flag)
-                endif
+                  endif
 
-              endif
+               endif
             else
-              if (Sensor%Chan_On_Flag_Default(31) == sym%YES) then
-                !--- solar glint mask
-                if (Sensor%Chan_On_Flag_Default(1) == sym%YES) then
-                  call COMPUTE_GLINT(Geo%Glintzen, Ch(1)%Ref_Toa, ch(1)%Ref_Toa_Std_3x3, &
+               if (Sensor%Chan_On_Flag_Default(31) == sym%YES) then
+                  !--- solar glint mask
+                  if (Sensor%Chan_On_Flag_Default(1) == sym%YES) then
+                     call COMPUTE_GLINT(Geo%Glintzen, Ch(1)%Ref_Toa, ch(1)%Ref_Toa_Std_3x3, &
                                      Sfc%Glint_Mask,ABI_Use_104um_Flag)
-                endif
+                  endif
 
-                !--- lunar glint mask
-                if (Sensor%Chan_On_Flag_Default(44) == sym%YES) then
-                  call COMPUTE_GLINT(Geo%Glintzen_Lunar,ch(44)%Ref_Lunar_Toa,  &
+                  !--- lunar glint mask
+                  if (Sensor%Chan_On_Flag_Default(44) == sym%YES) then
+                     call COMPUTE_GLINT(Geo%Glintzen_Lunar,ch(44)%Ref_Lunar_Toa,  &
                                      ch(44)%Ref_Lunar_Std_3x3, Sfc%Glint_Mask_Lunar, &
                                      ABI_Use_104um_Flag)
-                endif
+                  endif
 
-              endif
+               endif
             endif
 
             !*******************************************************************
@@ -1511,7 +1529,7 @@
             if (Cld_Flag == sym%YES .and. NWP_PIX%Nwp_Opt > 0) then
 
                Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
-              call chrono % tic(6)
+               call chrono % tic(6)
                !--- simple cloud optical depths (no effective radius or atmos corr). Used for masking
                if (Sensor%Chan_On_Flag_Default(1) == sym%YES) then
                   call COMPUTE_SIMPLE_SOLAR_COD_065um(Image%Number_Of_Elements,Image%Number_Of_Lines_Read_This_Segment)
@@ -1619,7 +1637,7 @@
 
                !--- cloud type
                Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
-              call chrono % tic(7)
+               call chrono % tic(7)
                !--- make sure MODIS aux phase/type conforms to CLAVR-x expectations
                if (Cloud_Type_Aux_Read_Flag == sym%YES .and. Sensor%Sensor_Name == 'MODIS') then
                   call MODIFY_AUX_CLOUD_TYPE()
@@ -1634,12 +1652,12 @@
 
                   !--- if ECM2 is not called, compute type and phase here
                   if (Cloud_Mask_Bayesian_Flag /= sym%ECM2) then
-                    call CLOUD_TYPE_BRIDGE()
-                    !Cld_Type_Aux = Cld_Type
-                    !call UNIVERSAL_CLOUD_TYPE()
+                     call CLOUD_TYPE_BRIDGE()
+                     !Cld_Type_Aux = Cld_Type
+                     !call UNIVERSAL_CLOUD_TYPE()
 
-                    !--- WAITPOINT Cloud Phase Complete (if not ECM2)
-                    call waitpoint(4)
+                     !--- WAITPOINT Cloud Phase Complete (if not ECM2)
+                     call waitpoint(4)
                   endif
 
                   !--- Bryan Baum MODIS C6 Cloud Type
@@ -1650,12 +1668,12 @@
                      Cld_Phase = Cld_Phase_IR
                   endif
 
-               endif
+              endif
 
-               End_Time_Point_Hours = COMPUTE_TIME_HOURS()
-                  Segment_Time_Point_Seconds(7) =  Segment_Time_Point_Seconds(7) + &
+              End_Time_Point_Hours = COMPUTE_TIME_HOURS()
+              Segment_Time_Point_Seconds(7) =  Segment_Time_Point_Seconds(7) + &
                   & 60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
-                call chrono % tac(7)
+              call chrono % tac(7)
             endif   !end of Cld_Flag check
 
             !--------------------------------------------------------------------
@@ -1667,7 +1685,7 @@
                ! ACHA Section
                !---------------------------------------------------------------------
                Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
-                call chrono % tic(8)
+               call chrono % tic(8)
                !--->call CTP_MULTILAYER()  !WHAT IS THIS???
 
                !-------------------------------------------------------------------
@@ -1752,51 +1770,53 @@
                End_Time_Point_Hours = COMPUTE_TIME_HOURS()
                Segment_Time_Point_Seconds(8) =  Segment_Time_Point_Seconds(8) + &
                    &   60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
-                call chrono % tac(8)
+               call chrono % tac(8)
                !-----------------------------------------------------------------------------------
                ! NLCOMP Section
                !-----------------------------------------------------------------------------------
                Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
-                 call chrono % tic(9)
+
                NLCOMP_Run = .false.
-               if ((trim(Sensor%Sensor_Name) == 'VIIRS' .or. trim(Sensor%Sensor_Name) == 'VIIRS-NASA') &
-                       .and. Sensor%Chan_On_Flag_Default(44) == sym % yes .and. NLCOMP_Mode > 0) then
+               if ((trim(Sensor%Sensor_Name) == 'VIIRS' &
+                    .or. trim(Sensor%Sensor_Name) == 'VIIRS-NASA') &
+                    .and. Sensor%Chan_On_Flag_Default(44) == sym % yes &
+                    .and. NLCOMP_Mode > 0) then
                   if ( count (ch(44)%Ref_Lunar_Toa > 0) > 0 ) then
+                     call chrono % tic(9)
                      call AWG_CLOUD_DNCOMP_ALGORITHM( Iseg_In = Segment_Number , NLCOMP_Mode = .true. &
                         , algorithm_started = NLCOMP_Run)
+                     call chrono % tac(9)
                   endif
                endif
 
                End_Time_Point_Hours = COMPUTE_TIME_HOURS()
                Segment_Time_Point_Seconds(9) =  Segment_Time_Point_Seconds(9) + &
                      & 60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
-                call chrono % tac(9)
+
                !-----------------------------------------------------------------------------------
                ! DCOMP Section
                !-----------------------------------------------------------------------------------
                Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
-                 call chrono % tic(10)
+
                DCOMP_Run = .false.
 
                if (DCOMP_Mode > 0) then
-
-                  call AWG_CLOUD_DNCOMP_ALGORITHM( Iseg_In = Segment_Number , algorithm_started = dcomp_run, version = dcomp_version )
-
-
-                 !call COMPUTE_SUBPIXEL_MAX_MIN_COD()
-
+                 call chrono % tic(10)
+                 call AWG_CLOUD_DNCOMP_ALGORITHM( Iseg_In = Segment_Number , algorithm_started = dcomp_run, version = dcomp_version )
+                 call chrono % tac(10)
                endif
 
                End_Time_Point_Hours = COMPUTE_TIME_HOURS()
                Segment_Time_Point_Seconds(10) =  Segment_Time_Point_Seconds(10) + &
                    60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
-                call chrono % tac(10)
+
                !-----------------------------------------------------------------------------------
                ! Derived Product Section
                !-----------------------------------------------------------------------------------
                Start_Time_Point_Hours = COMPUTE_TIME_HOURS()
-               call chrono % tic(11)
+
                if ( DCOMP_Run .or. NLCOMP_Run) then
+                  call chrono % tic(11)
                      call COMPUTE_CLOUD_WATER_PATH(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)
                      call COMPUTE_DCOMP_INSOLATION(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment,Sun_Earth_Distance)
                      call COMPUTE_ADIABATIC_CLOUD_PROPS(Line_Idx_Min_segment,Image%Number_Of_Lines_Read_This_Segment)
@@ -1807,13 +1827,13 @@
                   if (trim(Sensor%Sensor_Name) == 'AHI' .or. trim(Sensor%Sensor_Name) == 'AHI9') then
                      call COMPUTE_PRECIPITATION_AHI(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)
                   end if
-
+                  call chrono % tac(11)
                endif
 
                End_Time_Point_Hours = COMPUTE_TIME_HOURS()
                Segment_Time_Point_Seconds(11) =  Segment_Time_Point_Seconds(11) + &
                                                 60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
-                call chrono % tac(11)
+
                !-----------------------------------------------------------------------------------
                ! Cloud Altitude, Base and CCL Section (if ACHA was executed)
                !-----------------------------------------------------------------------------------
@@ -1866,8 +1886,9 @@
             call COMPUTE_OLR()
 
             !---  SASRAB
-            if ( Sasrab_Flag == sym%YES) call INSOLATION(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)
-
+            if ( Sasrab_Flag == sym%YES) then
+              call INSOLATION(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)
+            end if
             End_Time_Point_Hours = COMPUTE_TIME_HOURS()
             Segment_Time_Point_Seconds(14) =  Segment_Time_Point_Seconds(14) + &
                    60.0*60.0*(End_Time_Point_Hours - Start_Time_Point_Hours)
@@ -1940,7 +1961,6 @@
                      if ((Lon_Idx >= 0) .and. (Lon_Idx <= NWP%Nlon) .and. &
                            & (Lat_Idx >= 0) .and. (Lat_Idx <= NWP%Nlat)) then
                           call Rtm(Lon_Idx,Lat_Idx)% DEALLOC()
-
 
                      endif
                   end do
@@ -2027,11 +2047,6 @@
                                                 Orbital_Processing_Start_Time_Hours)
       Orbital_Processing_Time_Minutes = Orbital_Processing_Time_Seconds/60.0
 
-      !--- write algorithm attributes to level2
-      call WRITE_ALGORITHM_ATTRIBUTES()
-
-      !--- close pixel level hdf files
-      call CLOSE_PIXEL_HDF_FILES(Level2_File_Flag)
 
       !--- diagnostic screen output
       call MESG ("<----- Timing Results ----->")
@@ -2061,8 +2076,19 @@
       !*************************************************************************
 
       call chrono % tac(16)
-      call chrono % summary(sort = .true.)
+      Orbital_Processing_Time_Minutes = chrono % get(16,minute=.true.)
+      call chrono % summary(sort = .true.,title = 'GENERAL')
       call chrono % reset()
+
+      call chronos_rttov % summary(title = 'RTTOV')
+      call chronos_rttov % reset()
+
+      !--- write algorithm attributes to level2
+      call WRITE_ALGORITHM_ATTRIBUTES()
+
+      !--- close pixel level hdf files
+      call CLOSE_PIXEL_HDF_FILES(Level2_File_Flag)
+
    end do File_Loop
 
    !*************************************************************************
@@ -2103,7 +2129,7 @@
    call MESG ("Total Time for All Processing (minutes) = ", Total_Processing_Time_minutes, &
                                            level=verb_lev % MINIMAL)
    call chrono_all % tac(1)
-   call chrono_all % summary(minute=.true.)
+   call chrono_all % summary(minute=.true.,title = 'ALL FILES')
 
    !---- print to screen that processing is done
    call MESG (  "<--------- End of CLAVRXORB ---------->",level=verb_lev % MINIMAL)
@@ -2308,13 +2334,15 @@ subroutine OPEN_MODIS_WHITE_SKY_SFC_REFLECTANCE_FILES()
         !--- mandatory fields - check for substitution of Bad_Pixel for space
 
         !--- surface type
-        call READ_LAND_SFC_HDF(Sfc_Type_Id, Sfc_Type_Str, Nav%Lat, Nav%Lon, Geo%Space_Mask, Sfc%Sfc_Type)
+        call READ_LAND_SFC_HDF(Sfc_Type_Id, Sfc_Type_Str &
+            , Nav%Lat, Nav%Lon, Geo%Space_Mask, Sfc%Sfc_Type)
 
         !--- surface elevation
         if (Read_Surface_Elevation /= 0) then
 
                !--- read the high res data
-               call READ_LAND_SFC_HDF(Surface_Elev_Id, Surface_Elev_Str, Nav%Lat, Nav%Lon, Geo%Space_Mask, Two_Byte_Temp)
+               call READ_LAND_SFC_HDF(Surface_Elev_Id, Surface_Elev_Str &
+                 , Nav%Lat, Nav%Lon, Geo%Space_Mask, Two_Byte_Temp)
 
                !---  convert to a real number
                Sfc%Zsfc_Hires = real(two_byte_temp,kind=real4)

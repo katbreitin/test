@@ -7,7 +7,7 @@
 !
 ! PURPOSE:
 !
-! DESCRIPTION: 
+! DESCRIPTION:
 !
 ! AUTHORS:
 !  William Straka, CIMSS, wstraka@ssec.wisc.edu
@@ -28,7 +28,7 @@ module SEVIRI_MOD
   use CONSTANTS_MOD, only: int4,real8,int2,real4 &
   , exe_prompt, sym &
   , missing_value_real4
-  
+
   use PIXEL_COMMON_MOD,only: &
       Sensor &
     , Image &
@@ -45,24 +45,24 @@ module SEVIRI_MOD
     , Two_Byte_Temp &
     , Goes_Scan_Line_Flag &
     , Line_Idx_Min_Segment
-    
+
   use CALIBRATION_CONSTANTS_MOD,only: &
     planck_nu, planck_a1, planck_a2 &
     , sat_name, solar_ch20, ew_ch20 &
     , solar_ch20_nu
-    
+
   use PLANCK_MOD,only: Planck_Temp_Fast
-  
+
   use NUMERICAL_ROUTINES_MOD,only:
-  
+
   use GOES_MOD,only: area_struct, gvar_nav &
     , compute_satellite_angles &
     , get_image_from_areafile
-    
+
   use FILE_UTILS, only: get_lun
-  
+
   use VIEWING_GEOMETRY_MOD,only: possol
-  
+
   use CLAVRX_MESSAGE_MOD, only: mesg, verb_lev
 
   implicit none
@@ -73,19 +73,19 @@ module SEVIRI_MOD
           CALIBRATE_SEVIRI_DARK_COMPOSITE, &
           READ_NAVIGATION_BLOCK_SEVIRI, &
           READ_MSG_INSTR_CONSTANTS
-          
-         
+
+
   private:: GET_SEVIRI_NAVIGATION,  &
           LOAD_SEVIRI_CAL_AREA,  &
           MSG_RAD_BT
 
- 
-  
+
+
   !---------- info needed for count -> rad calibration
   real, private, dimension(11) ::  Slope_Sev
   real, private, dimension(11) ::  Offset_Sev
- 
-  !------- Since we are going to do Rad -> BT internal, we'll need a, b, nu 
+
+  !------- Since we are going to do Rad -> BT internal, we'll need a, b, nu
   real, private, dimension(4)  ::  Solar_Const_Sev
 
   integer(kind=int4), public, parameter:: Seviri_Xstride = 1
@@ -106,39 +106,7 @@ module SEVIRI_MOD
 
 contains
 
-  !--------------------------------------------------------------------
-  ! assign internal sat id's and const file names for MSG
-  !--------------------------------------------------------------------
-  subroutine ASSIGN_MSG_SAT_ID_NUM_INTERNAL(Mcidas_Id_Num)
-    integer(kind=int4), intent(in):: Mcidas_Id_Num
 
-    !--- Met-08
-    Sensor%Sensor_Name = 'SEVIRI'
-    if (Mcidas_Id_Num == 51)   then
-        Sensor%WMO_Id = 55
-        Sensor%Instr_Const_File = 'met8_instr.dat'
-        Sensor%Platform_Name = 'Meteosat-8'
-    endif
-    !--- Met-09
-    if (Mcidas_Id_Num == 52)   then
-        Sensor%WMO_Id = 56
-        Sensor%Instr_Const_File = 'met9_instr.dat'
-        Sensor%Platform_Name = 'Meteosat-9'
-    endif
-    !--- Met-10
-    if (Mcidas_Id_Num == 53)   then
-        Sensor%WMO_Id = 57
-        Sensor%Instr_Const_File = 'met10_instr.dat'
-        Sensor%Platform_Name = 'Meteosat-10'
-    endif
-    !--- Met-11
-    if (Mcidas_Id_Num == 354)   then
-        Sensor%WMO_Id = 70
-        Sensor%Instr_Const_File = 'met11_instr.dat'
-        Sensor%Platform_Name = 'Meteosat-11'
-    endif
-
-  end subroutine ASSIGN_MSG_SAT_ID_NUM_INTERNAL
   !----------------------------------------------------------------
   ! read the MSG constants into memory
   !-----------------------------------------------------------------
@@ -218,14 +186,14 @@ contains
     real:: Ch1_Slope
     real:: Ch2_Slope
     real:: Ch3_Slope
-  
-    !--- assume Channel_1_file name has a unique "_1_" in the name. 
+
+    !--- assume Channel_1_file name has a unique "_1_" in the name.
     !--- determine indices needed to replace that string
     ipos = index(Channel_1_Filename, "_1_")
     ilen = len(Channel_1_Filename)
-    
+
     First_Line_In_Segment = (Segment_Number-1)*Image%Number_Of_Lines_Per_Segment
-   
+
     !---------------------------------------------------------------------------
     ! SEVIRI Navigation (Do Navigation first)
     !---------------------------------------------------------------------------
@@ -273,7 +241,7 @@ contains
           end if
 
           Channel_X_Filename_Full_uncompressed = trim(Image%LeveL1b_Path)//trim(Channel_X_Filename)
-        
+
           if (L1b_gzip == sym%YES) then
             cmd = "gunzip -c "//trim(Channel_X_Filename_Full_uncompressed)//  &
                   ".gz"//" > "//trim(Channel_X_Filename_Full)
@@ -284,7 +252,7 @@ contains
             Temporary_File_Name(Number_of_Temporary_Files) = trim(Channel_X_Filename)
 
           end if
-        
+
           if (L1b_bzip2 == sym%YES) then
             cmd = "bunzip2 -c "//  &
                   trim(Channel_X_Filename_Full_uncompressed)//".bz2"//  &
@@ -299,8 +267,8 @@ contains
         end if
 
       end do
-      
-      
+
+
       ! On first segment, get slope/offset information from McIDAS Header
       Severi_File_Id = get_lun()
 
@@ -313,7 +281,7 @@ contains
       call MREAD_CLOSE(Severi_File_Id)
 
     end if  !end of check of first segment
-     
+
     !---------------------------------------------------------------------------------------------------
     !  Read and Calibrate
     !---------------------------------------------------------------------------------------------------
@@ -359,7 +327,7 @@ contains
             where(Geo%Space_Mask  .or. Geo%Solzen >= 90.0)
               ch(Chan_Idx(Chan_Idx_MSG))%Ref_Toa = MISSING_VALUE_REAL4
             end where
-        endif 
+        endif
 
         if (Chan_Idx_MSG == 2 .and. Sensor%Chan_On_Flag_Default(Chan_Idx(Chan_Idx_Msg)) == sym%YES) then
             Ch2_Slope = Ch2_Gain_0*(100.0+Ch2_Degrad_1*Time_Since_Launch + Ch2_Degrad_2*Time_Since_Launch**2)/100.0
@@ -369,7 +337,7 @@ contains
             where(Geo%Space_Mask  .or. Geo%Solzen >= 90.0)
               ch(Chan_Idx(Chan_Idx_MSG))%Ref_Toa = MISSING_VALUE_REAL4
             end where
-        endif 
+        endif
 
         if (Chan_Idx_MSG == 3 .and. Sensor%Chan_On_Flag_Default(Chan_Idx(Chan_Idx_Msg)) == sym%YES) then
             Ch3_Slope = Ch3_Gain_0*(100.0+Ch3_Degrad_1*Time_Since_Launch + Ch3_Degrad_2*Time_Since_Launch**2)/100.0
@@ -379,7 +347,7 @@ contains
             where(Geo%Space_Mask  .or. Geo%Solzen >= 90.0)
               ch(Chan_Idx(Chan_Idx_MSG))%Ref_Toa = MISSING_VALUE_REAL4
             end where
-        endif 
+        endif
 
 
         !--- thermal cal
@@ -394,8 +362,8 @@ contains
         if (Chan_Idx(Chan_Idx_MSG) == 3) Ch6_Counts = Two_Byte_Temp
 
          !--- apply KNMI suggested solar calibration tweaks
-         !ch(1)%Ref_Toa(Elem_Idx,Line_Idx) = ch(1)%Ref_Toa(Elem_Idx,Line_Idx) / 0.92 
-         !ch(6)%Ref_Toa(Elem_Idx,Line_Idx) = ch(6)%Ref_Toa(Elem_Idx,Line_Idx) / 1.035 
+         !ch(1)%Ref_Toa(Elem_Idx,Line_Idx) = ch(1)%Ref_Toa(Elem_Idx,Line_Idx) / 0.92
+         !ch(6)%Ref_Toa(Elem_Idx,Line_Idx) = ch(6)%Ref_Toa(Elem_Idx,Line_Idx) / 1.035
 
       endif
 
@@ -437,12 +405,12 @@ contains
       end if
     end do
     Nav%Ascend(Line_Idx_Min_Segment) = Nav%Ascend(Line_Idx_Min_Segment+1)
-   
+
   end subroutine READ_SEVIRI
- 
-  !=========================================================================================== 
+
+  !===========================================================================================
   !
-  ! =========================================================================================== 
+  ! ===========================================================================================
   subroutine MSG_RAD_BT(Chan_Num, Chan_Num_Ref,Sev_Counts, Brit_Temp_Out, Rad_Out)
   !This subroutine takes a radiance and converts it to a temperature
   !ONLY TO BE USED WITH SEVIRI
@@ -457,32 +425,32 @@ contains
     Rad_Out = Missing_Value_real4
     Brit_Temp_Out = Missing_Value_real4
     Rad_Temp = Missing_Value_real4
-        
+
     do Line_Idx=1, Image%Number_Of_Lines_Per_Segment
       do Elem_Idx=1, Image%Number_Of_Elements
-            
+
         if (Geo%Space_Mask(Elem_Idx,Line_Idx) ) then
           cycle
         endif
-        
-        
+
+
         Rad_Temp = ((Slope_Sev(Chan_Num) * Sev_Counts(Elem_Idx,Line_Idx)) + &
                      Offset_Sev(Chan_Num))
- 
+
         if (Rad_Temp > 0.0 ) then
-                
+
           Rad_Out(Elem_Idx,Line_Idx) = Rad_Temp
-            
+
           Brit_Temp_Out(Elem_Idx,Line_Idx) = PLANCK_TEMP_FAST(Chan_Num_Ref,Rad_Temp)
 
-        end if 
-   
+        end if
+
       end do
     end do
-    
-     
-  end subroutine MSG_RAD_BT 
-  
+
+
+  end subroutine MSG_RAD_BT
+
   !-------------------------------------------------------------------------------
   ! routine gets Lat/lon for SEVIRI
   !-------------------------------------------------------------------------------
@@ -493,10 +461,10 @@ contains
     integer(kind=int4) :: xstride
     TYPE (AREA_STRUCT), intent(in) ::AREAstr
     type (GVAR_NAV) :: NAVstr
-    
+
     integer :: i, j, elem, line
     real(kind=real8) :: dlat, dlon
-    integer ::  CFAC_MSG = -781648343 
+    integer ::  CFAC_MSG = -781648343
     integer ::  LFAC_MSG = -781648343
     integer ::  COFF_MSG = 1856
     integer ::  LOFF_MSG = 1856
@@ -511,13 +479,13 @@ contains
       !line = (ystart - 1) + j
       line = ystart + j
 
-      ! convert from eumetsat coordinate space if necessary 
+      ! convert from eumetsat coordinate space if necessary
       if (AREAstr%north_bound == 1) line = AREAstr%Num_Line - line + 1
-      
+
       do i= 1, xsize
         elem = (i - 1)*(xstride) + xstart
         ! convert to eumetsat coordinate space if necessary
-        if (AREAstr%west_vis_pixel == 1) elem = AREAstr%Num_Elem - elem + 1 
+        if (AREAstr%west_vis_pixel == 1) elem = AREAstr%Num_Elem - elem + 1
 
         CALL fgf_to_earth(FGF_TYPE,        &
                           DBLE(elem),      &
@@ -539,10 +507,10 @@ contains
           Nav%Lon_1b(i,j) = real(dlon,kind=real4)
           Geo%Space_Mask(i,j) = .FALSE.
         end if
-         
+
       end do
     end do
-  
+
   end subroutine GET_SEVIRI_NAVIGATION
 
   !--------------------------------------------------------------------------------
@@ -556,9 +524,9 @@ contains
     integer :: bandoffset, band, avoid_warning
     real(kind=real8) :: c1w3,c2w,alpha,beta,gain,offset
     integer, parameter :: nbands = 11
-  
-    avoid_warning = lun  
-  
+
+    avoid_warning = lun
+
     !Solar constants - these are needed for the area-file calibration method -
     !not the knmi method.
     !where are these from, for which sensor? if needed, move to instrument file
@@ -566,8 +534,8 @@ contains
     Solar_Const_Sev(2) = 23.24
     Solar_Const_Sev(3) = 19.85
     Solar_Const_Sev(4) = 4.92
-  
-  
+
+
     !---------------------------------------------------------------------
     ! Read from the calibration block.  Logic supplied by D. Santek.
     !---------------------------------------------------------------------
@@ -582,9 +550,9 @@ contains
       Slope_Sev(band) = gain
       Offset_Sev(band) = offset
     enddo
-  
+
   end subroutine LOAD_SEVIRI_CAL_AREA
- 
+
   !============================================================================================
   !  Calibrate the Ch1 Dark-Sky Composite Counts
   !============================================================================================
@@ -598,7 +566,7 @@ contains
 
     !--- calibrate the counts (this is an un-normalized reflectance)
     where(Ch1_Counts_Composite > 0)
-      Ref_Ch1_Dark = 100.0 * ((Slope_Sev(1) * Ch1_Counts_Composite) + Offset_Sev(1))/Solar_Const_Sev(1)    
+      Ref_Ch1_Dark = 100.0 * ((Slope_Sev(1) * Ch1_Counts_Composite) + Offset_Sev(1))/Solar_Const_Sev(1)
     end where
 
   end subroutine CALIBRATE_SEVIRI_DARK_COMPOSITE

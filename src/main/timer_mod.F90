@@ -1,5 +1,7 @@
 module timer_mod
+private
 
+public :: timer
 
 integer, parameter :: prec=kind(1d0), i64=selected_int_kind(15)
 type Timer
@@ -13,7 +15,7 @@ type Timer
    integer :: n_class
    real, allocatable :: sec_per_class(:)
  contains
-   procedure, public :: Tic, Tac, init, summary, reset
+   procedure, public :: Tic, Tac, init, summary, reset, get
  end type Timer
 
 
@@ -23,7 +25,6 @@ contains
     class (Timer), intent(inout) :: self
     character(len=*), intent(in) :: class_list(:)
 
-
     self % n_class = size(class_list)
 
     allocate(self % sec_per_class(self % n_class))
@@ -31,19 +32,25 @@ contains
     allocate(self % class_rate(self % n_class))
     allocate(self % class_count(self % n_class))
     allocate(self % class_list(self % n_class))
+
+    ! init
     self % class_list = class_list
     self % class_start = 0
     self % sec_per_class = 0.
     self % class_count = 0
     self % class_rate = 1000
 
-
-
-
-
-
-
   end subroutine
+
+  real function get (self,class,minute)
+    class (Timer), intent(inout) :: self
+    integer, intent(in) :: class
+    logical, optional, intent(in) :: minute
+
+    get = self % sec_per_class(class)
+    if (present(minute)) get = get/60.
+
+  end function
 
   subroutine Tic(self,class)
      class (Timer), intent(inout) :: self
@@ -80,39 +87,43 @@ contains
     end subroutine Tac
 
 
-    subroutine summary(self, sort, minute)
+    subroutine summary(self, sort, minute, title)
        class (Timer), intent(inout) :: self
        logical, optional, intent(in) :: sort
        logical, optional, intent(in) :: minute
+       character(len=*), optional, intent(in) :: title
        real, allocatable:: sec_array(:)
        integer, allocatable:: sort_array(:)
        integer :: i
        integer :: idx
        character(len= 12) :: time_word
        character(len =50) :: FMT
+       character(len=100) :: title_local
 
         allocate(sec_array(self %n_class ))
         allocate(sort_array(self %n_class ))
+
+        title_local = 'TIMING RESULTS  . '
+
+        if ( present(title)) title_local = trim(title_local)//trim(title)
 
        sec_array = self % sec_per_class
        do i=1,self %n_class
          sort_array(i) = i
        end do
 
-
-
        if (present(sort)) then
            call quicksort(sec_array, sort_array)
        end if
 
-       
        time_word = ' (sec): '
        if (present(minute)) then
           sec_array = sec_array/60.
           time_word = ' (minute): '
       end if
       FMT = "(I3, 2X,A, A, F10.5,2X, I3)"
-      print*,'<--------   TIMING RESULTS ---------->'
+      print*
+      print*,'<--------  '//trim(title_local)//' ---------->'
       print*,'RNK DESCRIPTION                                TOTAL TIME  COUNT'
        do i =  self % n_class , 1, -1
            idx = sort_array(i)
@@ -137,7 +148,6 @@ contains
     end  subroutine
 
 
-
     subroutine quicksort(array, sort_array)
     real, intent(inout)::array(:)
     real :: temp
@@ -146,34 +156,23 @@ contains
     integer, intent(inout) :: sort_array(:)
 
     last=size(array)
-
-
-
     do i=1,last
       sort_array(i) = i
     end do
 
+    do i=2,last
+      temp=array(i)
+      temp_sort = sort_array(i)
+      do j=i-1,1,-1
+        if (array(j).le.temp) exit
+        array(j+1)=array(j)
+        sort_array(j+1) = sort_array(j)
+      end do
+      array(j+1)=temp
+      sort_array(j+1) = temp_sort
+    end do
 
-       do i=2,last
-          temp=array(i)
-          temp_sort = sort_array(i)
-          do j=i-1,1,-1
-             if (array(j).le.temp) exit
-             array(j+1)=array(j)
-             sort_array(j+1) = sort_array(j)
-          enddo
-          array(j+1)=temp
-          sort_array(j+1) = temp_sort
-       enddo
-
-
-
-       return
-
-
-
+    return
   end subroutine quicksort
-
-
 
  end module timer_mod

@@ -8,7 +8,7 @@
 !
 ! PURPOSE: This module contains the subroutine which distributes the RTM clear-sky calculations
 !
-! DESCRIPTION: 
+! DESCRIPTION:
 !     aim of this tool is to populate the global variable Trans_Prof_Rtm
 !    This is clear-sky transmission profile for IR channels
 !
@@ -24,27 +24,29 @@
 ! DOCUMENTATION FOR ANY PURPOSE. THEY ASSUME NO RESPONSIBILITY (1) FOR
 ! THE USE OF THE SOFTWARE AND DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL
 ! SUPPORT TO USERS.
-! 
+!
 !--------------------------------------------------------------------------------------
 
 module CX_RTM_MOD
 
   use NWP_COMMON_MOD,only: &
     nwp_definition
-    
+
   use RTM_COMMON_MOD,only: &
     rtm_params
-    
-#ifdef LIBRTTOV   
+
+    use CX_TIMER_MOD, only:  chronos_rttov
+
+#ifdef LIBRTTOV
   use CX_RTTOV_BRIDGE_MOD, only: &
     compute_transmission_rttov
 #endif
 
   use CX_PFAAST_MOD, only: &
        COMPUTE_TRANSMISSION_PFAAST
- 
+
   use CLAVRX_MESSAGE_MOD, only: MESG
- 
+
   type cx_rtm_input
     character (len=1024) :: ancil_path
     real ,dimension(:,:),allocatable :: p_std
@@ -63,19 +65,20 @@ contains
     real,intent(out), dimension(:,:),allocatable :: trans_prof_rtm
     integer :: n_arr(2)
     integer :: ii
-    
+
     n_arr = shape(inp %  p_std)
 
     if ( .not. (allocated(trans_prof_rtm) ) ) &
         allocate ( trans_prof_rtm(101,n_arr(2)))
-  
+
     trans_prof_rtm = -999.
     if ( inp % which_rtm == 2 ) then
         if (first_run) call MESG('Clear Sky Transmission with RTTOV')
-#ifdef LIBRTTOV          
+#ifdef LIBRTTOV
+      call chronos_rttov % tic(1)
       call COMPUTE_TRANSMISSION_RTTOV   ( &
                            trim(inp % Ancil_path) &
-                         ,  inp %  p_std &   
+                         ,  inp %  p_std &
                          ,  inp % t_prof &
                          ,  inp % w_prof  &
                          ,  inp % o_prof &
@@ -83,19 +86,20 @@ contains
                          ,  inp % Sc_Name &
                          ,  inp % Chan_Idx &
                          ,  Trans_Prof_Rtm  &
-                         ,  Use_Modis_Channel_Equivalent = .true.  ) 
+                         ,  Use_Modis_Channel_Equivalent = .true.  )
+      call chronos_rttov % tac(1)                   
 #else
     print*, 'RTTOV selected as RTM but not compiled with RTTOV'
     stop
-              
-#endif                         
+
+#endif
     end if
-    
+
     if (  inp % which_rtm == 1) then
       if (first_run) print*,'Clear Sky Transmission with PFAAST'
-      do ii = 1, n_arr(2) 
-             
-            
+      do ii = 1, n_arr(2)
+
+
          call COMPUTE_TRANSMISSION_PFAAST( &
                            trim(inp % Ancil_path) &
                          ,  inp % t_prof(:,ii) &
@@ -106,16 +110,16 @@ contains
                         ,  inp % Chan_Idx &
                         ,  Trans_Prof_Rtm(:,ii) &
                         ,  Use_Modis_Channel_Equivalent = .true.  )
-                        
-                   
-    
+
+
+
        end do
-   
+
     end if
-    
+
     first_run = .false.
-    
-  
+
+
   end subroutine cx_calculate_rtm
 
 
