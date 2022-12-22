@@ -179,8 +179,6 @@
    use CX_SEA_IR_EMISS_MOD, only: &
     forget_sea_ir_emiss
 
-   use CX_REAL_BOOLEAN_MOD
-
    use CX_DUST_MOD, only: &
         FORGET_ABI_DUST &
       , GET_SEGMENT_ABI_DUST_PROB &
@@ -497,8 +495,6 @@
    use CX_ABI_LHP_MOD, only: &
        SET_ABI_USE_104um_FLAG
 
-   use CX_VGAC_MOD, only:
-
    use cleanup, only: cleanup_tempdir, cleanup_tempdir__exit
 
    use tracer, only: waitpoint, Set_Tracer_Flag, maybe_clone, update_skip_processing
@@ -718,7 +714,7 @@
      !----------------------------------------------------------------------------
       call chrono%tic(16)
 
-      call chrono%tic(1)
+      call chrono%tic(17)
 
       !----------------------------------------------------------------------
       ! Marker: READ IN CLAVRXORB_FILE_LIST AND SET FLAGS
@@ -1057,7 +1053,7 @@
          Image%Number_Of_Segments = Image%Number_Of_Lines / Image%Number_Of_Lines_Per_Segment + 1
       endif
 
-
+      call chrono%tac(17)
 
       Segment_loop: do Segment_Number = 1,Image%Number_Of_Segments
 

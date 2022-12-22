@@ -10,7 +10,7 @@ subroutine timer_set_up (timer_obj)
    type(timer), intent(inout) :: timer_obj
    character(len=100), allocatable :: class_list(:)
 
-   allocate (class_list(16))
+   allocate (class_list(17))
 
    class_list(1)  =  "Level-1b Processing                 ."
    class_list(2)  =  "Ancil. Data Processing              ."
@@ -28,6 +28,7 @@ subroutine timer_set_up (timer_obj)
    class_list(14) =  "Earth Radiation Budget              ."
    class_list(15) =  "Pixel-HDF Write                     ."
    class_list(16) =  "Total Time for Processing This Orbit."
+   class_list(17) =  "Before Segment File Processing      ."
 
    call timer_obj % init (class_list)
 
