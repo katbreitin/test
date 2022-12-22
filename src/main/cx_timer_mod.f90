@@ -2,7 +2,7 @@ module cx_timer_mod
 use timer_mod
 
 type(timer) :: chronos_rttov
-
+type(timer) :: chronos_acha
 
 contains
 subroutine timer_set_up (timer_obj)

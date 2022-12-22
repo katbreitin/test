@@ -383,7 +383,8 @@
     , ABI_Use_104um_Flag &
     , Static_Ref_065um_Dark_Composite &
     , Subpixel_Cloud_Fraction &
-    , Static_Dark_Sky_Flag
+    , Static_Dark_Sky_Flag &
+    , Verbose_Level_Flag
 
    use SNOW_ROUTINES_MOD, only: &
       COMPUTE_SNOW_CLASS &
@@ -485,7 +486,8 @@
 
    use TIMER_MOD
 
-   use CX_TIMER_MOD, only: timer_set_up, timer_set_up_all, chronos_rttov
+   use CX_TIMER_MOD, only: timer_set_up, timer_set_up_all &
+      , chronos_rttov, chronos_acha
 
    use UNIVERSAL_CLOUD_TYPE_MODULE, only: UNIVERSAL_CLOUD_TYPE
 
@@ -594,7 +596,9 @@
    call timer_set_up_all (chrono_all)
    call timer_set_up (chrono)
 
-   call chronos_rttov % init(['clear_sky','sfc_emis '])
+
+
+          print*,Verbose_Level_Flag
 
    narg=command_argument_count()
 
@@ -645,6 +649,25 @@
    !*************************************************************************
 
    call SETUP_USER_DEFINED_OPTIONS()
+  
+
+  call chronos_rttov % init(['clear_sky','sfc_emis '] &
+     , off=Verbose_Level_Flag .lt. 9)
+  call chronos_acha % init([&
+          'ACHA SETUP .' &
+         ,'ACHA HEIGT .' &
+         ,'ACHA COMP  .'&
+         ,'Shadow     .'&
+         ,'Alloc Main .'&
+         ,'LLR Center .'&
+         ,'Pass loop  .'&
+         ,'Post Proc  .'&
+         ,'ACHA total .'&
+         ,'FULL RETRI .'&
+         ,'NON-FULL   .'&
+         ] , off = Verbose_Level_Flag .lt. 9)
+
+
 
    !--- make directory for temporary files created during this run
    nc = len_trim(Temporary_Data_Dir)
@@ -1910,7 +1933,8 @@
         !*************************************************************************
         ! Marker: End of loop over orbital segments
         !*************************************************************************
-
+       call chronos_acha % summary(title = 'ACHA', sort=.true.)
+       call chronos_rttov % summary(title = 'RTTOV', sort=.true.)
       end do Segment_loop
 
       call MESG ( "Finished Processing All Orbital Segments")
@@ -1981,6 +2005,9 @@
 
       call chronos_rttov % summary(title = 'RTTOV')
       call chronos_rttov % reset()
+
+      call chronos_acha % summary(title = 'ACHA',sort=.true.)
+      call chronos_acha % reset()
 
       !--- write algorithm attributes to level2
       call WRITE_ALGORITHM_ATTRIBUTES()

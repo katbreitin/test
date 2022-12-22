@@ -16,6 +16,8 @@ module ACHA_CLAVRX_BRIDGE
  use LEVEL2_STRUCTURES_MOD, only: &
      Clavrx_Global_Attr
 
+use CX_TIMER_MOD, only:  chronos_acha
+
  use CX_ABI_LHP_MOD_ALG_FUNCTION
 
  use CALIBRATION_CONSTANTS_MOD, only: &
@@ -23,7 +25,7 @@ module ACHA_CLAVRX_BRIDGE
    , ABI_FPT_Thresh_073um, ABI_FPT_Thresh_085um, ABI_FPT_Thresh_097um &
    , ABI_FPT_Thresh_104um, ABI_FPT_Thresh_110um, ABI_FPT_Thresh_120um &
    , ABI_FPT_Thresh_133um
-   
+
  implicit none
 
  public :: AWG_CLOUD_HEIGHT_BRIDGE
@@ -44,9 +46,9 @@ module ACHA_CLAVRX_BRIDGE
 
 !----------------------------------------------------------------------
 ! ACHA BRIDGE subroutine
-!---------------------------------------------------------------------- 
+!----------------------------------------------------------------------
  subroutine AWG_CLOUD_HEIGHT_BRIDGE()
- 
+
    implicit none
 
    logical, save:: First_Call = .true.
@@ -57,6 +59,8 @@ module ACHA_CLAVRX_BRIDGE
        call MESG('ACHA starts ', color = 46)
    endif
 
+   call chronos_acha % tic(9)
+   call chronos_acha % tic(1)
    !---null pointers before filling them
    call NULL_INPUT()
    call NULL_OUTPUT()
@@ -70,7 +74,7 @@ module ACHA_CLAVRX_BRIDGE
 
    !---- initalize Output structure
    call SET_OUTPUT()
-  
+
    !----set symbols to local values
    call SET_SYMBOL()
 
@@ -96,8 +100,8 @@ module ACHA_CLAVRX_BRIDGE
    !--- Determine 10.4 vs 11 micron channel and DQF impacts on Mode (GOES-RU only)
    Input%Use_10_4 = .false.
    ABI_Use_104um_Flag = .false.
-
-   !--- if DQFs not set, skip using them for acha mode 
+call chronos_acha % tac(1)
+   !--- if DQFs not set, skip using them for acha mode
    if (DQF_Set_Flag) then
 
       if (Sensor%WMO_id == 271) then
@@ -129,6 +133,8 @@ module ACHA_CLAVRX_BRIDGE
    !-----------------------------------------------------------------------
    !--- Call to AWG Cloud Height Algorithm (ACHA)
    !-----------------------------------------------------------------------
+call chronos_acha % tic(2)
+
 #ifdef ACHADIAG
 #ifdef ACHADUMP
    call AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol, Output, Dump=Dump, Diag=Diag)
@@ -142,19 +148,19 @@ module ACHA_CLAVRX_BRIDGE
    call AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol, Output)
 #endif
 #endif
-   
-
+call chronos_acha % tac(2)
+call chronos_acha % tic(3)
    !-----------------------------------------------------------------------
    !--- Call algorithm to make ACHA optical and microphysical properties
    !-----------------------------------------------------------------------
    call ACHA_COMP_ALGORITHM(Input, Symbol, Output)
-
+call chronos_acha % tac(3)
 
 #ifdef SHADOWON
    !-----------------------------------------------------------------------
    !--- Call to Geometrical Shadow Algorithm
    !-----------------------------------------------------------------------
-  
+call chronos_acha % tic(4)
    call CLOUD_SHADOW_RETR (  &
            ACHA%Zc &
          , Geo%Solaz &
@@ -163,12 +169,13 @@ module ACHA_CLAVRX_BRIDGE
          , Nav%Lon &
          , Nav%Lat_Pc &
          , Nav%Lon_Pc &
-         , CLDMASK%Shadow_Mask ) 
- 
+         , CLDMASK%Shadow_Mask )
+
    !!---- copy shadow result into cloud mask test bits
-   where (CLDMASK%Shadow_Mask == 1 .and. CLDMASK%Cld_Mask == 0 )  
+   where (CLDMASK%Shadow_Mask == 1 .and. CLDMASK%Cld_Mask == 0 )
            CLDMASK%Cld_Test_Vector_Packed ( 2 , :, : )  = ibset (CLDMASK%Cld_Test_Vector_Packed ( 2 , :, : )  , 6 )
    end where
+   call chronos_acha % tac(4)
 #endif
 
    !-----------------------------------------------------------------------
@@ -181,13 +188,15 @@ module ACHA_CLAVRX_BRIDGE
    !---  read CVS Tag from ACHA and store in global variable for output
    !-----------------------------------------------------------------------
    call SET_ACHA_VERSION(Acha_Version)
-  
+
    First_Call = .false.
+
+   call chronos_acha % tac(9)
 
  end subroutine AWG_CLOUD_HEIGHT_BRIDGE
 
  !-----------------------------------------------------------------------------
- ! Nullify the pointers holding input 
+ ! Nullify the pointers holding input
  !-----------------------------------------------------------------------------
  subroutine NULL_INPUT()
      Input%Invalid_Data_Mask =>  null()
@@ -281,7 +290,7 @@ module ACHA_CLAVRX_BRIDGE
      Input%Tc_NWP =>   null()
  end subroutine NULL_INPUT
  !-----------------------------------------------------------------------------
- ! Nullify the pointers holding input 
+ ! Nullify the pointers holding input
  !-----------------------------------------------------------------------------
  subroutine NULL_DIAG()
      Diag%Array_1 =>  null()
@@ -578,7 +587,7 @@ module ACHA_CLAVRX_BRIDGE
    Input%Surface_Type => Sfc%Sfc_Type
    Input%Cloud_Mask => CLDMASK%Cld_Mask
    Input%Cloud_Probability => CLDMASK%Posterior_Cld_Probability
-   Input%Ice_Cloud_Probability =>CLDMASK%Posterior_Ice_Probability 
+   Input%Ice_Cloud_Probability =>CLDMASK%Posterior_Ice_Probability
    Input%Cloud_Phase_Uncertainty => Cld_Phase_Uncertainty
    Input%Cloud_Type => Cld_Type
    Input%Elem_Idx_Nwp =>  NWP_PIX%I_Nwp
@@ -601,9 +610,9 @@ module ACHA_CLAVRX_BRIDGE
 ! Set up the ACHA Diagnostic Structure
 !----------------------------------------------------------------------
  subroutine SET_DIAG
-     Diag%Array_1 => Diag_Pix_Array_1 
-     Diag%Array_2 => Diag_Pix_Array_2 
-     Diag%Array_3 => Diag_Pix_Array_3 
+     Diag%Array_1 => Diag_Pix_Array_1
+     Diag%Array_2 => Diag_Pix_Array_2
+     Diag%Array_3 => Diag_Pix_Array_3
  end subroutine SET_DIAG
  !----------------------------------------------------------------------
  ! Set up the ACHA Diagnostic (one pixel) Dump Structure
@@ -615,7 +624,7 @@ module ACHA_CLAVRX_BRIDGE
      Dump%Line_Abs_Idx = Line_Abs_Idx_Acha_Dump
  end subroutine SET_DUMP
  !----------------------------------------------------------------------
- ! 
+ !
  !----------------------------------------------------------------------
  subroutine LHP_CHN_CHECK ()
    REAL, DIMENSION(Nchan_Clavrx) :: LHP_THRESH

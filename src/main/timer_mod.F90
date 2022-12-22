@@ -14,6 +14,7 @@ type Timer
    character(len=200), allocatable:: class_list(:)
    integer :: n_class
    real, allocatable :: sec_per_class(:)
+   logical :: off = .false.
  contains
    procedure, public :: Tic, Tac, init, summary, reset, get
  end type Timer
@@ -21,9 +22,16 @@ type Timer
 
 contains
 
-  subroutine  init(self, class_list)
+  subroutine  init(self, class_list, off )
     class (Timer), intent(inout) :: self
     character(len=*), intent(in) :: class_list(:)
+    logical , optional, intent(in) :: off
+
+
+    if ( present(off)) self % off = off
+
+    if (self % off) return
+
 
     self % n_class = size(class_list)
 
@@ -49,14 +57,14 @@ contains
 
     get = self % sec_per_class(class)
     if (present(minute)) get = get/60.
-
+    if (self % off) get = -1
   end function
 
   subroutine Tic(self,class)
      class (Timer), intent(inout) :: self
      integer, intent(in) :: class
      integer :: start , rate
-
+     if (self % off) return
      call system_clock(count_rate=rate)
      call system_clock(start)
      self % start=start
@@ -71,7 +79,7 @@ contains
       class (Timer), intent(inout) :: self
       integer, intent(in) :: class
       integer :: finish
-
+      if (self % off) return
       if(self%rate<0) then
         print*, 'Call to ''Tac'' subroutine must come after call to ''Tic'''
         stop
@@ -99,7 +107,7 @@ contains
        character(len= 12) :: time_word
        character(len =50) :: FMT
        character(len=100) :: title_local
-
+        if (self % off) return
         allocate(sec_array(self %n_class ))
         allocate(sort_array(self %n_class ))
 
@@ -121,7 +129,7 @@ contains
           sec_array = sec_array/60.
           time_word = ' (minute): '
       end if
-      FMT = "(I3, 2X,A, A, F10.5,2X, I3)"
+      FMT = "(I3, 2X,A, A, F10.5,2X, I7)"
       print*
       print*,'<--------  '//trim(title_local)//' ---------->'
       print*,'RNK DESCRIPTION                                TOTAL TIME  COUNT'
@@ -140,7 +148,7 @@ contains
 
     subroutine reset (self)
        class (Timer), intent(inout) :: self
-
+       if (self % off) return
        self % sec_per_class(1:self%n_class) = 0
        self % class_rate(1:self%n_class) = 0
        self % class_start(1:self%n_class) = 0
