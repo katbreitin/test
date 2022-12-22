@@ -185,9 +185,13 @@ subroutine CLOUD_SHADOW_RETR (  &
             print*,'something not correct in Shadow routine: ',__FILE__,' Line: ',__LINE__
             print*, ' we need to fix this..'
             print*, 'long_idx,short_idx: ',long_idx,short_idx
+            print*, 'Diagnostics for SHADOW BUG:'
             print*,ii,jj
             print*,diff_lon,delta_Lon_ii,delta_Lon_jj
             print*,diff_Lat,delta_Lat_ii,delta_Lat_jj
+            print*,i,j
+            print*, Lat(i,j) , Lat(i,j-1)
+            print*, ' END DIAGNOSTCS SHADOW'
             print*
             already_bad_message = .true.
 
