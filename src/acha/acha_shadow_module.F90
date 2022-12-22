@@ -26,7 +26,10 @@
 !--------------------------------------------------------------------------------------
 module ACHA_SHADOW
 
+ use CX_REAL_BOOLEAN_MOD
  implicit none
+
+
 
  public:: CLOUD_SHADOW_RETR
 
@@ -142,9 +145,13 @@ subroutine CLOUD_SHADOW_RETR (  &
       integer :: idx_1 , idx_2
       integer :: k
       logical :: already_bad_message = .false.
+      integer :: count_equal_lon_lat
 
       ! initialize output
       shad_arr = 0
+
+      ! initialize
+      count_equal_lon_lat = 0
 
       dim_1 = size ( shad_arr, 1 )
       dim_2 = size ( shad_arr, 2 )
@@ -154,19 +161,23 @@ subroutine CLOUD_SHADOW_RETR (  &
       delta_Lat_jj = Lat(i,j) - Lat(i,j-1)
       delta_lon_jj = Lon(i,j) - Lon(i,j-1)
 
-
-
-
       diff_Lat = Lat1 - Lat(i,j)
       diff_Lon = lon1 - Lon(i,j)
 
-       if (  Lat(i,j) .eq. Lat(i-1,j) .and.  Lat(i,j) .eq. Lat(i,j-1) ) return
+      if (  Lat(i,j) .eq. Lat(i-1,j) .and.  Lat(i,j) .eq. Lat(i,j-1) ) return
       if (  Lon(i,j) .eq. Lon(i-1,j) .and.  Lon(i,j) .eq. Lon(i,j-1) ) return
 
       !     use of these equations:
       ! diff_Lon = ii * delta_lon_ii + jj * delta_lon_jj
       ! diff_Lat = ii * delta_Lat_ii + jj * delta_Lat_jj
       !   solve for ii =>
+
+      if ( (delta_Lat_ii .eqr. 0.0) .or. &
+           (delta_Lat_jj .eqr. 0.0) .or. &
+           (delta_Lon_ii .eqr. 0.0) .or. &
+           (delta_Lat_jj .eqr. 0.0)  ) THEN
+         return
+      end if
 
       ii = ( diff_Lat * delta_lon_jj - diff_Lon * delta_Lat_jj) / &
          (delta_Lat_ii * delta_lon_jj - delta_lon_ii * delta_Lat_jj)
