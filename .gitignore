@@ -89,6 +89,5 @@ build/env_settings/user_change_me.cfg
 /run/*
 
 # Things that would otherwise be excluded:
-!/run/examples-*
 !/build/setup_autoconf/config.sub
 
