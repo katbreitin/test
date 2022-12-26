@@ -18,7 +18,7 @@ import glob
 import re
 import errno
 import copy
-import distutils
+import distutils.dir_util
 
 if sys.version_info[0] >= 3:
     import configparser as cp
@@ -842,8 +842,7 @@ F_compiler_opts_lines+'\n'+ \
                     shutil.rmtree(dir_to)   # Remove any identical existing dir
                 mkdir_p(dir_to)  # Create directory if needed
                 distutils.dir_util.copy_tree(dir_from, dir_to, preserve_mode=1,
-                                             preserve_times=1,
-                                             preserve_symlinks=1)
+                                      preserve_times=1, preserve_symlinks=1)
 
           # Return to the original directory:
         os.chdir(beg_cwd)
