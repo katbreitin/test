@@ -1,3 +1,3 @@
-cloud_base/cloud_base_clavrx_bridge_module.f90
-cloud_base/cloud_base_clavrx_services_module.f90
-cloud_base/cloud_base_module.f90
+cloud_base_clavrx_bridge_module.f90
+cloud_base_clavrx_services_module.f90
+cloud_base_module.f90
