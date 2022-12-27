@@ -1046,11 +1046,7 @@ def main(action):
 
           # List of libraries and/or executables to build:
         libexe_fn_list = ["lib"+app_label+".a",
-                          os.path.join(abs_paths["built_exe"], "clavrxorb"),
-                          os.path.join(abs_paths["built_exe"],
-                                       "comp_asc_des_level2b"),
-                          os.path.join(abs_paths["built_exe"],
-                                       "drive_subset_level2b")]
+                          os.path.join(abs_paths["built_exe"], "clavrxorb")]
 
           # Ensure that needed paths exist; if not, create them:
         tmp_l = [abs_paths["run_etc"]]
