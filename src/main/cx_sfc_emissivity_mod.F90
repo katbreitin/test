@@ -26,7 +26,7 @@ module cx_sfc_emissivity_mod
   use CLAVRX_MESSAGE_MOD, only: MESG, VERB_LEV
 
   use CX_TIMER_MOD, only:  chronos_rttov
-  
+
   implicit none
   private
   public:: cx_sfc_emiss_populate_ch
@@ -83,7 +83,7 @@ contains
     case(ETsfc_emiss_use_option_SEEBOR)
       if (first_run) call MESG('SFC EMISS SEEBOR',  level = verb_lev % DEFAULT)
       path_sfc = trim(Ancil_Data_Dir)//"static/sfc_data"
-
+      call chronos_rttov % tic(4)
       do Chan_Idx = 20, Nchan_Clavrx
         if (ch(Chan_Idx)%Obs_Type /= MIXED_OBS_TYPE .and. &
               ch(Chan_Idx)%Obs_Type /= THERMAL_OBS_TYPE) cycle
@@ -93,6 +93,7 @@ contains
               , Geo%Space_Mask, image % time_start % month, ch(chan_idx)%Sfc_Emiss)
         end if
       end do
+      call chronos_rttov % tac(4)
 
     case(ETsfc_emiss_use_option_CRTM)
       print*,ETsfc_emiss_use_option_CRTM

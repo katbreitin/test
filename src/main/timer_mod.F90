@@ -1,3 +1,36 @@
+!-----------------------------------------------------------------------------
+! Clouds from AVHRR Extended (CLAVR-x) 1b PROCESSING SOFTWARE Version 6.0
+!
+! NAME: TIMER_MOD
+!
+! PURPOSE:
+!
+! DESCRIPTION:
+!
+! AUTHORS:
+!  Andi Walther, CIMSS, andi.walther@ssec.wisc.edu
+!
+! COPYRIGHT
+! THIS SOFTWARE AND ITS DOCUMENTATION ARE CONSIDERED TO BE IN THE PUBLIC
+! DOMAIN AND THUS ARE AVAILABLE FOR UNRESTRICTED PUBLIC USE. THEY ARE
+! FURNISHED "AS IS." THE AUTHORS, THE UNITED STATES GOVERNMENT, ITS
+! INSTRUMENTALITIES, OFFICERS, EMPLOYEES, AND AGENTS MAKE NO WARRANTY,
+! EXPRESS OR IMPLIED, AS TO THE USEFULNESS OF THE SOFTWARE AND
+! DOCUMENTATION FOR ANY PURPOSE. THEY ASSUME NO RESPONSIBILITY (1) FOR
+! THE USE OF THE SOFTWARE AND DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL
+! SUPPORT TO USERS.
+!
+! This copyright pertains to all routines in the CLAVR-x system unless stated
+!
+! REVISION HISTORY:
+! Created 22 December 2022
+!
+! Basic Running Instruction
+!
+!
+! Overview of capabilities.
+!-------------------------------------------------------------------------
+
 module timer_mod
 private
 

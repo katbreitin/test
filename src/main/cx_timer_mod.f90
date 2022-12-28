@@ -41,7 +41,7 @@ subroutine timer_set_up_all (timer_obj)
    character(len=100), allocatable :: class_list(:)
 
    allocate (class_list(1))
-   class_list(1) =  "Total Time for All Orbits"
+   class_list(1) =  "Total Time for All Orbits              ."
    call timer_obj % init (class_list)
 end subroutine
 end module

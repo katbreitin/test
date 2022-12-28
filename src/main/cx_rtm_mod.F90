@@ -87,16 +87,17 @@ contains
                          ,  inp % Chan_Idx &
                          ,  Trans_Prof_Rtm  &
                          ,  Use_Modis_Channel_Equivalent = .true.  )
-      call chronos_rttov % tac(1)                   
+      call chronos_rttov % tac(1)
 #else
     print*, 'RTTOV selected as RTM but not compiled with RTTOV'
     stop
 
 #endif
     end if
-
+call chronos_rttov % tic(3)
     if (  inp % which_rtm == 1) then
       if (first_run) print*,'Clear Sky Transmission with PFAAST'
+
       do ii = 1, n_arr(2)
 
 
@@ -116,6 +117,7 @@ contains
        end do
 
     end if
+      call chronos_rttov % tac(3)
 
     first_run = .false.
 

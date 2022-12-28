@@ -133,7 +133,7 @@ call chronos_acha % tac(1)
    !-----------------------------------------------------------------------
    !--- Call to AWG Cloud Height Algorithm (ACHA)
    !-----------------------------------------------------------------------
-call chronos_acha % tic(2)
+   call chronos_acha % tic(2)
 
 #ifdef ACHADIAG
 #ifdef ACHADUMP
@@ -148,13 +148,13 @@ call chronos_acha % tic(2)
    call AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol, Output)
 #endif
 #endif
-call chronos_acha % tac(2)
-call chronos_acha % tic(3)
+   call chronos_acha % tac(2)
+   call chronos_acha % tic(3)
    !-----------------------------------------------------------------------
    !--- Call algorithm to make ACHA optical and microphysical properties
    !-----------------------------------------------------------------------
    call ACHA_COMP_ALGORITHM(Input, Symbol, Output)
-call chronos_acha % tac(3)
+   call chronos_acha % tac(3)
 
 #ifdef SHADOWON
    !-----------------------------------------------------------------------

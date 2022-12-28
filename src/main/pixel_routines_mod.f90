@@ -78,8 +78,6 @@ module PIXEL_ROUTINES_MOD
     , ndsi_sfc, nddi_toa, ndsi_toa, Ndvi_Sfc, Ndvi_Sfc_White_Sky,Ndvi_Toa &
     , nonconfident_cloud_mask_fraction
 
- use NUMERICAL_ROUTINES_MOD,only:
-
 use univ_kind_defs_mod, only: i1
 
  use NWP_COMMON_MOD,only: &
@@ -95,15 +93,13 @@ use univ_kind_defs_mod, only: i1
 
  use FILE_UTILS,only: get_lun
 
- use SURFACE_PROPERTIES_MOD, only:
-
- use CALIBRATION_CONSTANTS_MOD,only:
-
  use ECM2_CLOUD_MASK_CLAVRX_BRIDGE, only: COMPUTE_TYPE_FROM_PHASE
 
  use CLAVRX_MESSAGE_MOD, only: MESG, verb_lev
 
  use Compare_Float_Numbers
+
+ use CX_REAL_BOOLEAN_MOD
 
 !use RT_UTILITIES_MOD, only: COMPUTE_CLEAR_SKY_SCATTER
 
