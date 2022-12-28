@@ -1,8 +1,8 @@
-cx_sds_io/src/cx_h5_read_mod.f90
-cx_sds_io/src/cx_hdf_read_mod.f90
-cx_sds_io/src/cx_hdf_write_mod.f90
-cx_sds_io/src/cx_ncdf_read_mod.f90
-cx_sds_io/src/cx_sds_io_mod.f90
-cx_sds_io/src/cx_sds_type_definitions_mod.f90
-cx_sds_io/src/cx_sds_write_mod.f90
-cx_sds_io/src/readh5dataset.f90
+src/cx_h5_read_mod.f90
+src/cx_hdf_read_mod.f90
+src/cx_hdf_write_mod.f90
+src/cx_ncdf_read_mod.f90
+src/cx_sds_io_mod.f90
+src/cx_sds_type_definitions_mod.f90
+src/cx_sds_write_mod.f90
+src/readh5dataset.f90

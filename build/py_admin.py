@@ -56,6 +56,32 @@ def parse_via_configparser(cfg, section, entry, boolean=False):
 
 
 #------------------------------------------------------------------------------
+def parse_custom_srcdir(root_path, cfg, section, entry, default_evalue):
+    """Return a tuple of absolute default and custom paths for an entry."""
+    if cfg.has_option(section, entry):
+        srcdir_tmp = parse_via_configparser(cfg, section, entry).strip()
+        srcdir_default = os.path.abspath(os.path.join(root_path,
+                                           *default_evalue.split(os.path.sep)))
+        if len(srcdir_tmp) > 0:
+            if os.path.isabs(srcdir_tmp):
+                srcdir = os.path.abspath(srcdir_tmp)  # Remove any '.', ".."
+            else:
+                srcdir = os.path.abspath(os.path.join(root_path,
+                                               *srcdir_tmp.split(os.path.sep)))
+            if not os.path.isdir(srcdir):
+                print ("ERROR: The custom source code directory ("+srcdir+\
+                       ") specified in the build environment settings "+ \
+                       "configuration file for the entry '"+entry+ \
+                       "' does not exist.\n")
+                sys.exit(1)
+        else:
+            srcdir = None  # No custom srcdir specified
+        return (srcdir_default, srcdir) 
+    else:
+        return (None, None)  # Entry does not exist
+
+
+#------------------------------------------------------------------------------
 if "check_output" not in dir(subprocess):
     # subprocess.check_output does not exist (Python 2.6), so use a backported
     #  version from Python 2.7 instead, and "add" it to subprocess:
@@ -95,8 +121,10 @@ def extend_composite_pnf(anchor_path, pnf_fpath, sdwe_fpath, pnf_pfx,
                     query_sub_pnf = True   # Assume it will be queried
 
                     if query_sub_pnf:   # Add to composite pathname list
-                        sub_pnf_fpath = os.path.join(root_src_path,
-                                                  trimmed_line, "etc", pnf_pfx)
+                        sub_pnf_path = os.path.abspath(os.path.join(
+                                                  root_src_path, trimmed_line))
+                        sub_pnf_fpath = os.path.join(sub_pnf_path, "etc",
+                                                     pnf_pfx)
                         if os.path.isfile(sub_pnf_fpath):
                             with open(sub_pnf_fpath, "rt") as sub_pnf_f:
                                   # Read a list of source code files:
@@ -110,8 +138,8 @@ def extend_composite_pnf(anchor_path, pnf_fpath, sdwe_fpath, pnf_pfx,
                                       #  executable name as the filename's
                                       #  suffix:
                                     exe_pnf_fpath = pnf_fpath+'.'+exe_name
-                                    line_to_write = os.path.join(root_src_path,
-                                                                  src_part)
+                                    line_to_write = os.path.join(sub_pnf_path,
+                                                         src_part.strip())+'\n'
                                     with open(exe_pnf_fpath, "wt") as exe_pnf_f:
                                         exe_pnf_f.write(line_to_write)
                                 elif "%LIB" in pnf_line: # Needs external lib
@@ -120,8 +148,8 @@ def extend_composite_pnf(anchor_path, pnf_fpath, sdwe_fpath, pnf_pfx,
                                     lib_name = re.split("[\(\)]", lib_part)[1]
                                     if lib_name in available_ext_libs:
                                         line_to_append = \
-                                                    os.path.join(root_src_path,
-                                                                 src_part)
+                                                    os.path.join(sub_pnf_path,
+                                                         src_part.strip())+'\n'
                                         pnf_f.write(line_to_append)
                                 elif "%AUXFLAGS" in pnf_line: # Compiler opts
                                     aux_part, src_part = \
@@ -129,8 +157,8 @@ def extend_composite_pnf(anchor_path, pnf_fpath, sdwe_fpath, pnf_pfx,
                                     aux_ID = re.split("[\(\)]", aux_part)[1]
                                     # Add aux_ID to appended line:
                                     line_to_append = \
-                                        os.path.join(root_src_path,
-                                                     src_part.strip())+ \
+                                        os.path.join(sub_pnf_path,
+                                                           src_part.strip())+ \
                                                         "@auxflags"+aux_ID+'\n'
                                     pnf_f.write(line_to_append)
                                 else:            # Normal source code
@@ -138,7 +166,8 @@ def extend_composite_pnf(anchor_path, pnf_fpath, sdwe_fpath, pnf_pfx,
                                     if trimmed_pnf_line:  # Not all "whitespace"
                                         # Append root source code path:
                                         line_to_append = \
-                                           os.path.join(root_src_path, pnf_line)
+                                             os.path.join(sub_pnf_path,
+                                                         trimmed_pnf_line)+'\n'
                                         pnf_f.write(line_to_append)
 
 
@@ -175,6 +204,8 @@ def build(abs_paths, abs_fpaths, *action_args):
                                                build_envf_pfx+".mk.include")
     absl_fpaths["src_dirs_w_etc"] = os.path.join(absl_paths["anchor"],
                                                  src_dirs_w_etc_fn)
+    absl_fpaths["autogen_src_dirs_w_etc"] = os.path.join(absl_paths["anchor"],
+                                            "autogenerated_"+src_dirs_w_etc_fn)
     absl_fpaths["univ_kind_defs"] = os.path.join(absl_paths["build"], "src",
                                                  univ_kind_defs_fn)
     absl_fpaths["app_kinds"] = os.path.join(absl_paths["build"], "src",
@@ -418,6 +449,17 @@ def build(abs_paths, abs_fpaths, *action_args):
             cfg_use_CRTM = parse_via_configparser(cfg, this_section,
                       "Use CRTM (radiative transfer code/data) when possible?",
                                                   boolean=True)
+
+            this_section = \
+                  "Customizable Directories For Certain Source Code Components"
+            customize_src_dirs = cfg.has_section(this_section)
+            if customize_src_dirs:  # Build config file has this section
+                csd_to_proc = []
+
+                this_entry = "ACHA code directory to use"
+                csd_to_proc.append(parse_custom_srcdir(absl_paths["pkg_top"],
+                                                       cfg, this_section,
+                                                       this_entry, "src/acha"))
 
             cfg_deGRIB_txt = ''
             if cfg_use_GRIB:
@@ -732,6 +774,44 @@ cfg_NetCDF_txt+ \
             shutil.copy(absl_fpaths["supp_defs"], absl_paths["makedir"])
             rm_f(absl_fpaths["supp_defs"])
 
+            # Create customized source directory configuration file:
+            if customize_src_dirs:
+                with open(absl_fpaths["src_dirs_w_etc"], "rt") as f:
+                    template = f.readlines()
+                template_rootdir = template[0].strip()
+                csd = {}
+                try:
+                    for default, custom in csd_to_proc:
+                        if custom is not None:
+                            rel_default = os.path.relpath(default,
+                                                          template_rootdir)
+                            rel_custom = os.path.relpath(custom,
+                                                         template_rootdir)
+                            csd[rel_default] = rel_custom
+                except:
+                    print("ERROR: Unable to determine relative path of a "+ \
+                          "custom source directory.  Check "+ \
+                          absl_fpaths["ucm_cfg"]+" and "+ \
+                          absl_fpaths["src_dirs_w_etc"]+ \
+                          " for errors. If you are working on a Microsoft "+ \
+                          "Windows system, all source code must be located "+ \
+                          "on the same drive.")
+                if len(csd) > 0:  # Write a customized file (using a template)
+                    with open(absl_fpaths["autogen_src_dirs_w_etc"], "wt") as f:
+                        f.write(template[0])  # write root dir
+                        for line in template[1:]:
+                            line_key = line.strip()
+                            if line_key in csd:
+                                f.write(csd[line_key]+'\n')  # Customized
+                            else:
+                                f.write(line)  # Unchanged
+                else:  # Simply copy the uncustomized file
+                    shutil.copy(absl_fpaths["src_dirs_w_etc"],
+                                absl_fpaths["autogen_src_dirs_w_etc"])
+            else:
+                shutil.copy(absl_fpaths["src_dirs_w_etc"],
+                            absl_fpaths["autogen_src_dirs_w_etc"])
+
         # Read build environment information files, parse their contents, and
         #  save the results in a dictionary for later reference:
 
@@ -770,13 +850,13 @@ cfg_NetCDF_txt+ \
                   hybrid = ["-DUSE_MPI", abd["Fortran_OpenMP_flags"]] \
                   )
 
-    # Create composite pathname file (list); main code library:
+    # Create composite pathname file (list); build main library:
 
         pnf_fpath = os.path.join(absl_paths["makedir"], pnf_pfx)
         exe_pnf_fpath = pnf_fpath+'.'+os.path.basename(absl_fpaths["libexe"])
         if not (os.path.isfile(pnf_fpath) and os.path.isfile(exe_pnf_fpath)):
             extend_composite_pnf(absl_paths["anchor"], pnf_fpath,
-                                 absl_fpaths["src_dirs_w_etc"], pnf_pfx,
+                                 absl_fpaths["autogen_src_dirs_w_etc"], pnf_pfx,
                                  cfg_aux_libs_mnk)
 
         # Create build environment configuration file for Makefile creation:
@@ -865,6 +945,7 @@ def main(action):
 
       # Construct frequently-referenced paths; store in a dictionary:
     paths_cfg = [("build", ("anchor", ['.'])),
+                 ("pkg_top", ("anchor", [".."])),
                  ("built_exe", ("anchor", ["..", "run", "bin"])),
                  ("run", ("anchor", ["..", "run"])),
                  ("run_etc", ("run", ["etc"])),
@@ -965,11 +1046,7 @@ def main(action):
 
           # List of libraries and/or executables to build:
         libexe_fn_list = ["lib"+app_label+".a",
-                          os.path.join(abs_paths["built_exe"], "clavrxorb"),
-                          os.path.join(abs_paths["built_exe"],
-                                       "comp_asc_des_level2b"),
-                          os.path.join(abs_paths["built_exe"],
-                                       "drive_subset_level2b")]
+                          os.path.join(abs_paths["built_exe"], "clavrxorb")]
 
           # Ensure that needed paths exist; if not, create them:
         tmp_l = [abs_paths["run_etc"]]

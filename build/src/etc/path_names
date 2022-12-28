@@ -1,3 +1,2 @@
-../build/src/univ_kind_defs.f90
-../build/src/CLAVRx_kinds.f90
-
+univ_kind_defs.f90
+CLAVRx_kinds.f90
