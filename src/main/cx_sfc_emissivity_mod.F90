@@ -7,9 +7,8 @@ module cx_sfc_emissivity_mod
        read_seebor_emiss
 #ifdef LIBRTTOV
  use CX_RTTOV_SFC_EMISS, only: &
-      init_rttov_emiss &
-      , get_rttov_emiss &
-      , destroy_rttov_emiss
+       get_rttov_emiss
+       
 #endif
  use SURFACE_PROPERTIES_MOD,only: &
       COMPUTE_BINARY_LAND_COAST_MASKS &
@@ -74,7 +73,8 @@ contains
 #ifdef LIBRTTOV
       rttov_path = trim(Ancil_Data_Dir) // "static/rttov/"
         call chronos_rttov % tic(2)
-      call GET_RTTOV_EMISS(Nav%Lat, Nav%Lon, Geo%Space_Mask, rttov_path)
+      call GET_RTTOV_EMISS(Nav%Lat, Nav%Lon, Geo%Space_Mask &
+          , rttov_path)
         call chronos_rttov % tac(2)
 #else
       print*, 'RTTOV emissivity selected but not compiled with RTTOV'

@@ -1,3 +1,4 @@
 %LIB(RTTOV_Fortran)%:cx_rttov_bridge_mod.F90
 %LIB(RTTOV_Fortran)%:cx_rttov_mapping_mod.F90
 %LIB(RTTOV_Fortran)%:cx_rttov_sfc_emiss.F90
+%LIB(RTTOV_Fortran)%:cx_rttov_sensor_mod.F90

@@ -1,14 +1,17 @@
 module cx_rttov_mapping_mod
 
+  use pixel_common_mod,only: sensor
+
 contains
   !
   !
   !
   function channel_map (sensor &
     , ancil_data_path &
-    , chn,coef_filename &
+    , chn &
+    , coef_filename &
     , cld_coef_filename &
-    , max_satzen) result (list)
+    , max_satzen ) result (list)
 
 #define STRINGIFY(x) x
 
@@ -158,7 +161,6 @@ contains
       sensor_string = 'goes_'//sensor(6:7)//'_imager'
       rttov_version_string = '8'
       max_satzen = 75.
-
 
 
     case ('GOES-16')
@@ -337,6 +339,287 @@ contains
    if (rttov_version_string .eq. '8') max_satzen = 75.
 
 end function channel_map
+
+!--------------------------------------------------------------------------------------------------
+!> subroutine NAME: SENSOR_NAME_FOR_RTM
+!!
+!! Description:
+!! Knowing the WMO Satellite Identification Number
+!!
+!--------------------------------------------------------------------------------------------------
+
+function SENSOR_NAME_FOR_RTM ( wmo_id, sensorname, Chan_Idx ) result ( Sensor_Name_Rtm)
+
+   integer, intent(in) :: wmo_id
+   character (len =*) , intent(in) :: sensorname
+   integer, intent(in) :: Chan_Idx
+   character (len =20 ) ::  Sensor_Name_Rtm
+   integer :: i
+
+   select case(WMO_Id)
+
+   case(4) !METOP-A
+      Sensor_Name_Rtm = 'AVHRR-METOPA'
+
+   case(3) !METOP-B
+      Sensor_Name_Rtm = 'AVHRR-METOPB'
+
+   case(5) !METOP-C
+     Sensor_Name_Rtm = 'AVHRR-METOPC'
+
+   case(55) !MSG-8
+      Sensor_Name_Rtm = 'SEVIRI-MSG08'
+
+   case(56) !MSG-9
+      Sensor_Name_Rtm = 'SEVIRI-MSG09'
+
+   case(57) !MSG-10
+      Sensor_Name_Rtm = 'SEVIRI-MSG10'
+
+   case(70) !MSG-11
+      Sensor_Name_Rtm = 'SEVIRI-MSG11'
+
+   case(171) !MTSAT-1R
+      Sensor_Name_Rtm = 'MTSAT-1'
+
+   case(172) !MTSAT-2
+      Sensor_Name_Rtm = 'MTSAT-2'
+
+   case(173) !AHI-8
+      Sensor_Name_Rtm = 'AHI8'
+
+   case(174) !AHI-9
+      Sensor_Name_Rtm = 'AHI9'
+
+   case(200) !NOAA-8
+     Sensor_Name_Rtm = 'AVHRR-NOAA08'
+
+   case(201) !NOAA-9
+     Sensor_Name_Rtm = 'AVHRR-NOAA09'
+
+   case(202) !NOAA-10
+     Sensor_Name_Rtm = 'AVHRR-NOAA10'
+
+   case(203) !NOAA-11
+     Sensor_Name_Rtm = 'AVHRR-NOAA11'
+
+   case(204) !NOAA-12
+     Sensor_Name_Rtm = 'AVHRR-NOAA12'
+
+   case(205) !NOAA-14
+     Sensor_Name_Rtm = 'AVHRR-NOAA14'
+
+   case(206) !NOAA-15
+     Sensor_Name_Rtm = 'AVHRR-NOAA15'
+
+   case(207) !NOAA-16
+     Sensor_Name_Rtm = 'AVHRR-NOAA16'
+
+   case(208) !NOAA-17
+     Sensor_Name_Rtm = 'AVHRR-NOAA17'
+
+   case(209) !NOAA-18
+     Sensor_Name_Rtm = 'AVHRR-NOAA18'
+
+   case(223) !NOAA-19
+     Sensor_Name_Rtm = 'AVHRR-NOAA19'
+
+   case(224) !VIIRS - SNPP
+     Sensor_Name_Rtm = 'VIIRS-SNPP'
+
+   case(225)  !VIIRS NOAA-20
+      Sensor_Name_Rtm = 'VIIRS-N20'
+
+   case(226)  !VIIRS NOAA-21
+      Sensor_Name_Rtm = 'VIIRS-N21'
+
+   case(250) !GOES-8
+     Sensor_Name_Rtm = 'GOES-6'
+
+    case(251) !GOES-8
+     Sensor_Name_Rtm = 'GOES-7'
+
+   case(252) !GOES-8
+     Sensor_Name_Rtm = 'GOES-8'
+
+   case(253) !GOES-9
+     Sensor_Name_Rtm = 'GOES-9'
+
+   case(254) !GOES-10
+     Sensor_Name_Rtm = 'GOES-10'
+
+   case(255) !GOES-11
+     Sensor_Name_Rtm = 'GOES-11'
+
+   case(256) !GOES-12
+     Sensor_Name_Rtm = 'GOES-12'
+
+   case(257) !GOES-13
+     Sensor_Name_Rtm = 'GOES-13'
+
+   case(258) !GOES-14
+     Sensor_Name_Rtm = 'GOES-14'
+
+   case(259) !GOES-15
+     Sensor_Name_Rtm = 'GOES-15'
+
+   case(270) !GOES-16
+     Sensor_Name_Rtm = 'GOES-16'
+
+   case(271) !GOES-17
+     Sensor_Name_Rtm = 'GOES-17'
+
+   case(272) !GOES-18
+     Sensor_Name_Rtm = 'GOES-18'
+
+   case(706) !NOAA-6
+     Sensor_Name_Rtm = 'AVHRR-NOAA06'
+
+   case(707) !NOAA-7
+     Sensor_Name_Rtm = 'AVHRR-NOAA07'
+
+   case(708) !NOAA-5
+     Sensor_Name_Rtm = 'AVHRR-TIROSN'
+
+   case(783) !MODIS
+       Sensor_Name_Rtm = 'MODIS-TERRA'
+
+   case(784) !MODIS
+      Sensor_Name_Rtm = 'MODIS-AQUA'
+
+   case(510) !FY2A
+      Sensor_Name_Rtm ='FY2-1'
+
+   case(514) !FY2D
+      Sensor_Name_Rtm ='FY2-2'
+
+   case(515) !FY2E
+      Sensor_Name_Rtm ='FY2-3'
+
+   case(523) !FY3D
+      Sensor_Name_Rtm = 'FY3-D'
+
+   case(530) ! FY4-A
+      Sensor_Name_Rtm ='FY4-A'
+
+   case(810) !COMS
+      Sensor_Name_Rtm ='COMS-1'
+
+   case (840)
+       Sensor_Name_Rtm ='EPS-SG'
+
+   case default
+      print*,'sensor for WMO number not found in RT Utils  ', WMO_id
+      print*,'stopping ... Please fix this in rt_utils.F90'
+      print*,' better tell andi.walther@ssec.wisc.edu'
+      stop
+   end select
+
+
+
+   if (trim ( Sensorname) == 'AVHRR-IFF' .or. &
+      trim ( Sensorname) == 'AVHRR-FUSION')  then
+
+      !  sensor for channels 21:30 and 33:36 is HIRS
+      if ( any ( Chan_Idx ==  [ (i,i=21,30,1) , 33,34,35,36] ) ) then
+
+         ! - for this IFF Sensor_Name_Rtm is initially set to AVHRR-<Satellite>
+         select case(WMO_Id)
+
+         case(4) !METOP-A
+            Sensor_Name_Rtm = 'HIRS-METOPA'
+
+         case(3) !METOP-B
+            Sensor_Name_Rtm = 'HIRS-METOPB'
+
+         case(5) !METOP-C
+            Sensor_Name_Rtm = 'HIRS-METOPC'
+
+         case(200) !NOAA-8
+            Sensor_Name_Rtm = 'HIRS-NOAA08'
+
+         case(201) !NOAA-9
+            Sensor_Name_Rtm = 'HIRS-NOAA09'
+
+         case(202) !NOAA-10
+            Sensor_Name_Rtm = 'HIRS-NOAA10'
+
+         case(203) !NOAA-11
+            Sensor_Name_Rtm = 'HIRS-NOAA11'
+
+         case(204) !NOAA-12
+            Sensor_Name_Rtm = 'HIRS-NOAA12'
+
+         case(205) !NOAA-14
+            Sensor_Name_Rtm = 'HIRS-NOAA14'
+
+         case(206) !NOAA-15
+            Sensor_Name_Rtm = 'HIRS-NOAA15'
+
+         case(207) !NOAA-16
+            Sensor_Name_Rtm = 'HIRS-NOAA16'
+
+         case(208) !NOAA-17
+            Sensor_Name_Rtm = 'HIRS-NOAA17'
+
+         case(209) !NOAA-18
+            Sensor_Name_Rtm = 'HIRS-NOAA18'
+
+         case(223) !NOAA-19
+            Sensor_Name_Rtm = 'HIRS-NOAA19'
+
+         case(706) !NOAA-6
+            Sensor_Name_Rtm = 'HIRS-NOAA06'
+
+         case(707) !NOAA-7
+            Sensor_Name_Rtm = 'HIRS-NOAA07'
+
+         case(708) !NOAA-5
+            Sensor_Name_Rtm = 'HIRS-TIROSN'
+
+         case default
+            print*,'sensor for WMO number not found in RT Utils for AVHRR-IFF  ', WMO_id
+            print*,'stopping ... Please fix this in rt_utils.F90'
+            print*,' better tell andi.walther@ssec.wisc.edu'
+            stop
+         end select
+
+
+      end if
+   end if
+
+   if ((trim (Sensorname) == 'VGAC') .and. Sensor%Fusion_Flag)  then
+      if ( any ( Chan_Idx ==  [27,28,33,34,35,36] ) ) then
+           select case(WMO_Id)
+             case(224) !VIIRS - SNPP
+                Sensor_Name_Rtm = 'HIRS-METOPA'
+             case(225)  !VIIRS NOAA-20
+                Sensor_Name_Rtm = 'HIRS-METOPA'
+             case default
+                print*,'sensor for WMO number not found in RT Utils for VGAC  ', WMO_id
+                print*,'stopping ... Please fix this in rt_utils.F90'
+                print*,' better tell andi.walther@ssec.wisc.edu'
+                stop
+           end select
+      end if
+   end if
+
+   if (trim ( Sensorname) == 'VIIRS-IFF') then
+
+      !  sensor for channels 27:28 and 33:36 is CRISP this is similar to MODIS-AQUA
+      if ( any ( Chan_Idx ==  [27,28, 33,34,35,36] ) ) Sensor_Name_Rtm   = 'MODIS-AQUA'
+
+   end if
+
+   if ( trim (sensorname ) == 'VIIRS-NASA' ) then
+      ! - check what is with 31,32
+      if ( any ( Chan_Idx ==  [23,24,25,27,28,30,33,34,35,36] ) ) Sensor_Name_Rtm   = 'MODIS-AQUA'
+
+   end if
+
+
+end function SENSOR_NAME_FOR_RTM
+
 
 
 end module cx_rttov_mapping_mod

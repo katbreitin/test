@@ -651,7 +651,8 @@
    call SETUP_USER_DEFINED_OPTIONS()
 
 
-  call chronos_rttov % init(['clear_sky.','sfc_emis .','pfaast   .','seebor   .'] &
+  call chronos_rttov % init(['clear_sky.','sfc_emis .','pfaast   .' &
+          ,'seebor   .' ] &
      , off=Verbose_Level_Flag .lt. 9)
 
   call chronos_acha % init([&
