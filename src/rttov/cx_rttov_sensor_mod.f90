@@ -286,19 +286,19 @@ end subroutine
 
    case(270) !GOES-16
      self % name_dcomp = 'GOES-16'
-     self % name_rttov = 'goes_16_imager'
+     self % name_rttov = 'goes_16_abi'
      self % chan_src_on_cx(1:45) = [2,3,1,-1,-1,5,6,-1,-1,-1,-1,-1,-1,-1,-1,  &
                        -1,-1,-1,-1,7,-1,7,-1,-1,-1,4,9,10,11,12,  &
                        14,15,16,-1,-1,-1,8,13,-1,-1,-1,-1,-1,-1,-1]
    case(271) !GOES-17
      self % name_dcomp = 'GOES-17'
-     self % name_rttov = 'goes_17_imager'
+     self % name_rttov = 'goes_17_abi'
      self % chan_src_on_cx(1:45) = [2,3,1,-1,-1,5,6,-1,-1,-1,-1,-1,-1,-1,-1,  &
                        -1,-1,-1,-1,7,-1,7,-1,-1,-1,4,9,10,11,12,  &
                        14,15,16,-1,-1,-1,8,13,-1,-1,-1,-1,-1,-1,-1]
    case(272) !GOES-18
      self % name_dcomp = 'GOES-18'
-     self % name_rttov = 'goes_18_imager'
+     self % name_rttov = 'goes_18_abi'
      self % chan_src_on_cx(1:45) = [2,3,1,-1,-1,5,6,-1,-1,-1,-1,-1,-1,-1,-1,  &
                        -1,-1,-1,-1,7,-1,7,-1,-1,-1,4,9,10,11,12,  &
                        14,15,16,-1,-1,-1,8,13,-1,-1,-1,-1,-1,-1,-1]
@@ -325,7 +325,7 @@ end subroutine
       do i =1,45
         self % chan_src_on_cx(i) = i
       end do
-      
+
    case(510) !FY2A
       self % name_dcomp ='FY2-1'
 
