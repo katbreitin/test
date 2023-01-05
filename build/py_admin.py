@@ -18,7 +18,6 @@ import glob
 import re
 import errno
 import copy
-import distutils.dir_util
 
 if sys.version_info[0] >= 3:
     import configparser as cp
@@ -34,6 +33,50 @@ def mkdir_p(path):
     """Emulates 'mkdir -p' functionality"""
     if not os.path.isdir(path):
         os.makedirs(path)
+
+
+#------------------------------------------------------------------------------
+def copy_tree(src_dir, dst_dir):
+    """Copies the contents (both dirs and files) of src_dir to dst_dir."""
+
+    # 'src_dir' and 'dst_dir' may be absolute or relative paths.
+    #
+    # Creates the destination directory (and any subdirectories) if not present.
+    #
+    # Overwrites all files in the destination directory tree that correspond to
+    #  files at the same level of the 'src_dir' directory tree.
+
+    vsrc_dir = src_dir.rstrip(os.sep)  # Strip any trailing path separator
+    vdst_dir = dst_dir.rstrip(os.sep)  #
+
+    if not os.path.isdir(vdst_dir):
+        if os.path.isfile(vdst_dir):
+            print("ERROR: cannot copy directory {} to a file {}". \
+                  format(vsrc_dir, vdst_dir))
+            exit(1)
+        else:
+            mkdir_p(vdst_dir)
+
+    len_vsrc_dir = len(vsrc_dir)
+    src_walk = os.walk(vsrc_dir)
+    for dirpath, dirnames, filenames in src_walk:
+        for sdir in dirnames:
+            src_dpath = os.path.join(dirpath, sdir)
+            sdir_trimmed = sdir[sdir.index(vsrc_dir)+len_vsrc_dir+1:]
+            dst_dpath = os.path.join(vdst_dir, sdir_trimmed)
+            if not os.path.isdir(dst_dpath):
+                if os.path.isfile(dst_dpath):
+                    print("ERROR: cannot copy directory {} to a file {}". \
+                                                  format(src_dpath, dst_dpath))
+                    exit(1)
+                else:
+                    mkdir_p(dst_dpath)
+
+        for fn in filenames:
+            src_fpath = os.path.join(dirpath, fn)
+            dirpath_trimmed = dirpath[dirpath.index(vsrc_dir)+len_vsrc_dir+1:]
+            dst_fpath = os.path.join(vdst_dir, dirpath_trimmed, fn)
+            shutil.copy2(src_fpath, dst_fpath)
 
 
 #------------------------------------------------------------------------------
@@ -918,11 +961,7 @@ F_compiler_opts_lines+'\n'+ \
                                                         item))
                 dir_to = os.path.abspath(os.path.join(abs_paths["run"],
                                                       item))
-                if os.path.isdir(dir_to):
-                    shutil.rmtree(dir_to)   # Remove any identical existing dir
-                mkdir_p(dir_to)  # Create directory if needed
-                distutils.dir_util.copy_tree(dir_from, dir_to, preserve_mode=1,
-                                      preserve_times=1, preserve_symlinks=1)
+                copy_tree(dir_from, dir_to)
 
           # Return to the original directory:
         os.chdir(beg_cwd)
