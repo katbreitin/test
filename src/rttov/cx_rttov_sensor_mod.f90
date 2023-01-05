@@ -10,6 +10,7 @@ type cx_rttov_sensor_type
     character(200) :: coef_filename
     character(200) :: cld_coef_filename
     character (200) :: path_rttov
+    real :: max_satzen = 85.
     integer :: chan_src_on_cx(45) = -1
 
   contains
@@ -27,7 +28,6 @@ subroutine cx_rttov_sensor_init (self, wmo_id, path)
   if (present(wmo_id)) self%wmo_id = wmo_id
   self % path_rttov = path
 
-   print*,'type wmo id: ', self%wmo_id
    call self % update()
 end subroutine
 
@@ -35,8 +35,6 @@ end subroutine
     class (cx_rttov_sensor_type), intent(inout) :: self
     character (len=1) :: rttov_version_string
     integer :: i
-
-    print*,'update!', self%wmo_id
 
     rttov_version_string = '9'
 
@@ -224,6 +222,7 @@ end subroutine
      self % chan_src_on_cx(27) = 2
      self % chan_src_on_cx(31) = 3
      self % chan_src_on_cx(32) = 4
+     self % max_satzen = 75.
    case(253) !GOES-9
      self % name_dcomp = 'GOES-9'
      self % name_rttov = 'goes_9_imager'
@@ -232,6 +231,7 @@ end subroutine
      self % chan_src_on_cx(27) = 2
      self % chan_src_on_cx(31) = 3
      self % chan_src_on_cx(32) = 4
+     self % max_satzen = 75.
    case(254) !GOES-10
      self % name_dcomp = 'GOES-10'
      self % name_rttov = 'goes_10_imager'
@@ -240,6 +240,7 @@ end subroutine
      self % chan_src_on_cx(27) = 2
      self % chan_src_on_cx(31) = 3
      self % chan_src_on_cx(32) = 4
+     self % max_satzen = 75.
    case(255) !GOES-11
      self % name_dcomp = 'GOES-11'
      self % name_rttov = 'goes_11_imager'
@@ -248,6 +249,7 @@ end subroutine
      self % chan_src_on_cx(27) = 2
      self % chan_src_on_cx(31) = 3
      self % chan_src_on_cx(32) = 4
+     self % max_satzen = 75.
    case(256) !GOES-12
      self % name_dcomp = 'GOES-12'
      self % name_rttov = 'goes_12_imager'
@@ -256,6 +258,7 @@ end subroutine
      self % chan_src_on_cx(31) = 3
      self % chan_src_on_cx(32) = 4
      rttov_version_string = '8'
+     self % max_satzen = 75.
 
    case(257) !GOES-13
      self % name_dcomp = 'GOES-13'
@@ -265,6 +268,7 @@ end subroutine
      self % chan_src_on_cx(27) = 2
      self % chan_src_on_cx(31) = 3
      self % chan_src_on_cx(32) = 4
+     self % max_satzen = 75.
 
    case(258) !GOES-14
      self % name_dcomp = 'GOES-14'
@@ -274,6 +278,7 @@ end subroutine
      self % chan_src_on_cx(27) = 2
      self % chan_src_on_cx(31) = 3
      self % chan_src_on_cx(32) = 4
+     self % max_satzen = 75.
 
    case(259) !GOES-15
      self % name_dcomp = 'GOES-15'
@@ -283,6 +288,7 @@ end subroutine
      self % chan_src_on_cx(27) = 2
      self % chan_src_on_cx(31) = 3
      self % chan_src_on_cx(32) = 4
+     self % max_satzen = 75.
 
    case(270) !GOES-16
      self % name_dcomp = 'GOES-16'
@@ -355,6 +361,8 @@ end subroutine
       print*,' better tell andi.walther@ssec.wisc.edu'
       stop
    end select
+   if (rttov_version_string .eq. '7') self % max_satzen = 75.
+   if (rttov_version_string .eq. '8') self % max_satzen = 75.
 
    self % coef_filename = trim(self %path_rttov)//'/rtcoef_rttov/rttov' &
         //rttov_version_string//'pred54L/rtcoef_'//trim(self % name_rttov)//'.dat'

@@ -151,7 +151,7 @@ module RT_UTILITIES_MOD
       convert_atmos_prof_nwp_rtm &
       , Wvmr_Nwp
 
-  USE  cx_rttov_mapping_mod    
+  USE  cx_rttov_mapping_mod
 
    implicit none
    private
@@ -541,6 +541,7 @@ contains
             rtm_inp % sc_name = sc_name_rtm
             rtm_inp % chan_idx = Chan_Idx
             rtm_inp % which_rtm = rtm_opt
+            rtm_inp % wmo_id = Sensor%WMO_id
 
 
 

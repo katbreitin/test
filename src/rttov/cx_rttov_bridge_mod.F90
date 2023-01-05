@@ -22,11 +22,13 @@ module cx_rttov_bridge_mod
 
   USE rttov_unix_env, ONLY : rttov_exit
 
-  use cx_rttov_mapping_mod, only: channel_map
+  use cx_rttov_mapping_mod, only: ! channel_map
 
   use PIXEL_COMMON_MOD, only: Geo
 
   use CONSTANTS_MOD, only: Sym
+
+  USE cx_rttov_sensor_mod,only:cx_rttov_sensor_type
 
 
   IMPLICIT NONE
@@ -102,6 +104,7 @@ subroutine compute_transmission_rttov ( &
        & ,ozmr &
        & ,theta  &
        & ,sensor &
+       & , wmo_id &
        & ,kban_in &
        & ,taut &
        & , use_modis_channel_equivalent )
@@ -117,12 +120,15 @@ subroutine compute_transmission_rttov ( &
   real, intent(in)  :: ozmr(:,:)
   real, intent(in)  :: theta (:)
   character (len =* ), intent(in) :: sensor
+  integer, intent(in) :: wmo_id
   integer, intent(in)  :: kban_in
   logical , optional , intent(in) :: use_modis_channel_equivalent
   real, intent(out)  :: taut (:,:)
   integer :: lll
-   real, parameter :: Q_MIXRATIO_TO_PPMV = 1.60771704e+6
-   real :: max_satzen
+  real, parameter :: Q_MIXRATIO_TO_PPMV = 1.60771704e+6
+  real :: max_satzen
+
+  type(cx_rttov_sensor_type) :: rt_sensor
 
 
   opts % rt_ir % addsolar = .FALSE.
@@ -161,13 +167,15 @@ subroutine compute_transmission_rttov ( &
   opts % rt_mw % clw_scheme          = 0
   opts % config % verbose            = .FALSE.  ! Enable printing of warnings
 
+   call rt_sensor % init(wmo_id,trim(ancil_data_path)//'static/rttov/')
+   lll = rt_sensor % chan_src_on_cx(kban_in)
 
-   lll  = channel_map (sensor &
-    , ancil_data_path &
-    , kban_in &
-    , coef_filename &
-    , cld_coef_filename &
-    , max_satzen)
+  ! lll  = channel_map (sensor &
+  !  , ancil_data_path &
+  !  , kban_in &
+!    , coef_filename &
+  !  , cld_coef_filename &
+  !  , max_satzen)
 
 
   nprof = size(temp(1,:))
@@ -187,7 +195,7 @@ subroutine compute_transmission_rttov ( &
   ! --------------------------------------------------------------------------
   ! 2. Read coefficients
   ! --------------------------------------------------------------------------
-  CALL rttov_read_coefs(errorstatus, coefs, opts, file_coef=coef_filename)
+  CALL rttov_read_coefs(errorstatus, coefs, opts, file_coef=rt_sensor%coef_filename)
   IF (errorstatus /= errorstatus_success) THEN
     WRITE(*,*) 'fatal error reading coefficients'
     CALL rttov_exit(errorstatus)
@@ -292,7 +300,7 @@ subroutine compute_transmission_rttov ( &
     profiles(iprof) % s2m % v = 0.
     profiles(iprof) % s2m % wfetc = 1000000.
     profiles(iprof) % skin % t = temp(96,iprof) + 5.
-    profiles(iprof) % zenangle = min(theta(iprof),max_satzen)
+    profiles(iprof) % zenangle = min(theta(iprof),rt_sensor % max_satzen)
     profiles(iprof) % azangle = 0.
     profiles(iprof) % latitude = 45.
     profiles(iprof) % longitude = 19.

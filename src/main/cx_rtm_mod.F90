@@ -54,6 +54,7 @@ module CX_RTM_MOD
     real, dimension(:), allocatable ::sat_bin
     integer :: which_rtm
     character (len =20) :: sc_name
+    integer :: wmo_id
     integer :: Chan_Idx
   end type cx_rtm_input
   logical :: first_run = .true.
@@ -84,6 +85,7 @@ contains
                          ,  inp % o_prof &
                          ,  inp % Sat_Bin &
                          ,  inp % Sc_Name &
+                         ,  inp % wmo_id & 
                          ,  inp % Chan_Idx &
                          ,  Trans_Prof_Rtm  &
                          ,  Use_Modis_Channel_Equivalent = .true.  )
