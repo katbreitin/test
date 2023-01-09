@@ -199,8 +199,6 @@ contains
           CALL rttov_exit(err)
       ENDIF
 
-
-
      !---------------------------------
      ! Set up chanprof
      !---------------------------------

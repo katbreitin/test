@@ -4,6 +4,8 @@ implicit none
 
 type cx_rttov_sensor_type
     integer :: WMO_id
+    character(50) :: name_platform
+    character(50) :: name_sensor
     character(50) :: name_clavrx
     character(50) :: name_rttov
     character(50) :: name_dcomp
@@ -20,19 +22,24 @@ type cx_rttov_sensor_type
 end type cx_rttov_sensor_type
 contains
 
-subroutine cx_rttov_sensor_init (self, wmo_id, path)
+subroutine cx_rttov_sensor_init (self, wmo_id, path, sensor )
   class (cx_rttov_sensor_type), intent(inout) :: self
   integer , optional, intent(in) :: wmo_id
-  character(len = *) :: path
-
+  character(len = *), intent(in)  :: path
+  character(len = *), intent(in), optional :: sensor
+  character(len = 20) :: sensor_loc
+  ! -  sensor is only needed for hirs  ( same wmo_id for different sensors)
+  sensor_loc = 'default'
+  if (present(sensor)) sensor_loc = sensor
   if (present(wmo_id)) self%wmo_id = wmo_id
   self % path_rttov = path
 
-   call self % update()
+   call self % update(sensor_loc)
 end subroutine
 
-  subroutine cx_rttov_sensor_update (self)
+  subroutine cx_rttov_sensor_update (self, sensor)
     class (cx_rttov_sensor_type), intent(inout) :: self
+    character(len=*), intent(in) :: sensor
     character (len=1) :: rttov_version_string
     integer :: i
 
@@ -40,28 +47,60 @@ end subroutine
 
     select case(self % WMO_Id)
     case(4) !METOP-A
-      self % name_dcomp = 'AVHRR-METOPA'
-      self % name_rttov = 'metop_2_avhrr'
 
-      self % chan_src_on_cx(6) = 3
-      self % chan_src_on_cx(20) = 4
-      self % chan_src_on_cx(31) = 5
-      self % chan_src_on_cx(32) = 6
+      if (index(sensor,'HIRS') .gt. 0 ) THEN
+        self % name_dcomp = 'HIRS-METOPA'
+        self % name_rttov = 'metop_2_hirs-shifted'
+        self % chan_src_on_cx(20:36) = &
+        [ 19,-1,-1,18,15,14,-1,12,11,-1,9, 8,10, 7, 6, 5, 4 ]
+        rttov_version_string = '8'
+      else
+        self % name_dcomp = 'AVHRR-METOPA'
+        self % name_rttov = 'metop_2_avhrr'
+        self % chan_src_on_cx(6) = 3
+        self % chan_src_on_cx(20) = 4
+        self % chan_src_on_cx(31) = 5
+        self % chan_src_on_cx(32) = 6
+      end if
+
     case(3) !METOP-B
-      self % name_dcomp = 'AVHRR-METOPB'
-      self % name_rttov = 'metop_1_avhrr'
-      self % chan_src_on_cx(6) = 3
-      self % chan_src_on_cx(20) = 4
-      self % chan_src_on_cx(31) = 5
-      self % chan_src_on_cx(32) = 6
+
+
+      if (index(sensor,'HIRS') .gt. 0  ) THEN
+        self % name_dcomp = 'HIRS-METOPB'
+        self % name_rttov = 'metop_1_hirs-shifted'
+        self % chan_src_on_cx(20:36) = &
+        [ 19,-1,-1,18,15,14,-1,12,11,-1,9, 8,10, 7, 6, 5, 4 ]
+        rttov_version_string = '8'
+      else
+        self % name_dcomp = 'AVHRR-METOPB'
+        self % name_rttov = 'metop_1_avhrr'
+        self % chan_src_on_cx(6) = 3
+        self % chan_src_on_cx(20) = 4
+        self % chan_src_on_cx(31) = 5
+        self % chan_src_on_cx(32) = 6
+
+      end if
 
     case(5) !METOP-C
-     self % name_dcomp = 'AVHRR-METOPC'
-     self % name_rttov = 'metop_3_avhrr'
-     self % chan_src_on_cx(6) = 3
-     self % chan_src_on_cx(20) = 4
-     self % chan_src_on_cx(31) = 5
-     self % chan_src_on_cx(32) = 6
+
+
+     if (index(sensor,'HIRS')  .gt. 0 ) THEN
+       self % name_dcomp = 'HIRS-METOPC'
+       self % name_rttov = 'metop_3_hirs-shifted'
+       self % chan_src_on_cx(20:36) = &
+       [ 19,-1,-1,18,15,14,-1,12,11,-1,9, 8,10, 7, 6, 5, 4 ]
+       rttov_version_string = '8'
+    else
+      self % name_dcomp = 'AVHRR-METOPC'
+      self % name_rttov = 'metop_3_avhrr'
+      self % chan_src_on_cx(6) = 3
+      self % chan_src_on_cx(20) = 4
+      self % chan_src_on_cx(31) = 5
+      self % chan_src_on_cx(32) = 6
+
+     end if
+
 
     case(55) !MSG-8
       self % name_dcomp = 'SEVIRI-MSG08'
@@ -101,79 +140,213 @@ end subroutine
       self % chan_src_on_cx(20:38) &
         = [7,-1,-1,-1,-1,-1,-1,9,10,11,12,14,15,16,-1,-1,-1,8,13]
     case(200) !NOAA-8
-     self % name_dcomp = 'AVHRR-NOAA08'
-     self % name_rttov = 'noaa_8_avhrr'
-     rttov_version_string = '8'
-     self % chan_src_on_cx(20) = 3
-     self % chan_src_on_cx(31) = 4
-     self % chan_src_on_cx(32) = 5
-    case(201) !NOAA-9
-     self % name_dcomp = 'AVHRR-NOAA09'
-     self % name_rttov = 'noaa_9_avhrr'
-     rttov_version_string = '8'
-     self % chan_src_on_cx(20) = 3
-     self % chan_src_on_cx(31) = 4
-     self % chan_src_on_cx(32) = 5
-    case(202) !NOAA-10
-     self % name_dcomp = 'AVHRR-NOAA10'
-     self % name_rttov = 'noaa_10_avhrr'
-     self % chan_src_on_cx(20) = 3
-     self % chan_src_on_cx(31) = 4
-     self % chan_src_on_cx(32) = 5
-   case(203) !NOAA-11
-     self % name_dcomp = 'AVHRR-NOAA11'
-     self % name_rttov = 'noaa_11_avhrr'
-     self % chan_src_on_cx(20) = 3
-     self % chan_src_on_cx(31) = 4
-     self % chan_src_on_cx(32) = 5
-   case(204) !NOAA-12
-     self % name_dcomp = 'AVHRR-NOAA12'
-     self % name_rttov = 'noaa_12_avhrr'
-     self % chan_src_on_cx(20) = 3
-     self % chan_src_on_cx(31) = 4
-     self % chan_src_on_cx(32) = 5
-   case(205) !NOAA-14
-     self % name_dcomp = 'AVHRR-NOAA14'
-     self % name_rttov = 'noaa_14_avhrr'
-     self % chan_src_on_cx(20) = 3
-     self % chan_src_on_cx(31) = 4
-     self % chan_src_on_cx(32) = 5
-   case(206) !NOAA-15
-     self % name_dcomp = 'AVHRR-NOAA15'
-     self % name_rttov = 'noaa_15_avhrr'
-     self % chan_src_on_cx(6) = 3
-     self % chan_src_on_cx(20) = 4
-     self % chan_src_on_cx(31) = 5
-     self % chan_src_on_cx(32) = 6
 
+
+     if (index(sensor,'HIRS') .gt. 0  ) THEN
+       self % name_dcomp = 'HIRS-NOAA08'
+       self % name_rttov = 'noaa_8_hirs-shifted'
+       self % chan_src_on_cx(20:36) = &
+       [ 19,-1,-1,18,15,14,-1,12,11,-1,9, 8,10, 7, 6, 5, 4 ]
+       rttov_version_string = '8'
+    else
+      self % name_dcomp = 'AVHRR-NOAA08'
+      self % name_rttov = 'noaa_8_avhrr'
+      rttov_version_string = '8'
+      self % chan_src_on_cx(20) = 3
+      self % chan_src_on_cx(31) = 4
+      self % chan_src_on_cx(32) = 5
+
+     end if
+
+    case(201) !NOAA-9
+
+
+     if (index(sensor,'HIRS')  .gt. 0 ) THEN
+       self % name_dcomp = 'HIRS-NOAA09'
+       self % name_rttov = 'noaa_9_hirs-shifted'
+       self % chan_src_on_cx(20:36) = &
+       [ 19,-1,-1,18,15,14,-1,12,11,-1,9, 8,10, 7, 6, 5, 4 ]
+       rttov_version_string = '8'
+    else
+      self % name_dcomp = 'AVHRR-NOAA09'
+      self % name_rttov = 'noaa_9_avhrr'
+      rttov_version_string = '8'
+      self % chan_src_on_cx(20) = 3
+      self % chan_src_on_cx(31) = 4
+      self % chan_src_on_cx(32) = 5
+
+     end if
+
+    case(202) !NOAA-10
+
+
+     if (index(sensor,'HIRS')  .gt. 0 ) THEN
+       self % name_dcomp = 'HIRS-NOAA10'
+       self % name_rttov = 'noaa_10_hirs-shifted'
+       self % chan_src_on_cx(20:36) = &
+       [ 19,-1,-1,18,15,14,-1,12,11,-1,9, 8,10, 7, 6, 5, 4 ]
+       rttov_version_string = '8'
+    else
+      self % name_dcomp = 'AVHRR-NOAA10'
+      self % name_rttov = 'noaa_10_avhrr'
+      self % chan_src_on_cx(20) = 3
+      self % chan_src_on_cx(31) = 4
+      self % chan_src_on_cx(32) = 5
+
+     end if
+
+   case(203) !NOAA-11
+
+
+
+     if (index(sensor,'HIRS')  .gt. 0 ) THEN
+       self % name_dcomp = 'HIRS-NOAA11'
+       self % name_rttov = 'noaa_11_hirs-shifted'
+       self % chan_src_on_cx(20:36) = &
+       [ 19,-1,-1,18,15,14,-1,12,11,-1,9, 8,10, 7, 6, 5, 4 ]
+       rttov_version_string = '8'
+     else
+
+       self % name_dcomp = 'AVHRR-NOAA11'
+       self % name_rttov = 'noaa_11_avhrr'
+       self % chan_src_on_cx(20) = 3
+       self % chan_src_on_cx(31) = 4
+       self % chan_src_on_cx(32) = 5
+
+     end if
+
+   case(204) !NOAA-12
+
+     if (index(sensor,'HIRS')  .gt. 0 ) THEN
+            self % name_dcomp = 'HIRS-NOAA12'
+            self % name_rttov = 'noaa_12_hirs-shifted'
+            self % chan_src_on_cx(20:36) = &
+            [ 19,-1,-1,18,15,14,-1,12,11,-1,9, 8,10, 7, 6, 5, 4 ]
+            rttov_version_string = '8'
+      else
+        self % name_dcomp = 'AVHRR-NOAA12'
+        self % name_rttov = 'noaa_12_avhrr'
+        self % chan_src_on_cx(20) = 3
+        self % chan_src_on_cx(31) = 4
+        self % chan_src_on_cx(32) = 5
+
+
+      end if
+   case(205) !NOAA-14
+
+
+          if (index(sensor,'HIRS') .gt. 0  ) THEN
+            self % name_dcomp = 'HIRS-NOAA14'
+            self % name_rttov = 'noaa_14_hirs-shifted'
+            self % chan_src_on_cx(20:36) = &
+            [ 19,-1,-1,18,15,14,-1,12,11,-1,9, 8,10, 7, 6, 5, 4 ]
+            rttov_version_string = '8'
+          else
+            self % name_dcomp = 'AVHRR-NOAA14'
+            self % name_rttov = 'noaa_14_avhrr'
+            self % chan_src_on_cx(20) = 3
+            self % chan_src_on_cx(31) = 4
+            self % chan_src_on_cx(32) = 5
+
+          end if
+
+   case(206) !NOAA-15
+
+
+          if (index(sensor,'HIRS')  .gt. 0 ) THEN
+            self % name_dcomp = 'HIRS-NOAA15'
+            self % name_rttov = 'noaa_15_hirs-shifted'
+            self % chan_src_on_cx(20:36) = &
+            [ 19,-1,-1,18,15,14,-1,12,11,-1,9, 8,10, 7, 6, 5, 4 ]
+            rttov_version_string = '8'
+          else
+            self % name_dcomp = 'AVHRR-NOAA15'
+            self % name_rttov = 'noaa_15_avhrr'
+            self % chan_src_on_cx(6) = 3
+            self % chan_src_on_cx(20) = 4
+            self % chan_src_on_cx(31) = 5
+            self % chan_src_on_cx(32) = 6
+
+          end if
    case(207) !NOAA-16
-     self % name_dcomp = 'AVHRR-NOAA16'
-     self % name_rttov = 'noaa_16_avhrr'
-     self % chan_src_on_cx(6) = 3
-     self % chan_src_on_cx(20) = 4
-     self % chan_src_on_cx(31) = 5
-     self % chan_src_on_cx(32) = 6
+
+
+
+          if (index(sensor,'HIRS')  .gt. 0 ) THEN
+            self % name_dcomp = 'HIRS-NOAA16'
+            self % name_rttov = 'noaa_16_hirs-shifted'
+            self % chan_src_on_cx(20:36) = &
+            [ 19,-1,-1,18,15,14,-1,12,11,-1,9, 8,10, 7, 6, 5, 4 ]
+            rttov_version_string = '8'
+          else
+
+            self % name_dcomp = 'AVHRR-NOAA16'
+            self % name_rttov = 'noaa_16_avhrr'
+            self % chan_src_on_cx(6) = 3
+            self % chan_src_on_cx(20) = 4
+            self % chan_src_on_cx(31) = 5
+            self % chan_src_on_cx(32) = 6
+
+          end if
    case(208) !NOAA-17
-     self % name_dcomp = 'AVHRR-NOAA17'
-     self % name_rttov = 'noaa_17_avhrr'
-     self % chan_src_on_cx(6) = 3
-     self % chan_src_on_cx(20) = 4
-     self % chan_src_on_cx(31) = 5
-     self % chan_src_on_cx(32) = 6
+
+
+
+          if (index(sensor,'HIRS') .gt. 0  ) THEN
+            self % name_dcomp = 'HIRS-NOAA17'
+            self % name_rttov = 'noaa_17_hirs-shifted'
+            self % chan_src_on_cx(20:36) = &
+            [ 19,-1,-1,18,15,14,-1,12,11,-1,9, 8,10, 7, 6, 5, 4 ]
+            rttov_version_string = '8'
+          else
+            self % name_dcomp = 'AVHRR-NOAA17'
+            self % name_rttov = 'noaa_17_avhrr'
+            self % chan_src_on_cx(6) = 3
+            self % chan_src_on_cx(20) = 4
+            self % chan_src_on_cx(31) = 5
+            self % chan_src_on_cx(32) = 6
+
+          end if
+
    case(209) !NOAA-18
-     self % name_dcomp = 'AVHRR-NOAA18'
-     self % name_rttov = 'noaa_18_avhrr'
-     self % chan_src_on_cx(6) = 3
-     self % chan_src_on_cx(20) = 4
-     self % chan_src_on_cx(31) = 5
-     self % chan_src_on_cx(32) = 6
+
+
+
+          if (index(sensor,'HIRS')  .gt. 0 ) THEN
+            self % name_dcomp = 'HIRS-NOAA18'
+            self % name_rttov = 'noaa_18_hirs-shifted'
+            self % chan_src_on_cx(20:36) = &
+            [ 19,-1,-1,18,15,14,-1,12,11,-1,9, 8,10, 7, 6, 5, 4 ]
+            rttov_version_string = '8'
+          else
+
+            self % name_dcomp = 'AVHRR-NOAA18'
+            self % name_rttov = 'noaa_18_avhrr'
+            self % chan_src_on_cx(6) = 3
+            self % chan_src_on_cx(20) = 4
+            self % chan_src_on_cx(31) = 5
+            self % chan_src_on_cx(32) = 6
+          end if
+
    case(223) !NOAA-19
-     self % name_dcomp = 'AVHRR-NOAA19'
-     self % name_rttov = 'noaa_19_avhrr'
-     self % chan_src_on_cx(6) = 3
-     self % chan_src_on_cx(20) = 4
-     self % chan_src_on_cx(31) = 5
-     self % chan_src_on_cx(32) = 6
+
+          if (index(sensor,'HIRS') .gt. 0  ) THEN
+            self % name_dcomp = 'HIRS-NOAA19'
+            self % name_rttov = 'noaa_19_hirs-shifted'
+            self % chan_src_on_cx(20:36) = &
+            [ 19,-1,-1,18,15,14,-1,12,11,-1,9, 8,10, 7, 6, 5, 4 ]
+            rttov_version_string = '8'
+          else
+            self % name_dcomp = 'AVHRR-NOAA19'
+            self % name_rttov = 'noaa_19_avhrr'
+            self % chan_src_on_cx(6) = 3
+            self % chan_src_on_cx(20) = 4
+            self % chan_src_on_cx(31) = 5
+            self % chan_src_on_cx(32) = 6
+
+          end if
+
+
    case(224) !VIIRS - SNPP
      self % name_dcomp = 'VIIRS-SNPP'
     self % name_rttov   = 'jpss_0_viirs'

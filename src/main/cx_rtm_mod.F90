@@ -29,13 +29,7 @@
 
 module CX_RTM_MOD
 
-  use NWP_COMMON_MOD,only: &
-    nwp_definition
-
-  use RTM_COMMON_MOD,only: &
-    rtm_params
-
-    use CX_TIMER_MOD, only:  chronos_rttov
+  use CX_TIMER_MOD, only:  chronos_rttov
 
 #ifdef LIBRTTOV
   use CX_RTTOV_BRIDGE_MOD, only: &
@@ -50,7 +44,10 @@ module CX_RTM_MOD
   type cx_rtm_input
     character (len=1024) :: ancil_path
     real ,dimension(:,:),allocatable :: p_std
-    real, dimension(:,:), allocatable :: t_prof,w_prof,o_prof, tpw_prof
+    real, dimension(:,:), allocatable :: t_prof
+    real, dimension(:,:), allocatable :: w_prof
+    real, dimension(:,:), allocatable :: o_prof
+    real, dimension(:,:), allocatable :: tpw_prof
     real, dimension(:), allocatable ::sat_bin
     integer :: which_rtm
     character (len =20) :: sc_name
@@ -85,7 +82,7 @@ contains
                          ,  inp % o_prof &
                          ,  inp % Sat_Bin &
                          ,  inp % Sc_Name &
-                         ,  inp % wmo_id & 
+                         ,  inp % wmo_id &
                          ,  inp % Chan_Idx &
                          ,  Trans_Prof_Rtm  &
                          ,  Use_Modis_Channel_Equivalent = .true.  )

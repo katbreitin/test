@@ -90,8 +90,7 @@
 ! Marker: ACCESS MODULES
 !******************************************************************************
    use ACHA_CLAVRX_BRIDGE,only: &
-      awg_cloud_height_bridge &
-      , LOCAL_LINEAR_RADIATIVE_CENTER
+      awg_cloud_height_bridge
 
    use AEROSOL_PROPERTIES, only: &
       pixel_aer_ret_ocean &
@@ -199,7 +198,8 @@
       , COMPUTE_SUBPIXEL_MAX_MIN_COD
 
    use DNB_RETRIEVALS_MOD, only: &
-      COMPUTE_LUNAR_REFLECTANCE
+        COMPUTE_LUNAR_REFLECTANCE &
+      , lunar_reflectance_nasa_data_adjustment
 
    use DNCOMP_CLAVRX_BRIDGE_MOD, only: &
       AWG_CLOUD_DNCOMP_ALGORITHM
@@ -587,7 +587,7 @@
    type(timer) :: chrono
    type(timer) :: chrono_all
 
-   real, parameter, dimension(3):: Dnb_Coef = [-0.118767,0.962452,-0.000144502]
+
 
    !***********************************************************************
    ! Begin Executable Code
@@ -595,10 +595,6 @@
 
    call timer_set_up_all (chrono_all)
    call timer_set_up (chrono)
-
-
-
-          print*,Verbose_Level_Flag
 
    narg=command_argument_count()
 
@@ -1153,11 +1149,7 @@
 
            !TEST - EMPIRICAL FIT TO NASA Reflectances to match NOAA - AKH
             if (trim(Sensor%Sensor_Name) == 'VIIRS-NASA') then
-               where(Ch(44)%Ref_Toa .NER. Missing_Value_Real4)
-                  Ch(44)%Ref_Lunar_Toa = Dnb_Coef(1) + &
-                                     Dnb_Coef(2)*Ch(44)%Ref_Lunar_Toa + &
-                                     Dnb_Coef(3)*Ch(44)%Ref_Lunar_Toa**2
-               endwhere
+               call lunar_reflectance_nasa_data_adjustment(Ch(44)%Ref_Lunar_Toa)
             endif
 
          end if

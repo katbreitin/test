@@ -15,7 +15,7 @@ module CITY_MASK_MOD
 
 
 !--- use statements
-use PIXEL_COMMON_MOD, only: & 
+use PIXEL_COMMON_MOD, only: &
       Ch &
     , Sfc &
     , Nav &
@@ -31,7 +31,7 @@ use CONSTANTS_MOD, only: &
 use CX_NETCDF4_MOD,only: &
       OPEN_NETCDF &
     , CLOSE_NETCDF &
-    , READ_NETCDF 
+    , READ_NETCDF
 
 use NUMERICAL_ROUTINES_MOD,only: &
       FIND_BOUNDS
@@ -133,7 +133,7 @@ if (dateline_flg == 0) then
          if (CityLights_Read(Ilon_ad,Ilat_ad) > CITY_LIGHTS_THRESH) then
             Sfc%City_Mask(i,j) = 1
          end if
-        
+
 
       end do
    end do
@@ -236,4 +236,3 @@ end subroutine READ_CITY_MASK
 !----------------------------------------------------------------------
 
 end module CITY_MASK_MOD
-

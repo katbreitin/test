@@ -71,14 +71,14 @@ module cx_rttov_bridge_mod
 
   ! variables for input
   !====================
-  CHARACTER(LEN=256) :: coef_filename,cld_coef_filename
+
   INTEGER(KIND=jpim) :: nthreads
   INTEGER(KIND=jpim) :: dosolar
   INTEGER(KIND=jpim) :: nlevels
   INTEGER(KIND=jpim) :: nprof
   INTEGER(KIND=jpim) :: nchannels
   INTEGER(KIND=jpim) :: nchanprof
-  INTEGER(KIND=jpim), ALLOCATABLE :: channel_list(:)
+  INTEGER(KIND=jpim) :: channel_list(1)
   REAL(KIND=jprb)    :: trans_out(10)
   ! loop variables
   INTEGER(KIND=jpim) :: j, jch
@@ -114,22 +114,19 @@ subroutine compute_transmission_rttov ( &
   implicit none
 
   character(len = * ) , intent(in) :: ancil_data_path
-  real, intent(in)  :: pstd (:,:)
-  real, intent(in)  :: temp (:,:)
-  real, intent(in)  :: wvmr(:,:)
-  real, intent(in)  :: ozmr(:,:)
-  real, intent(in)  :: theta (:)
+  real, intent(in)  :: pstd (:,:) ! standrad pressure layers
+  real, intent(in)  :: temp (:,:) ! temperature profile
+  real, intent(in)  :: wvmr(:,:) ! water vapour profile
+  real, intent(in)  :: ozmr(:,:) ! ozone
+  real, intent(in)  :: theta (:) ! angle
   character (len =* ), intent(in) :: sensor
   integer, intent(in) :: wmo_id
   integer, intent(in)  :: kban_in
   logical , optional , intent(in) :: use_modis_channel_equivalent
   real, intent(out)  :: taut (:,:)
-  integer :: lll
   real, parameter :: Q_MIXRATIO_TO_PPMV = 1.60771704e+6
-  real :: max_satzen
 
   type(cx_rttov_sensor_type) :: rt_sensor
-
 
   opts % rt_ir % addsolar = .FALSE.
 
@@ -167,30 +164,19 @@ subroutine compute_transmission_rttov ( &
   opts % rt_mw % clw_scheme          = 0
   opts % config % verbose            = .FALSE.  ! Enable printing of warnings
 
-   call rt_sensor % init(wmo_id,trim(ancil_data_path)//'static/rttov/')
-   lll = rt_sensor % chan_src_on_cx(kban_in)
 
-  ! lll  = channel_map (sensor &
-  !  , ancil_data_path &
-  !  , kban_in &
-!    , coef_filename &
-  !  , cld_coef_filename &
-  !  , max_satzen)
+   call rt_sensor % init(wmo_id,trim(ancil_data_path)//'static/rttov/',sensor )
+   channel_list(1) = rt_sensor % chan_src_on_cx(kban_in)
 
+   if ( channel_list(1) .lt. 0 ) then
+     return
+   end if
 
   nprof = size(temp(1,:))
   nlevels = size(temp(:,1))
 
   nthreads = 1
   nchannels = 1
-
-  allocate(channel_list(nchannels))
-
-  if ( lll .lt. 0 ) then
-    if ( allocated(channel_list)) deallocate(channel_list)
-    return
-  end if
-  channel_list = [lll]
 
   ! --------------------------------------------------------------------------
   ! 2. Read coefficients
@@ -265,14 +251,9 @@ subroutine compute_transmission_rttov ( &
     ENDDO
   ENDDO
 
-  deallocate ( channel_list)
-
   ! --------------------------------------------------------------------------
   ! 5. Read profile data
   ! --------------------------------------------------------------------------
-
-
-
 
   profiles(:) % gas_units = 2  !
 
@@ -281,7 +262,6 @@ subroutine compute_transmission_rttov ( &
 ! 1 => kg/kg over moist air
 ! 2 => ppmv over moist air
 !
-
 
   ! Loop over all profiles and read data for each one
   DO iprof = 1, nprof

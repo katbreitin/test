@@ -8,13 +8,10 @@ module cx_sfc_emissivity_mod
 #ifdef LIBRTTOV
  use CX_RTTOV_SFC_EMISS, only: &
        get_rttov_emiss
-       
+
 #endif
  use SURFACE_PROPERTIES_MOD,only: &
-      COMPUTE_BINARY_LAND_COAST_MASKS &
-      , setup_umd_props &
-      , GET_PIXEL_SFC_EMISS_FROM_SFC_TYPE &
-      , GET_PIXEL_SFC_REFL_FROM_SFC_TYPE
+       GET_PIXEL_SFC_EMISS_FROM_SFC_TYPE 
 
   use CONSTANTS_MOD, only: sym, MIXED_OBS_TYPE &
       , nchan_clavrx &
@@ -72,10 +69,10 @@ contains
       if (first_run) call MESG('SFC EMISS RTTOV',  level = verb_lev % DEFAULT)
 #ifdef LIBRTTOV
       rttov_path = trim(Ancil_Data_Dir) // "static/rttov/"
-        call chronos_rttov % tic(2)
+      call chronos_rttov % tic(2)
       call GET_RTTOV_EMISS(Nav%Lat, Nav%Lon, Geo%Space_Mask &
           , rttov_path)
-        call chronos_rttov % tac(2)
+      call chronos_rttov % tac(2)
 #else
       print*, 'RTTOV emissivity selected but not compiled with RTTOV'
       stop
@@ -115,7 +112,8 @@ contains
 
       !  now file all non-land pixels
       Line_Idx_Min_Segment = 1
-      call GET_PIXEL_SFC_EMISS_FROM_SFC_TYPE(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)
+      call GET_PIXEL_SFC_EMISS_FROM_SFC_TYPE(Line_Idx_Min_Segment &
+           ,Image%Number_Of_Lines_Read_This_Segment)
 
       ! - check if we want better sea
       if (Use_Sea_Ir_Emiss == sym%YES) then
