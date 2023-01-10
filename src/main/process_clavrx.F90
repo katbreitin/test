@@ -593,7 +593,7 @@
    character(len=500) :: fci_path
    character(len=500) :: fci_file
 
-   logical :: fci_develop = .false.
+   logical :: fci_develop = .true.
    !***********************************************************************
    ! Begin Executable Code
    !***********************************************************************
@@ -747,7 +747,7 @@
       fci_path = '/Users/awalther/DATA/Satellite_Input/FCI/PROXY/UNCOMPRESSED/RC0076/'
 
       call fci % config % set(fci_path,fci_on)
-      call fci % get (chunk = 24)
+      call fci % get (chunk = 24 ) !, start=[10,10],count=[20,20])
 
       stop
     end if

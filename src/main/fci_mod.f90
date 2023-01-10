@@ -84,32 +84,44 @@ contains
   end subroutine fci_config__set
 
 
-  subroutine fci_data__get (self,chunk)
+  subroutine fci_data__get (self,chunk, start, count)
      class(fci_data) :: self
      integer :: i
-     integer, intent(in) :: chunk
+     integer, intent(in) :: chunk  ! the chunk out of 40 for this granule
+     integer, intent(in), optional :: start(2)
+     integer, intent(in), optional :: count(2)
+
      character(len =1024) :: file_chunk
      real,allocatable::rad_bt_a(:), rad_bt_b(:), rad_bt_v(:)
      real,allocatable::rad_bt_c1(:), rad_bt_c2(:),rad_bt_conv(:)
      real, allocatable :: irrad(:)
-    integer :: status
+     integer :: status
+     real,allocatable :: time(:)
+     type(date_type) :: tt
+
 
     file_chunk = trim(self%config%path)//trim(self %config %file_list(chunk))
 
+  ! time from 2000-01-01 00:00 in seconds
     status=  cx_sds_read (trim(file_chunk), &
-       '/state/celestial/solar_azimuth' &
-       , self % sol_azi )
+       '/time' &
+       , time )
+
+     call self % time % set_date(year=2000,month=1 &
+                 ,day=1,hour=0,minute=0,second=int(time(200)))
+
+     print*,'granule time: ',self % time %date_string('yyyy_doy.hhmm') 
 
      do i=1,16
         if ( self % config % chan(i) ) then
 
           status=  cx_sds_read (trim(file_chunk), &
              '/data/'//trim(chn_string(i))//'/measured/effective_radiance' &
-             , self%ch(i)%rad )
+             , self%ch(i)%rad ,start=start, count = count)
             ! var_names
 
-              print*,i,trim(chn_string(i)),self%ch(i)%rad(500,100)
-
+              print*,i,trim(chn_string(i)),self%ch(i)%rad(1250,50)
+            print*,shape(self%ch(i)%rad)
           if ( i .lt. 10) THEN
             status =    cx_sds_read (trim(file_chunk), &
               '/data/'//trim(chn_string(i))// &
@@ -136,21 +148,24 @@ contains
                           '/measured/radiance_to_bt_conversion_coefficient_wavenumber' &
                         , rad_bt_v)
 
-                status =   cx_sds_read (trim(file_chunk), &
+              status =   cx_sds_read (trim(file_chunk), &
                             '/data/'//trim(chn_string(i))// &
-                              '/measured/radiance_to_bt_conversion_constant_c1' &
-                              , rad_bt_c1)
+                            '/measured/radiance_to_bt_conversion_constant_c1' &
+                       , rad_bt_c1)
 
-                status =    cx_sds_read (trim(file_chunk), &
+              status =    cx_sds_read (trim(file_chunk), &
                         '/data/'//trim(chn_string(i))// &
                         '/measured/radiance_to_bt_conversion_constant_c2' &
-                  , rad_bt_c2)
+                     , rad_bt_c2)
 
-               status =    cx_sds_read (trim(file_chunk), &
+              status =    cx_sds_read (trim(file_chunk), &
                             '/data/'//trim(chn_string(i))// &
                             '/measured/radiance_unit_conversion_coefficient' &
                       , rad_bt_conv)
 
+     ! https://www-cdn.eumetsat.int/files/2020-04/pdf_effect_rad_to_brightness.pdf
+     ! Eq.5.3
+     ! EUMETSAT Doc.No. : EUM/MET/TEN/11/0569
         self%ch(i)%bt = ((rad_bt_c2(1) * rad_bt_v(1) ) / &
           (rad_bt_a(1) * alog(rad_bt_c1(1) * (rad_bt_v(1)**3)/self%ch(i)%rad + 1))) &
               - rad_bt_b(1)/rad_bt_a(1)
