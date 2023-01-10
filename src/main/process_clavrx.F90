@@ -743,11 +743,11 @@
 
       call chrono%tic(17)
 
-      if ( fci_develop )
+      if ( fci_develop ) then
       fci_path = '/Users/awalther/DATA/Satellite_Input/FCI/PROXY/UNCOMPRESSED/RC0076/'
 
       call fci % config % set(fci_path,fci_on)
-      call fci % get (24)
+      call fci % get (chunk = 24)
 
       stop
     end if
