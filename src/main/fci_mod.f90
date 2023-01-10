@@ -136,8 +136,8 @@ contains
                           '/measured/radiance_to_bt_conversion_coefficient_wavenumber' &
                         , rad_bt_v)
 
-                status =    cx_sds_read (trim(file_chunk), &
-                              '/data/'//trim(chn_string(i))// &
+                status =   cx_sds_read (trim(file_chunk), &
+                            '/data/'//trim(chn_string(i))// &
                               '/measured/radiance_to_bt_conversion_constant_c1' &
                               , rad_bt_c1)
 

@@ -592,6 +592,8 @@
    logical :: fci_on(16) = .true.
    character(len=500) :: fci_path
    character(len=500) :: fci_file
+
+   logical :: fci_develop = .false.
    !***********************************************************************
    ! Begin Executable Code
    !***********************************************************************
@@ -740,12 +742,15 @@
       call chrono%tic(16)
 
       call chrono%tic(17)
+
+      if ( fci_develop )
       fci_path = '/Users/awalther/DATA/Satellite_Input/FCI/PROXY/UNCOMPRESSED/RC0076/'
 
       call fci % config % set(fci_path,fci_on)
       call fci % get (24)
 
       stop
+    end if
 
       !----------------------------------------------------------------------
       ! Marker: READ IN CLAVRXORB_FILE_LIST AND SET FLAGS
