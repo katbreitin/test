@@ -78,8 +78,6 @@ module SENSOR_MOD
       , solar_ch20_nu &
       , planck_nu
 
-   use ALGORITHM_CONSTANTS_MOD,only:
-
    use CONSTANTS_MOD,only:  &
       real4 &
       , int1 &

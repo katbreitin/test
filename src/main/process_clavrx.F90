@@ -204,6 +204,8 @@
    use DNCOMP_CLAVRX_BRIDGE_MOD, only: &
       AWG_CLOUD_DNCOMP_ALGORITHM
 
+   use FCI_MOD
+
    use FILE_UTILS, only: FILE_TEST, GET_LUN
 
    use GFS_HDF_MOD, only: READ_GFS_DATA
@@ -586,12 +588,14 @@
 
    type(timer) :: chrono
    type(timer) :: chrono_all
-
-
-
+   type(fci_data) ::fci
+   logical :: fci_on(16) = .true.
+   character(len=500) :: fci_path
+   character(len=500) :: fci_file
    !***********************************************************************
    ! Begin Executable Code
    !***********************************************************************
+
 
    call timer_set_up_all (chrono_all)
    call timer_set_up (chrono)
@@ -736,6 +740,12 @@
       call chrono%tic(16)
 
       call chrono%tic(17)
+      fci_path = '/Users/awalther/DATA/Satellite_Input/FCI/PROXY/UNCOMPRESSED/RC0076/'
+
+      call fci % config % set(fci_path,fci_on)
+      call fci % get (24)
+
+      stop
 
       !----------------------------------------------------------------------
       ! Marker: READ IN CLAVRXORB_FILE_LIST AND SET FLAGS
