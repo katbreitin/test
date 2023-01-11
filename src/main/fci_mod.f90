@@ -122,18 +122,15 @@ contains
       if ( self % config % chan(i) ) then
         if (  trim(chn_string(i)) .ne. 'ir_38') then
               status=  cx_sds_read (trim(file_chunk), &
-                '/data/'//trim(chn_string(i))//'/measured/effective_radiance/_DATA' &
+                '/data/'//trim(chn_string(i))//'/measured/effective_radiance/' &
                 , self%ch(i)%rad ,start=start, count = count)
         else
-            status=  cx_sds_read (trim(file_chunk), &
-              '/data/'//trim(chn_string(i))//'/measured/effective_radiance' &
-              , self%ch(i)%rad ,start=start, count = count)
+          !  status=  cx_sds_read_fci_ir38 (trim(file_chunk), &
+          !    '/data/'//trim(chn_string(i))//'/measured/effective_radiance' &
+          !    , self%ch(i)%rad ,start=start, count = count,)
 
-              status=  cx_sds_read (trim(file_chunk), &
-                '/data/'//trim(chn_string(i))//'/measured/effective_radiance' &
-                , warm_slop,start=start, count = count)
 
-             self%ch(i)%rad = 0.
+
         end if
             ! var_names
 
