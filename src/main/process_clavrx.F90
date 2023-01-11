@@ -593,7 +593,7 @@
    character(len=500) :: fci_path
    character(len=500) :: fci_file
 
-   logical :: fci_develop = .true.
+   logical :: fci_develop = .false.
    !***********************************************************************
    ! Begin Executable Code
    !***********************************************************************

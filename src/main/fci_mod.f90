@@ -110,18 +110,34 @@ contains
      call self % time % set_date(year=2000,month=1 &
                  ,day=1,hour=0,minute=0,second=int(time(200)))
 
-     print*,'granule time: ',self % time %date_string('yyyy_doy.hhmm') 
+     print*,'granule time: ',self % time %date_string('yyyy_doy.hhmm')
 
-     do i=1,16
-        if ( self % config % chan(i) ) then
 
-          status=  cx_sds_read (trim(file_chunk), &
-             '/data/'//trim(chn_string(i))//'/measured/effective_radiance' &
-             , self%ch(i)%rad ,start=start, count = count)
+!TODODODOD
+! channel ir_38 is different
+!  has a warm scale offset and warn scale slope
+
+    do i=1,16
+
+      if ( self % config % chan(i) ) then
+        if (  trim(chn_string(i)) .ne. 'ir_38') then
+              status=  cx_sds_read (trim(file_chunk), &
+                '/data/'//trim(chn_string(i))//'/measured/effective_radiance/_DATA' &
+                , self%ch(i)%rad ,start=start, count = count)
+        else
+            status=  cx_sds_read (trim(file_chunk), &
+              '/data/'//trim(chn_string(i))//'/measured/effective_radiance' &
+              , self%ch(i)%rad ,start=start, count = count)
+
+              status=  cx_sds_read (trim(file_chunk), &
+                '/data/'//trim(chn_string(i))//'/measured/effective_radiance' &
+                , warm_slop,start=start, count = count)
+
+             self%ch(i)%rad = 0.
+        end if
             ! var_names
 
-              print*,i,trim(chn_string(i)),self%ch(i)%rad(1250,50)
-            print*,shape(self%ch(i)%rad)
+
           if ( i .lt. 10) THEN
             status =    cx_sds_read (trim(file_chunk), &
               '/data/'//trim(chn_string(i))// &
