@@ -136,7 +136,8 @@ contains
 
       !- first check which kind of file
       ! --
-      ftype = 1 ! todo define params for HDF4, HDF5(2) and NCDF(3), not_existing(-1), not defined(0)
+      ftype = 1 ! todo define params for HDF4, HDF5(2) and NCDF(3), not_existing(-1)
+      !, not defined(0)
       ftype = file_type(file)
 
 

@@ -5,9 +5,9 @@
 ! NAME: hirs_fusion_module.f90 (src)
 !       HIRS_FUSION_MODULE (program)
 !
-! PURPOSE: 
+! PURPOSE:
 !
-! DESCRIPTION: 
+! DESCRIPTION:
 !
 ! AUTHORS:
 !  Mike Foster, Mike.Foster@ssec.wisc.edu
@@ -64,9 +64,9 @@ module HIRS_FUSION_MOD
       use CALIBRATION_CONSTANTS_MOD
       use FILE_UTILS, only: GET_LUN
 
-   implicit none  
+   implicit none
    private
-   
+
    public:: HIRS_AVHRR_FUSION_PREPERATION
    public:: SET_REPLACED_AVHRR_TO_MISSING
    public:: READ_FUSION_HIRS_INSTR_CONSTANTS
@@ -78,7 +78,7 @@ module HIRS_FUSION_MOD
    subroutine HIRS_AVHRR_FUSION_PREPERATION ( File_1b)
       character ( len = * ), intent(inout) :: File_1b
       AVHRR_Fusion_Flag = .true.
-      
+
       ! -reset level1b to AVHRR file and add HIRS file as file_fusion.
       Image%Level1b_Fusion_Name = File_1b
 !      File_1b = File_1b(1:len(trim(File_1b)) - 9 ) //'gz'
@@ -86,32 +86,32 @@ module HIRS_FUSION_MOD
 
    end subroutine HIRS_AVHRR_FUSION_PREPERATION
    ! ***********************************************************************************************************************
-   ! SUBROUTINE NAME: Read_hirs_data 
+   ! SUBROUTINE NAME: Read_hirs_data
    ! ORIGINAL AUTHOR: Mike Foster
    ! CREATION DATE:  March, 2018
    ! DESCRIPTION: This subroutine reads data from HIRS in ch structure and additional
    !                global variables Bt_11um_Sounder, Bt_12um_Sounder, Bt_375um_Sounder, Bt_145um_Sounder, and Bt_147um_Sounder
    ! CALLING ARGUMENTS:
    !       seg_num   :  number of segement
-   !   
+   !
    !  USED GLOBAL VARIABLES: see specified variables in USE specifications of external modules
    !
    !   CALLED LOCATIONS:
    !       For CLAVR-x in sensor_mod.f90
    !
    !  MODIFICATION HISTORY
-   !  Date                       Developer             Action  
+   !  Date                       Developer             Action
    !     5/21/2018                A.Walther           Revised software and merged from branch "fusion_hirs_module" into trunk.
    !
    !  ***************************************************************************************************************************
    subroutine READ_HIRS_DATA (seg_num)
 
 !     use cx_sds_io_mod,only: &
-!          cx_sds_finfo & 
+!          cx_sds_finfo &
 !        , cx_sds_varinfo &
 !        , cx_sds_read &
 !        , MAXNCNAM
-!        
+!
 !     use CALIBRATION_CONSTANTS_MOD,only: &
 !        Planck_Nu &
 !        , Planck_Nu_11um_Sndr &
@@ -122,7 +122,7 @@ module HIRS_FUSION_MOD
 !        , Planck_Nu_149um_Sndr &
 !        , Planck_Nu_445um_Sndr &
 !        , Planck_Nu_457um_Sndr
-!     
+!
 !     use PIXEL_COMMON_MOD,only: &
 !        Bt_11um_Sounder &
 !        , Bt_12um_Sounder &
@@ -132,19 +132,19 @@ module HIRS_FUSION_MOD
 !        , Bt_149um_Sounder &
 !        , Bt_445um_Sounder &
 !        , Bt_457um_Sounder
-!     
+!
 !     use PLANCK_MOD, only: &
 !        compute_bt_array &
 !        , compute_bt_array_sounder
-!     
+!
 !     implicit none
 
       integer, intent(in) :: seg_num
-      
-      integer :: ftype      
+
+      integer :: ftype
       integer :: nsds
       integer :: Natt
-     
+
       character ( len = MAXNCNAM), allocatable :: Sds_Name(:)
       character ( len = MAXNCNAM), allocatable :: Att_Name(:)
       integer :: status
@@ -162,21 +162,29 @@ module HIRS_FUSION_MOD
       real :: nu
       real, parameter :: MISSING_VALUE_REAL4 = -999.
       integer :: shape_hirs(2)
-        
+
       File_Local = trim(Image%Level1b_Path)//trim(Image%Level1b_Fusion_Name)
 
       status = cx_sds_finfo (File_Local, ftype,nsds,Sds_Name,Natt,Att_Name)
+
+
+      if ( .not. allocated(sds_name)) THEN
+          print*, trim(file_local) //' has no sds-variables'
+          print*, 'Filetype: ', ftype
+          return
+      end if
+
       status = cx_sds_varinfo ( trim(File_Local),  Sds_Name(1) , ftype,Natt,Att_Name, Ndim, Dims)
-     
+
       sds_start(1) = 1
       sds_start(2) = (Seg_num-1) * Image%Number_of_Lines_Per_Segment + 1
       Sds_Count(1) = Dims(1)
       Sds_Count(2) = Image%Number_of_Lines_Read_This_Segment
-    
+
       if (allocated(Rad_Hirs)) deallocate(Rad_Hirs)
-    
+
       !--- Read in HIRS channels that don't fit into the MODIS-based array
-      
+
       ! HIRS Channel 1 : 14.9 microns
       write (Hirs_Sds_Name,"(A4,I0.2)") "HIRS", 1
       status = cx_sds_read(File_Local,trim(Hirs_Sds_Name),Rad_Hirs, count = Sds_Count, start = sds_start)
@@ -237,57 +245,57 @@ module HIRS_FUSION_MOD
          Modis_Idx = Modis_Hirs_List(Hirs_Chan_Idx)
          if ( Modis_Idx .eq. 0 ) cycle
          if ( Sensor%Chan_On_Flag_Default (Modis_Idx) == 0) cycle
-         
+
          write (Hirs_Sds_Name,"(A4,I0.2)") "HIRS", Hirs_Chan_Idx
-        
+
          status = cx_sds_read(File_Local,trim(Hirs_Sds_Name),Rad_Hirs, count =Sds_Count, start = sds_start)
-         
-         ! - this modifies out   
-         nu = Planck_Nu(Modis_Idx)  
+
+         ! - this modifies out
+         nu = Planck_Nu(Modis_Idx)
          if ( Modis_Idx .eq. 31)  nu = Planck_Nu_11um_Sndr
          if ( Modis_Idx .eq. 32)  nu = Planck_Nu_12um_Sndr
-         if ( Modis_Idx .eq. 20)  nu = Planck_Nu_375um_Sndr  
-                  
+         if ( Modis_Idx .eq. 20)  nu = Planck_Nu_375um_Sndr
+
          call CONVERT_HIRS_RADIANCE ( Rad_Hirs, nu , -999.)
-         
+
          shape_hirs = shape ( rad_hirs)
-         
+
          ! some channels need special treatments
          select case  (Modis_Idx)
-         case(31)      
-            
+         case(31)
+
              call COMPUTE_BT_ARRAY_SOUNDER (Bt_11um_Sounder(:,1:shape_hirs(2)), &
                                     Rad_Hirs , &
-                                    Modis_Idx, MISSING_VALUE_REAL4)     
-         case(32)    
-                        
+                                    Modis_Idx, MISSING_VALUE_REAL4)
+         case(32)
+
             call COMPUTE_BT_ARRAY_SOUNDER (Bt_12um_Sounder(:,1:shape_hirs(2)) , &
                                     Rad_Hirs, &
                                     Modis_Idx, MISSING_VALUE_REAL4)
-                                   
+
          case(20)
-                     
+
             call COMPUTE_BT_ARRAY_SOUNDER (Bt_375um_Sounder(:,1:shape_hirs(2)) , &
                                     Rad_Hirs, &
                                     Modis_Idx, MISSING_VALUE_REAL4)
 
          case default
-             
-            ch ( Modis_Idx) % Rad_Toa(:,1:shape_hirs(2))  = Rad_Hirs            
+
+            ch ( Modis_Idx) % Rad_Toa(:,1:shape_hirs(2))  = Rad_Hirs
             call COMPUTE_BT_ARRAY (Ch(Modis_Idx) % Bt_Toa(:,1:shape_hirs(2)), &
                                     Rad_Hirs, &
                                     Modis_Idx, MISSING_VALUE_REAL4)
 
             !--- note that these data from from the sounder, not the imager
-            Ch(Modis_Idx)%Source(:,1:shape_hirs(2)) = 1                     
+            Ch(Modis_Idx)%Source(:,1:shape_hirs(2)) = 1
          end select
-         
-        
+
+
          if (allocated(Rad_Hirs)) deallocate(Rad_Hirs)
       end do
-      
+
    end subroutine READ_HIRS_DATA
-   
+
 !------------------------------------------------------------------------------------------
 ! Function Name: CONVERT_HIRS_RADIANCE
 !
@@ -295,17 +303,17 @@ module HIRS_FUSION_MOD
 !   Convert to radiance units from that used
 !   in the HIRS Fusion files to that expected by CLAVR-x
 !
-! Description: 
-!   
+! Description:
+!
 ! Calling Sequence: rad_new =
 !   convert_hirs_radiance(rad_old,nu,missing_value)
-!   
+!
 ! Inputs:
 !   rad_old = radiance in units of W/m^2/micron/str (2d array)
 !   nu = channels equivalent width in units of cm^-1
 !   missing_value = value assigned to missing radiance values
 !
-! Outputs: 
+! Outputs:
 !   rad_new = radiance in units of mW/m^2/cm^-1/str (2d array)
 !
 ! Dependencies:
@@ -326,7 +334,7 @@ module HIRS_FUSION_MOD
       return
 
    end subroutine CONVERT_HIRS_RADIANCE
-   
+
 !------------------------------------------------------------------------------------------
 ! read the FUSION HIRS constants into memory
 !------------------------------------------------------------------------------------------
@@ -340,7 +348,7 @@ module HIRS_FUSION_MOD
       Instr_Const_lun = GET_LUN()
 
       open(unit=Instr_Const_lun,file=trim(Instr_Const_file),status="old",position="rewind",action="read",iostat=ios0)
-      
+
       erstat = 0
       if (ios0 /= 0) then
          erstat = 19
@@ -400,11 +408,11 @@ module HIRS_FUSION_MOD
    ! to indicate when this is done
    !--------------------------------------------------------------------------------
    subroutine REPLACE_AVHRR_WITH_HIRS()
-     
-      !--- replace 3.75 micron bt when off on AVHRR's 
+
+      !--- replace 3.75 micron bt when off on AVHRR's
       if (allocated(ch(20)%Bt_Toa) .and. allocated(Bt_375um_Sounder)) then
          where((ch(20)%Bt_Toa .eqr. MISSING_VALUE_REAL4) .and. &
-               (Bt_375um_Sounder .ner. MISSING_VALUE_REAL4))  
+               (Bt_375um_Sounder .ner. MISSING_VALUE_REAL4))
             ch(20)%Bt_Toa = Bt_375um_Sounder
             ch(20)%Source = 1
          endwhere
@@ -420,7 +428,7 @@ module HIRS_FUSION_MOD
 
       !--- set replaced 3.75 micron bt back to missing
       if (allocated(ch(20)%Bt_Toa) .and. allocated(Bt_375um_Sounder)) then
-         where(ch(20)%Source .eq. 1) 
+         where(ch(20)%Source .eq. 1)
             ch(20)%Bt_Toa = MISSING_VALUE_REAL4
          endwhere
       endif
