@@ -174,6 +174,8 @@ module HIRS_FUSION_MOD
           return
       end if
 
+  
+
       status = cx_sds_varinfo ( trim(File_Local),  Sds_Name(1) , ftype,Natt,Att_Name, Ndim, Dims)
 
       sds_start(1) = 1

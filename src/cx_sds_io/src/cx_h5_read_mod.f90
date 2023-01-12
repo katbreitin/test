@@ -5,7 +5,8 @@ module cx_h5_read_mod
 
    use hdf5,only:H5F_ACC_RDONLY_F,H5F_OBJ_FILE_F,H5F_OBJ_DATASET_F &
     ,H5F_OBJ_GROUP_F,H5F_OBJ_DATATYPE_F,h5fget_obj_count_f,h5fopen_f &
-    , H5Open_F, H5GOPEN_F, H5GGET_INFO_F, H5GN_MEMBERS_F,H5GGET_OBJ_INFO_IDX_F
+    , H5Open_F, H5GOPEN_F, H5GGET_INFO_F, H5GN_MEMBERS_F,H5GGET_OBJ_INFO_IDX_F &
+    , H5G_LINK_F,H5G_GROUP_F,H5G_DATASET_F ,H5G_TYPE_F
 
    USE h5fortran_types
 
@@ -18,6 +19,8 @@ module cx_h5_read_mod
        H5_dataset_dimensions &
      , H5readattribute &
      , H5readdataset
+
+   use linked_list_m
 
    implicit none
    private
@@ -81,10 +84,13 @@ contains
       integer :: nmem,nmem1
       character(len = 100) :: obj_name, obj_name1
       integer :: i, ii
-
+      character(len =100) :: dir
+      type(LinkedList) :: list_sds
+      type(LinkedListNode), pointer :: node_ptr
+      character(len=200) ::sds_name1
 
       obj_type = 1
-       ErrorFlag=0
+      ErrorFlag=0
 
       CALL h5open_f(ErrorFlag)
       ! print*,obj_type, H5F_OBJ_DATASET_F
@@ -93,7 +99,7 @@ contains
 
       nsds = 0
       natt = 0
-      allocate(sds_name(0))
+
       allocate(att_name(0))
 
       call h5fopen_f(h5_file,H5F_ACC_RDONLY_F, file_id,hdferr)
@@ -101,46 +107,63 @@ contains
 
       call H5GGET_INFO_F ( root_id,s_type,nlinks,max_corder,hdferr)
 
+      dir = '/'
+
+      call search_dataset(root_id, dir, nsds, list_sds)
 
 
+      ii = list_sds%length()
 
-      call H5GN_MEMBERS_F ( root_id,'/',nmem,hdferr)
-      ! print*,'Number of elements root: ',nmem
+      allocate(sds_name(ii))
+      do i=1,list_sds%length()
+        node_ptr => list_sds%first()
+        select type(p => node_ptr%value)
+        type is(character(*))
+          sds_name(i) = p
+        class default
 
-      do i=0,nmem-1
-      call H5GGET_OBJ_INFO_IDX_F(root_id, '/', i, &
-                                 obj_name, obj_type, hdferr)
-      !  print*,i,' ',trim(obj_name),obj_type
-        if ( obj_type .eq. 0 ) then
-            call H5GN_MEMBERS_F ( root_id,'/'//trim(obj_name),nmem1,hdferr)
-            do ii=0,nmem1-1
-              call H5GGET_OBJ_INFO_IDX_F(root_id, '/'//trim(obj_name), ii, &
-                                 obj_name1, obj_type1, hdferr)
-
-                  nsds = nsds + 1
-
-            end do
-        end if
+        end select
       end do
 
-
-
-       obj_type = H5F_OBJ_FILE_F
-      call h5fget_obj_count_f(file_id, obj_type, obj_count, hdferr)
-
-
-       obj_type = H5F_OBJ_DATASET_F
-      call h5fget_obj_count_f(file_id, obj_type, obj_count, hdferr)
-
-
-      obj_type = H5F_OBJ_GROUP_F
-      call h5fget_obj_count_f(file_id, obj_type, obj_count, hdferr)
-
-      obj_type = H5F_OBJ_DATATYPE_F
-      call h5fget_obj_count_f(file_id, obj_type, obj_count, hdferr)
-
-
+      do i = 1,list_sds%length()
+        print*,i,trim(sds_name(i))
+      end do
    end function h5_get_finfo
+
+
+   recursive subroutine search_dataset(root_id, dir, nsds ,list_sds)
+     integer (HID_T), intent(in) :: root_id
+     character(len=*), intent(inout) :: dir
+     integer, intent(inout) :: nsds
+     type(LinkedList), intent(inout) :: list_sds
+     integer :: i
+     integer :: nmem
+     integer :: hdferr
+     character(len = 100) :: obj_name
+     integer :: obj_type
+     character(len =100) :: dir_loc
+     class(*), pointer :: general
+
+     call H5GN_MEMBERS_F ( root_id,'/',nmem,hdferr)
+     do i = 0 , nmem - 1
+       call H5GGET_OBJ_INFO_IDX_F(root_id, trim(dir), i, &
+                                obj_name, obj_type, hdferr)
+
+        if (obj_type .EQ. H5G_DATASET_F) THEN
+            nsds = nsds + 1
+            allocate(general,source=trim(dir)//trim(obj_name))
+            call list_sds % append(general)
+            cycle
+        end if
+        if (obj_type .EQ. H5G_GROUP_F) THEN
+            dir_loc = '/'//trim(obj_name)
+            CALL search_dataset(root_id, dir_loc, nsds, list_sds)
+        endif
+     end do
+
+
+
+   end subroutine search_dataset
 
 
   !
@@ -221,7 +244,7 @@ contains
             if (  present (start_inp)) then
               offs = (/0,start_inp(2)/)
               counts = (/dims(1),count_inp(2)/)
-            
+
               call H5ReadDataset ( h5_file, sds_name(1),offs,counts, dataset_2d_i )
               dims(2) = count_inp(2)
             else
