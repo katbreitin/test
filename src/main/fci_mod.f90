@@ -2,7 +2,7 @@ module fci_mod
 
 
   use class_time_date, only: date_type
-  use cx_sds_io_mod, only:cx_sds_read
+  use cx_sds_io_mod, only:cx_sds_read,cx_sds_finfo
   use file_utils, only: file_search
 
   implicit none
@@ -98,14 +98,20 @@ contains
      integer :: status
      real,allocatable :: time(:)
      type(date_type) :: tt
+  character ( len = 128), allocatable :: Sds_Name(:)
+    character ( len = 128), allocatable :: Att_Name(:)
+  integer :: nsds , ftype,natt
 
 
     file_chunk = trim(self%config%path)//trim(self %config %file_list(chunk))
+print*,trim(file_chunk)
+    status = cx_sds_finfo (File_chunk, ftype,nsds,Sds_Name,Natt,Att_Name)
 
   ! time from 2000-01-01 00:00 in seconds
     status=  cx_sds_read (trim(file_chunk), &
        '/time' &
        , time )
+       print*,shape(time)
 
      call self % time % set_date(year=2000,month=1 &
                  ,day=1,hour=0,minute=0,second=int(time(200)))
@@ -120,18 +126,20 @@ contains
     do i=1,16
 
       if ( self % config % chan(i) ) then
-        if (  trim(chn_string(i)) .ne. 'ir_38') then
+      !  if (  trim(chn_string(i)) .ne. 'ir_38') then
               status=  cx_sds_read (trim(file_chunk), &
-                '/data/'//trim(chn_string(i))//'/measured/effective_radiance/' &
+                '/data/'//trim(chn_string(i))//'/measured/effective_radiance' &
                 , self%ch(i)%rad ,start=start, count = count)
-        else
+
+
+      !  else
           !  status=  cx_sds_read_fci_ir38 (trim(file_chunk), &
           !    '/data/'//trim(chn_string(i))//'/measured/effective_radiance' &
           !    , self%ch(i)%rad ,start=start, count = count,)
 
 
 
-        end if
+    !    end if
             ! var_names
 
 

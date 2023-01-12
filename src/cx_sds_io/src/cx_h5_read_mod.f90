@@ -208,6 +208,8 @@ contains
       integer :: offs(2),counts(2)
       ! ------------------------------------------------------
       h5_get_file_sds = -1
+
+
       call H5_DATASET_DIMENSIONS( h5_file,sds_name(1),dims,dclass)
 
 
