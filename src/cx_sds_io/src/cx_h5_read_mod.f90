@@ -128,6 +128,8 @@ contains
       do i = 1,list_sds%length()
         print*,i,trim(sds_name(i))
       end do
+
+
    end function h5_get_finfo
 
 
@@ -144,8 +146,16 @@ contains
      character(len =100) :: dir_loc
      class(*), pointer :: general
 
-     call H5GN_MEMBERS_F ( root_id,'/',nmem,hdferr)
+     call H5GN_MEMBERS_F ( root_id,trim(dir),nmem,hdferr)
+
+
+
+     if (hdferr .eq. -1) THEN
+        print*,'error h5gn)members '
+       stop
+     end if
      do i = 0 , nmem - 1
+
        call H5GGET_OBJ_INFO_IDX_F(root_id, trim(dir), i, &
                                 obj_name, obj_type, hdferr)
 
@@ -156,8 +166,12 @@ contains
             cycle
         end if
         if (obj_type .EQ. H5G_GROUP_F) THEN
-            dir_loc = '/'//trim(obj_name)
+
+            dir_loc = trim(dir)//trim(obj_name)//'/'
+
+
             CALL search_dataset(root_id, dir_loc, nsds, list_sds)
+
         endif
      end do
 
