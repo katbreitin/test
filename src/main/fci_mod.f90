@@ -74,7 +74,7 @@ contains
 
     ! some tests if files are there
     self % file_list => file_search(trim(path),'*.nc')
-
+print*,trim(path)
     ! then this is done, put the things in object
     self % path = path
     self % chan(:) = ch_on
@@ -103,6 +103,7 @@ contains
   integer :: nsds , ftype,natt
 
 
+
     file_chunk = trim(self%config%path)//trim(self %config %file_list(chunk))
 print*,trim(file_chunk)
     status = cx_sds_finfo (File_chunk, ftype,nsds,Sds_Name,Natt,Att_Name)
@@ -112,9 +113,10 @@ print*,trim(file_chunk)
        '/time' &
        , time )
        print*,shape(time)
+       call self % time % set_date(year=2000,month=1 &
+                   ,day=1,hour=0,minute=0,second=0)
+        call self % time % add_time(second =int(time(1)))
 
-     call self % time % set_date(year=2000,month=1 &
-                 ,day=1,hour=0,minute=0,second=int(time(200)))
 
      print*,'granule time: ',self % time %date_string('yyyy_doy.hhmm')
 

@@ -204,7 +204,6 @@
    use DNCOMP_CLAVRX_BRIDGE_MOD, only: &
       AWG_CLOUD_DNCOMP_ALGORITHM
 
-   use FCI_MOD
 
    use FILE_UTILS, only: FILE_TEST, GET_LUN
 
@@ -588,12 +587,7 @@
 
    type(timer) :: chrono
    type(timer) :: chrono_all
-   type(fci_data) ::fci
-   logical :: fci_on(16) = .true.
-   character(len=500) :: fci_path
-   character(len=500) :: fci_file
 
-   logical :: fci_develop = .false.
    !***********************************************************************
    ! Begin Executable Code
    !***********************************************************************
@@ -743,14 +737,7 @@
 
       call chrono%tic(17)
 
-      if ( fci_develop ) then
-      fci_path = '/Users/awalther/DATA/Satellite_Input/FCI/PROXY/UNCOMPRESSED/RC0076/'
-
-      call fci % config % set(fci_path,fci_on)
-      call fci % get (chunk = 24 ) !, start=[10,10],count=[20,20])
-
-      stop
-    end if
+      
 
       !----------------------------------------------------------------------
       ! Marker: READ IN CLAVRXORB_FILE_LIST AND SET FLAGS
@@ -790,7 +777,7 @@
 
       !-- see if level-1b file exists
       Level1b_Exists = file_test(trim(Image%Level1b_Path)//trim(File_1b_Temp))
-      if (Level1b_Exists .eqv. .FALSE.) then
+      if (.not. Level1b_Exists ) then
          call MESG( "ERROR: Level-1b file not found, skipping this file", level=5, color=1)
          print*,trim(Image%Level1b_Path)//trim(File_1b_Temp)
          cycle file_loop
@@ -815,7 +802,7 @@
       ! and populate sensor structure
       !------------------------------------------------------------------------
       call DETECT_SENSOR_FROM_FILE(AREAstr,NAVstr,Ierror)
-
+print*,'after detection'
       if (Ierror == sym%YES) then
          call MESG ("ERROR: Sensor could not be detected, skipping file " &
             , level = verb_lev % ERROR)
@@ -1091,6 +1078,7 @@
 
       call chrono%tac(17)
 
+
       Segment_loop: do Segment_Number = 1,Image%Number_Of_Segments
 
          !--- save the segment number in a global structure
@@ -1112,7 +1100,8 @@
          call chrono % tic(1)
 
          call READ_LEVEL1B_DATA(Image%Level1b_Full_Name,Segment_Number, &
-                                Time_Since_Launch,AREAstr,NAVstr,Nrec_Avhrr_Header,Ierror_Level1b)
+                                Time_Since_Launch,AREAstr,NAVstr,Nrec_Avhrr_Header &
+                                ,Ierror_Level1b)
          if (Ierror_Level1b /= 0) then
             call MESG ("ERROR:  Error reading level1b, skipping this file ",level = verb_lev% ERROR)
             print*,Image%Level1b_Full_Name

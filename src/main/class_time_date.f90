@@ -152,7 +152,7 @@ implicit none
        if ( present ( hour ) ) this % hour = hour
        if ( present ( minute ) ) this % minute = minute
        if ( present ( second ) ) this % second = second
-
+      
        call this % update()
 
   end subroutine set_date

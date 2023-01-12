@@ -125,11 +125,6 @@ contains
         end select
       end do
 
-      do i = 1,list_sds%length()
-        print*,i,trim(sds_name(i))
-      end do
-
-
    end function h5_get_finfo
 
 

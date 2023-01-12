@@ -6,10 +6,10 @@
 !       GFS (program)
 !
 ! PURPOSE: This module houses all of the routines used to read and process the
-!          GFS NWP data.  
+!          GFS NWP data.
 !
 ! DESCRIPTION: The data used here are already in hdf format from the
-!              convert_grib_to_hdf utility.  
+!              convert_grib_to_hdf utility.
 !
 ! AUTHORS:
 !  Andrew Heidinger, Andrew.Heidinger@noaa.gov
@@ -37,11 +37,11 @@
 module GFS_HDF_MOD
 
   use CONSTANTS_MOD
- 
+
   use CLASS_TIME_DATE, only: date_type , time_mid, time_diff_weight
-  
+
   use CX_SCIENCE_TOOLS_MOD, only: wind_speed, wind_direction, vapor, vapor_ice
-  
+
   use NWP_COMMON_MOD
 
   use CX_HDF4_MOD
@@ -51,25 +51,25 @@ module GFS_HDF_MOD
   implicit none
   private
   public:: READ_GFS_DATA
- 
+
   integer, parameter :: GFS_IDENT = 7
 
   real (kind=real4), parameter, private :: Missing_GFS = 9.999E+20
 
   character(len=11), parameter:: MODULE_PROMPT = "GFS_MODULE:"
   contains
-  
+
   !   ---------
   !
   !  PURPOSE: returns both filenames for before and after
   !         and the time weight between both
   !
-  !  INPUT:  
+  !  INPUT:
   !            t0, t1: date object from class_date_time for start and end of orbit
   !            nwp_type: 1 for GFS, 3 for CSFR, 4 for GDAS, 5 for MERRA, 6 for ERA and 7 for GFS_AIT
   !
   ! OUTPUT:    file1, file2 : filename below NWP root path ( with year directory if needed
-  !              t_weight: time weight.. number between 0( Sensor time at file1 or 1 sensor time at file after 
+  !              t_weight: time weight.. number between 0( Sensor time at file1 or 1 sensor time at file after
   !
   !        Method considers the midpoint of start and end time
   !
@@ -80,73 +80,73 @@ module GFS_HDF_MOD
     integer , intent(in) :: nwp_type
     character (len = 1020), intent(out) :: file1,file2
     real , intent(out) :: t_weight ! between 0 amd 1
-    
+
     type(date_type) ::  t_mid, t_bef, t_aft
     character (len =2 ) :: fcs1, fcs2
     integer :: hour
     integer :: idx_3h
     integer :: shft
     logical :: bad_time_edges
-    
+
     ! init
-    shft = 0.  
-      
+    shft = 0.
+
     !- determine mid time
     t_mid = time_mid (t0,t1)
     ! call t_mid % print_data()
-       
+
     ! - case for all nwp types
     select case (nwp_type)
-       
+
     case(1)    !GFS
         shft = -2
         t_bef = t_mid % next_6h(shft-1)
         file1 = "gfs."//t_bef % date_string('yymmddhh')//"_F012.hdf"
         t_aft = t_mid % next_6h(shft)
         file2 = "gfs."//t_aft % date_string('yymmddhh')//"_F012.hdf"
-        
+
     case(3)    !CFSR
         shft = -1
         t_bef = t_mid % next_6h(shft-1)
-        
-        
-        
+
+
+
         file1 = t_bef% date_string('yyyy')//"/cfsr."//t_bef % date_string('yymmddhh')//"_F006.hdf"
         t_aft = t_mid % next_6h(shft)
         file2 = t_aft% date_string('yyyy')//"/cfsr."//t_aft % date_string('yymmddhh')//"_F006.hdf"
-       
+
     case(4)    !GDAS
         shft = 0
         t_bef = t_mid % next_6h(shft-1)
         file1 = "gdas."//t_bef % date_string('yymmddhh')//"_F000.hdf"
         t_aft = t_mid % next_6h(shft)
         file2 = "gdas."//t_aft % date_string('yymmddhh')//"_F000.hdf"
-       
-       
+
+
     case(5)    !MERRA
         shft = 0
         t_bef = t_mid % next_6h(shft -1)
         file1 = t_bef% date_string('yyyy')//"/merra."//t_bef % date_string('yymmddhh')//"_F000.hdf"
         t_aft = t_mid % next_6h(shft)
         file2 = t_aft% date_string('yyyy')//"/merra."//t_aft % date_string('yymmddhh')//"_F000.hdf"
-       
-       
+
+
     case(6)   !ERA
         shft = 0
         t_bef = t_mid % next_6h(shft-1)
         file1 = t_bef% date_string('yyyy')//"/era."//t_bef % date_string('yymmddhh')//"_F000.hdf"
         t_aft = t_mid % next_6h(shft)
         file2 = t_aft% date_string('yyyy')//"/era."//t_aft % date_string('yymmddhh')//"_F000.hdf"
-       
-       
+
+
     case(7)  !GFS AIT
-        ! here the F values are not fixed but a function of the 3h of the day box 
-        ! for both, before and after we use the same start point of the NWP, but 
+        ! here the F values are not fixed but a function of the 3h of the day box
+        ! for both, before and after we use the same start point of the NWP, but
         ! with different forecast time
-        !  
-        shft = 0  
+        !
+        shft = 0
         call t_mid % get_date (hour = hour)
-          
+
         idx_3h = hour/3
         select case (idx_3h)
            case(0,2,4,6)
@@ -162,44 +162,44 @@ module GFS_HDF_MOD
         t_bef = t_mid % next_3h(shft-1)
         file1 = t_bef% date_string('yyyy')//"/gfs."//trim(t_bef % date_string(fmt='yymmddhh'))//"_F0"//fcs1//".hdf"
         file2 = t_bef% date_string('yyyy')//"/gfs."//t_bef % date_string('yymmddhh')//"_F0"//fcs2//".hdf"
-        
+
         ! to calculate the weight we add  three hours
-        t_aft = t_bef 
+        t_aft = t_bef
         call t_aft % add_time(hour=3)
-        
-        
-       
-         
+
+
+
+
     case(8)    !GFS FV3
         shft = -2
         t_bef = t_mid % next_6h(shft-1)
         file1 = "gfs."//t_bef % date_string('yymmddhh')//"_F012.hdf"
         t_aft = t_mid % next_6h(shft)
         file2 = "gfs."//t_aft % date_string('yymmddhh')//"_F012.hdf"
- 
+
     case default
 
       print*,'wrong NWP option fatal error, should be fixed in clavrx_options stopping'
       print*,'nwp option is ',nwp_type
-      stop    
-       
-    end select 
-     
-     
-      
+      stop
+
+    end select
+
+
+
       t_weight  =  time_diff_weight (t_mid,t_bef,t_aft,identical_time_bounds  = bad_time_edges) + shft
-     
+
     ! error catching for fatal errors which normally cannot occur
     if ( bad_time_edges) then
         print*,' GFS_HDF_MOD: time before and time after are identical'
         print*,' Unforeseen error'
         print*,' Please contact andi.walther@ssec.wisc.edu with all relevant information'
         stop 'stop gfs_mod.f90'
-      
+
     end if
-      
+
     if ( t_weight .lt. 0 .or. t_weight .gt. 1 ) then
-          
+
           print*,'GFS_HDF_MOD:  time weight are not valid'
           print*,'This error shouldnt happen. Something went wrong for t_weight in gfs_hdf_mod.f90 tool gfs_filenames'
           print*, 'please contact Andi: andi.walther@ssec.wisc.edu'
@@ -211,12 +211,12 @@ module GFS_HDF_MOD
           print*
           print*,'time after:'
           call t_aft % print_data
-          
-          
-          
+
+
+
           stop 'stop gfs_mod.f90'
     end if
-      
+
   end subroutine gfs_filenames
 
 !-------------------------------------------------------------
@@ -249,11 +249,11 @@ module GFS_HDF_MOD
     !   Local variables
     character (len=1020) :: Nwp_Name_Before
     character (len=1020) :: Nwp_Name_After
-    
-    character (len=3)   :: array_order_1, array_order_2 
-    
+
+    character (len=3)   :: array_order_1, array_order_2
+
     logical :: file_exists
-    
+
     integer :: i, j, ii, jj
 
     real ::t_weight
@@ -271,14 +271,14 @@ module GFS_HDF_MOD
     integer, dimension(Sds_Rank_3d):: Sds_Start_3d, Sds_Stride_3d, Sds_Edges_3d
 
     character(len=1024) :: string_msg
-    
+
     type(date_type) :: t0, t1
-    
+
     !-- check Nwp_Data_Type
     if (Nwp_Data_Type /= 1 .and. Nwp_Data_Type /= 3 .and. Nwp_Data_Type /=4 .and. Nwp_Data_Type /=5 .and. Nwp_Data_Type /=6 .and. Nwp_Data_Type /=7 &
        .and. Nwp_Data_Type /= 8) then
        print *, EXE_PROMPT, MODULE_PROMPT, " ERROR: unsupported NWP data in GFS read module, stopping"
-       stop 
+       stop
     endif
 
     !--   Initializations
@@ -288,25 +288,25 @@ module GFS_HDF_MOD
 
     Missing_Nwp = Missing_Value_Real4
    
-   
+
     call t0 % set_date_with_doy (year = int(start_year,kind(1)), doy = int(start_jday,kind(1)) &
         , hour =int ((Start_Itime)/60.0/60.0/1000.0 ) &
         , minute =  int (mod(int((Start_Itime)/60.0/1000.0), 60 ))  &
         , second = int (mod(int((Start_Itime)/1000.0), 60 )))
-         
+
     call t1 % set_date_with_doy (year = int(end_year,kind(1)), doy = int(end_jday,kind(1)) &
           , hour = int ((End_Itime)/60.0/60.0/1000.0) &
         , minute =  int (mod(int((End_Itime)/60.0/1000.0), 60 ))  &
         , second = int (mod(int((End_Itime)/1000.0), 60 )))
-    
+
     call gfs_filenames  (t0,t1,nwp_data_type,Nwp_Name_Before,Nwp_Name_after, t_weight)
     Nwp_Name_Before = trim(Nwp_Path) //"/"//trim(Nwp_Name_Before)
     Nwp_Name_After= trim(Nwp_Path) //"/"//trim(Nwp_Name_After)
-    
-    
+
+
     call MESG("NWP name before = "//trim(Nwp_Name_Before), level=Verb_Lev%DEFAULT)
     call MESG("NWP name after = "//trim(Nwp_Name_After), level=Verb_Lev%DEFAULT)
-   
+
     !--- Does before file exist?
     inquire(file = Nwp_Name_Before, exist = file_exists)
     if (.not. file_exists) then
@@ -324,8 +324,8 @@ module GFS_HDF_MOD
           call mesg( ' '//MODULE_PROMPT//"ERROR: Neither GFS data files are present, processing stopped ",level=1,color=1)
           write(string_msg,*)"Stopped in File ",__FILE__," at line ",__LINE__
           call MESG ( string_msg,level = 1,color=3)
-           stop 
-       endif  
+           stop
+       endif
        call MESG("WARNING: Missing data file " // trim(Nwp_Name_After),level=Verb_Lev%WARNING)
        call MESG("WARNING: Setting GFS after to GFS before",level=Verb_Lev%WARNING)
        Nwp_Name_After = Nwp_Name_Before
@@ -338,7 +338,7 @@ module GFS_HDF_MOD
 
      !- initialize
      Istatus = 0
-   
+
      !-- open files
      Istatus = OPEN_FILE_HDF_READ(trim(Nwp_Name_Before), Sd_Id_1)
      if (Istatus < 0) then
@@ -362,14 +362,14 @@ module GFS_HDF_MOD
      Dlat_Gfs      = READ_HDF_GLOBAL_ATTRIBUTE_NUM(Sd_Id_1,"LATITUDE RESOLUTION")
      Dlon_Gfs      = READ_HDF_GLOBAL_ATTRIBUTE_NUM(Sd_Id_1,"LONGITUDE RESOLUTION")
      lat1_Gfs      = READ_HDF_GLOBAL_ATTRIBUTE_NUM(Sd_Id_1,"FIRST LATITUDE")
-     lon1_Gfs      = READ_HDF_GLOBAL_ATTRIBUTE_NUM(Sd_Id_1,"FIRST LONGITUDE") 
+     lon1_Gfs      = READ_HDF_GLOBAL_ATTRIBUTE_NUM(Sd_Id_1,"FIRST LONGITUDE")
      array_order_1 = READ_HDF_GLOBAL_ATTRIBUTE_STR(Sd_Id_1,"3D ARRAY ORDER")
 
       !--- dont read attributes from file 2 (assume they are the same)
      array_order_2 = READ_HDF_GLOBAL_ATTRIBUTE_STR(Sd_Id_2,"3D ARRAY ORDER")
 
      !--- do some checking
-     if (array_order_1 /= array_order_2) then 
+     if (array_order_1 /= array_order_2) then
        call MESG("ERROR: Order of 3d arrays differ among gfs files, stopping", level=Verb_Lev%ERROR)
        stop
      endif
@@ -386,18 +386,18 @@ module GFS_HDF_MOD
     Sds_Start_1d = (/ 0 /)       !should this be 1
     Sds_Stride_1d = (/ 1 /)
     Sds_Edges_1d = (/ Nlevels /)     !should this be nx-1,ny-1
-                                                                                                                           
+
     !---- define dimensions of 2d arrays
     Sds_Start_2d = (/ 0, 0 /)       !should this be 1
     Sds_Stride_2d = (/ 1, 1 /)
     Sds_Edges_2d = (/ Nlon_Gfs, Nlat_Gfs /)     !should this be nx-1,ny-1
-                                                                                                                           
+
     !---- define dimensions of 3d arrays
-    Sds_Start_3d = (/ 0, 0, 0 /)       
+    Sds_Start_3d = (/ 0, 0, 0 /)
     Sds_Stride_3d = (/ 1, 1, 1 /)
-    Sds_Edges_3d = (/ Nlevels, Nlon_Gfs, Nlat_Gfs /)     
+    Sds_Edges_3d = (/ Nlevels, Nlon_Gfs, Nlat_Gfs /)
     if (REFORMAT_GFS_ZXY == 1) then
-      Sds_Edges_3d = (/ Nlon_Gfs, Nlat_Gfs, Nlevels /)    
+      Sds_Edges_3d = (/ Nlon_Gfs, Nlat_Gfs, Nlevels /)
     endif
 
     !---- store dimensions in public variables
@@ -626,7 +626,7 @@ module GFS_HDF_MOD
                       Sds_Edges_3d, Temp3d_Nwp_2) + Istatus
     call INTERPOLATE_3D(t_weight, Missing_Nwp, Missing_GFS, NWP%Icmr_Prof)
   endif
- 
+
     ! --- close files
     Istatus = CLOSE_FILE_HDF_READ(Sd_Id_1,trim(Nwp_Name_Before))
     Istatus = CLOSE_FILE_HDF_READ(Sd_Id_2,trim(Nwp_Name_After))
@@ -729,7 +729,7 @@ enddo
     real, intent(in):: Missing_In
     real, intent(in):: Missing_Out
 
-    where(Data == Missing_In) 
+    where(Data == Missing_In)
         Data = Missing_Out
     endwhere
 
@@ -740,7 +740,7 @@ enddo
     real, intent(in):: Missing_In
     real, intent(in):: Missing_Out
 
-    where(Data == Missing_In) 
+    where(Data == Missing_In)
         Data = Missing_Out
     endwhere
 
@@ -827,8 +827,8 @@ end subroutine INTERPOLATE_3D
 ! Fix GFS RH scaling
 !
 ! In the current GFS output, the definition of RH varies between
-! 253 and 273 K.  At 273 it is with respect to water. 
-! At 253 it is defined with respect to ice.  
+! 253 and 273 K.  At 273 it is with respect to water.
+! At 253 it is defined with respect to ice.
 ! At temperatures in between, it varies linearly.
 ! This routine attempts to define RH with respect to water for all temps
 !---------------------------------------------------------------------
@@ -859,7 +859,7 @@ subroutine FIX_GFS_RH()
            !--- derive es used in original rh definition
            es = ice_weight * es_ice + (1.0-ice_weight)*es_water
 
-           !--- compute actual e 
+           !--- compute actual e
            e = NWP%Rh_Prof(k,i,j) * es / 100.0
 
            !--- compute actual rh with respect to water

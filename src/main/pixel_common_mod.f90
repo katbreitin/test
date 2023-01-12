@@ -340,6 +340,7 @@ module PIXEL_COMMON_MOD
     character(len=32):: Sensor_Name
     integer(kind=int4):: Spatial_Resolution_Meters
     character(len=32):: Platform_Name
+    character(len=32):: rttov_name
     integer(kind=int4):: WMO_Id
     integer(kind=int4):: WMO_Id_Previous
     character(len=1020):: Instr_Const_File

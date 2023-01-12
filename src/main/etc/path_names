@@ -114,3 +114,4 @@ viirs_nasa_hres_read_mod.f90
 viirs_nasa_read_module.f90
 viirs_read_mod.f90
 fci_mod.f90
+cx_fci_mod.f90
