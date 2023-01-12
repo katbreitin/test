@@ -116,7 +116,7 @@ contains
 
       allocate(sds_name(ii))
       do i=1,list_sds%length()
-        node_ptr => list_sds%first()
+        node_ptr => list_sds%atindex(i)
         select type(p => node_ptr%value)
         type is(character(*))
           sds_name(i) = p
