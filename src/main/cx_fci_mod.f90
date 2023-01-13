@@ -18,15 +18,17 @@ print*,trim(image%Level1b_Full_Name)
 do i = 1,16
   idx_cx = Sensor%CLAVRx_Chan_Map(i)
   if ( sensor % Chan_On_Flag_Default( Sensor%CLAVRx_Chan_Map(idx_ch)) .eq. 0 ) cycle
-  print*,i,idx_cx
+
 
   ch(idx_cx) % rad_toa = fci % ch(i) % rad
-  !ch(idx_cx) % rfl_toa = fci % ch(i) % rfl
-  !ch(idx_cx) % Bt_Toa = fci % ch(i) % bt
+  if ( allocated (fci % ch(i) % rfl) ) THEN
+     ch(idx_cx) % ref_toa = fci % ch(i) % rfl
+  end if
+  if ( allocated (fci % ch(i) % bt))  ch(idx_cx) % Bt_Toa = fci % ch(i) % bt
 
-  print*,maxval(ch(idx_cx) % rad_toa)
+  print*,i,idx_cx,maxval(ch(idx_cx) % rad_toa)
 end do
-stop
+
 end subroutine read_fci
 
 end module cx_fci_mod

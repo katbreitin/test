@@ -2594,10 +2594,10 @@ module SENSOR_MOD
             end if
 
             case('FCI')
-              call READ_FCI(Segment_number)  
+              call READ_FCI(Segment_number)
 
-              print*,' read FCI '
-              stop
+              print*,' read FCI ', segment_number
+
 
          case('SEVIRI')
          !--------  MSG/SEVIRI

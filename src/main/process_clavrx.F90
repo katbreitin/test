@@ -737,7 +737,7 @@
 
       call chrono%tic(17)
 
-      
+
 
       !----------------------------------------------------------------------
       ! Marker: READ IN CLAVRXORB_FILE_LIST AND SET FLAGS
@@ -802,7 +802,7 @@
       ! and populate sensor structure
       !------------------------------------------------------------------------
       call DETECT_SENSOR_FROM_FILE(AREAstr,NAVstr,Ierror)
-print*,'after detection'
+
       if (Ierror == sym%YES) then
          call MESG ("ERROR: Sensor could not be detected, skipping file " &
             , level = verb_lev % ERROR)

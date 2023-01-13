@@ -1,6 +1,5 @@
 module fci_mod
 
-
   use class_time_date, only: date_type
   use cx_sds_io_mod, only:cx_sds_read,cx_sds_finfo
   use file_utils, only: file_search
@@ -55,7 +54,9 @@ module fci_mod
   end type fci_data
 
 contains
-
+  ! ------------
+  !
+  ! -------------
   subroutine  obs_chn_data__alloc(self,nx,ny)
     class(obs_chn_data) :: self
     integer :: nx, ny
@@ -74,7 +75,7 @@ contains
 
     ! some tests if files are there
     self % file_list => file_search(trim(path),'*.nc')
-print*,trim(path)
+
     ! then this is done, put the things in object
     self % path = path
     self % chan(:) = ch_on
@@ -102,17 +103,15 @@ print*,trim(path)
     character ( len = 128), allocatable :: Att_Name(:)
   integer :: nsds , ftype,natt
 
-
-
     file_chunk = trim(self%config%path)//trim(self %config %file_list(chunk))
-print*,trim(file_chunk)
+
     status = cx_sds_finfo (File_chunk, ftype,nsds,Sds_Name,Natt,Att_Name)
 
   ! time from 2000-01-01 00:00 in seconds
     status=  cx_sds_read (trim(file_chunk), &
        '/time' &
        , time )
-       print*,shape(time)
+
        call self % time % set_date(year=2000,month=1 &
                    ,day=1,hour=0,minute=0,second=0)
         call self % time % add_time(second =int(time(1)))
@@ -151,6 +150,8 @@ print*,trim(file_chunk)
                '/measured/channel_effective_solar_irradiance' &
               , irrad )
 
+! TODO    this is wrong1
+!  read page 50 of https://www.eumetsat.int/media/459
               self%ch(i)%rfl = self%ch(i)%rad/irrad(1)
 
           end if
@@ -194,14 +195,7 @@ print*,trim(file_chunk)
               - rad_bt_b(1)/rad_bt_a(1)
 
 
-
-  print*,i,trim(chn_string(i)),self%ch(i)%bt(500,100)
             end if
-
-
-
-
-
 
         end if
 
