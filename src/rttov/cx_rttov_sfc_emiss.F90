@@ -159,7 +159,8 @@ contains
              chan_list_max_cx(nchan) = chan_idx
          end if
       end do
-
+     if (allocated(chan_list) deallocate(chan_list))
+     if (allocated(chan_list_cx) deallocate(chan_list_cx))
       allocate (chan_list(nchan))
       allocate (chan_list_cx(nchan))
       chan_list = chan_list_max(1:nchan)
