@@ -14,6 +14,8 @@ module fci_mod
 
   use cx_geo__define, only: geo_str
 
+  use pixel_common_mod, only: Ancil_Data_Dir
+
   implicit none
 
   character(len=6) :: chn_string(16) =  &
@@ -134,6 +136,7 @@ contains
     real :: hour_frac
     real, parameter :: Pi = 3.14159265359
     real , parameter :: DTOR = PI / 180.
+    character(len=1024) :: lat_lon_path
 
      ! ---------------
      file_chunk = trim(self%config%path)//trim(self %config %file_list(chunk))
@@ -156,9 +159,9 @@ contains
       !TODODODOD
       ! channel ir_38 is different
       !  has a warm scale offset and warn scale slope
-
-      lonlat_file1km = '/Users/awalther/DATA/Satellite_Input/FCI/CM_OPE_GRIDDEF_MTI1+FCI_20220407120000_1km-V2.nc'
-      lonlat_file2km = '/Users/awalther/DATA/Satellite_Input/FCI/CM_OPE_GRIDDEF_MTI1+FCI_20220407120000_2km-V2.nc'
+      lat_lon_path=trim(Ancil_Data_Dir)//"/static/fci/"
+      lonlat_file1km = trim(lat_lon_path)//'CM_OPE_GRIDDEF_MTI1+FCI_20220407120000_1km-V2.nc'
+      lonlat_file2km = trim(lat_lon_path)//'CM_OPE_GRIDDEF_MTI1+FCI_20220407120000_2km-V2.nc'
 
       status = cx_sds_read (lonlat_file2km, &
       'longitude' , self % lon , start = [1,139 * (chunk-1) +1], count = [5568,139] )

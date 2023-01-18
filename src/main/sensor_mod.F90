@@ -327,8 +327,6 @@ module SENSOR_MOD
 
       type(fci_data) ::fci
       logical :: fci_on(16) = .true.
-      character(len=500) :: fci_path
-      character(len=500) :: fci_file
 
       sensor_search: do
 
@@ -2595,7 +2593,7 @@ module SENSOR_MOD
             case('FCI')
               call READ_FCI(Segment_number)
 
-          
+
 
          case('SEVIRI')
          !--------  MSG/SEVIRI
