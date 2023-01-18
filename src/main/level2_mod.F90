@@ -7,7 +7,7 @@
 !
 ! PURPOSE: Routines for creating, writing and closing pixel-level output files
 !
-! DESCRIPTION: 
+! DESCRIPTION:
 !
 ! AUTHORS:
 !  Andrew Heidinger, Andrew.Heidinger@noaa.gov
@@ -57,7 +57,7 @@ module LEVEL2_MOD
            SET_CH_ATTRIBUTES, &
            WRITE_SDS_NETCDF, &
            DEFINE_LEVEL2_SDS_NETCDF
-          
+
  !--- Level2 File Index
  integer, private, save:: Sd_Id_Level2
  character(len=1020), save :: File_Level2
@@ -92,7 +92,7 @@ module LEVEL2_MOD
  character(len=11), private, parameter:: MOD_PROMPT = "LEVEL2:"
  character(len=18), private, parameter:: coordinates_string = "longitude latitude"
 
- type(Sds_Struct), private, save, dimension(:), allocatable:: Sds_Info 
+ type(Sds_Struct), private, save, dimension(:), allocatable:: Sds_Info
 
 !====================================================================
 !
@@ -112,23 +112,23 @@ subroutine READ_LEVEL2_VAR_LIST()
    character(len=200) :: String_Dummy
    !integer:: Lun, Sds_Counter, Var_Idx, Num_Occurs
    integer:: Lun, Var_Idx, Num_Occurs
-  
+
    if ( .not. file_test(trim(Level2_List))) then
       stop 'Please add a file level2_list'
    end if
-   
+
    Num_Level2_Vars_List = file_nr_lines (trim(Level2_List)) - 1
-   
+
    if ( Num_Level2_Vars_List < 1) then
       stop 'No variable names in level2_list'
    end if
-   
+
    Lun = GET_LUN()
 
    open(unit=Lun,file=trim(Level2_List),status='old')
    read(unit=lun,fmt=*) Level2_Var_List_Header
    read(unit=Lun,fmt=*) String_Dummy
-   
+
    if (is_numeric(trim(string_dummy))) then
       print*
       print*,'        You still use the number of level2 products in your level2_list line 2'
@@ -141,8 +141,8 @@ subroutine READ_LEVEL2_VAR_LIST()
    else
       backspace(lun)
    end if
-   
-  
+
+
    allocate(Sds_Info(Num_Level2_Vars_List))
 
    do Var_Idx = 1, Num_Level2_Vars_List
@@ -155,7 +155,7 @@ subroutine READ_LEVEL2_VAR_LIST()
    !------------------------------------------------------------------
    do Var_Idx = 2, Num_Level2_Vars_List
        Num_Occurs = count(Sds_Info(Var_Idx)%Sds_Name == Sds_Info(1:Var_Idx)%Sds_Name)
-       if (Num_Occurs > 1) then 
+       if (Num_Occurs > 1) then
           call MESG(MOD_PROMPT//"Duplicate level2 sds name in level2_list ==> "//trim(Sds_Info(Var_Idx)%Sds_Name))
           Sds_Info(Var_Idx)%Sds_Name = "duplicate"    !rename to duplicate
        endif
@@ -173,7 +173,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
 
       !--- set default strcuture for a real4 2d scaled sds
       Sds_Info(Var_Idx)%On_Flag =  .true.
-      Sds_Info(Var_Idx)%Sds_Idx = Var_Idx 
+      Sds_Info(Var_Idx)%Sds_Idx = Var_Idx
       Sds_Info(Var_Idx)%Rank = 2
       Sds_Info(Var_Idx)%Input_Data_Type_HDF =  DFNT_FLOAT32
       Sds_Info(Var_Idx)%Level2_Data_Type_HDF =  DFNT_INT16
@@ -199,9 +199,9 @@ subroutine SETUP_LEVEL2_SDS_INFO()
       Sds_Info(Var_Idx)%Sds_Data_3d_I1 => null()
 
       select case (trim(Sds_Info(Var_Idx)%Sds_Name))
-        
+
          !----------------------------------------------------------------------------------------------------
-         !  
+         !
          !----------------------------------------------------------------------------------------------------
          case("scan_line_number")
             Sds_Info(Var_Idx)%Standard_Name = "scan_line_number"
@@ -309,15 +309,15 @@ subroutine SETUP_LEVEL2_SDS_INFO()
          !----------------------------------------------------------------------------------------------------
          !  Unscaled 2D Reals
          !----------------------------------------------------------------------------------------------------
-        
+
          case("radiance_dnb_nom")
             Sds_Info(Var_Idx)%Standard_Name = "toa_radiance_dnb_nom"
             Sds_Info(Var_Idx)%Scaling_Type =  0_int1
             Sds_Info(Var_Idx)%Level2_Data_Type_HDF =  DFNT_FLOAT32
             Sds_Info(Var_Idx)%Level2_Data_Type_NETCDF = NF90_FLOAT
             Sds_Info(Var_Idx)%Units = "mW/m^2/cm^-1"
-            if (allocated(ch(44)%Rad_Toa)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => ch(44)%Rad_Toa   
-         
+            if (allocated(ch(44)%Rad_Toa)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => ch(44)%Rad_Toa
+
          case("diagnostic_1")
             Sds_Info(Var_Idx)%Standard_Name = "diagnostic_1"
             Sds_Info(Var_Idx)%Scaling_Type =  0_int1
@@ -525,7 +525,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
          !----------------------------------------------------------------------------------------------------
          ! Nav Members
          !----------------------------------------------------------------------------------------------------
-         case("asc_des_flag") 
+         case("asc_des_flag")
             Sds_Info(Var_Idx)%Standard_Name = "asc_des_flag"
             Sds_Info(Var_Idx)%Scaling_Type =  0_int1
             Sds_Info(Var_Idx)%Rank = 1
@@ -605,7 +605,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Actual_Range = [0.0,180.0]
             Sds_Info(Var_Idx)%Units =  "degrees"
             if (allocated(Geo%Relaz)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Geo%Relaz
-         case("solar_azimuth_angle") 
+         case("solar_azimuth_angle")
             Sds_Info(Var_Idx)%Standard_Name = "solar_azimuth_angle"
             Sds_Info(Var_Idx)%Actual_Range = [-180.0,180.0]
             Sds_Info(Var_Idx)%Units =  "degrees"
@@ -758,7 +758,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             if (allocated(ch(23)%Bt_Toa)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => ch(23)%Bt_Toa
          case("temp_4_45um_nom_sounder")
             Sds_Info(Var_Idx)%Standard_Name = "toa_brightness_temperature_4_45um_nom"
-            Sds_Info(Var_Idx)%Units =  "K" 
+            Sds_Info(Var_Idx)%Units =  "K"
             if (allocated(Bt_445um_Sounder)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Bt_445um_Sounder
          case("temp_4_46um_nom")
             Sds_Info(Var_Idx)%Standard_Name = "toa_brightness_temperature_4_46um_nom"
@@ -808,7 +808,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Actual_Range = [0.0,75.0]
             Sds_Info(Var_Idx)%Units = "mW/m^2/cm^-1"
             if (allocated(ch(27)%Rad_Toa)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => ch(27)%Rad_Toa
-       
+
          case("temp_11_0um_nom")
             Sds_Info(Var_Idx)%Standard_Name = "toa_brightness_temperature_11_0um_nom"
             Sds_Info(Var_Idx)%Units =  "K"
@@ -1158,7 +1158,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Level2_Data_Type_NETCDF = NF90_BYTE
             if (allocated(ch(20)%Source)) Sds_Info(Var_Idx)%Sds_Data_2d_I1 => ch(20)%Source
 
-         !--- data quality flags 
+         !--- data quality flags
          case("dqf_3_75um_nom")
             Sds_Info(Var_Idx)%Standard_Name = "dqf_3_75um_nom"
             Sds_Info(Var_Idx)%Scaling_Type =  0_int1
@@ -2465,7 +2465,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Units = "none"
             if (allocated(Tau_Nlcomp_Cost)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Tau_Nlcomp_Cost
          case("cld_reff_nlcomp_unc")
-            Sds_Info(Var_Idx)%Standard_Name = "effective_radius_of_cloud_particle_uncertainty" 
+            Sds_Info(Var_Idx)%Standard_Name = "effective_radius_of_cloud_particle_uncertainty"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,160.0]
             Sds_Info(Var_Idx)%Long_Name = "effective radius of cloud particle uncertainty " // &
                                "determined from NLCOMP; see attributes for channels used"
@@ -2602,19 +2602,19 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Actual_Range = [0.0,2.0]
             Sds_Info(Var_Idx)%Long_Name = "beta ratio from 11um and 85um referenced to tropopause"
             Sds_Info(Var_Idx)%Units = "none"
-            if (allocated(Beta_11um_85um_Tropo_Rtm)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Beta_11um_85um_Tropo_Rtm 
+            if (allocated(Beta_11um_85um_Tropo_Rtm)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Beta_11um_85um_Tropo_Rtm
          case("beta_11um_104um_tropopause")
             Sds_Info(Var_Idx)%Standard_Name = "beta_11um_104um_tropopause"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,2.0]
             Sds_Info(Var_Idx)%Long_Name = "beta ratio from 11um and 10.4um referenced to tropopause"
             Sds_Info(Var_Idx)%Units = "none"
-            if (allocated(Beta_11um_104um_Tropo_Rtm)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Beta_11um_104um_Tropo_Rtm 
+            if (allocated(Beta_11um_104um_Tropo_Rtm)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Beta_11um_104um_Tropo_Rtm
          case("beta_11um_12um_tropopause")
             Sds_Info(Var_Idx)%Standard_Name = "beta_11um_12um_tropopause"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,2.0]
             Sds_Info(Var_Idx)%Long_Name = "beta ratio from 11um and 12um referenced to tropopause"
             Sds_Info(Var_Idx)%Units = "none"
-            if (allocated(Beta_11um_12um_Tropo_Rtm)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Beta_11um_12um_Tropo_Rtm 
+            if (allocated(Beta_11um_12um_Tropo_Rtm)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Beta_11um_12um_Tropo_Rtm
          case("beta_11um_133um_tropopause")
             Sds_Info(Var_Idx)%Standard_Name = "beta_11um_133um_tropopause"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,2.0]
@@ -2981,20 +2981,20 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Level2_Data_Type_NETCDF = NF90_BYTE
             if (allocated(Aot_Qf)) Sds_Info(Var_Idx)%Sds_Data_2d_I1 => Aot_Qf
 
-            
+
          ! --------------------------------------------
          !  MURI
          ! --------------------------------
-         
+
          case ("aerosol_optical_depth_muri")
-            Sds_info(Var_Idx)%Standard_Name = "aerosol_optical_depth_muri" 
+            Sds_info(Var_Idx)%Standard_Name = "aerosol_optical_depth_muri"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,5.0]
             Sds_Info(Var_Idx)%Units = "none"
             if (allocated(Muri%aod)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Muri%Aod
-           
+
          case ("aerosol_coarse_mode_muri")
-            Sds_info(Var_Idx)%Standard_Name = "aerosol_coarse_mode_muri" 
-            
+            Sds_info(Var_Idx)%Standard_Name = "aerosol_coarse_mode_muri"
+
             Sds_Info(Var_Idx)%Scaling_Type =  0_int1
             Sds_Info(Var_Idx)%Input_Data_Type_HDF =  DFNT_INT8
             Sds_Info(Var_Idx)%Level2_Data_Type_HDF =  DFNT_INT8
@@ -3005,13 +3005,13 @@ subroutine SETUP_LEVEL2_SDS_INFO()
                                " Coarse Mode 3 "// &
                                " Coarse Mode 4 " // &
                                " Coarse Mode 5 "
-                               
+
             Sds_Info(Var_Idx)%Units = "none"
             if (allocated(Muri%cm_mode)) Sds_Info(Var_Idx)%Sds_Data_2d_I1 => Muri%cm_mode
-         
+
          case ("aerosol_fine_mode_muri")
-            Sds_info(Var_Idx)%Standard_Name = "aerosol_fine_mode_muri" 
-            
+            Sds_info(Var_Idx)%Standard_Name = "aerosol_fine_mode_muri"
+
             Sds_Info(Var_Idx)%Scaling_Type =  0_int1
             Sds_Info(Var_Idx)%Input_Data_Type_HDF =  DFNT_INT8
             Sds_Info(Var_Idx)%Level2_Data_Type_HDF =  DFNT_INT8
@@ -3020,15 +3020,15 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Flags_String = "Fine Mode 1 "// &
                                " Fine Mode 2 "// &
                                " Fine Mode 3 "// &
-                               " Fine Mode 4 " 
-                               
+                               " Fine Mode 4 "
+
             Sds_Info(Var_Idx)%Units = "none"
             if (allocated(Muri%fm_mode)) Sds_Info(Var_Idx)%Sds_Data_2d_I1 => Muri%fm_mode
-         
-         
+
+
            case ("sediment_class_muri")
-            Sds_info(Var_Idx)%Standard_Name = "sediment_class_muri" 
-            
+            Sds_info(Var_Idx)%Standard_Name = "sediment_class_muri"
+
             Sds_Info(Var_Idx)%Scaling_Type =  0_int1
             Sds_Info(Var_Idx)%Input_Data_Type_HDF =  DFNT_INT8
             Sds_Info(Var_Idx)%Level2_Data_Type_HDF =  DFNT_INT8
@@ -3037,12 +3037,12 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Flags_String = "Sediment Mode = -9 (fill in) "// &
                                " Sediment Mode = 0 (clear water)"// &
                                " Sediment Mode = 1 (turbid water)"
-                               
+
             Sds_Info(Var_Idx)%Units = "none"
             if (allocated(Muri%sediment_class)) Sds_Info(Var_Idx)%Sds_Data_2d_I1 => Muri%sediment_class
          case ("aerosol_QA_muri")
-            Sds_info(Var_Idx)%Standard_Name = "aerosol_QA_muri" 
-            
+            Sds_info(Var_Idx)%Standard_Name = "aerosol_QA_muri"
+
             Sds_Info(Var_Idx)%Scaling_Type =  0_int1
             Sds_Info(Var_Idx)%Input_Data_Type_HDF =  DFNT_INT8
             Sds_Info(Var_Idx)%Level2_Data_Type_HDF =  DFNT_INT8
@@ -3051,20 +3051,20 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Flags_String = "Quality Assurance = -9 (fill in)"// &
                                " Quality Assurance = 0 (poor) "// &
                                " Quality Assurance = 1 (good) "
-                               
+
             Sds_Info(Var_Idx)%Units = "none"
             if (allocated(Muri%aerosol_QA)) Sds_Info(Var_Idx)%Sds_Data_2d_I1 => Muri%aerosol_QA
-         
+
          case ("aerosol_fine_mode_ratio_muri")
-            Sds_info(Var_Idx)%Standard_Name = "aerosol_fine_mode_ratio_muri" 
+            Sds_info(Var_Idx)%Standard_Name = "aerosol_fine_mode_ratio_muri"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,1.0]
             Sds_Info(Var_Idx)%Units = "none"
             if (allocated(Muri%fmr)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Muri%fmr
-             
-             
+
+
          case default
             call MESG ( "Unknown Level2 Variable ==> "//trim(Sds_Info(Var_Idx)%Sds_Name), level=verb_lev % ERROR )
-               
+
       end select
    enddo
 
@@ -3108,7 +3108,7 @@ end subroutine SETUP_LEVEL2_SDS_INFO
 ! Description:
 !   This subroutine, given the inputs, determins and opens/creates the apppropriate
 !       Level 2 (pixel level output) for various types of files. In addition
-!       the HDF global attributes are put into the various HDF files 
+!       the HDF global attributes are put into the various HDF files
 !
 !====================================================================
 subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
@@ -3156,7 +3156,7 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
  integer(kind=int4), intent(in):: Num_Scans
  character(len=*), intent(in):: File_1b
  integer, intent(in):: Level2_File_Flag
- 
+
  integer(kind=int4), intent(in) :: Modis_Clr_Alb_Flag
  integer(kind=int4), intent(in) :: Nwp_Opt
  integer, intent(in):: therm_cal_1b
@@ -3195,7 +3195,7 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
 
   character(len=3):: Wmo_String
   !integer:: n
- 
+
   ! HDF function declarations
   integer:: sfstart
   !integer:: sfcreate
@@ -3262,7 +3262,7 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
         else
           File_1b_Root = "snpp_fusion"//File_1b_Root(9:len_trim(File_1b_Root)-3)//"_B"//Orbit_Number_String
         end if
-      else if (File_1b_Root(1:5) == 'VGEOM') then 
+      else if (File_1b_Root(1:5) == 'VGEOM') then
         File_1b_Root = "snpp_viirs"//File_1b_Root(11:len_trim(File_1b_Root)-3)//"_B"//Orbit_Number_String
       else if (File_1b_Root(1:5) == 'VJ103') then
         if (.not. Sensor%Fusion_Flag) then
@@ -3321,7 +3321,7 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
       File_1b_Root = File_1b_Root(1:len_trim(File_1b_Root) - 11)
       exit
     endif
-  
+
     exit
 
   enddo sensor_search
@@ -3335,13 +3335,18 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
 
   !--- CALIOP collocation files add sufix
   if (Caliop_Flag) File_1b_Root = trim(File_1b_Root)//".caliop"
-  
-  ! -- 
+
+  ! --
   if ( AVHRR_Fusion_Flag) File_1b_Root = trim(File_1b_Root)//".hirs_avhrr_fusion"
 
   !--- VGAC - remove .nc
   if (Index(Sensor%Sensor_Name,'VGAC') > 0) then
     File_1b_Root = File_1b_Root(1:len_trim(File_1b_Root)-3)
+  endif
+
+  if (Index(Sensor%Sensor_Name,'FCI') > 0) then
+    File_1b_Root = File_1b_Root(1:len_trim(File_1b_Root)-6)
+    File_1b_Root = trim(File_1b_Root)//image%time_start%date_string('yyyy_doy_hhmm')
   endif
 
   !--- add 'clavrx_' to the file name output
@@ -3402,9 +3407,9 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
 
      call MESG(MOD_PROMPT//"creating level-2 file "//trim(File_Level2))
 
-     if (Output_Format_Flag == 0) then 
+     if (Output_Format_Flag == 0) then
         Sd_Id_Level2 = sfstart(trim(Dir_Level2)//trim(File_Level2),DFACC_CREATE)
-     elseif (Output_Format_Flag == 1) then 
+     elseif (Output_Format_Flag == 1) then
         Istatus_Sum = nf90_create(trim(Dir_Level2)//trim(File_Level2), &
                                   cmode=ior(NF90_CLOBBER,NF90_NETCDF4), &
                                   ncid = Sd_Id_Level2)
@@ -3459,14 +3464,14 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
           print *, EXE_PROMPT, MOD_PROMPT, Sds_Info(Var_Idx)%Sds_Name
           print *, 'Stop at line ', __LINE__ ,' in file ', __FILE__
           stop
-        end if 
+        end if
     enddo
     if (Output_Format_Flag == 1) then
         Istatus_Sum = nf90_enddef(Sd_Id_Level2) + Istatus_Sum
         if ( istatus_sum /= 0) then
           print *, EXE_PROMPT, MOD_PROMPT, "Error defining sds in level2 file for variable index "
           print *, EXE_PROMPT, MOD_PROMPT, Var_Idx
-          print *, EXE_PROMPT, MOD_PROMPT, Sds_Info(Var_Idx)%Sds_Name 
+          print *, EXE_PROMPT, MOD_PROMPT, Sds_Info(Var_Idx)%Sds_Name
           print *, 'Stop at line ', __LINE__ ,' in file ', __FILE__
           stop
         end if
@@ -3496,7 +3501,7 @@ end subroutine DEFINE_HDF_FILE_STRUCTURES
 !   Writes output to appropriate Level 2 files
 !
 ! Description:
-!   This subroutine, given the flags that determine which files are 
+!   This subroutine, given the flags that determine which files are
 !   being created, outputs the various pixel level outputs to the
 !   appropriate level 2 files and appropriate SDSs for a given segment
 !
@@ -3567,7 +3572,7 @@ subroutine WRITE_SEGMENT_LEVEL2(Level2_File_Flag)
             if(Istatus /= nf90_noerr) print*, 'Could not open netcdf', trim(nf90_strerror(Istatus))
             Istatus = 0
        endif
-      
+
       do Var_Idx = 1, Num_Level2_Vars_List
 
          if (.not. Sds_Info(Var_Idx)%On_Flag) cycle
@@ -3592,7 +3597,7 @@ subroutine WRITE_SEGMENT_LEVEL2(Level2_File_Flag)
          if(Istatus /= nf90_noerr) print*, 'Could not close netcdf', trim(nf90_strerror(Istatus))
          Istatus = 0
     endif
-    
+
    endif
 
 end subroutine WRITE_SEGMENT_LEVEL2
@@ -3603,7 +3608,7 @@ end subroutine WRITE_SEGMENT_LEVEL2
 !   Closes appropriate Level 2 files
 !
 ! Description:
-!   This subroutine, given the flags that determine which files have 
+!   This subroutine, given the flags that determine which files have
 !   been created, closes the open output files.
 !
 !====================================================================
@@ -3661,7 +3666,7 @@ subroutine CLOSE_PIXEL_HDF_FILES(Level2_File_Flag)
      endif
    endif
 
-      
+
       if (Output_Format_Flag == 0) then
          if (Sds_Info(Var_Idx)%Sds_Id /= 0 ) Istatus = sfendacc(Sds_Info(Var_Idx)%Sds_Id) + Istatus
       elseif (Output_Format_Flag == 1) then
@@ -3675,7 +3680,7 @@ subroutine CLOSE_PIXEL_HDF_FILES(Level2_File_Flag)
       if (associated(Sds_Info(Var_Idx)%Sds_Data_2D_I1)) Sds_Info(Var_Idx)%Sds_Data_2D_I1 => null()
       if (associated(Sds_Info(Var_Idx)%Sds_Data_1D_R4)) Sds_Info(Var_Idx)%Sds_Data_1D_R4 => null()
       if (associated(Sds_Info(Var_Idx)%Sds_Data_2D_R4)) Sds_Info(Var_Idx)%Sds_Data_2D_R4 => null()
-     
+
    enddo
    if (Output_Format_Flag == 0) then
       Istatus = sfend(Sd_Id_Level2) + Istatus
@@ -3694,13 +3699,13 @@ end subroutine CLOSE_PIXEL_HDF_FILES
 
     integer:: sfscatt
     integer:: istatus
-    
+
     istatus = 0
     istatus = sfscatt(Sd_Id_Level2, "CLOUD_MASK_VERSION", DFNT_CHAR8, len_trim(Cloud_Mask_Version), trim(Cloud_Mask_Version))+istatus
     istatus = sfscatt(Sd_Id_Level2, "CLOUD_MASK_THRESHOLDS_VERSION", DFNT_CHAR8,  &
-                 len_trim(Cloud_Mask_Lut_Version), trim(Cloud_Mask_Lut_Version))+istatus 
-    istatus = sfscatt(Sd_Id_Level2, "CLOUD_TYPE_VERSION", DFNT_CHAR8, len_trim(Cloud_Type_Version), trim(Cloud_Type_Version))+istatus 
-    istatus = sfscatt(Sd_Id_Level2, "ACHA_VERSION", DFNT_CHAR8, len_trim(ACHA_Version), trim(ACHA_Version))+istatus 
+                 len_trim(Cloud_Mask_Lut_Version), trim(Cloud_Mask_Lut_Version))+istatus
+    istatus = sfscatt(Sd_Id_Level2, "CLOUD_TYPE_VERSION", DFNT_CHAR8, len_trim(Cloud_Type_Version), trim(Cloud_Type_Version))+istatus
+    istatus = sfscatt(Sd_Id_Level2, "ACHA_VERSION", DFNT_CHAR8, len_trim(ACHA_Version), trim(ACHA_Version))+istatus
     istatus = sfscatt(Sd_Id_Level2, "DCOMP_VERSION", DFNT_CHAR8, len_trim(dcomp_version), trim(dcomp_version))+istatus
 
   end subroutine WRITE_ALGORITHM_ATTRIBUTES
@@ -3715,7 +3720,7 @@ subroutine DEFINE_LEVEL2_SDS_HDF(Var_Idx,Istatus_Sum)
    integer, intent(out):: Istatus_Sum
 
    integer:: sfcreate, sfsnatt, sfscatt, sfdimid, sfsdmname, sfschnk
- 
+
    integer:: Istatus
 
    integer:: Dim_Id
@@ -3904,7 +3909,7 @@ subroutine DEFINE_LEVEL2_SDS_NETCDF(Var_Idx,Istatus_Sum)
 
        case(1)
 
-         if (Compress_Flag == 0) then 
+         if (Compress_Flag == 0) then
             Istatus = nf90_def_var(ncid = Sd_Id_Level2, &
                                 name = trim(Sds_Info(Var_Idx)%Sds_Name), &
                                 xtype = Sds_Info(Var_Idx)%Level2_Data_Type_NETCDF, &
@@ -3923,7 +3928,7 @@ subroutine DEFINE_LEVEL2_SDS_NETCDF(Var_Idx,Istatus_Sum)
 
        case(2)
 
-         if (Compress_Flag == 0) then 
+         if (Compress_Flag == 0) then
             Istatus = nf90_def_var(Sd_Id_Level2,  &
                                 name = Sds_Info(Var_Idx)%Sds_Name, &
                                 xtype = Sds_Info(Var_Idx)%Level2_Data_Type_NETCDF, &
@@ -3943,7 +3948,7 @@ subroutine DEFINE_LEVEL2_SDS_NETCDF(Var_Idx,Istatus_Sum)
       case(3)
 
          Istatus = nf90_def_dim(Sd_Id_Level2,"the_third_dimension",size(Sds_Info(Var_Idx)%Sds_Data_3d_I1,1), Dim_Id_Z) + Istatus
-         if (Compress_Flag == 0) then 
+         if (Compress_Flag == 0) then
             Istatus = nf90_def_var(Sd_Id_Level2,  &
                                 name = Sds_Info(Var_Idx)%Sds_Name, &
                                 xtype = Sds_Info(Var_Idx)%Level2_Data_Type_NETCDF, &
@@ -4075,7 +4080,7 @@ subroutine DEFINE_LEVEL2_SDS_NETCDF(Var_Idx,Istatus_Sum)
       Istatus = nf90_put_att(Sd_Id_Level2,Sds_Info(Var_Idx)%Sds_Id, "flag_meanings", Sds_Info(Var_Idx)%Flags_String) + Istatus
 
    endif
-   
+
    Istatus_sum = Istatus
 
 end subroutine DEFINE_LEVEL2_SDS_NETCDF
@@ -4240,7 +4245,7 @@ subroutine WRITE_2D_REAL4_SCALED_SDS_HDF(Z,Z_Idx,Istatus)
      Istatus = 1
 
    endif
-   
+
 end subroutine WRITE_2D_REAL4_SCALED_SDS_HDF
 !----------------------------------------------------------------------------------------------------
 ! Routine for writing 2d scaled variables (int8 and int16)
@@ -4283,7 +4288,7 @@ subroutine WRITE_2D_REAL4_SCALED_SDS_NETCDF(Z,Z_Idx,Istatus)
      Istatus = 1
 
    endif
-   
+
 end subroutine WRITE_2D_REAL4_SCALED_SDS_NETCDF
 
 !----------------------------------------------------------------------------------------------------
@@ -4422,7 +4427,7 @@ subroutine WRITE_FLAG_VALUES_HDF(Var_Idx,Istatus)
     end if
 
     if (trim(Sds_Info(Var_Idx)%Sds_Name) == "cld_beta_acha_qf") then
-      
+
       Istatus = sfsnatt(Sds_Info(Var_Idx)%Sds_Id, "flag_values", DFNT_INT8, 4, &
                         temp_indgen_4_int1) + Istatus
       Istatus = sfscatt(Sds_Info(Var_Idx)%Sds_Id, "flag_meanings", DFNT_CHAR8, 49, &
@@ -4433,7 +4438,7 @@ subroutine WRITE_FLAG_VALUES_HDF(Var_Idx,Istatus)
     end if
 
     if (trim(Sds_Info(Var_Idx)%Sds_Name) == "cloud_mask") then
-    
+
       Istatus = sfsnatt(Sds_Info(Var_Idx)%Sds_Id, "flag_values", DFNT_INT8, 4,  &
                         temp_indgen_4_int1) + Istatus
             Istatus = sfscatt(Sds_Info(Var_Idx)%Sds_Id, "flag_meanings", DFNT_CHAR8, 47, &
@@ -4444,7 +4449,7 @@ subroutine WRITE_FLAG_VALUES_HDF(Var_Idx,Istatus)
     end if
 
     if (trim(Sds_Info(Var_Idx)%Sds_Name) == "cloud_type") then
-      
+
       Istatus = sfsnatt(Sds_Info(Var_Idx)%Sds_Id, "flag_values", DFNT_INT8, 13, &
                         temp_indgen_13_int1) + Istatus
             Istatus = sfscatt(Sds_Info(Var_Idx)%Sds_Id, "flag_meanings", DFNT_CHAR8, 120, &
@@ -4464,7 +4469,7 @@ subroutine WRITE_FLAG_VALUES_HDF(Var_Idx,Istatus)
     end if
 
     if (trim(Sds_Info(Var_Idx)%Sds_Name) == "surface_type") then
-      
+
       Istatus = sfsnatt(Sds_Info(Var_Idx)%Sds_Id, "flag_values", DFNT_INT8, 14, &
                         temp_indgen_14_int1) + Istatus
             Istatus = sfscatt(Sds_Info(Var_Idx)%Sds_Id, "flag_meanings", DFNT_CHAR8, 106, &
@@ -4485,7 +4490,7 @@ subroutine WRITE_FLAG_VALUES_HDF(Var_Idx,Istatus)
     end if
 
     if (trim(Sds_Info(Var_Idx)%Sds_Name) == "land_class") then
-      
+
       Istatus = sfsnatt(Sds_Info(Var_Idx)%Sds_Id, "flag_values", DFNT_INT8, 8,  &
                          temp_indgen_8_int1) + Istatus
 
@@ -4501,7 +4506,7 @@ subroutine WRITE_FLAG_VALUES_HDF(Var_Idx,Istatus)
     end if
 
     if (trim(Sds_Info(Var_Idx)%Sds_Name) == "snow_class") then
-     
+
       Istatus = sfsnatt(Sds_Info(Var_Idx)%Sds_Id, "flag_values", &
                         DFNT_INT8, 3,  temp_indgen_4_int1) + Istatus
       Istatus = sfscatt(Sds_Info(Var_Idx)%Sds_Id, "flag_meanings", DFNT_CHAR8, 30, &
@@ -4510,7 +4515,7 @@ subroutine WRITE_FLAG_VALUES_HDF(Var_Idx,Istatus)
                       " snow ") + Istatus
     end if
 
- 
+
 end subroutine WRITE_FLAG_VALUES_HDF
 !------------------------------------------------------------------------------
 !  HDF4 Write Routine
@@ -4521,7 +4526,7 @@ subroutine WRITE_SDS_HDF(Var_Idx,Istatus_Sum)
    integer,intent(out):: Istatus_Sum
    integer:: Istatus
    integer:: Line_Idx
-     
+
    ! HDF function declarations
    integer:: sfwdata
 
@@ -4555,15 +4560,15 @@ subroutine WRITE_SDS_HDF(Var_Idx,Istatus_Sum)
          endif
 
          !--- cld mask test vector (first byte - acm only)
-         if (trim(Sds_Info(Var_Idx)%Sds_Name) == "cloud_mask_test_packed_results") then     
+         if (trim(Sds_Info(Var_Idx)%Sds_Name) == "cloud_mask_test_packed_results") then
              if (Output_Format_Flag == 0) then
                 Sds_Start_3d(1) = 0
                 Sds_Start_3d(2) = 0
-             endif 
+             endif
              if (Output_Format_Flag == 1) then
                 Sds_Start_3d(1) = 1
                 Sds_Start_3d(2) = 1
-             endif 
+             endif
 
              Sds_Start_3d(3) = Sds_Start_2d(2)
 
@@ -4665,7 +4670,7 @@ subroutine WRITE_SDS_NETCDF(Var_Idx,Istatus_Sum)
    integer,intent(out):: Istatus_Sum
    integer:: Istatus
    integer:: Line_Idx
-     
+
    Istatus = 0
    Istatus_Sum = 0
 
@@ -4701,15 +4706,15 @@ subroutine WRITE_SDS_NETCDF(Var_Idx,Istatus_Sum)
          endif
 
          !--- cld mask test vector (first byte - acm only)
-         if (trim(Sds_Info(Var_Idx)%Sds_Name) == "cloud_mask_test_packed_results") then     
+         if (trim(Sds_Info(Var_Idx)%Sds_Name) == "cloud_mask_test_packed_results") then
              if (Output_Format_Flag == 0) then
                 Sds_Start_3d(1) = 0
                 Sds_Start_3d(2) = 0
-             endif 
+             endif
              if (Output_Format_Flag == 1) then
                 Sds_Start_3d(1) = 1
                 Sds_Start_3d(2) = 1
-             endif 
+             endif
              Sds_Start_3d(3) = Sds_Start_2d(2)
 
              Sds_Stride_3d(1) = 1
@@ -4836,7 +4841,7 @@ end subroutine WRITE_SDS_NETCDF
 
       !--- reflectances
       if (index(Sds_Info(Var_Idx)%Sds_Name, 'refl_') == 1 .and. &
-          index(Sds_Info(Var_Idx)%Sds_Name, '_nom') >0) then 
+          index(Sds_Info(Var_Idx)%Sds_Name, '_nom') >0) then
          Sds_Info(Var_Idx)%Actual_Range = [-2.0,120.0]
          Sds_Info(Var_Idx)%Units =  "%"
          Sds_Info(Var_Idx)%Standard_Name =  "toa_bidirectional_reflectance"
@@ -4885,7 +4890,7 @@ end subroutine WRITE_SDS_NETCDF
 
       !--- 3x3 stddev of reflectance
       if (index(Sds_Info(Var_Idx)%Sds_Name, 'refl_') == 1 .and. &
-          index(Sds_Info(Var_Idx)%Sds_Name, '_nom') > 0 .and. & 
+          index(Sds_Info(Var_Idx)%Sds_Name, '_nom') > 0 .and. &
           index(Sds_Info(Var_Idx)%Sds_Name, '_stddev') > 0) then
           Sds_Info(Var_Idx)%Actual_Range = [0.0,20.0]
           Sds_Info(Var_Idx)%Units =  "%"
@@ -4904,7 +4909,7 @@ end subroutine WRITE_SDS_NETCDF
 
       !--- brightness temperatures
       if (index(Sds_Info(Var_Idx)%Sds_Name, 'temp_') == 1 .and. &
-          index(Sds_Info(Var_Idx)%Sds_Name, '_nom') >0) then 
+          index(Sds_Info(Var_Idx)%Sds_Name, '_nom') >0) then
           Sds_Info(Var_Idx)%Actual_Range = [160.0,340.0]
           Sds_Info(Var_Idx)%Units =  "K"
           Sds_Info(Var_Idx)%Standard_Name =  "toa_brightness_temperature"
@@ -4921,7 +4926,7 @@ end subroutine WRITE_SDS_NETCDF
 
       !--- 3x3 stddev of brightness temperature
       if (index(Sds_Info(Var_Idx)%Sds_Name, 'temp_') == 1 .and. &
-          index(Sds_Info(Var_Idx)%Sds_Name, '_nom') > 0 .and. & 
+          index(Sds_Info(Var_Idx)%Sds_Name, '_nom') > 0 .and. &
           index(Sds_Info(Var_Idx)%Sds_Name, '_stddev') > 0) then
           Sds_Info(Var_Idx)%Actual_Range = [0.0,20.0]
           Sds_Info(Var_Idx)%Units =  "K"
@@ -4941,7 +4946,7 @@ end subroutine WRITE_SDS_NETCDF
 
       !--- sfc emiss
       if (index(Sds_Info(Var_Idx)%Sds_Name, 'emiss_sfc_') == 1 .and. &
-          index(Sds_Info(Var_Idx)%Sds_Name, '_nom') >0) then 
+          index(Sds_Info(Var_Idx)%Sds_Name, '_nom') >0) then
          Sds_Info(Var_Idx)%Actual_Range = [0.75,1.0]
          Sds_Info(Var_Idx)%Level2_Data_Type_HDF = DFNT_INT16
          Sds_Info(Var_Idx)%Standard_Name =  "surface_emissivity"
@@ -4956,9 +4961,9 @@ end subroutine WRITE_SDS_NETCDF
          Sds_Info(Var_Idx)%Long_Name = trim(Sds_Info(Var_Idx)%Long_Name) // " " //trim(Wvl_String)
       endif
 
-      !--- tropopause emissivity 
+      !--- tropopause emissivity
       if (index(Sds_Info(Var_Idx)%Sds_Name, 'emiss_tropo_') == 1 .and. &
-          index(Sds_Info(Var_Idx)%Sds_Name, '_nom') >0) then 
+          index(Sds_Info(Var_Idx)%Sds_Name, '_nom') >0) then
          Sds_Info(Var_Idx)%Actual_Range = [-0.5,1.2]
          Sds_Info(Var_Idx)%Level2_Data_Type_HDF = DFNT_INT16
          Sds_Info(Var_Idx)%Standard_Name =  "emissivity referenced to tropopause"
@@ -4975,7 +4980,7 @@ end subroutine WRITE_SDS_NETCDF
 
       !---  white sky reflectance
       if (index(Sds_Info(Var_Idx)%Sds_Name, 'refl_sfc_white_sky_') == 1 .and. &
-          index(Sds_Info(Var_Idx)%Sds_Name, '_nom') >0) then 
+          index(Sds_Info(Var_Idx)%Sds_Name, '_nom') >0) then
          Sds_Info(Var_Idx)%Actual_Range = [-20.0,100.0]
          Sds_Info(Var_Idx)%Level2_Data_Type_HDF = DFNT_INT16
          Sds_Info(Var_Idx)%Units =  "%"
@@ -4993,7 +4998,7 @@ end subroutine WRITE_SDS_NETCDF
 
       !---  atmospheric transmission
       if (index(Sds_Info(Var_Idx)%Sds_Name, 'trans_atm_') == 1 .and. &
-          index(Sds_Info(Var_Idx)%Sds_Name, '_nom') >0) then 
+          index(Sds_Info(Var_Idx)%Sds_Name, '_nom') >0) then
          Sds_Info(Var_Idx)%Actual_Range = [0.0,1.0]
          Sds_Info(Var_Idx)%Level2_Data_Type_HDF = DFNT_INT8
          Sds_Info(Var_Idx)%Units =  "none"
@@ -5011,7 +5016,7 @@ end subroutine WRITE_SDS_NETCDF
 
       !---  data quality flag
       if (index(Sds_Info(Var_Idx)%Sds_Name, 'dqf_') == 1 .and. &
-          index(Sds_Info(Var_Idx)%Sds_Name, '_nom') >0) then 
+          index(Sds_Info(Var_Idx)%Sds_Name, '_nom') >0) then
          Sds_Info(Var_Idx)%Scaling_Type =  0_int1
          Sds_Info(Var_Idx)%Actual_Range = [0.0,4.0]
          Sds_Info(Var_Idx)%Input_Data_Type_HDF =  DFNT_INT8
@@ -5037,4 +5042,3 @@ end subroutine WRITE_SDS_NETCDF
 ! End of Module
 !----------------------------------------------------------------------------------------------------
 end module LEVEL2_MOD
-
