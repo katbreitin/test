@@ -229,7 +229,7 @@ print*,shape(self % lon_1km)
 
           !    self%ch(i)%rfl = self%ch(i)%rad/irrad(1)
 
-          print*,shape(self % geo1km % solzen),shape(self%ch(i)%rad)
+        
 self%ch(i)%rfl = (PI * self%ch(i)%rad(1:11136,1:278) * self % earth_sun_distance**2) &
             /  ( irrad(1) * cos(self % geo1km % solzen * DTOR))
 
