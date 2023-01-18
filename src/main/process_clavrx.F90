@@ -1076,6 +1076,8 @@
          Image%Number_Of_Segments = Image%Number_Of_Lines / Image%Number_Of_Lines_Per_Segment + 1
       endif
 
+      if (trim(Sensor%Sensor_Name) .eq. 'FCI') Image%Number_Of_Segments = 40
+
       call chrono%tac(17)
 
 

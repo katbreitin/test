@@ -52,7 +52,7 @@ contains
 
     this % lon = lon
     this % lat = lat
-  
+
     do jj = 1 ,  ndims(2)
        do ii = 1 ,    ndims(1)
           if ( lon(ii,jj) .LER.  -199. ) cycle
@@ -77,6 +77,19 @@ contains
 
            this % scatangle = scattering_angle (  this % solzen  &
                  ,  this % satzen ,  this % relaz)
+
+
+           where ( lon .lt. -200)
+             this % satzen = -999.
+             this % sataz  = -999.
+             this % relaz  = -999.
+             this % glintzen = -999.
+             this % scatangle = -999.
+             this % solzen = -999.
+             this %solaz = -999.
+
+
+           end where
 
       ! end do
   !   end do

@@ -163,16 +163,18 @@ print*,trim(file_chunk)
      lonlat_file2km = '/Users/awalther/DATA/Satellite_Input/FCI/CM_OPE_GRIDDEF_MTI1+FCI_20220407120000_2km-V2.nc'
 
     status = cx_sds_read (lonlat_file2km, &
-          'longitude' , self % lon , start = [1,139 * chunk +1], count = [5568,139] )
+          'longitude' , self % lon , start = [1,139 * (chunk-1) +1], count = [5568,139] )
 
     status = cx_sds_read (lonlat_file2km, &
-               'latitude' , self % lat , start = [1,139 * chunk+1 ], count = [5568,139])
+               'latitude' , self % lat , start = [1,139 * (chunk-1)+1 ], count = [5568,139])
 
                status = cx_sds_read (lonlat_file1km, &
-                     'longitude' , self % lon_1km , start = [1,279 * chunk +1], count = [11136,278] )
+                     'longitude' , self % lon_1km , start = [1,278 * (chunk-1) +1], count = [11136,278] )
 
                status = cx_sds_read (lonlat_file1km, &
-                          'latitude' , self % lat_1km , start = [1,279 * chunk+1 ], count = [11136,278])
+                          'latitude' , self % lat_1km , start = [1,278 * (chunk-1)+1 ], count = [11136,278])
+
+
                ! geometry
                 status = cx_sds_read (trim(file_chunk), &
                 '/state/platform/subsatellite_latitude' , dum_1d )
@@ -187,11 +189,11 @@ print*,trim(file_chunk)
                      '/state/celestial/earth_sun_distance' , dum_1d )
                 self % earth_sun_distance = dum_1d(1)
 
-!day_of_Year=230
-!hour_frac = 12.3
-      call self % geo % set ( self % lon, self % lat,self % time &
-         ,self % sat_sub_lon,self % sat_sub_lat,self % sat_altitude_km )
-print*,shape(self % lon_1km)
+                 if (dum_1d(1) .gt. 2) self % earth_sun_distance = 1.
+
+         call self % geo % set ( self % lon, self % lat,self % time &
+            ,self % sat_sub_lon,self % sat_sub_lat,self % sat_altitude_km )
+
          call self % geo1km % set ( self % lon_1km, self % lat_1km,self % time &
             ,self % sat_sub_lon,self % sat_sub_lat,self % sat_altitude_km )
 
@@ -225,13 +227,13 @@ print*,shape(self % lon_1km)
 ! TODO   T-CHECK
 !  read page 50 of https://www.eumetsat.int/media/45923
 
-!      rfl = PI * Rad * d2  /  (irrad * cos (solar_zenith) )
-
-          !    self%ch(i)%rfl = self%ch(i)%rad/irrad(1)
-
-        
-self%ch(i)%rfl = (PI * self%ch(i)%rad(1:11136,1:278) * self % earth_sun_distance**2) &
+        self%ch(i)%rfl = 100.* (PI * self%ch(i)%rad(1:11136,1:278) &
+               * self % earth_sun_distance**2) &
             /  ( irrad(1) * cos(self % geo1km % solzen * DTOR))
+
+             where (self%ch(i)%rad(1:11136,1:278) .lt. 0.)
+                self%ch(i)%rfl = -999.
+             end where
 
           end if
 
