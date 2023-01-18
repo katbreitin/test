@@ -160,7 +160,7 @@ call chronos_acha % tac(1)
    !-----------------------------------------------------------------------
    !--- Call to Geometrical Shadow Algorithm
    !-----------------------------------------------------------------------
-call chronos_acha % tic(4)
+   call chronos_acha % tic(4)
    call CLOUD_SHADOW_RETR (  &
            ACHA%Zc &
          , Geo%Solaz &
