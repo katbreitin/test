@@ -471,7 +471,8 @@ function SENSOR_NAME_FOR_RTM ( wmo_id, sensorname, Chan_Idx ) result ( Sensor_Na
 
    case(272) !GOES-18
      Sensor_Name_Rtm = 'GOES-18'
-
+  case(289)
+      Sensor_Name_Rtm = 'FCI_MTGI1'
    case(706) !NOAA-6
      Sensor_Name_Rtm = 'AVHRR-NOAA06'
 

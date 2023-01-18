@@ -8,7 +8,7 @@
 ! PURPOSE: CLAVR-x Module to house routines dealing with user options from the
 !          default_options file or the command line
 !
-! DESCRIPTION: 
+! DESCRIPTION:
 !             Public Routines in this module and their purpose:
 !               SETUP_USER_DEFINED_OPTIONS:
 !                    Reads user defined configuration
@@ -18,7 +18,7 @@
 !                     Updates configuarion for each file
 !                     called in process_clavrx.f90 inside file loop
 !                     Check algorithm modes and channel switches
-!       
+!
 !
 ! AUTHORS:
 !  	Andrew Heidinger, Andrew.Heidinger@noaa.gov
@@ -41,7 +41,7 @@
 !
 !       30 Dec 2014: Submitting to trunk
 !
-!   
+!
 !--------------------------------------------------------------------------------------
 module USER_OPTIONS
 
@@ -114,19 +114,19 @@ module USER_OPTIONS
       , Line_Abs_Idx_ACHA_Dump &
       , Use_Iband &
       , WMO_Id_ISCCPNG
-      
+
    use CONSTANTS_MOD, only: &
       Sym &
       , Exe_Prompt &
       , Nchan_Clavrx &
       , MISSING_VALUE_INT4, int1
-      
+
    use FILE_UTILS, only: &
       Get_Lun
 
    use LEVEL2B_MOD, only: &
       INIT_RANDOM_SEED
- 
+
    use  CLAVRX_MESSAGE_MOD, only: &
       Mesg &
     , Mesg_1i &
@@ -152,7 +152,7 @@ module USER_OPTIONS
    private :: CHECK_DCOMP_ALGORITHM_CHOICES
    private :: CHECK_ACHA_ALGORITHM_CHOICES
    private :: EXISTING_CHANNELS
-   private :: CHANNEL_SWITCH_ON 
+   private :: CHANNEL_SWITCH_ON
    private :: SUB_PIXEL_CHANNEL_ON_SET
    private :: CHECK_USER_CHANNEL_CHOICES
    private :: EXPERT_MODE_CHANNEL_ALGORITHM_CHECK
@@ -164,11 +164,11 @@ module USER_OPTIONS
    character (len = ACHA_Mode_Max_Length)  :: ACHA_Mode_User_Set
    integer :: NLCOMP_Mode_User_Set
    integer :: Expert_Mode
-   
+
    integer(kind=int1) :: Chan_On_Flag_Default_User_Set (Nchan_Clavrx)
-   
+
    ! ---------------------------------------------------------------------------------
-   ! Default Algorithm Modes - 
+   ! Default Algorithm Modes -
    ! ---------------------------------------------------------------------------------
    character(len=ACHA_Mode_Max_Length),parameter:: ACHA_Mode_Default_Avhrr = '110_120'
    character(len=ACHA_Mode_Max_Length),parameter:: ACHA_Mode_Default_Avhrr1 = '110'
@@ -188,7 +188,7 @@ module USER_OPTIONS
    character(len=ACHA_Mode_Max_Length),parameter:: ACHA_Mode_Default_AHI = '110_120_133'
    character(len=ACHA_Mode_Max_Length),parameter:: ACHA_Mode_Default_Mersi2 = '085_110_120'
    character(len=ACHA_Mode_Max_Length),parameter:: ACHA_Mode_Default_METIMAGE = '110_120_133'
-   
+
 contains
 
    ! ---------------------------------------------------------------------------------
@@ -199,19 +199,19 @@ contains
       call DETERMINE_USER_CONFIG()
       call QC_CLAVRXORB_OPTIONS()
    end subroutine SETUP_USER_DEFINED_OPTIONS
-   
+
    ! ---------------------------------------------------------------------------------
    !
    ! ---------------------------------------------------------------------------------
    subroutine SET_DEFAULT_VALUES
-           
+
       Modis_Clr_Alb_Flag = 1 ! use clear-sky MODIS albedo maps
       Output_Scaled_Reflectances = sym%NO !default is to output ref / cossolzen
-      
+
       !--- default solar zenith limits
-      Geo%Solzen_Min_Limit= 0 
+      Geo%Solzen_Min_Limit= 0
       Geo%Solzen_Max_Limit= 180.0
-      Geo%Satzen_Min_Limit= 0 
+      Geo%Satzen_Min_Limit= 0
       Geo%Satzen_Max_Limit= 85.0
 
       !--- offset when sampling subpixels
@@ -222,7 +222,7 @@ contains
       !--- ACHA single pixel dump location
       Elem_Abs_Idx_ACHA_Dump = 0
       Line_Abs_Idx_ACHA_Dump = 0
-       
+
       !--- default what can be changed for expert mode
       Verbose_Level_Flag = verb_lev % DEFAULT
       Cloud_Mask_Bayesian_Flag = 1
@@ -232,7 +232,7 @@ contains
       CCL%Mode = 1
       CCL%Type = 0
       ASOS%Mode = 0_int1
-      Nlcomp_Mode = 1            
+      Nlcomp_Mode = 1
       Level2_File_Flag = 1
       Output_Format_Flag = 0
       Cld_Flag = 1
@@ -240,13 +240,13 @@ contains
       Sasrab_Flag = 0
       NWP_PIX%Nwp_Opt = 1
       NWP_PIX%Mode = 0_int1
-      Rtm_Opt = 1 
-      Compress_Flag = 1 
-      Use_Aux_Flag = 0 
+      Rtm_Opt = 1
+      Compress_Flag = 1
+      Use_Aux_Flag = 0
       bayesian_cloud_mask_name = 'default'
-      sfc_emiss_option = 1 
-      Use_Sea_IR_Emiss = 1 
-      Read_Hires_Sfc_Type = 1 
+      sfc_emiss_option = 1
+      Use_Sea_IR_Emiss = 1
+      Read_Hires_Sfc_Type = 1
       Read_Land_Mask = 1
       Read_Coast_Mask = 1
       Read_Surface_Elevation = 1
@@ -254,10 +254,10 @@ contains
       Read_Snow_Mask = 1
       Read_Dark_Comp = 0
       Ref_Cal_1b = 0
-      Therm_Cal_1b = 0    
-      Nav_Opt = 0  
-      Lrc_Flag = 1 
-      NWP_PIX%Smooth_Nwp_Flag = 1  
+      Therm_Cal_1b = 0
+      Nav_Opt = 0
+      Lrc_Flag = 1
+      NWP_PIX%Smooth_Nwp_Flag = 1
       Process_Undetected_Cloud_Flag = 0
       Chan_On_Flag_Default_User_Set(1:6) = int([1,1,1,1,1,1],kind=int1)
       Chan_On_Flag_Default_User_Set(7:12) = int([1,1,1,1,1,1],kind=int1)
@@ -275,7 +275,7 @@ contains
       Geo%Satzen_Min_Limit = 0.0
       Geo%Solzen_Max_Limit = 180.0
       Geo%Solzen_Min_Limit = 0.0
-      Image%Chan_Average_Flag = 0 
+      Image%Chan_Average_Flag = 0
       Image%X_Stride = 1
       Image%Y_Stride = 1
       Nav%Limit_Flag = 0
@@ -289,9 +289,9 @@ contains
       Geo%Solzen_Max_Limit = 180.0
       Geo%Solzen_Min_Limit = 0.0
       Nav%Domain_Name = "UNKNOWN"
-      
+
    end subroutine SET_DEFAULT_VALUES
-   
+
 
    !---------------------------------------------------------------------------------
    ! Read Parameters from AVHRR INPUT files and check them for errors
@@ -314,7 +314,7 @@ contains
       character(len=1020):: hostname
       integer:: String_Length
       character(len=1):: Last_Char
-      
+
       call MESG ("Option file to be read in: "//trim(File_Default),level = verb_lev % DEFAULT)
 
       Default_Lun = GET_LUN()
@@ -331,7 +331,7 @@ contains
          call MESG(trim(EXE_PROMPT)//"error opening clavrx_options file",color=1,level=verb_lev % ERROR )
          stop 1
       end if
-      
+
       read(unit=Default_Lun,fmt="(a)") Data_Base_Path
       read(unit=Default_Lun,fmt="(a)") Temporary_Data_Dir_Root
       read(unit=Default_Lun,fmt=*) Expert_Mode
@@ -340,7 +340,7 @@ contains
       string_length = len_trim(Temporary_Data_Dir_Root)
       last_char = Temporary_Data_Dir_Root(string_length:string_length)
 
-      if (index(last_char, '/') > 0) then 
+      if (index(last_char, '/') > 0) then
         Temporary_Data_Dir_Root = Temporary_Data_Dir_Root(1:string_length-1)
       endif
 
@@ -373,12 +373,12 @@ contains
 
       read(unit=Default_Lun,fmt=*) Nlcomp_Mode
       read(unit=Default_Lun,fmt=*) Aerosol_Mode
-         
+
       if ( Expert_Mode <= 1 )  then
           close(unit=Default_Lun)
           return
       end if
-      
+
       read(unit=Default_Lun,fmt=*) Level2_File_Flag
       read(unit=Default_Lun,fmt=*) Output_Format_Flag
       read(unit=Default_Lun,fmt=*) Cld_Flag
@@ -387,24 +387,24 @@ contains
       Dark_Comp_Data_Dir=trim(Data_Base_Path)//'/dynamic/goes_dark_sky_composites/'
       if ( Sasrab_Flag == 1 )  then
           Read_Dark_Comp=1
-      end if 
+      end if
 
       read(unit=Default_Lun,fmt=*) NWP_PIX%Nwp_Opt
       read(unit=Default_Lun,fmt=*) NWP_PIX%Mode
-     
+
       read(unit=Default_Lun,fmt=*) Rtm_Opt
       read(unit=Default_Lun,fmt=*) Nav_Opt
-      
+
       read(unit=Default_Lun,fmt=*) Compress_Flag
       read(unit=Default_Lun,fmt=*) Use_Aux_Flag
 
       read(unit=Default_Lun,fmt="(a)") Bayesian_Cloud_Mask_Name
-      
+
       if ( Expert_Mode <= 2 )  then
           close(unit=Default_Lun)
           return
-      end if 
-      
+      end if
+
       read(unit=Default_Lun,fmt=*) sfc_emiss_option
       read(unit=Default_Lun,fmt=*) Use_Sea_IR_Emiss
       read(unit=Default_Lun,fmt=*) Read_Hires_Sfc_Type
@@ -414,24 +414,24 @@ contains
       read(unit=Default_Lun,fmt=*) Read_Volcano_Mask
       read(unit=Default_Lun,fmt=*) Read_Snow_Mask
       read(unit=Default_Lun,fmt=*) Read_Dark_Comp
-         
+
       if ( Expert_Mode <= 3 ) then
           close(unit=Default_Lun)
           return
       end if
-         
+
       read(unit=Default_Lun,fmt=*) Ref_Cal_1b
       read(unit=Default_Lun,fmt=*) Therm_Cal_1b
-            
+
       if ( Expert_Mode <= 4 ) then
           close(unit=Default_Lun)
           return
       end if
-      
+
       read(unit=Default_Lun,fmt=*) Lrc_Flag
       read(unit=Default_Lun,fmt=*) NWP_PIX%Smooth_Nwp_Flag
       read(unit=Default_Lun,fmt=*) Process_Undetected_Cloud_Flag
-         
+
       if ( Expert_Mode <= 5 ) then
           close(unit=Default_Lun)
           return
@@ -475,7 +475,7 @@ contains
       Geo%Solzen_Min_Limit = max(Geo%Solzen_Min_Limit, 0.0)
 
 
-      !---- Read input on handling of native res processing and striding 
+      !---- Read input on handling of native res processing and striding
       read(unit=Default_Lun,fmt=*) Image%Chan_Average_Flag, Image%X_Stride, Image%Y_Stride
 
       !--- Read channel on/off flags
@@ -492,17 +492,17 @@ contains
       read(unit=Default_Lun,fmt=*,iostat = erstat) WMO_Id_ISCCPNG
       if (erstat /= 0) then
          WMO_Id_ISCCPNG = -999
-      endif 
-             
+      endif
+
       !--- close the options file
       close(unit=Default_Lun)
 
    end subroutine READ_OPTION_FILE
    !------------------------------------------------------------------
-   ! Command-line input option variables 
-   !------------------------------------------------------------------  
+   ! Command-line input option variables
+   !------------------------------------------------------------------
    subroutine DETERMINE_USER_CONFIG()
-  
+
       character(len=30) :: fargv
       character(len=30) :: junk
       character(len=1) :: temp_string
@@ -517,32 +517,32 @@ contains
       temp_string = '.'  !--- temporary string to search for in angle commandline
 
       !---- SET DEFAULT OPTIONS
-  
+
       Use_Default = sym%YES
       Default_Temp="./clavrx_options"
       File_List = "./file_list"
       Level2_List = "./level2_list"
       Use_IR_Cloud_Type_Flag = .false.      !controls which type is used in algorithms
-  
+
       Temp_Scans_Arg = 0
       fargc = iargc()
-  
+
       !--- first we will check to see if the default file is used
       !--- also check to see if the help file is to be displayed
-  
+
       do i=1, fargc
          call getarg(i,fargv)
          if (trim(fargv) == "-help" .or. &
                trim(fargv) == "-h") then
             call HELPER()
-            stop   
+            stop
          else if  ( trim(fargv) == "-version" .or. &
              trim(fargv) == "-ver") then
             print*,&
             &'$Header: https://svn.ssec.wisc.edu/repos/cloud_team_clavrx/trunk/main_src/user_options.f90 4076 2021-01-26 20:34:35Z dbotambekov $'
             stop
-        
-         else if (trim(fargv) == "-no_default") then 
+
+         else if (trim(fargv) == "-no_default") then
             Use_Default = sym%NO
             !Different default file used
          else if (trim(fargv) == "-default") then
@@ -550,43 +550,43 @@ contains
             default_temp=trim(default_temp)
          end if
       end do
-  
-  
+
+
       !---- If the default file is used, read it in first, then
       !---- check for other command line changes to the options
       if(Use_Default == sym%YES)  then
          call READ_OPTION_FILE (Default_Temp)
       end if
-      
+
       if(Use_Default == sym%NO)  then
           print *, EXE_PROMPT, "Using standard defaults and command line options"
-      end if 
+      end if
 
       !--- Initialize caliop flag
       Caliop_Flag = .false.
       Nucaps_Flag = .false.
       Static_Dark_Sky_Flag = .false.
- 
+
       do i=1, fargc
 
         call getarg(i,fargv)
-    
-        !Change Ref_Cal_1b flag 
-        if (trim(fargv) == "-Ref_Cal_1b") then 
+
+        !Change Ref_Cal_1b flag
+        if (trim(fargv) == "-Ref_Cal_1b") then
           Ref_Cal_1b = sym%YES
-        elseif (trim(fargv) == "-no_Ref_Cal_1b") then 
+        elseif (trim(fargv) == "-no_Ref_Cal_1b") then
           Ref_Cal_1b = sym%NO
-        
+
         !Change therm_Cal_1b flag
         elseif(trim(fargv) == "-therm_Cal_1b") then
           therm_Cal_1b = sym%YES
         elseif(trim(fargv) == "-no_Therm_Cal_1b") then
           therm_Cal_1b = sym%NO
-        
+
         !Change Nav type
         elseif(trim(fargv) == "-l1bnav") then
           nav_opt = 0
-          
+
         !Change level2 output flag
         elseif(trim(fargv) == "-level2_file") then
           level2_file_Flag = sym%YES
@@ -606,7 +606,7 @@ contains
           Compress_Flag=1
         elseif(trim(fargv) == "-output_comp_szip") then
           Compress_Flag=2
-          
+
         ! - change clear-sky trans
         elseif(trim(fargv) == "-rttov") then
           rtm_opt = 2
@@ -615,13 +615,13 @@ contains
         elseif(trim(fargv) == "-lat_south_limit") then
            call getarg(i+1,junk)
            back = .true.
-           int_temp = scan(junk,temp_string, back) 
+           int_temp = scan(junk,temp_string, back)
            if(int_temp .gtr. 0.0) read(junk,'(f6.3)') Nav%Lat_South_Limit
            if(int_temp .eqr. 0.0) read(junk,'(f6.0)') Nav%Lat_North_Limit
         elseif(trim(fargv) == "-lat_north_limit") then
           call getarg(i+1,junk)
            back = .true.
-          int_temp = scan(junk,temp_string, back) 
+          int_temp = scan(junk,temp_string, back)
           if(int_temp .gtr. 0.0) read(junk,'(f6.3)') Nav%Lat_North_Limit
           if(int_temp .eqr. 0.0) read(junk,'(f6.0)') Nav%Lat_North_Limit
 
@@ -658,20 +658,20 @@ contains
         !Change solar zenith angle limits
         elseif(trim(fargv) == "-solzen_min_limit") then
           call getarg(i+1,junk)
-          int_temp = scan(junk,temp_string, back) 
+          int_temp = scan(junk,temp_string, back)
           back = .true.
           if(int_temp .gtr. 0.0) read(junk,'(f6.3)') Geo%Solzen_Min_Limit
           if(int_temp .eqr. 0.0) read(junk,'(f6.0)') Geo%Solzen_Min_Limit
-        
+
         !Change dcomp mode
          elseif(trim(fargv) == "-DCOMP_Mode") then
           call getarg(i+1,junk)
           read(junk,'(i1)') Dcomp_Mode_User_Set
-          
+
         elseif(trim(fargv) == "-solzen_max_limit") then
            call getarg(i+1,junk)
            back = .true.
-           int_temp = scan(junk,temp_string, back) 
+           int_temp = scan(junk,temp_string, back)
            if(int_temp .gtr. 0.0) read(junk,'(f6.3)') Geo%Solzen_Max_Limit
            if(int_temp .eqr. 0.0) read(junk,'(f6.0)') Geo%Solzen_Max_Limit
 
@@ -719,7 +719,7 @@ contains
 
         endif
       enddo
-  
+
       !--- default ancillary data directory
       Ancil_Data_Dir = trim(Data_Base_Path)
       Gfs_Data_Dir = trim(Data_Base_Path)//'/dynamic/gfs/'
@@ -733,7 +733,7 @@ contains
       Oisst_data_Dir = trim(Data_Base_Path)//'/dynamic/oisst_nc/'
       Snow_Data_Dir = trim(Data_Base_Path)//'/dynamic/snow/hires/'
       Globsnow_Data_Dir = trim(Data_Base_Path)//'/dynamic/snow/globsnow/'
-      
+
       Sensor%Chan_On_Flag_Default = Chan_On_Flag_Default_User_Set
 
    end subroutine DETERMINE_USER_CONFIG
@@ -747,10 +747,10 @@ contains
       !---- before anything else is checked.  If no nwp, we stop processing
 
       select case ( NWP_PIX%Nwp_Opt)
-      case ( 0 )   
+      case ( 0 )
          print *,  EXE_PROMPT, "No choice made for NWP data, will not run algoritms or orbital level3 files"
          Cld_Flag = sym%NO
-       
+
          Sasrab_Flag = sym%NO
          Cloud_Mask_Bayesian_Flag = sym%NO
          Use_Aux_Flag = sym%NO ! this is to determine if the lut's are being read in
@@ -773,9 +773,9 @@ contains
       case default
          print *,  EXE_PROMPT, "unrecognized value for Nwp_Opt: ", NWP_PIX%Nwp_Opt
          stop "6-Nwp_Flag"
-      
+
       end select
-      
+
       if (Cloud_Mask_Bayesian_Flag == sym%YES) then
          call MESG  ("Bayesian cloud mask will be generated",level = 9)
       endif
@@ -812,15 +812,15 @@ contains
 
 
    end subroutine QC_CLAVRXORB_OPTIONS
- 
- 
+
+
    !--------------------------------------------------------------------------
    ! This subroutine outputs what each command line options
    ! are available to override the default file options or to set
    ! options different from the default options
    !--------------------------------------------------------------------------
    subroutine HELPER()
- 
+
       print "(a,'help: option list')",EXE_PROMPT
       print *,"  This is a list of all of the command line options to override"
       print *,"     the file list options"
@@ -844,7 +844,7 @@ contains
       print *,"  -lines_per_seg (Imager%Number_Of_Lines_Per_Segment)"
       print *, "  specify the number of lines per segment"
       print *," "
- 
+
       print *,"  -ref_Cal_1b"
       print *,"  Use the reflectance cal in level 1b file."
       print *," "
@@ -874,12 +874,12 @@ contains
       print *,"  -no_level2_file"
       print *, "   Don't make Level-2 output."
       print *," "
-  
+
       print *,"  -cloud_mask_1b"
       print *, "   Read cloud mask from level 1b file."
       print *," "
-  
-  
+
+
       print *,"  -no_nwp"
       print *, "  Do not use NWP data. No algorithms will be processed. Also, no orbital data will be processed"
       print *," "
@@ -887,7 +887,7 @@ contains
       print *,"  -gfs_nwp"
       print *, "  Use GFS data for NWP dataset. "
       print *," "
-  
+
       print *,"  -ncep_nwp"
       print *, "  Use NCEP Reanalysis data"
       print *," "
@@ -902,14 +902,14 @@ contains
       print *,"  -ancil_data_dir (ancil_data_dir)"
       print *, "  change the location of the ancillary data directory"
       print *," "
-     
+
       print *,"  -smooth_nwp"
       print *, "  Smooth the NWP fields. "
       print *," "
       print *,"  -no_smooth_nwp"
       print *, "  Don't smooth the NWP fields. "
       print *," "
-  
+
       print *,"  -use_seebor"
       print *, "  Use Seebor emissivity dataset. "
       print *," "
@@ -927,32 +927,32 @@ contains
       print *, "  Use 8km res GLOBE global elevation map. "
       print *," "
 
-  
+
       print *,"  -read_volcano_mask"
       print *, "  Read volcano map in. "
       print *," "
       print *,"  -no_volcano_mask"
       print *, "  Don't read volcano map in. "
       print *," "
-  
+
       print *,"  -Solzen_min_limit (Solzen_min_limit)"
       print *, "  Solar zenith angle minimum limit"
       print *," "
-  
+
       print *,"  -Solzen_max_limit (Solzen_max_limit)"
       print *, "  Solar zenith angle maximum limit."
-      print *," "  
-  
+      print *," "
+
       print *,"  -DCOMP_Mode"
       print *, "  dcomp mode 1,2 or 3 (1.6,2.2 or 3.8 micron)."
-      print *," "  
+      print *," "
 
       print *,"  -caliop /PATH/TO/COLLOCATION/FILES/"
       print *, "  processes only +/- pixels along caliop collocated path"
       print *, " "
 
   end subroutine HELPER
-  
+
    ! -----------------------------------------------------------------
    ! -e wrapper for all updating tools for a new file
    !     called from PROCESS_CLAVRX inside file loop
@@ -983,17 +983,17 @@ contains
       !--- select the cloud mask lut name if default is chosen
       if ( Expert_Mode < 2 .or. trim(Bayesian_Cloud_Mask_Name) == 'default' &
            .or. trim(Bayesian_Cloud_Mask_Name) == 'DEFAULT') then
-         
+
          if (Cloud_Mask_Bayesian_Flag == sym%ECM1) then
             Bayesian_Cloud_Mask_Name = DEFAULT_NB_MASK_CLASSIFIER_FILE ( SensorName )
          elseif (Cloud_Mask_Bayesian_Flag == sym%ECM2) then
             Bayesian_Cloud_Mask_Name = DEFAULT_NBM_MASK_CLASSIFIER_FILE ( SensorName )
-         endif 
+         endif
 
       end if
-      
+
       !--- final check if algorithms can run
-      call EXPERT_MODE_CHANNEL_ALGORITHM_CHECK ( SensorName ) 
+      call EXPERT_MODE_CHANNEL_ALGORITHM_CHECK ( SensorName )
 
       !--- force missing Himawari8/9 HCAST channels turned off
       if ((Image%DB_Flag) .and. (trim(SensorName) == 'AHI')) then
@@ -1002,28 +1002,29 @@ contains
       endif
 
    end subroutine UPDATE_CONFIGURATION
-   
+
    !----------------------------------------------------------------------
-   !  returns default acha mode 
+   !  returns default acha mode
    !----------------------------------------------------------------------
    character(len=ACHA_Mode_Max_Length) function DEFAULT_ACHA_MODE ( SensorName )
 
       character ( len =*) , intent(in) :: SensorName
-      
+
       select case ( trim(SensorName))
-      
-      case ( 'AVHRR-2')        
+      case ('FCI')
+        DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Goes_RU
+      case ( 'AVHRR-2')
          DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Avhrr
-      case ( 'AVHRR-3')        
+      case ( 'AVHRR-3')
          DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Avhrr
-      case ( 'AVHRR-1')   
-         DEFAULT_ACHA_MODE = ACHA_Mode_Default_Avhrr1   
-      case ( 'GOES-MP-IMAGER')      
+      case ( 'AVHRR-1')
+         DEFAULT_ACHA_MODE = ACHA_Mode_Default_Avhrr1
+      case ( 'GOES-MP-IMAGER')
          DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Goes_MP
-      case ( 'GOES-IL-IMAGER')      
-         DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Goes_IL   
+      case ( 'GOES-IL-IMAGER')
+         DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Goes_IL
       case ( 'GOES-IP-SOUNDER')
-         DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Goes_SNDR 
+         DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Goes_SNDR
       case ( 'GOES-RU-IMAGER')
          DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Goes_RU
       case ( 'MTSAT-IMAGER')
@@ -1031,41 +1032,41 @@ contains
       case ('SEVIRI')
          DEFAULT_ACHA_MODE  = ACHA_Mode_Default_SEVIRI
       case ('FY2-IMAGER')
-         DEFAULT_ACHA_MODE  =  ACHA_Mode_Default_FY2 
+         DEFAULT_ACHA_MODE  =  ACHA_Mode_Default_FY2
       case ('AGRI') ! - FY4A
          DEFAULT_ACHA_MODE  =  ACHA_Mode_Default_FY4A_AGRI
       case ('VIIRS','VIIRS-NASA','VIIRS-IFF','VIIRS-NASA-HRES','VGAC')
-         DEFAULT_ACHA_MODE  =  ACHA_Mode_Default_VIIRS 
+         DEFAULT_ACHA_MODE  =  ACHA_Mode_Default_VIIRS
       case ('AQUA-IFF')
           DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Modis
       case ('AVHRR-FUSION')
             if (Avhrr_1_flag == sym%YES) then
-              DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Avhrr1_Fusion              
+              DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Avhrr1_Fusion
             else
               DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Avhrr_Fusion
             endif
-      case ('AVHRR-IFF')      
+      case ('AVHRR-IFF')
          DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Avhrr
       case ('COMS-IMAGER')
          DEFAULT_ACHA_MODE  = ACHA_Mode_Default_COMS
       case ('MODIS')
-          DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Modis 
+          DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Modis
       case ('MODIS-MAC')
-          DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Modis 
+          DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Modis
       case ('MODIS-CSPP')
-          DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Modis 
+          DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Modis
       case ('AHI')
           DEFAULT_ACHA_MODE  = ACHA_Mode_Default_AHI
       case ('MERSI-2')
           DEFAULT_ACHA_MODE = ACHA_Mode_Default_Mersi2
       case ('METIMAGE')
           DEFAULT_ACHA_MODE = ACHA_Mode_Default_Modis
-      case default 
+      case default
           call MESG("sensor "//trim(SensorName)//" is not set in user_options.f90: check channels settings Inform andi.walther@ssec.wisc.edu")
       end select
 
    end function DEFAULT_ACHA_MODE
-   
+
    !-----------------------------------------------------------------
    !   returns default dcomp mode
    ! -----------------------------------------------------------------
@@ -1074,14 +1075,14 @@ contains
       implicit none
 
       default_DCOMP_Mode = 3
-     
+
       if (Sensor%WMO_Id == 208) Default_Dcomp_Mode = 1 !NOAA-17
       if (Sensor%WMO_Id == 3) Default_Dcomp_Mode = 1   !METOP-A
       if (Sensor%WMO_Id == 4) Default_Dcomp_Mode = 1   !METOP-B
       if (Sensor%WMO_Id == 5) Default_Dcomp_Mode = 1   !METOP-C
 
 !---- AKH - What about NOAA-16 pre 2002 or noaa-16 post 2017?
-     
+
    end function DEFAULT_DCOMP_MODE
 
 !-----------------------------------------------------------------
@@ -1092,19 +1093,20 @@ contains
       character ( len = 1020 ) :: filename
 
       select case ( trim(SensorName))
-      
-      case ( 'AVHRR-1')   
-         filename  = 'avhrr_default_nb_cloud_mask_lut.nc'   
-      case ( 'AVHRR-2')   
-         filename  = 'avhrr_default_nb_cloud_mask_lut.nc'   
-      case ( 'AVHRR-3')   
-         filename  = 'avhrr_default_nb_cloud_mask_lut.nc'   
-      case ( 'GOES-MP-IMAGER')      
+      case ('FCI')
+        filename  = 'ahi_default_nb_cloud_mask_lut.nc'
+      case ( 'AVHRR-1')
+         filename  = 'avhrr_default_nb_cloud_mask_lut.nc'
+      case ( 'AVHRR-2')
+         filename  = 'avhrr_default_nb_cloud_mask_lut.nc'
+      case ( 'AVHRR-3')
+         filename  = 'avhrr_default_nb_cloud_mask_lut.nc'
+      case ( 'GOES-MP-IMAGER')
          filename  = 'goesmp_default_nb_cloud_mask_lut.nc'
-      case ( 'GOES-IL-IMAGER')      
-         filename  = 'goesil_default_nb_cloud_mask_lut.nc'   
+      case ( 'GOES-IL-IMAGER')
+         filename  = 'goesil_default_nb_cloud_mask_lut.nc'
       case ( 'GOES-IP-SOUNDER')
-         filename  = 'goesmp_default_nb_cloud_mask_lut.nc' 
+         filename  = 'goesmp_default_nb_cloud_mask_lut.nc'
       case ( 'GOES-RU-IMAGER')
          filename  = 'ahi_default_nb_cloud_mask_lut.nc'
       case ( 'MTSAT-IMAGER')
@@ -1112,17 +1114,17 @@ contains
       case ('SEVIRI')
          filename  = 'seviri_default_nb_cloud_mask_lut.nc'
       case ('FY2-IMAGER')
-         filename  = 'fy2_default_nb_cloud_mask_lut.nc' 
+         filename  = 'fy2_default_nb_cloud_mask_lut.nc'
       case ('AGRI') !FY4A
          filename  = 'ahi_default_nb_cloud_mask_lut.nc'
       case ('VIIRS','VIIRS-NASA','VIIRS-NASA-HRES','VIIRS-IFF','VGAC')
-         filename  = 'viirs_default_nb_cloud_mask_lut_fw_10312018.nc' 
+         filename  = 'viirs_default_nb_cloud_mask_lut_fw_10312018.nc'
       case ('AQUA-IFF')
           filename  = 'modis_default_nb_cloud_mask_lut.nc'
-      case ('AVHRR-IFF')      
+      case ('AVHRR-IFF')
         filename  = 'avhrr_default_nb_cloud_mask_lut.nc'
       case ('AVHRR-FUSION')
-         filename = 'avhrr_fusion_default_nb_cloud_mask_lut.nc'  
+         filename = 'avhrr_fusion_default_nb_cloud_mask_lut.nc'
       case ('COMS-IMAGER')
          filename  = 'coms_default_nb_cloud_mask_lut.nc'
       case ('MODIS')
@@ -1137,9 +1139,9 @@ contains
           filename  = 'modis_default_nb_cloud_mask_lut.nc'
       case ('METIMAGE')
           filename  = 'modis_default_nb_cloud_mask_lut.nc'
-      case default 
+      case default
          call MESG("sensor "//SensorName//" is not set in user_options.f90:  Inform andi.walther@ssec.wisc.edu")
-         stop 
+         stop
       end select
 
 
@@ -1154,17 +1156,17 @@ contains
       character ( len = 1020 ) :: filename
 
       select case ( trim(SensorName))
-      
+
       case ('GOES-RU-IMAGER')
          filename  = 'ecm2_lut_abhi_default.nc'
       case ('MODIS','METIMAGE','MERSI-2')
-         filename  = 'ecm2_lut_modis_default.nc' 
+         filename  = 'ecm2_lut_modis_default.nc'
       case ('VIIRS','VIIRS-NASA','VIIRS-NASA-HRES','VIIRS-IFF','VGAC')
-         filename  = 'ecm2_lut_viirs_default.nc' 
+         filename  = 'ecm2_lut_viirs_default.nc'
       case ('AHI')
           filename  = 'ecm2_lut_abhi_default.nc'
       case ('AVHRR-1','AVHRR-2','AVHRR-3')
-         filename  = 'ecm2_lut_avhrr_default.nc' 
+         filename  = 'ecm2_lut_avhrr_default.nc'
       case ( 'MTSAT-IMAGER')
           filename  = 'ecm2_lut_mtsat2_default.nc'
       case ( 'SEVIRI')
@@ -1173,9 +1175,9 @@ contains
           filename  = 'ecm2_lut_goesmp_src-abhi_default.nc'
       case ( 'GOES-IL-IMAGER')
           filename  = 'ecm2_lut_goesil_src-abhi_default.nc'
-      case default 
+      case default
          call MESG("sensor "//TRIM(SensorName)//" does not have ECM2 LUT:  Inform andrew.heidinger@noaa.gov")
-         stop 
+         stop
       end select
 
 
@@ -1186,25 +1188,26 @@ contains
    !----------------------------------------------------------------------------
    subroutine CHECK_DCOMP_ALGORITHM_CHOICES(SensorName)
       character (len=*) , intent(in) :: SensorName
-      
+
       integer :: Possible_DCOMP_Modes ( 4 )
- 
+
       DCOMP_Mode = DCOMP_Mode_User_Set
-       
+
       Possible_DCOMP_Modes = 0
-         
+
       select case ( trim ( SensorName))
-      
-      case ( 'AVHRR-3')  
-         Possible_DCOMP_Modes(1:3)    = [1,3,9] 
-      case ( 'AVHRR-2')  
-         Possible_DCOMP_Modes(1)    =  3 
-      case ( 'AVHRR-1')   
-         Possible_DCOMP_Modes(1)    =  3   
-      case ( 'GOES-MP-IMAGER')      
+      case('FCI')
+        Possible_DCOMP_Modes(1:4)    = [1,2,3,9]
+      case ( 'AVHRR-3')
+         Possible_DCOMP_Modes(1:3)    = [1,3,9]
+      case ( 'AVHRR-2')
          Possible_DCOMP_Modes(1)    =  3
-      case ( 'GOES-IL-IMAGER')      
-         Possible_DCOMP_Modes(1)    =  3  
+      case ( 'AVHRR-1')
+         Possible_DCOMP_Modes(1)    =  3
+      case ( 'GOES-MP-IMAGER')
+         Possible_DCOMP_Modes(1)    =  3
+      case ( 'GOES-IL-IMAGER')
+         Possible_DCOMP_Modes(1)    =  3
       case ( 'GOES-IP-SOUNDER')
          Possible_DCOMP_Modes(1)    =  3
       case ( 'GOES-RU-IMAGER')
@@ -1218,11 +1221,11 @@ contains
       case ('AGRI')
          Possible_DCOMP_Modes(1)    =  3
       case ('VIIRS','VIIRS-NASA','VIIRS-NASA-HRES')
-         NLCOMP_Mode_User_Set       =  1  
+         NLCOMP_Mode_User_Set       =  1
          Possible_DCOMP_Modes(1:4)  =  [1, 2, 3, 9]
-      case ('VIIRS-IFF')      
+      case ('VIIRS-IFF')
          Possible_DCOMP_Modes(1:4)  =  [1, 2, 3, 9]
-      case ('VGAC')      
+      case ('VGAC')
          Possible_DCOMP_Modes(1:4)  =  [1, 2, 3, 9]
       case ('AQUA-IFF')
          Possible_DCOMP_Modes(1:4)  =  [1, 2, 3, 9]
@@ -1244,10 +1247,10 @@ contains
          Possible_DCOMP_Modes(1:4)  =  [1, 2, 3, 9]
       case ('METIMAGE')
          Possible_DCOMP_Modes(1:4)  =  [1, 2, 3, 9]
-      case default 
+      case default
          call MESG("sensor "//SensorName//" is not set in check channels user_options settings Inform andi.walther@ssec.wisc.edu")
       end select
-      
+
       if ( DCOMP_Mode_User_Set /= 0 .and. .not. ANY ( DCOMP_Mode_User_Set == Possible_DCOMP_Modes ) ) then
          DCOMP_Mode = Default_DCOMP_Mode ( )
          print*,EXE_PROMPT,'User set DCOMP mode ',DCOMP_Mode_user_set,' not possible for '// &
@@ -1262,7 +1265,7 @@ contains
    !  Allowed Modes
    !  "off" = do not run ACHA
    !  "default" use mode set by DEFAULT_ACHA_MODE()
-   !  "maximum" use all relevant channels that are available 
+   !  "maximum" use all relevant channels that are available
    !  "xxx_yyy_zzz" - direct acha mode choice xx < yy < zz
    !               examples, 067_110, 110_120_133, 085_110_120, ...
    !   default and maximum will choose an acha mode of the form above
@@ -1274,15 +1277,15 @@ contains
       integer:: strlen, Mode_Idx
 
       !--- start with user choice
-      ACHA%Mode = ACHA_Mode_User_Set     
-       
+      ACHA%Mode = ACHA_Mode_User_Set
+
       !--- if ACHA mode is set to off, there is nothing to do
       if (trim(ACHA%Mode) == "off") then
          return
       endif
-   
+
       !--- if ACHA mode is set to default, then choose the default mode based on
-      !--- sensor.  if a needed channel is missing, it will be handled below 
+      !--- sensor.  if a needed channel is missing, it will be handled below
       if (trim(ACHA%Mode) == "default") then
           ACHA%Mode =  DEFAULT_ACHA_MODE ( SensorName )
           call MESG("User selected ACHA default, ACHA Mode = "//trim(ACHA%Mode))
@@ -1295,46 +1298,46 @@ contains
       ACHA_Mode_Temp = ""
 
       if (trim(ACHA%Mode) == "maximum") then
-         if (Sensor%Chan_On_Flag_Default(20) == 1) then 
+         if (Sensor%Chan_On_Flag_Default(20) == 1) then
             Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_038"
          endif
-         if (Sensor%Chan_On_Flag_Default(37) == 1) then 
+         if (Sensor%Chan_On_Flag_Default(37) == 1) then
             Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_062"
          endif
-         if (Sensor%Chan_On_Flag_Default(27) == 1) then 
+         if (Sensor%Chan_On_Flag_Default(27) == 1) then
             Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_067"
          endif
-         if (Sensor%Chan_On_Flag_Default(28) == 1) then 
+         if (Sensor%Chan_On_Flag_Default(28) == 1) then
             Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_073"
          endif
-         if (Sensor%Chan_On_Flag_Default(29) == 1) then 
+         if (Sensor%Chan_On_Flag_Default(29) == 1) then
             Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_085"
          endif
-         if (Sensor%Chan_On_Flag_Default(30) == 1) then 
+         if (Sensor%Chan_On_Flag_Default(30) == 1) then
             Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_097"
          endif
-         if (Sensor%Chan_On_Flag_Default(31) == 1) then 
+         if (Sensor%Chan_On_Flag_Default(31) == 1) then
             Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_110"
          endif
-         if (Sensor%Chan_On_Flag_Default(32) == 1) then 
+         if (Sensor%Chan_On_Flag_Default(32) == 1) then
             Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_120"
          endif
-         if (Sensor%Chan_On_Flag_Default(33) == 1) then 
+         if (Sensor%Chan_On_Flag_Default(33) == 1) then
             Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_133"
          endif
-         if (Sensor%Chan_On_Flag_Default(34) == 1) then 
+         if (Sensor%Chan_On_Flag_Default(34) == 1) then
             Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_136"
          endif
-         if (Sensor%Chan_On_Flag_Default(35) == 1) then 
+         if (Sensor%Chan_On_Flag_Default(35) == 1) then
             Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_139"
          endif
-         if (Sensor%Chan_On_Flag_Default(36) == 1) then 
+         if (Sensor%Chan_On_Flag_Default(36) == 1) then
             Acha_Mode_Temp = trim(Acha_Mode_Temp) // "_142"
          endif
          !-- take off first "_"
          strlen  = len_trim(Acha_Mode_Temp)
          ACHA%Mode = Acha_Mode_Temp(2:strlen)
-         print *, "User selected ACHA maximum, ACHA Mode = ",trim(ACHA%Mode) 
+         print *, "User selected ACHA maximum, ACHA Mode = ",trim(ACHA%Mode)
       endif
 
       !---  see if ACHA mode calls for an ir channel that is turned off or unavailable
@@ -1382,7 +1385,7 @@ contains
       !--------------------------------------------------------------------------------
       ! check if mode is one that is allowed, if not, stop
       !--------------------------------------------------------------------------------
-      do Mode_Idx = 1, Num_Acha_Modes 
+      do Mode_Idx = 1, Num_Acha_Modes
          if (trim(ACHA%Mode) == trim(ACHA_Mode_Values(Mode_Idx))) then
             exit
          endif
@@ -1406,34 +1409,35 @@ contains
    ! ----------------------------------------------------------------------
    function EXISTING_CHANNELS (SensorName)  result( Valid_Channels )
       character (len = *) , intent(in) :: SensorName
-      
-      integer , target :: Valid_Channels (Nchan_Clavrx) 
-      integer :: i 
-      
+
+      integer , target :: Valid_Channels (Nchan_Clavrx)
+      integer :: i
+
       Valid_Channels = MISSING_VALUE_INT4
 
       select case ( trim(SensorName))
-        
+      case ('FCI')
+        Valid_Channels(1:16) = [1,6,7,9,11,16,19,20,26,28,29,30,31,32,33,37]
       case ( 'AVHRR-1')
          Valid_Channels (1:4) = [1,2,20,31]
       case ( 'AVHRR-2')
          Valid_Channels (1:5) = [1,2,20,31,32]
       case ( 'AVHRR-3')
          Valid_Channels (1:6) = [1,2,6,20,31,32]
-      case ( 'GOES-IL-IMAGER')      
+      case ( 'GOES-IL-IMAGER')
          Valid_Channels (1:5) = [1,20,27,31,32]
-      case ( 'GOES-MP-IMAGER')      
-         Valid_Channels (1:5) = [1,20,27,31,33]   
+      case ( 'GOES-MP-IMAGER')
+         Valid_Channels (1:5) = [1,20,27,31,33]
       case ( 'GOES-IP-SOUNDER')
-         Valid_Channels (1:18) = [1,20,21,23,24,25,30,31,32,33,34,35,36,37,38,39,40,41]      
+         Valid_Channels (1:18) = [1,20,21,23,24,25,30,31,32,33,34,35,36,37,38,39,40,41]
       case ('GOES-RU-IMAGER')
          Valid_Channels(1:16) = [1,2,3,6,7,20,26,27,28,29,30,31,32,33,37,38]
       case ( 'MTSAT-IMAGER')
-         Valid_Channels (1:5) = [1,20,27,31,32]  
+         Valid_Channels (1:5) = [1,20,27,31,32]
       case ('SEVIRI')
          Valid_Channels (1:11) = [1,2,6,20,37,28,29,30,31,32,33]
       case ('FY2-IMAGER')
-         Valid_Channels (1:5) = [1,20,27,31,32]    
+         Valid_Channels (1:5) = [1,20,27,31,32]
       case ('AGRI') ! FY4A
          Valid_Channels (1:14) = [1,2,3,6,7,20,21,26,27,28,29,31,32,33]
       case ('VIIRS')
@@ -1461,25 +1465,25 @@ contains
       case ('COMS-IMAGER')
          Valid_Channels (1:5) = [1,20,27,31,32]
       case ('MODIS')
-         Valid_Channels(1:36) = [(i,i=1,36,1)]  
+         Valid_Channels(1:36) = [(i,i=1,36,1)]
       case ('MODIS-MAC')
-         Valid_Channels(1:36) = [(i,i=1,36,1)]  
+         Valid_Channels(1:36) = [(i,i=1,36,1)]
       case ('MODIS-CSPP')
-         Valid_Channels(1:36) = [(i,i=1,36,1)] 
+         Valid_Channels(1:36) = [(i,i=1,36,1)]
       case ('AHI')
          Valid_Channels(1:16) = [1,2,3,4,6,7,20,27,28,29,30,31,32,33,37,38]
       case ('MERSI-2')
          Valid_Channels(1:24) = [3,4,1,2,26,6,7,8,9,10,12,13,15,16,17,18,19,5,20,23,28,29,31,32]
-         !Valid_Channels(1:21) = [3,4,1,2,26,6,7,8,9,10,15,17,18,19,5,20,23,28,29,31,32]   
+         !Valid_Channels(1:21) = [3,4,1,2,26,6,7,8,9,10,15,17,18,19,5,20,23,28,29,31,32]
       case ('METIMAGE')
          Valid_Channels(1:20) = [1,2,3,4,5,6,7,15,18,20,22,23,26,27,28,29,31,32,33,45]
-      case default 
+      case default
          call MESG("sensor "//SensorName//" is not set in check channels settings Inform andi.walther@ssec.wisc.edu")
-      end select      
+      end select
 
 
    end function EXISTING_CHANNELS
-   
+
    !----------------------------------------------------------------------
    !   Channel settings
    !     will not be done for full-experts  ( expert mode 7 and higher)
@@ -1489,12 +1493,12 @@ contains
       character (len=*) , intent(in) :: SensorName
       integer :: Valid_Channels (Nchan_Clavrx)
       integer :: i
- 
+
       ! expert can decide themselves
       if (Expert_Mode > 6 ) return
-      
+
       Valid_Channels = Existing_Channels ( SensorName )
-          
+
       Sensor%Chan_On_Flag_Default =  0_int1
 
       do i = 1, Nchan_Clavrx
@@ -1538,7 +1542,7 @@ contains
       if ((Sensor%WMO_Id == 224 .or. Sensor%WMO_Id == 225 .or. Sensor%WMO_Id == 226)) then
 
         !--- VGAC has no I-bands but it does report subpixel stddev of vis and irwin
-        if (Sensor%Sensor_Name == "VGAC") then 
+        if (Sensor%Sensor_Name == "VGAC") then
 
             if (Sensor%Chan_On_Flag_Default(1) == sym%YES) then
               Ch(1)%Sub_Pixel_On_Flag = .true.  !0.65
@@ -1574,7 +1578,7 @@ contains
             endif
 
             !-- channel 31 is 11.0 M-band and channel 43 is 11.4 I-band
-            if (Sensor%Chan_On_Flag_Default(31) == sym%YES .and. &                                                                                                                                                               
+            if (Sensor%Chan_On_Flag_Default(31) == sym%YES .and. &
                 Sensor%Chan_On_Flag_Default(43) == sym%YES) then
                 Ch(31)%Sub_Pixel_On_Flag = .true.  !11.4
             endif
@@ -1584,7 +1588,7 @@ contains
       endif
 
    end subroutine SUB_PIXEL_CHANNEL_ON_SET
-   
+
    !----------------------------------------------------------------------
    ! turn off channels not support by sensor (even if selected by user)
    !----------------------------------------------------------------------
@@ -1592,9 +1596,9 @@ contains
       character (len=*) , intent(in) :: SensorName
       integer :: Valid_Channels (Nchan_Clavrx)
       integer :: i
- 
+
       Valid_Channels = EXISTING_CHANNELS(SensorName)
-          
+
       do i = 1, Nchan_Clavrx
          if ( any ( i == Valid_Channels )) cycle
          Sensor%Chan_On_Flag_Default(i) = 0_int1
@@ -1602,14 +1606,14 @@ contains
 
    end subroutine CHECK_USER_CHANNEL_CHOICES
    ! --------------------------------------------------------------------
-   !  every incosistency between channel settings and algorithm mode 
+   !  every incosistency between channel settings and algorithm mode
    ! --------------------------------------------------------------------
-   subroutine  EXPERT_MODE_CHANNEL_ALGORITHM_CHECK ( SensorName ) 
-      character (len=*) , intent(in) :: SensorName  
-      
+   subroutine  EXPERT_MODE_CHANNEL_ALGORITHM_CHECK ( SensorName )
+      character (len=*) , intent(in) :: SensorName
+
       integer :: Valid_Channels (Nchan_Clavrx)
       logical :: Not_Run_Flag
-      
+
       if ( Expert_Mode < 6 ) return
 
       !--- check ACHA mode based on available channels
@@ -1619,24 +1623,24 @@ contains
       if ( Not_Run_Flag ) then
          print *, EXE_PROMPT, 'ACHA Mode ', ACHA%Mode,' not possible with selected channels. ACHA and DCOMP  will not run.'
          Dcomp_Mode = 0
-      end if 
+      end if
 
       !--- check based on available channels
       if (Dcomp_Mode == 1 .and. &
          (Sensor%Chan_On_Flag_Default(1) == sym%NO .or. Sensor%Chan_On_Flag_Default(6)==sym%NO)) then
          call MESG("DCOMP Mode 1 not possible with selected channels, DCOMP is now off")
       endif
-      
+
       if (Dcomp_Mode == 2 .and. &
          (Sensor%Chan_On_Flag_Default(1) == sym%NO .or. Sensor%Chan_On_Flag_Default(7)==sym%NO)) then
          call MESG("DCOMP Mode 2 not possible with selected channels, DCOMP is now off")
       endif
-      
+
       if (Dcomp_Mode == 3 .and. &
          (Sensor%Chan_On_Flag_Default(1) == sym%NO .or. Sensor%Chan_On_Flag_Default(20)==sym%NO)) then
          call MESG("DCOMP Mode 3 not possible with selected channels, DCOMP is now off")
       endif
-  
+
    end subroutine EXPERT_MODE_CHANNEL_ALGORITHM_CHECK
-   
+
 end module USER_OPTIONS

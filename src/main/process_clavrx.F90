@@ -204,6 +204,7 @@
    use DNCOMP_CLAVRX_BRIDGE_MOD, only: &
       AWG_CLOUD_DNCOMP_ALGORITHM
 
+
    use FILE_UTILS, only: FILE_TEST, GET_LUN
 
    use GFS_HDF_MOD, only: READ_GFS_DATA
@@ -587,11 +588,10 @@
    type(timer) :: chrono
    type(timer) :: chrono_all
 
-
-
    !***********************************************************************
    ! Begin Executable Code
    !***********************************************************************
+
 
    call timer_set_up_all (chrono_all)
    call timer_set_up (chrono)
@@ -737,6 +737,8 @@
 
       call chrono%tic(17)
 
+
+
       !----------------------------------------------------------------------
       ! Marker: READ IN CLAVRXORB_FILE_LIST AND SET FLAGS
       !----------------------------------------------------------------------
@@ -775,7 +777,7 @@
 
       !-- see if level-1b file exists
       Level1b_Exists = file_test(trim(Image%Level1b_Path)//trim(File_1b_Temp))
-      if (Level1b_Exists .eqv. .FALSE.) then
+      if (.not. Level1b_Exists ) then
          call MESG( "ERROR: Level-1b file not found, skipping this file", level=5, color=1)
          print*,trim(Image%Level1b_Path)//trim(File_1b_Temp)
          cycle file_loop
@@ -1074,7 +1076,10 @@
          Image%Number_Of_Segments = Image%Number_Of_Lines / Image%Number_Of_Lines_Per_Segment + 1
       endif
 
+      if (trim(Sensor%Sensor_Name) .eq. 'FCI') Image%Number_Of_Segments = 40
+
       call chrono%tac(17)
+
 
       Segment_loop: do Segment_Number = 1,Image%Number_Of_Segments
 
@@ -1097,7 +1102,8 @@
          call chrono % tic(1)
 
          call READ_LEVEL1B_DATA(Image%Level1b_Full_Name,Segment_Number, &
-                                Time_Since_Launch,AREAstr,NAVstr,Nrec_Avhrr_Header,Ierror_Level1b)
+                                Time_Since_Launch,AREAstr,NAVstr,Nrec_Avhrr_Header &
+                                ,Ierror_Level1b)
          if (Ierror_Level1b /= 0) then
             call MESG ("ERROR:  Error reading level1b, skipping this file ",level = verb_lev% ERROR)
             print*,Image%Level1b_Full_Name

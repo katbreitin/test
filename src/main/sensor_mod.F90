@@ -78,8 +78,6 @@ module SENSOR_MOD
       , solar_ch20_nu &
       , planck_nu
 
-   use ALGORITHM_CONSTANTS_MOD,only:
-
    use CONSTANTS_MOD,only:  &
       real4 &
       , int1 &
@@ -167,6 +165,7 @@ module SENSOR_MOD
       , read_navigation_block_seviri &
       , read_seviri
 
+   use CX_FCI_MOD, only: READ_FCI
 
    use VIIRS_CLAVRX_BRIDGE , only : &
        READ_VIIRS_DATE_TIME &
@@ -272,6 +271,8 @@ module SENSOR_MOD
          ahi_time_from_filename, &
          ahi_hcast_time_from_filename
 
+       use FCI_MOD
+
       type ( date_type ) :: time0_obj, time1_obj
 
       ! - this is only needed/used for AVHRR
@@ -323,6 +324,9 @@ module SENSOR_MOD
       type(date_type) :: time_obj_nasa_hres(2)
       character(len=15) :: time_identifier
       integer :: yyyy,doy1,hour1,minu
+
+      type(fci_data) ::fci
+      logical :: fci_on(16) = .true.
 
       sensor_search: do
 
@@ -503,6 +507,31 @@ module SENSOR_MOD
          exit
 
       endif
+      !----------------------------------------------
+      ! --- FCI files
+      !----------------------------------------------
+      if (index(Sensor%Sensor_Name,'FCI') > 0) then
+        print*,trim(Image%Level1b_Path)//trim(Image%Level1b_Name)
+        call fci % config % set(trim(Image%Level1b_Path)//trim(Image%Level1b_Name)//'/',fci_on)
+        call fci % get (chunk = 24, time_only = .true.  ) !, start=[10,10],count=[20,20])
+        print*,'FCI granule time: ',fci % time %date_string('yyyy_doy.hhmm')
+
+        call fci % time % get_date(year =  year &
+                              , doy = doy  &
+                              , msec_of_day = Image%Start_Time)
+        Image%Start_Year  = year
+        Image%Start_Doy   = doy
+        Image%End_Year  = year
+        Image%End_Doy   = doy
+        Image%End_Time = Image%Start_Time
+
+
+        image % time_start =fci % time
+        image % time_end = fci % time
+
+        Image%Number_Of_Lines_Per_Segment = 139
+        exit
+      end if
 
       !----------------------------------------------
       ! --- VIIRS Subsampled files
@@ -1045,6 +1074,27 @@ module SENSOR_MOD
       ifound = sym%NO
 
       test_loop: do while (ifound == sym%NO)
+
+      if (index(Image%Level1b_Name, 'FCI_RC') > 0) then
+
+        print*,'fci start..'
+
+
+        Sensor%Sensor_Name = 'FCI'
+        Sensor%Platform_Name = 'MTG_I1'
+        sensor % rttov_name = 'mtg_1_fci'
+        Sensor%Spatial_Resolution_Meters = 2000
+        Sensor%WMO_Id = 289
+        Sensor%Instr_Const_File = 'fci_instr.dat'
+        Sensor%Geo_Sub_Satellite_Longitude = 0.0   ! To-BE-CHECKED
+        Sensor%Geo_Sub_Satellite_Latitude = 0.0
+        Static_Nav_File = 'mtgi_1_fci_fulldisk_static_nav.nc' !- to be computed
+        Image%Area_Format_Flag = .false.
+        Image%Nc_Format_Flag = .false.
+        Image%Number_Of_Elements = 5568
+        Image%Number_Of_Lines = 5568
+        exit test_loop
+      end if
 
       !--- HIMAWARI-8 AHI Test
       if (index(Image%Level1b_Name, 'HS_H08') > 0) then
@@ -2443,6 +2493,10 @@ module SENSOR_MOD
          exit
       end if
 
+      if (trim(Sensor%Sensor_Name) == 'FCI') THEN
+         exit
+      end if
+
       print *, "Error in SET_FILE_DIMENSIONS, stopping"
 
       stop
@@ -2535,6 +2589,11 @@ module SENSOR_MOD
                print*,'read abi is to installed stopping'
                stop
             end if
+
+            case('FCI')
+              call READ_FCI(Segment_number)
+
+
 
          case('SEVIRI')
          !--------  MSG/SEVIRI
@@ -2737,9 +2796,13 @@ module SENSOR_MOD
    !
    !--------------------------------------------------------------------------------------------------
    subroutine SET_SENSOR_CHANNEL_MAPPING()
-
+          print*,'set sensor mapping'
       select case(Sensor%WMO_Id)
 
+      case(289)  ! FCI MTG_I1
+        Sensor%Num_Chan_Sensor = 16
+        if (.not. allocated(Sensor%CLAVRx_Chan_Map)) allocate(Sensor%Clavrx_Chan_Map(Sensor%Num_Chan_Sensor))
+        Sensor%CLAVRx_Chan_Map = [9,11,1,16,19,26,6,7,20,37,28,29,30,31,32,33]
       case(3:5,200:209,223,706:708) !AVHRR
          Sensor%Num_Chan_Sensor = 6
          if (.not. allocated(Sensor%CLAVRx_Chan_Map)) allocate(Sensor%Clavrx_Chan_Map(Sensor%Num_Chan_Sensor))
