@@ -7,11 +7,11 @@
 !
 ! PURPOSE: provide functions for viewing angle computations
 !
-! DESCRIPTION: 
-!              History:  This module was created to house the routines used to 
-!                        compute the angles that define the sensor and solar 
+! DESCRIPTION:
+!              History:  This module was created to house the routines used to
+!                        compute the angles that define the sensor and solar
 !                        viewing geomety.
-!             
+!
 !                        The first version is simply a collection of prexisting
 !                        routines from other modules.  Future versions will move
 !                        towards more robust, efficient and elegant code
@@ -47,21 +47,21 @@
 !       Represents the angle from the pixel to location on the earth where
 !       the solar zenith angle is zero (sub-sun point).
 !       If the sub-sun point is due south, the value is 180.0 or -180.0
-!       If the sub-sun point is due north, the value is 0.0 
-!       If the sub-sun point is due west, the value is -90.0 
-!       If the sub-sun point is due east, the value is 90.0 
+!       If the sub-sun point is due north, the value is 0.0
+!       If the sub-sun point is due west, the value is -90.0
+!       If the sub-sun point is due east, the value is 90.0
 !       The range is from -180 to 180 degrees
-!       This definition is the same as employed by MODIS.   
+!       This definition is the same as employed by MODIS.
 !
 ! Sensor Azimuth Angle:
 !       Represents the angle from the pixel to location on the earth where
-!       sensor zenith angle is 0 (the sub-sat point) 
+!       sensor zenith angle is 0 (the sub-sat point)
 !       If the sub-sat point is due south, the value is 180.0 or -180.0
-!       If the sub-sat point is due north, the value is 0.0 
-!       If the sub-sat point is due west, the value is -90.0 
-!       If the sub-sat point is due east, the value is 90.0 
+!       If the sub-sat point is due north, the value is 0.0
+!       If the sub-sat point is due west, the value is -90.0
+!       If the sub-sat point is due east, the value is 90.0
 !       The range is from -180 to 180 degrees
-!       This definition is the same as employed by MODIS.   
+!       This definition is the same as employed by MODIS.
 !
 ! Relative Azimuth Angle:
 !       Represents the relative difference in solar and sensor azimuth
@@ -84,17 +84,17 @@
 !       and the specular reflection angle from the pixel to the sun.
 !       A value of zero mean your are viewing the sun image if the
 !       surface were a mirror. Values less than 40 imply glint
-!       impacted observations over ocean.  Range 0 to 180.0  
+!       impacted observations over ocean.  Range 0 to 180.0
 !--------------------------------------------------------------------------------------
  module VIEWING_GEOMETRY_MOD
 
   implicit none
   private
-  
+
   public:: sensor_zenith, &
-           great_circle_angle, & 
-           sensor_zenith_avhrr_anchor, & 
-           relative_azimuth_avhrr_anchor, & 
+           great_circle_angle, &
+           sensor_zenith_avhrr_anchor, &
+           relative_azimuth_avhrr_anchor, &
            glint_angle, &
            relative_azimuth, &
            scattering_angle, &
@@ -102,7 +102,7 @@
            TERM_REFL_NORM, &
            POSSOL, &
            COMPUTE_SENSOR_ZENITH_GEO    !not needed
-           
+
   real, parameter, private :: R_EARTH = 6378.2064   !km
   real, parameter, private :: PI = 3.141592653589793
   real, parameter, private :: DTOR = PI / 180.0
@@ -137,7 +137,7 @@
 ! Note, application of the senzor_zenith function
 ! to AVHRR does not work outside of tropics.
 ! it would be nice to have a generic routine
-! 
+!
 !
 !--------------------------------------------------
    real function sensor_zenith_avhrr_anchor(geox,anchor_index)
@@ -156,7 +156,7 @@
 ! input:
 ! geox = great circle distance angle in degrees
 ! solzen_subsat = solar zenith angle at sub-sat point
-! solzen_pix = solar zenith angle at pixel 
+! solzen_pix = solar zenith angle at pixel
 !
 ! Reference: CLAVR-1
 !
@@ -198,7 +198,7 @@
 ! pixlat = satellite pixel latitude
 !
 !--------------------------------------------------
-   real function sensor_zenith(h,satlon,satlat,pixlon,pixlat)
+   real elemental function sensor_zenith(h,satlon,satlat,pixlon,pixlat)
 
    real, intent(in):: h
    real, intent(in):: satlon
@@ -236,7 +236,7 @@
   end function relative_azimuth
   !------------------------------------------------------------------------------------
   ! Glint angle  (the angle difference between direct "specular" reflection off
-  ! the surface and actual reflection toward the satellite.) 
+  ! the surface and actual reflection toward the satellite.)
   !------------------------------------------------------------------------------------
   real elemental function glint_angle ( sol_zen , sen_zen , rel_az  )
      real, intent(in) :: sol_zen
@@ -255,7 +255,7 @@
   !
   ! http://stcorp.github.io/harp/doc/html/algorithms/derivations/scattering_angle.html
   !
-  ! note, this equation assumes that the relaz convention conforms to CLAVR-x, if this 
+  ! note, this equation assumes that the relaz convention conforms to CLAVR-x, if this
   ! is reverse, the cos(relaz) becomes negative and this should be accounted for below
   !-------------------------------------------------------------------------------------
   real elemental function scattering_angle(sol_zen, sen_zen, rel_az)
@@ -264,7 +264,8 @@
    real, intent(in):: sen_zen
    real, intent(in):: rel_az
 
-   scattering_angle = -cos(sol_zen*DTOR)*cos(sen_zen*DTOR)-sin(sol_zen*DTOR)*sin(sen_zen*DTOR)*cos(rel_az*DTOR)
+   scattering_angle = -cos(sol_zen*DTOR)*cos(sen_zen*DTOR) &
+        -sin(sol_zen*DTOR)*sin(sen_zen*DTOR)*cos(rel_az*DTOR)
 
    scattering_angle = max(-1.0,min(scattering_angle,1.0))
 
@@ -274,7 +275,7 @@
   !-------------------------------------------------------------------------------------
   !
   !-------------------------------------------------------------------------------------
-  real elemental function sensor_azimuth(satlon,satlat,pixlon,pixlat) 
+  real elemental function sensor_azimuth(satlon,satlat,pixlon,pixlat)
 
    real, intent(in):: satlon
    real, intent(in):: satlat
@@ -286,12 +287,12 @@
    real:: beta
    real:: sine_beta
 
-   xlon = (pixlon - satlon)*DTOR 
-   xlat = (pixlat - satlat)*DTOR 
+   xlon = (pixlon - satlon)*DTOR
+   xlat = (pixlat - satlat)*DTOR
 
    beta = acos( cos(xlat) * cos(xlon) )
    sine_beta = sin(beta)
-   if (abs(sine_beta) > epsilon(sine_beta)) then 
+   if (abs(sine_beta) > epsilon(sine_beta)) then
      sensor_azimuth = sin(xlon) / sine_beta
      sensor_azimuth = min(1.0, max(-1.0,sensor_azimuth))
      sensor_azimuth = asin(sensor_azimuth) / DTOR
@@ -319,9 +320,9 @@
 !         tu -  time of day - fractional hours
 !         lon - latitude in degrees
 !         lat - latitude in degrees
-!      
+!
 ! output:
-!         asol - solar zenith angle 
+!         asol - solar zenith angle
 !         phi - solar azimuth angle
 !
 !
@@ -329,7 +330,7 @@
 !----------------------------------------------------------------------
    subroutine POSSOL(jday,tu,xlon,xlat,asol,phis)
    implicit none
-   integer, intent(in):: jday 
+   integer, intent(in):: jday
    real, intent(in):: tu,xlon,xlat
    real, intent(out):: asol, phis
    real:: tsm, xlo, xla, xj, a1, a2, et, tsv, ah, a3, delta, amuzero, elev, &
@@ -398,8 +399,8 @@
 !
 ! conversion in degrees
 !
-      
-     
+
+
       elev = elev / DTOR
       asol = 90.0 - elev
       phis = azim / DTOR
@@ -426,8 +427,8 @@ function COMPUTE_SENSOR_ZENITH_GEO(satlon,satlat,pixlon,pixlat) result(sen_zen)
    real:: xlat
    real:: beta
 
-   xlon = (pixlon - satlon)*DTOR 
-   xlat = (pixlat - satlat)*DTOR 
+   xlon = (pixlon - satlon)*DTOR
+   xlat = (pixlat - satlat)*DTOR
 
    beta = acos( cos(xlat) * cos(xlon) )
 
@@ -449,7 +450,7 @@ end function COMPUTE_SENSOR_ZENITH_GEO
    !
    ! output:
    !    distance on Earth in km
-   !     
+   !
    !  assumption is a pure spherical Earth
    !  reference: http://www.movable-type.co.uk/scripts/gis-faq-5.1.html
    !
@@ -457,46 +458,46 @@ end function COMPUTE_SENSOR_ZENITH_GEO
    elemental real function great_circle_distance ( lon0 ,lat0, lon ,lat )
       real, intent(in) :: lon0 , lat0
       real, intent(in) :: lat , lon
-      
+
       real :: dlon , dlat
       real, parameter :: radius_earth = 6367.
       real :: a , c
-      
+
       real :: lon0_rad, lat0_rad
       real :: lon_rad , lat_rad
-      
+
       lon0_rad = lon0 * DTOR
       lon_rad = lon * DTOR
       lat0_rad = lat0 * DTOR
       lat_rad = lat * DTOR
-      
+
       dlon = lon0_rad - lon_rad
       dlat = lat0_rad - lat_rad
-      
-      a = ( sin ( dlat / 2)) ** 2 + cos( lat_rad ) * (sin (dlon/2)) ** 2  
+
+      a = ( sin ( dlat / 2)) ** 2 + cos( lat_rad ) * (sin (dlon/2)) ** 2
       c = 2 * asin (  sqrt(a))
       great_circle_distance = radius_earth * c
-  
-  
+
+
    end function great_circle_distance
 
    !====================================================================
    ! Function Name: TERM_REFL_NORM
    !
    ! Function:
-   !    Renormalize reflectances to improve performance near the terminator 
+   !    Renormalize reflectances to improve performance near the terminator
    ! using the parameteization given by Li et. al. 2006
    !
    ! Description: Renormalizes reflectances in the terminator region
-   !   
+   !
    ! Calling Sequence: Refl_Chn2 = TERM_REFL_NORM(Cos_Sol_Zen,Refl_Chn2)
-   !   
+   !
    !
    ! Inputs:
    !   Cosine of the Solar Zenith Angle
    !   Channel 2 reflectance that is normalized by cosine of solar zenith
    !
-   ! Outputs: 
+   ! Outputs:
    !   Renormalized reflectance
    !
    ! Dependencies:
@@ -518,7 +519,7 @@ end function COMPUTE_SENSOR_ZENITH_GEO
    Term_Refl_Norm = (Reflectance*Cos_Sol_Zen)*Norm_Param
 
    end function TERM_REFL_NORM
-  
+
 
 end module VIEWING_GEOMETRY_MOD
 

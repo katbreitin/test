@@ -165,7 +165,7 @@ module SENSOR_MOD
       , read_navigation_block_seviri &
       , read_seviri
 
-   use CX_FCI_MOD
+   use CX_FCI_MOD, only: READ_FCI
 
    use VIIRS_CLAVRX_BRIDGE , only : &
        READ_VIIRS_DATE_TIME &
@@ -515,8 +515,8 @@ module SENSOR_MOD
       if (index(Sensor%Sensor_Name,'FCI') > 0) then
         print*,trim(Image%Level1b_Path)//trim(Image%Level1b_Name)
         call fci % config % set(trim(Image%Level1b_Path)//trim(Image%Level1b_Name)//'/',fci_on)
-        call fci % get (chunk = 24 ) !, start=[10,10],count=[20,20])
-        print*,'granule time: ',fci % time %date_string('yyyy_doy.hhmm')
+        call fci % get (chunk = 24, time_only = .true.  ) !, start=[10,10],count=[20,20])
+        print*,'FCI granule time: ',fci % time %date_string('yyyy_doy.hhmm')
 
         call fci % time % get_date(year =  year &
                               , doy = doy  &
@@ -527,7 +527,6 @@ module SENSOR_MOD
         Image%End_Doy   = doy
         Image%End_Time = Image%Start_Time
 
-        print*,'year doy ...  ',year,doy,Image%Start_Time
 
         image % time_start =fci % time
         image % time_end = fci % time
@@ -2596,8 +2595,7 @@ module SENSOR_MOD
             case('FCI')
               call READ_FCI(Segment_number)
 
-              print*,' read FCI ', segment_number
-
+          
 
          case('SEVIRI')
          !--------  MSG/SEVIRI
@@ -2800,7 +2798,7 @@ module SENSOR_MOD
    !
    !--------------------------------------------------------------------------------------------------
    subroutine SET_SENSOR_CHANNEL_MAPPING()
-
+          print*,'set sensor mapping'
       select case(Sensor%WMO_Id)
 
       case(289)  ! FCI MTG_I1

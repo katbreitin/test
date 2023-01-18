@@ -316,6 +316,7 @@ contains
 
 
         if ( dclass .eq. DCLASS_INT ) then
+
           call H5ReadAttribute( h5_file,trim(sds_name(1))//'/add_offset',att1)
           sdata(1) % attr(1) % data % r4values = att1
 

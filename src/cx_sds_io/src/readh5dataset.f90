@@ -32,7 +32,7 @@
 !
 !  H5ReadDataSet
 !  =============
-!
+! 
 !  This module contains generic subroutines for reading the most common
 !  data and attribute types in an hdf-5 type file:
 !  a) 0-, 1-, 2- or 3-dimensional datasets or attributes, which can be
@@ -43,45 +43,45 @@
 !  c) 0- and 1-dimensional integer, real or double parts of compound
 !     attributes or datasets (0-dim. means here a scalar); note that
 !     the different parts of a compound set have to be read separately.
-!
+! 
 !  Note: Depending on your machine, specify the single and double
 !        precision kind parameters (SP and DP) below.
-!
+! 
 !  The routines handle datasets of groups, attributes of groups, as well
 !  as attributes of datasets of groups:
 !      /<N_groups>/dataset
 !      /<N_groups>/attribute
 !      /<N_groups>/dataset/attribute
 !  where 'N' is 0, 1, 2, ...
-!
+! 
 !  To use these routines, add a "USE ReadH5dataset" statement to the
 !  calling routine. The calling routine must contain a variable of the
 !  same type and dimension as the dataset or attribute. The exact sizes
 !  of arrays are determined automatically.
-!
+! 
 !  When reading a dataset or attribute from an HDF 5 file, call the
 !  generic routine H5ReadDataset:
-!
+! 
 !    CALL H5ReadDataset ( filename, dsetname, dataset )
 !    CALL H5ReadDataset ( filename, dsetname, compoundsetname, dataset )
-!
+! 
 !  respectively for normal datasets and attributes, and for parts of
 !  compound datasets and attributes
-!
+! 
 !  Alternatively, one can make the following generic calls (which sound
-!  better when reading an attribute) with exactly the same functionality:
-!
+!  better when reading an attribute) with exactly the same functionality: 
+! 
 !    CALL H5ReadAttribute ( filename, attribname, attribute )
 !    CALL H5ReadAttribute ( filename, attribname, compoundsetname, attribute )
-!
+! 
 !  If an error occurs in either of the steps of the access to the
 !  data or reading the data, the variable ErrorFlag is set to -1
 !  and the ErrorMessage string is filled. These two can be used
 !  for error tracing in the calling routine.
 !  Note that some routines return a possitive ErrorFlag number,
 !  which does _not_ indicate an error (very confusing).
-!
-!
+! 
+! 
 !  In the above calls are:
 !    'filename'   = a character type variable containing the name of the
 !                   HDF-5 file
@@ -94,12 +94,12 @@
 !    'dataset'    = a pointer type variable of the right rank and type,
 !                   that will contain the dataset or attribute
 !    'attribute'  = same as 'dataset' in functionality
-!
+! 
 !  Additionally available outside the module is the LengString function,
 !  which determines the length of a string, that is: the last non-space
 !  character in a string.
 !
-!   HISTORY:
+!   HISTORY: 
 !      2014:Added sub array routines (2104) AW
 !      04/08/2015: close dspace and memspace in H5Read2Integer2DSub, which caused memory leak.
 !                 may be also have to close in other routines (AW)
@@ -141,7 +141,7 @@ MODULE ReadH5Dataset
       & H5ReadInteger0D, H5ReadInteger1D, H5ReadInteger2D, H5ReadInteger3D, &
       & H5ReadReal0D,    H5ReadReal1D,    H5ReadReal2D,    H5ReadReal3D,    &
       & H5ReadDouble0D,  H5ReadDouble1D,  H5ReadDouble2D,  H5ReadDouble3D,  &
-      & H5ReadString0D,  H5ReadString1D,  H5ReadI2nteger0D , &
+      & H5ReadString0D,  H5ReadString1D,  H5ReadI2nteger0D , &                                 
       & H5ReadCompInteger0D, H5ReadCompReal0D, H5ReadCompDouble0D,          &
       & H5ReadCompInteger1D, H5ReadCompReal1D, H5ReadCompDouble1D
   END INTERFACE
@@ -184,7 +184,7 @@ MODULE ReadH5Dataset
 CONTAINS
 
 
-   ! ****************************
+   ! **************************** 
    !    Returns dataset dimensions
    ! *******************************
 
@@ -195,28 +195,26 @@ CONTAINS
         , dims &
         , dclass )
       implicit none
-
+      
       character ( len = *) :: h5filename
       character ( len = *) :: datasetname
       integer, pointer :: dims(:)
       integer :: bits_per_pixel
-
+      
       INTEGER   :: ltype
-
-
-      INTEGER, PARAMETER                                   :: maxdims = 5
+      
+      
+      INTEGER, PARAMETER                                   :: maxdims = 4
       INTEGER                                              :: ndims
       INTEGER(hsize_t), DIMENSION(maxdims) , target        :: datadims
       INTEGER(hsize_t), DIMENSION(maxdims)                 :: maxdatadims
       INTEGER(hsize_t)   :: dsize
       integer(HID_T) :: datatype_id
-      integer  :: dclass
-
+      integer  :: dclass 
+      
       CALL H5Read_init ( H5filename, datasetname )
-    
-
       IF (ErrorFlag.lt.0) return
-
+      
       ltype=OpenLevels_type(NLevels)
 
       IF ( ltype == H5G_DATASET_F) THEN
@@ -224,15 +222,15 @@ CONTAINS
       ELSE  !  ltype.eqv.3
          CALL h5aget_space_f(d_id,dspace,ErrorFlag)
       ENDIF
-
-
+      
+      
       CALL h5sget_simple_extent_ndims_f(dspace,ndims,ErrorFlag)
-
+     
     IF (ErrorFlag.lt.0) THEN
        ErrorMessage=" *** Error determining dataspace dimensionality"
        return
     ENDIF
-    CALL DebugMessage("     > No. of in H5_DATASET_DIMENSIONS dim.: ",ndims)
+    CALL DebugMessage("     > No. of dim.: ",ndims) 
 
     ALLOCATE(dims(ndims),stat=AllocStat)
     IF ( AllocStat.ne.0 ) THEN
@@ -246,14 +244,14 @@ CONTAINS
        ErrorMessage=" *** Error determining dataspace size"
        return
     ENDIF
-
-
+      
+      
       dims = int(datadims(1:ndims))
        call H5DGET_TYPE_F(d_id,datatype_id,ErrorFlag)
       call h5tget_class_f(datatype_id,dclass,ErrorFlag)
       CALL H5Read_close
-
-
+      
+   
    end subroutine H5_DATASET_DIMENSIONS
 
 ! *******************************************************************
@@ -300,8 +298,8 @@ CONTAINS
 
     ErrorFlag=0
     ErrorMessage=""
-
-
+    
+    
 
     ! Copy the setname to a local variable, making sure it start with a '/'
 
@@ -349,16 +347,16 @@ CONTAINS
 
     ! Then open all levels, storing what is opened so that we can
     ! close things at the end properly.
-
-
+ 
+  
     ALLOCATE(OpenLevels_id(NLevels),stat=AllocStat)
     IF ( AllocStat.ne.0 ) THEN
        ErrorFlag=-1
        ErrorMessage=" *** Error allocating OpenLevels_id"
-
+      
        return
     ENDIF
-
+ 
     ALLOCATE(OpenLevels_type(NLevels),stat=AllocStat)
     IF ( AllocStat.ne.0 ) THEN
        ErrorFlag=-1
@@ -374,9 +372,9 @@ CONTAINS
 
     ! Locate the end of the first element name
     iend=INDEX(local_setname(ibeg:),"/")
-
+   
     IF (iend == 0) iend=LengString(local_setname(ibeg:))+ ibeg - 1
-
+ 
     call CheckMembers("/", &
              local_setname(ibeg:iend),ltypenext)
     IF (ErrorFlag.lt.0) return
@@ -384,9 +382,9 @@ CONTAINS
 
     ! If there is only one level, there is no group after the root
     ! group, in which case the following do-loop is skipped.
-
+ 
     DO ilevel=1,NLevels-1
-
+     
        ! Locate the end of the current element name
        iend=INDEX(local_setname(ibeg:),"/")
 
@@ -480,7 +478,7 @@ CONTAINS
 
        CALL DebugMessage( " --- Opening attribute for reading: " &
                        // subsetname(1:LengString(subsetname)) )
-
+                       
        CALL h5aopen_name_f(p_id, subsetname, d_id,ErrorFlag)
        IF (ErrorFlag.lt.0) THEN
           ErrorMessage=" *** Error opening attribute " &
@@ -541,7 +539,7 @@ CONTAINS
           ENDIF
 
        END DO
-
+  
        DEALLOCATE(OpenLevels_type,stat=AllocStat)
        IF ( AllocStat.ne.0 ) THEN
           ErrorFlag=-1
@@ -620,8 +618,8 @@ CONTAINS
 
     ltype=-1
     FOUND=.false.
-
-
+    
+  
     CALL DebugMessage( " --- Determining type of next level: " &
                     // sublevelstr(1:LengString(sublevelstr)) )
 
@@ -651,7 +649,7 @@ CONTAINS
     ! this set of routines.
 
     DO n=1,nmembers
-
+      
        CALL h5gget_obj_info_idx_f(p_id,levelstr,n-1, &
                   obj_name,obj_type,ErrorFlag)
        IF (ErrorFlag.lt.0) THEN
@@ -659,9 +657,9 @@ CONTAINS
           return
        ENDIF
        CALL h5iget_type_f(p_id,ltype,ErrorFlag)
-
+       
        IF (obj_name == sublevelstr) THEN
-
+      
           if ((obj_type.lt.H5G_GROUP_F).or.(obj_type.gt.H5G_DATASET_F)) then
              ErrorMessage=" *** Unknown level type found for " &
                          // sublevelstr(1:LengString(sublevelstr))
@@ -708,7 +706,7 @@ CONTAINS
     do n=len(str),1,-1
        if ( (str(n:n).ne." ")            &
             .and. (str(n:n).ne.char(0))  &    ! NULL character
-            .and. (str(n:n).ne.char(9))  &    ! horizontal tab
+            .and. (str(n:n).ne.char(9))  &    ! horizontal tab 
             .and. (str(n:n).ne.char(10)) &    ! newline
             .and. (str(n:n).ne.char(12)) &    ! formfeed
             .and. (str(n:n).ne.char(13)) &    ! carriage return
@@ -775,7 +773,7 @@ CONTAINS
 
     !<<<<<<<<<<<<<<<<<<<<<<< Local variables >>>>>>>>>>>>>>>>>>>>>>>>
     INTEGER, PARAMETER                                   :: maxdims = 4
-
+  
     INTEGER(hsize_t), DIMENSION(1)                       :: dims
     INTEGER                                              :: H5dataset
     INTEGER                                              :: ltype
@@ -844,7 +842,7 @@ CONTAINS
 
     !<<<<<<<<<<<<<<<<<<<<<<< Local variables >>>>>>>>>>>>>>>>>>>>>>>>
     INTEGER, PARAMETER                                   :: maxdims = 4
-
+  
     INTEGER(hsize_t), DIMENSION(1)                       :: dims
     INTEGER                                              :: H5dataset
     INTEGER                                              :: ltype
@@ -948,7 +946,7 @@ CONTAINS
        ErrorMessage=" *** Error determining dataspace dimensionality"
        return
     ENDIF
-    CALL DebugMessage("     > No. of dim.: ",ndims)
+    CALL DebugMessage("     > No. of dim.: ",ndims) 
 
     CALL h5sget_simple_extent_dims_f(dspace,datadims,maxdatadims,ErrorFlag)
     IF (ErrorFlag.lt.0) THEN
@@ -1008,7 +1006,7 @@ CONTAINS
        datasetname,              & !Coming in
        dataset                   & !Going out
        )
-
+    
     use ISO_C_BINDING
     !
     !<<<<<<<<<<<<<<<<<<<<<<< Implicit statement >>>>>>>>>>>>>>>>>>>>>
@@ -1036,7 +1034,7 @@ CONTAINS
     !<<<<<<<<<<<<<<<<<<<<<<< Start of routine code >>>>>>>>>>>>>>>>>>
 
     CALL DebugMessage(" === in H5ReadInteger1D int8 ===")
-
+     
     ! Initialise the HDF5 file and open all levels up to
     ! the one that needs to be read.
 
@@ -1046,12 +1044,12 @@ CONTAINS
     ! Get details of the dataset
 
     CALL DebugMessage(" --- Determining details of the data")
-
+    
      CALL H5Dget_type_f(D_Id,Dtype_Id,ErrorFlag)
      CALL H5Tget_native_type_f(Dtype_Id,1,Nat_Type_Id,ErrorFlag)
-
+    
     ltype=OpenLevels_type(NLevels)
-
+     
     IF ( ltype == H5G_DATASET_F) THEN
        CALL h5dget_space_f(d_id,dspace,ErrorFlag)
     ELSE  !  ltype.eqv.3
@@ -1067,7 +1065,7 @@ CONTAINS
        ErrorMessage=" *** Error determining dataspace dimensionality"
        return
     ENDIF
-    CALL DebugMessage("     > No. of dim.: ",ndims)
+    CALL DebugMessage("     > No. of dim.: ",ndims) 
 
     CALL h5sget_simple_extent_dims_f(dspace,datadims,maxdatadims,ErrorFlag)
     IF (ErrorFlag.lt.0) THEN
@@ -1180,7 +1178,7 @@ CONTAINS
        ErrorMessage=" *** Error determining dataspace dimensionality"
        return
     ENDIF
-    CALL DebugMessage("     > No. of dim.: ",ndims)
+    CALL DebugMessage("     > No. of dim.: ",ndims) 
 
     ALLOCATE(dims(ndims),stat=AllocStat)
     IF ( AllocStat.ne.0 ) THEN
@@ -1197,7 +1195,7 @@ CONTAINS
 
     dims(1) = datadims(1)
     dims(2) = datadims(2)
-
+   
     CALL DebugMessage("     > Size dim. 1: ",int(dims(1)))
     CALL DebugMessage("     > Size dim. 2: ",int(dims(2)))
 
@@ -1227,11 +1225,11 @@ CONTAINS
        ErrorMessage=" *** Error allocating dataset"
        return
     ENDIF
-
+    
     dataset = H5dataset
-
-
-
+    
+    
+   
 
     DEALLOCATE(H5dataset)
     IF ( AllocStat.ne.0 ) THEN
@@ -1239,7 +1237,7 @@ CONTAINS
        ErrorMessage=" *** Error deallocating H5dataset"
        return
     ENDIF
-
+   
 
     DEALLOCATE(dims)
     IF ( AllocStat.ne.0 ) THEN
@@ -1251,10 +1249,10 @@ CONTAINS
     ! Close all that is open
 
     CALL H5Read_close
-
-
-
-
+    
+    
+    
+   
 
   END SUBROUTINE H5ReadInteger2D
 
@@ -1319,7 +1317,7 @@ CONTAINS
        ErrorMessage=" *** Error determining dataspace dimensionality"
        return
     ENDIF
-    CALL DebugMessage("     > No. of dim.: ",ndims)
+    CALL DebugMessage("     > No. of dim.: ",ndims) 
 
     ALLOCATE(dims(ndims),stat=AllocStat)
     IF ( AllocStat.ne.0 ) THEN
@@ -1367,7 +1365,7 @@ CONTAINS
     ENDIF
 
     dataset = int(H5dataset,2)
-
+  
     DEALLOCATE(H5dataset)
     IF ( AllocStat.ne.0 ) THEN
        ErrorFlag=-1
@@ -1407,8 +1405,8 @@ CONTAINS
     !Coming in
     CHARACTER (len = *), INTENT(in)                      :: H5filename
     CHARACTER (len = *), INTENT(in)                      :: datasetname
-
-    INTEGER , DIMENSION(2) , INTENT(in) :: offset_in, count_in
+    
+    INTEGER , DIMENSION(2) , INTENT(in) :: offset_in, count_in   
 
     !Going out:
     INTEGER,  DIMENSION(:,:), allocatable                   :: dataset
@@ -1420,37 +1418,37 @@ CONTAINS
     INTEGER(hsize_t), DIMENSION(maxdims)                 :: maxdatadims
     INTEGER(hsize_t), DIMENSION(:), ALLOCATABLE          :: dims
     INTEGER, DIMENSION(:,:), ALLOCATABLE, TARGET         :: H5dataset
-
-
+   
+    
     integer ( hsize_t ), dimension(2) :: offset , count
     integer ( hid_t ) :: memspace
     integer , parameter :: memrank = 2
     INTEGER(HSIZE_T), DIMENSION(2) :: offset_out       !offset writing
-     INTEGER(HSIZE_T), DIMENSION(2) :: count_out       !offset writing
+     INTEGER(HSIZE_T), DIMENSION(2) :: count_out       !offset writing 
 
     !<<<<<<<<<<<<<<<<<<<<<<< Start of routine code >>>>>>>>>>>>>>>>>>
 
     CALL DebugMessage(" === in H5ReadInteger2DSub ===")
-
+    
     offset = offset_in
     count = count_in
-
+    
     offset_out = [0 , 0]
     count_out = count
-
+    
 
     ! Initialise the HDF5 file and open all levels up to
     ! the one that needs to be read.
-
+   
     CALL H5Read_init ( H5filename, datasetname )
     IF (ErrorFlag.lt.0) return
 
     ! Get details of the dataset
 
     CALL DebugMessage(" --- Determining details of the data")
-
+  
     CALL h5dget_space_f(d_id,dspace,ErrorFlag)
-
+    
     IF (ErrorFlag.lt.0) THEN
        ErrorMessage=" *** Error determining dataspace"
        return
@@ -1461,7 +1459,7 @@ CONTAINS
        ErrorMessage=" *** Error determining dataspace dimensionality"
        return
     ENDIF
-    CALL DebugMessage("     > No. of dim.: ",ndims)
+    CALL DebugMessage("     > No. of dim.: ",ndims) 
 
     ALLOCATE(dims(ndims),stat=AllocStat)
     IF ( AllocStat.ne.0 ) THEN
@@ -1494,28 +1492,28 @@ CONTAINS
     !
     CALL h5sselect_hyperslab_f(dspace, H5S_SELECT_SET_F, &
                                 offset , count , ErrorFlag)
-
+                                
      !
      ! Create memory dataspace.
      !
-
+     
       CALL h5screate_simple_f(memrank, dims , memspace, errorFlag)
 
      !
      ! Select hyperslab in memory.
      !
       CALL h5sselect_hyperslab_f(memspace, H5S_SELECT_SET_F, &
-                                offset_out, count_out, errorFlag)
-
+                                offset_out, count_out, errorFlag)               
+                                            
     CALL DebugMessage(" --- Reading the data")
-
+  
     CALL h5dread_f(d_id, H5T_NATIVE_INTEGER, H5dataset, count, ErrorFlag,memspace,dspace)
-
+   
     IF (ErrorFlag.lt.0) THEN
        ErrorMessage=" *** Error reading data"
        return
     ENDIF
-
+ 
     ALLOCATE(dataset(count(1),count(2)),stat=AllocStat)
     IF ( AllocStat.ne.0 ) THEN
        ErrorFlag=-1
@@ -1564,11 +1562,11 @@ CONTAINS
     !Coming in
     CHARACTER (len = *), INTENT(in)                      :: H5filename
     CHARACTER (len = *), INTENT(in)                      :: datasetname
-
-    INTEGER , DIMENSION(2) , INTENT(in) :: offset_in, count_in
+    
+    INTEGER , DIMENSION(2) , INTENT(in) :: offset_in, count_in   
 
     !Going out:
-    INTEGER(kind = 2),  DIMENSION(:,:), POINTER                    :: dataset
+    INTEGER(kind = 2),  DIMENSION(:,:), POINTER                    :: dataset 
 
     !<<<<<<<<<<<<<<<<<<<<<<< Local variables >>>>>>>>>>>>>>>>>>>>>>>>
     INTEGER, PARAMETER                                   :: maxdims = 4
@@ -1577,37 +1575,37 @@ CONTAINS
     INTEGER(hsize_t), DIMENSION(maxdims)                 :: maxdatadims
     INTEGER(hsize_t), DIMENSION(:), ALLOCATABLE          :: dims
     INTEGER, DIMENSION(:,:), ALLOCATABLE, TARGET         :: H5dataset
-
-
+   
+    
     integer ( hsize_t ), dimension(2) :: offset , count
     integer ( hid_t ) :: memspace
     integer , parameter :: memrank = 2
     INTEGER(HSIZE_T), DIMENSION(2) :: offset_out       !offset writing
-    INTEGER(HSIZE_T), DIMENSION(2) :: count_out       !offset writing
+    INTEGER(HSIZE_T), DIMENSION(2) :: count_out       !offset writing 
 
     !<<<<<<<<<<<<<<<<<<<<<<< Start of routine code >>>>>>>>>>>>>>>>>>
 
     CALL DebugMessage(" === in H5Read2Integer2DSub ===")
-
+    
     offset = offset_in
     count = count_in
-
+    
     offset_out = [0 , 0]
     count_out = count
-
+    
 
     ! Initialise the HDF5 file and open all levels up to
     ! the one that needs to be read.
-
+   
     CALL H5Read_init ( H5filename, datasetname )
     IF (ErrorFlag.lt.0) return
 
     ! Get details of the dataset
 
     CALL DebugMessage(" --- Determining details of the data")
-
+  
     CALL h5dget_space_f(d_id,dspace,ErrorFlag)
-
+    
     IF (ErrorFlag.lt.0) THEN
        ErrorMessage=" *** Error determining dataspace"
        return
@@ -1618,7 +1616,7 @@ CONTAINS
        ErrorMessage=" *** Error determining dataspace dimensionality"
        return
     ENDIF
-    CALL DebugMessage("     > No. of dim.: ",ndims)
+    CALL DebugMessage("     > No. of dim.: ",ndims) 
 
     ALLOCATE(dims(ndims),stat=AllocStat)
     IF ( AllocStat.ne.0 ) THEN
@@ -1632,9 +1630,9 @@ CONTAINS
        ErrorMessage=" *** Error determining dataspace size"
        return
     ENDIF
-
-
-
+    
+   
+    
     dims(1) = count(1)
     dims(2) = count(2)
     CALL DebugMessage("     > Size dim. 1: ",int(dims(1)))
@@ -1653,38 +1651,38 @@ CONTAINS
     !
     CALL h5sselect_hyperslab_f(dspace, H5S_SELECT_SET_F, &
                                 offset , count , ErrorFlag)
-
+                                
     !
     ! Create memory dataspace.
     !
-
+     
       CALL h5screate_simple_f(memrank, dims , memspace, errorFlag)
 
     !
     ! Select hyperslab in memory.
     !
       CALL h5sselect_hyperslab_f(memspace, H5S_SELECT_SET_F, &
-                                offset_out, count_out, errorFlag)
-
+                                offset_out, count_out, errorFlag)               
+                                            
     CALL DebugMessage(" --- Reading the data")
-
+  
     CALL h5dread_f(d_id, H5T_NATIVE_INTEGER, H5dataset, count, ErrorFlag,memspace,dspace)
-
+   
     IF (ErrorFlag.lt.0) THEN
        ErrorMessage=" *** Error reading data"
        return
     ENDIF
-
+ 
     ALLOCATE(dataset(count(1),count(2)),stat=AllocStat)
     IF ( AllocStat.ne.0 ) THEN
        ErrorFlag=-1
        ErrorMessage=" *** Error allocating dataset"
        return
     ENDIF
-
-
+    
+   
     dataset = H5dataset
-
+     
     DEALLOCATE(H5dataset,stat = AllocStat)
     IF ( AllocStat.ne.0 ) THEN
        ErrorFlag=-1
@@ -1701,7 +1699,7 @@ CONTAINS
     ENDIF
 
     ! Close all that is open
-
+    
     call h5sclose_f(memspace,errorFlag)
     call h5sclose_f(dspace,errorFlag)
     CALL H5Read_close
@@ -1769,7 +1767,7 @@ CONTAINS
        ErrorMessage=" *** Error determining dataspace dimensionality"
        return
     ENDIF
-    CALL DebugMessage("     > No. of dim.: ",ndims)
+    CALL DebugMessage("     > No. of dim.: ",ndims) 
 
     ALLOCATE(dims(ndims),stat=AllocStat)
     IF ( AllocStat.ne.0 ) THEN
@@ -1878,7 +1876,7 @@ CONTAINS
     integer ( hid_t ) :: memspace
     integer , parameter :: memrank = 3 !2
     INTEGER(HSIZE_T), DIMENSION(3) :: offset_out       !offset writing
-     INTEGER(HSIZE_T), DIMENSION(3) :: count_out       !offset writing
+     INTEGER(HSIZE_T), DIMENSION(3) :: count_out       !offset writing 
 
 
     !<<<<<<<<<<<<<<<<<<<<<<< Start of routine code >>>>>>>>>>>>>>>>>>
@@ -2026,7 +2024,7 @@ CONTAINS
 
     !<<<<<<<<<<<<<<<<<<<<<<< Local variables >>>>>>>>>>>>>>>>>>>>>>>>
     INTEGER, PARAMETER                                   :: maxdims = 4
-
+    
     INTEGER(hsize_t), DIMENSION(1)                       :: dims
     REAL(KIND=SP)                                        :: H5dataset
     INTEGER                                              :: ltype
@@ -2131,7 +2129,7 @@ CONTAINS
        ErrorMessage=" *** Error determining dataspace dimensionality"
        return
     ENDIF
-    CALL DebugMessage("     > No. of dim.: ",ndims)
+    CALL DebugMessage("     > No. of dim.: ",ndims) 
 
     CALL h5sget_simple_extent_dims_f(dspace,datadims,maxdatadims,ErrorFlag)
     IF (ErrorFlag.lt.0) THEN
@@ -2244,7 +2242,7 @@ CONTAINS
        ErrorMessage=" *** Error determining dataspace dimensionality"
        return
     ENDIF
-    CALL DebugMessage("     > No. of dim.: ",ndims)
+    CALL DebugMessage("     > No. of dim.: ",ndims) 
 
     ALLOCATE(dims(ndims),stat=AllocStat)
     IF ( AllocStat.ne.0 ) THEN
@@ -2290,11 +2288,11 @@ CONTAINS
        ErrorMessage=" *** Error allocating dataset"
        return
     ENDIF
-
+   
     dataset = H5dataset
-
+   
     DEALLOCATE(H5dataset,stat=AllocStat)
-
+   
     IF ( AllocStat.ne.0 ) THEN
        ErrorFlag=-1
        ErrorMessage=" *** Error deallocating H5dataset"
@@ -2332,33 +2330,33 @@ SUBROUTINE H5ReadReal2DSub        &
     !Coming in
     CHARACTER (len = *), INTENT(in)                      :: H5filename
     CHARACTER (len = *), INTENT(in)                      :: datasetname
-    INTEGER , INTENT(in)                                        :: offset_in ( 2)
-    INTEGER , INTENT(in)                                        :: count_in ( 2)
+    INTEGER , INTENT(in)                                        :: offset_in ( 2) 
+    INTEGER , INTENT(in)                                        :: count_in ( 2) 
 
     !Going out:
     REAL(KIND=SP), DIMENSION(:,:), POINTER               :: dataset
 
     !<<<<<<<<<<<<<<<<<<<<<<< Local variables >>>>>>>>>>>>>>>>>>>>>>>>
     INTEGER, PARAMETER                                   :: maxdims = 4
-
+ 
     REAL, DIMENSION(:,:), ALLOCATABLE, TARGET   :: H5dataset
-
+   
     INTEGER(HID_T) :: memspace
     INTEGER(HSIZE_T), DIMENSION(2) :: offset              !offset reading dataset
     INTEGER(HSIZE_T), DIMENSION(2) :: offset_out          !offset writing
     INTEGER(HSIZE_T), DIMENSION(2) :: count               !size of hyperslab
     INTEGER, PARAMETER :: memrank = 2
-     INTEGER(HSIZE_T), DIMENSION(2) :: count_out       !offset writing
+     INTEGER(HSIZE_T), DIMENSION(2) :: count_out       !offset writing 
     !<<<<<<<<<<<<<<<<<<<<<<< Start of routine code >>>>>>>>>>>>>>>>>>
 
     CALL DebugMessage(" === in H5ReadReal2DSub ===")
-
+    
     count = count_in
     offset = offset_in
-
+   
     offset_out = [0,0]
     count_out = count
-
+    
     ! Initialise the HDF5 file and open all levels up to
     ! the one that needs to be read.
 
@@ -2369,28 +2367,28 @@ SUBROUTINE H5ReadReal2DSub        &
 
     CALL DebugMessage(" --- Determining details of the data")
 
-
+  
     CALL h5dget_space_f(d_id,dspace,ErrorFlag)
-
+   
     IF (ErrorFlag.lt.0) THEN
        ErrorMessage=" *** Error determining dataspace"
        return
     ENDIF
 
-
+   
     ! - hyperslab
     call h5sselect_hyperslab_f ( dspace , H5S_SELECT_SET_F , offset, count , ErrorFlag )
     IF (ErrorFlag.lt.0) THEN
        ErrorMessage=" *** Error selecting hyperspace"
        return
     ENDIF
-
+   
     call h5screate_simple_f(memrank, count , memspace, ErrorFlag)
-
+    
     call h5sselect_hyperslab_f(memspace,H5S_SELECT_SET_F,offset_out,count_out,ErrorFlag)
-
-
-
+    
+    
+   
     CALL DebugMessage("     > Size dim. 1: ",int(count(1)))
     CALL DebugMessage("     > Size dim. 2: ",int(count(2)))
 
@@ -2404,31 +2402,31 @@ SUBROUTINE H5ReadReal2DSub        &
     ENDIF
 
     CALL DebugMessage(" --- Reading the data ")
-
+    
     CALL h5dread_f(d_id, H5T_NATIVE_REAL, H5dataset, count, ErrorFlag,memspace, dspace)
-
+    
     IF (ErrorFlag.lt.0) THEN
        ErrorMessage=" *** Error reading data"
        return
     ENDIF
-
+   
     ALLOCATE(dataset(count(1),count(2)),stat=AllocStat)
     IF ( AllocStat.ne.0 ) THEN
        ErrorFlag=-1
        ErrorMessage=" *** Error allocating dataset"
        return
     ENDIF
-
+  
     dataset => H5dataset
-
+   
     DEALLOCATE(H5dataset,stat=AllocStat)
-
+  
     IF ( AllocStat.ne.0 ) THEN
        ErrorFlag=-1
        ErrorMessage=" *** Error deallocating H5dataset"
        return
     ENDIF
-
+ 
     CALL H5Read_close
 
   END SUBROUTINE H5ReadReal2DSub
@@ -2494,7 +2492,7 @@ SUBROUTINE H5ReadReal2DSub        &
        ErrorMessage=" *** Error determining dataspace dimensionality"
        return
     ENDIF
-    CALL DebugMessage("     > No. of dim.: ",ndims)
+    CALL DebugMessage("     > No. of dim.: ",ndims) 
 
     ALLOCATE(dims(ndims),stat=AllocStat)
     IF ( AllocStat.ne.0 ) THEN
@@ -2591,9 +2589,9 @@ SUBROUTINE H5ReadReal2DSub        &
 
     !<<<<<<<<<<<<<<<<<<<<<<< Local variables >>>>>>>>>>>>>>>>>>>>>>>>
     INTEGER, PARAMETER                                   :: maxdims = 4
-
-
-
+  
+    
+   
     INTEGER(hsize_t), DIMENSION(1)                       :: dims
     REAL(KIND=DP)                                        :: H5dataset
     INTEGER                                              :: ltype
@@ -2698,7 +2696,7 @@ SUBROUTINE H5ReadReal2DSub        &
        ErrorMessage=" *** Error determining dataspace dimensionality"
        return
     ENDIF
-    CALL DebugMessage("     > No. of dim.: ",ndims)
+    CALL DebugMessage("     > No. of dim.: ",ndims) 
 
     CALL h5sget_simple_extent_dims_f(dspace,datadims,maxdatadims,ErrorFlag)
     IF (ErrorFlag.lt.0) THEN
@@ -2811,7 +2809,7 @@ SUBROUTINE H5ReadReal2DSub        &
        ErrorMessage=" *** Error determining dataspace dimensionality"
        return
     ENDIF
-    CALL DebugMessage("     > No. of dim.: ",ndims)
+    CALL DebugMessage("     > No. of dim.: ",ndims) 
 
     ALLOCATE(dims(ndims),stat=AllocStat)
     IF ( AllocStat.ne.0 ) THEN
@@ -2940,7 +2938,7 @@ SUBROUTINE H5ReadReal2DSub        &
        ErrorMessage=" *** Error determining dataspace dimensionality"
        return
     ENDIF
-    CALL DebugMessage("     > No. of dim.: ",ndims)
+    CALL DebugMessage("     > No. of dim.: ",ndims) 
 
     ALLOCATE(dims(ndims),stat=AllocStat)
     IF ( AllocStat.ne.0 ) THEN
@@ -3038,8 +3036,8 @@ SUBROUTINE H5ReadReal2DSub        &
 
     !<<<<<<<<<<<<<<<<<<<<<<< Local variables >>>>>>>>>>>>>>>>>>>>>>>>
 
-
-
+    
+    
     INTEGER(hsize_t), DIMENSION(1)                       :: dims
     CHARACTER(len=LEN(dataset))                          :: H5dataset
     INTEGER(SIZE_T)                                      :: strlen
@@ -3266,7 +3264,7 @@ SUBROUTINE H5ReadReal2DSub        &
     ENDIF
 
     ! The texts are now stored in H5dataset. This is _not_
-    ! in the form of one strlen long string per array (as
+    ! in the form of one strlen long string per array (as 
     ! one would expect), but an X number of strlen strings
     ! pasted together to exactly fill the defined length of
     ! H5dataset, where X is a real, not an integer.
@@ -3355,9 +3353,9 @@ SUBROUTINE H5ReadReal2DSub        &
 
     !<<<<<<<<<<<<<<<<<<<<<<<<< Local variables >>>>>>>>>>>>>>>>>>>>>>>>>>>>
     INTEGER, PARAMETER                                   :: maxdims = 4
-
-
-
+ 
+   
+   
     INTEGER(hsize_t), DIMENSION(1)                       :: dims
     INTEGER                                              :: H5dataset
     INTEGER                                              :: ltype
@@ -3452,7 +3450,7 @@ SUBROUTINE H5ReadReal2DSub        &
     !<<<<<<<<<<<<<<<<<<<<<<<<< Local variables >>>>>>>>>>>>>>>>>>>>>>>>>>>>
     INTEGER, PARAMETER                                   :: maxdims = 4
     INTEGER                                              :: ndims
-
+    
     INTEGER(hsize_t), DIMENSION(1)                       :: datadims
     INTEGER(hsize_t), DIMENSION(1)                       :: maxdatadims
     INTEGER(hsize_t), DIMENSION(1)                       :: dims
@@ -3493,7 +3491,7 @@ SUBROUTINE H5ReadReal2DSub        &
        ErrorMessage=" *** Error determining dataspace dimensionality"
        return
     ENDIF
-    CALL DebugMessage("     > No. of dim.: ",ndims)
+    CALL DebugMessage("     > No. of dim.: ",ndims) 
 
     CALL h5sget_simple_extent_dims_f(dspace,datadims,maxdatadims,ErrorFlag)
     IF (ErrorFlag.lt.0) THEN
@@ -3598,8 +3596,8 @@ SUBROUTINE H5ReadReal2DSub        &
 
     !<<<<<<<<<<<<<<<<<<<<<<<<< Local variables >>>>>>>>>>>>>>>>>>>>>>>>>>>>
     INTEGER, PARAMETER                                   :: maxdims = 4
-
-
+  
+   
     INTEGER(hsize_t), DIMENSION(1)                       :: dims
     REAL(KIND=SP)                                        :: H5dataset
     INTEGER                                              :: ltype
@@ -3694,7 +3692,7 @@ SUBROUTINE H5ReadReal2DSub        &
     !<<<<<<<<<<<<<<<<<<<<<<<<< Local variables >>>>>>>>>>>>>>>>>>>>>>>>>>>>
     INTEGER, PARAMETER                                   :: maxdims = 4
     INTEGER                                              :: ndims
-
+   
     INTEGER(hsize_t), DIMENSION(1)                       :: datadims
     INTEGER(hsize_t), DIMENSION(1)                       :: maxdatadims
     INTEGER(hsize_t), DIMENSION(1)                       :: dims
@@ -3735,7 +3733,7 @@ SUBROUTINE H5ReadReal2DSub        &
        ErrorMessage=" *** Error determining dataspace dimensionality"
        return
     ENDIF
-    CALL DebugMessage("     > No. of dim.: ",ndims)
+    CALL DebugMessage("     > No. of dim.: ",ndims) 
 
     CALL h5sget_simple_extent_dims_f(dspace,datadims,maxdatadims,ErrorFlag)
     IF (ErrorFlag.lt.0) THEN
@@ -3840,10 +3838,10 @@ SUBROUTINE H5ReadReal2DSub        &
 
     !<<<<<<<<<<<<<<<<<<<<<<<<< Local variables >>>>>>>>>>>>>>>>>>>>>>>>>>>>
     INTEGER, PARAMETER                                   :: maxdims = 4
-
-
-
-
+  
+    
+    
+    
     INTEGER(hsize_t), DIMENSION(1)                       :: dims
     REAL(KIND=DP)                                        :: H5dataset
     INTEGER                                              :: ltype
@@ -3938,7 +3936,7 @@ SUBROUTINE H5ReadReal2DSub        &
     !<<<<<<<<<<<<<<<<<<<<<<<<< Local variables >>>>>>>>>>>>>>>>>>>>>>>>>>>>
     INTEGER, PARAMETER                                   :: maxdims = 4
     INTEGER                                              :: ndims
-
+   
     INTEGER(hsize_t), DIMENSION(1)                       :: datadims
     INTEGER(hsize_t), DIMENSION(1)                       :: maxdatadims
     INTEGER(hsize_t), DIMENSION(1)                       :: dims
@@ -3979,7 +3977,7 @@ SUBROUTINE H5ReadReal2DSub        &
        ErrorMessage=" *** Error determining dataspace dimensionality"
        return
     ENDIF
-    CALL DebugMessage("     > No. of dim.: ",ndims)
+    CALL DebugMessage("     > No. of dim.: ",ndims) 
 
     CALL h5sget_simple_extent_dims_f(dspace,datadims,maxdatadims,ErrorFlag)
     IF (ErrorFlag.lt.0) THEN

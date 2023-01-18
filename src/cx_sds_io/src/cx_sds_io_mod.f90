@@ -473,8 +473,10 @@ contains
     pd=>sds(1) % data
     ps=>sds(1)
 
-    add_offset = ps %get_att('add_offset')
-    slope = ps%get_att('scale_factor')
+    add_offset = ps %get_att('add_offset',exist = att_exist)
+    if ( .not. att_exist) add_offset = 0.
+    slope = ps%get_att('scale_factor',exist = att_exist)
+    if ( .not. att_exist) slope = 1.
     scaled = ps%get_att('SCALED')
     MISS_VALUE = ps%get_att('missing',exist = att_exist)
 
