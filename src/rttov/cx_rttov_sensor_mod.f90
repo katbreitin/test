@@ -429,7 +429,7 @@ end subroutine
      self % chan_src_on_cx(20) = 1
      self % chan_src_on_cx(27) = 2
      self % chan_src_on_cx(31) = 3
-     self % chan_src_on_cx(32) = 4
+     self % chan_src_on_cx(33) = 4
      rttov_version_string = '8'
      self % max_satzen = 75.
 
@@ -440,7 +440,7 @@ end subroutine
      self % chan_src_on_cx(20) = 1
      self % chan_src_on_cx(27) = 2
      self % chan_src_on_cx(31) = 3
-     self % chan_src_on_cx(32) = 4
+     self % chan_src_on_cx(33) = 4
      self % max_satzen = 75.
 
    case(258) !GOES-14
@@ -450,7 +450,7 @@ end subroutine
      self % chan_src_on_cx(20) = 1
      self % chan_src_on_cx(27) = 2
      self % chan_src_on_cx(31) = 3
-     self % chan_src_on_cx(32) = 4
+     self % chan_src_on_cx(33) = 4
      self % max_satzen = 75.
 
    case(259) !GOES-15
@@ -460,7 +460,7 @@ end subroutine
      self % chan_src_on_cx(20) = 1
      self % chan_src_on_cx(27) = 2
      self % chan_src_on_cx(31) = 3
-     self % chan_src_on_cx(32) = 4
+     self % chan_src_on_cx(33) = 4
      self % max_satzen = 75.
 
    case(270) !GOES-16
