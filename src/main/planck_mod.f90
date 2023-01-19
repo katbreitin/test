@@ -59,13 +59,13 @@
 !     41            -          -           11.45
 !
 !--------------------------------------------------------------------------------------
- module PLANCK_MOD
+module PLANCK_MOD
   use CONSTANTS_MOD
   use CALIBRATION_CONSTANTS_MOD
   use NUMERICAL_ROUTINES_MOD
   use PIXEL_COMMON_MOD, only: &
-        Sensor, &
-        Ch
+  Sensor, &
+  Ch
 
   implicit none
   private
@@ -81,10 +81,10 @@
   public:: CONVERT_RADIANCE
   private:: PLANCK_TEMP_FAST_SOUNDER
 
-!-- planck tables arrays
+  !-- planck tables arrays
   integer, parameter, private:: Nplanck = 161
   real (kind=int4), parameter, private:: T_Planck_min = 180.0,  &
-                                         delta_T_Planck = 1.0
+  delta_T_Planck = 1.0
   real(kind=int4), dimension(20:Nchan_Clavrx,Nplanck), save, private:: BB_Rad = Missing_Value_Real4
   real(kind=int4), dimension(Nplanck), save, private:: BB_Rad_375um_Sndr = Missing_Value_Real4
   real(kind=int4), dimension(Nplanck), save, private:: BB_Rad_11um_Sndr = Missing_Value_Real4
@@ -97,162 +97,162 @@
 
   real(kind=int4), dimension(Nplanck), save, private:: T_Planck = Missing_Value_Real4
 
-  contains
+contains
 
-!-------------------------------------------------------------------------
-! Comment Needed
-!-------------------------------------------------------------------------
- subroutine COMPUTE_RAD_ARRAY(Bt,Rad,Ichan,Missing)
+  !-------------------------------------------------------------------------
+  ! Comment Needed
+  !-------------------------------------------------------------------------
+  subroutine COMPUTE_RAD_ARRAY(Bt,Rad,Ichan,Missing)
 
- real(kind=real4), dimension(:,:), intent(in):: Bt
- integer(kind=int4), intent(in):: Ichan
- real(kind=real4), intent(in):: Missing
- real(kind=real4), dimension(:,:), intent(out):: Rad
- integer:: i, j
- integer:: Nx, Ny
+    real(kind=real4), dimension(:,:), intent(in):: Bt
+    integer(kind=int4), intent(in):: Ichan
+    real(kind=real4), intent(in):: Missing
+    real(kind=real4), dimension(:,:), intent(out):: Rad
+    integer:: i, j
+    integer:: Nx, Ny
 
-  Nx = size(Rad,1)
-  Ny = size(Rad,2)
+    Nx = size(Rad,1)
+    Ny = size(Rad,2)
 
-  Rad = Missing
+    Rad = Missing
 
-  do i = 1, Nx
-    do j = 1, Ny
-       if (Bt(i,j) /= Missing) then
+    do i = 1, Nx
+      do j = 1, Ny
+        if (Bt(i,j) /= Missing) then
           Rad(i,j) = PLANCK_RAD_FAST(ichan,Bt(i,j))
-       endif
+        endif
+      enddo
     enddo
-  enddo
 
- end subroutine COMPUTE_RAD_ARRAY
-!-------------------------------------------------------------------------
-! Comment Needed
-!-------------------------------------------------------------------------
- subroutine COMPUTE_BT_ARRAY(Bt,Rad,Ichan,Missing)
+  end subroutine COMPUTE_RAD_ARRAY
+  !-------------------------------------------------------------------------
+  ! Comment Needed
+  !-------------------------------------------------------------------------
+  subroutine COMPUTE_BT_ARRAY(Bt,Rad,Ichan,Missing)
 
- real(kind=real4), dimension(:,:), intent(in):: Rad
- integer(kind=int4), intent(in):: Ichan
- real(kind=real4), intent(in):: Missing
- real(kind=real4), dimension(:,:), intent(out):: Bt
- integer:: i, j
- integer:: nx, ny
+    real(kind=real4), dimension(:,:), intent(in):: Rad
+    integer(kind=int4), intent(in):: Ichan
+    real(kind=real4), intent(in):: Missing
+    real(kind=real4), dimension(:,:), intent(out):: Bt
+    integer:: i, j
+    integer:: nx, ny
 
-  Nx = size(Rad,1)
-  Ny = size(Rad,2)
+    Nx = size(Rad,1)
+    Ny = size(Rad,2)
 
-  Bt = missing
+    Bt = missing
 
-  do i = 1, Nx
-    do j = 1, Ny
-       if (Rad(i,j) /= missing) then
+    do i = 1, Nx
+      do j = 1, Ny
+        if (Rad(i,j) /= missing) then
           Bt(i,j) = PLANCK_TEMP_FAST(ichan,Rad(i,j))
-       endif
+        endif
+      enddo
     enddo
-  enddo
 
- end subroutine COMPUTE_BT_ARRAY
+  end subroutine COMPUTE_BT_ARRAY
 
-!-------------------------------------------------------------------------
- subroutine COMPUTE_BT_ARRAY_SOUNDER(Bt,Rad,Ichan,Missing)
+  !-------------------------------------------------------------------------
+  subroutine COMPUTE_BT_ARRAY_SOUNDER(Bt,Rad,Ichan,Missing)
 
- real(kind=real4), dimension(:,:), intent(in):: Rad
- integer(kind=int4):: ichan
- real(kind=real4):: missing
- real(kind=real4), dimension(:,:), intent(out):: Bt
- integer:: i, j
- integer:: Nx, Ny
+    real(kind=real4), dimension(:,:), intent(in):: Rad
+    integer(kind=int4):: ichan
+    real(kind=real4):: missing
+    real(kind=real4), dimension(:,:), intent(out):: Bt
+    integer:: i, j
+    integer:: Nx, Ny
 
-  Nx = size(Rad,1)
-  Ny = size(Rad,2)
+    Nx = size(Rad,1)
+    Ny = size(Rad,2)
 
-  Bt = Missing
+    Bt = Missing
 
-  do i = 1, Nx
-    do j = 1, Ny
-       if (Rad(i,j) /= Missing) then
+    do i = 1, Nx
+      do j = 1, Ny
+        if (Rad(i,j) /= Missing) then
           Bt(i,j) = PLANCK_TEMP_FAST_SOUNDER(Ichan,Rad(i,j))
-       endif
+        endif
+      enddo
     enddo
-  enddo
 
- end subroutine COMPUTE_BT_ARRAY_SOUNDER
+  end subroutine COMPUTE_BT_ARRAY_SOUNDER
 
-!-------------------------------------------------------------------------
-! subroutine POPULATE_PLANCK_TABLES()
-!
-! compute planck function tables
-!
-!-------------------------------------------------------------------------
- subroutine POPULATE_PLANCK_TABLES()
+  !-------------------------------------------------------------------------
+  ! subroutine POPULATE_PLANCK_TABLES()
+  !
+  ! compute planck function tables
+  !
+  !-------------------------------------------------------------------------
+  subroutine POPULATE_PLANCK_TABLES()
 
-  integer:: i, ichan
+    integer:: i, ichan
 
-  do i = 1, Nplanck
-    T_Planck(i) = T_Planck_min + (i-1)*delta_T_Planck
-  enddo
+    do i = 1, Nplanck
+      T_Planck(i) = T_Planck_min + (i-1)*delta_T_Planck
+    enddo
 
-  do ichan = 20,Nchan_Clavrx
-    if (Ch(ichan)%Obs_Type /= THERMAL_OBS_TYPE .and. &
-        Ch(ichan)%Obs_Type /= MIXED_OBS_TYPE) cycle
-     if (Sensor%Chan_On_Flag_Default(ichan)==sym%YES) then
-         BB_Rad(ichan,:) = c1*(Planck_Nu(ichan)**3)/ &
-               (exp((c2*Planck_Nu(ichan))/((T_Planck-Planck_A1(ichan))/Planck_A2(ichan)))-1.0)
-     endif
-  enddo
+    do ichan = 20,Nchan_Clavrx
+      if (Ch(ichan)%Obs_Type /= THERMAL_OBS_TYPE .and. &
+      Ch(ichan)%Obs_Type /= MIXED_OBS_TYPE) cycle
+      if (Sensor%Chan_On_Flag_Default(ichan)==sym%YES) then
+        BB_Rad(ichan,:) = c1*(Planck_Nu(ichan)**3)/ &
+        (exp((c2*Planck_Nu(ichan))/((T_Planck-Planck_A1(ichan))/Planck_A2(ichan)))-1.0)
+      endif
+    enddo
 
   end subroutine POPULATE_PLANCK_TABLES
 
-!-------------------------------------------------------------------------
-! subroutine POPULATE_PLANCK_TABLES_SOUNDER()
-!
-! compute planck function tables for IFF HIRS and CrIS ch
-!
-!-------------------------------------------------------------------------
- subroutine POPULATE_PLANCK_TABLES_SOUNDER()
+  !-------------------------------------------------------------------------
+  ! subroutine POPULATE_PLANCK_TABLES_SOUNDER()
+  !
+  ! compute planck function tables for IFF HIRS and CrIS ch
+  !
+  !-------------------------------------------------------------------------
+  subroutine POPULATE_PLANCK_TABLES_SOUNDER()
 
-     !--- 3.75um only in HIRS, CrIS doesnt have it
-     if (trim(Sensor%Sensor_Name) == 'AVHRR-IFF' .or. trim(Sensor%Sensor_Name) == 'AVHRR-FUSION' ) then
-        BB_Rad_375um_Sndr = c1*(Planck_Nu_375um_Sndr**3)/ &
-              (exp((c2*Planck_Nu_375um_Sndr)/ &
-              ((T_Planck-Planck_A1_375um_Sndr)/Planck_A2_375um_Sndr))-1.0)
-     endif
+    !--- 3.75um only in HIRS, CrIS doesnt have it
+    if (trim(Sensor%Sensor_Name) == 'AVHRR-IFF' .or. trim(Sensor%Sensor_Name) == 'AVHRR-FUSION' ) then
+      BB_Rad_375um_Sndr = c1*(Planck_Nu_375um_Sndr**3)/ &
+      (exp((c2*Planck_Nu_375um_Sndr)/ &
+      ((T_Planck-Planck_A1_375um_Sndr)/Planck_A2_375um_Sndr))-1.0)
+    endif
 
-     BB_Rad_11um_Sndr = c1*(Planck_Nu_11um_Sndr**3)/ &
-            (exp((c2*Planck_Nu_11um_Sndr)/ &
-            ((T_Planck-Planck_A1_11um_Sndr)/Planck_A2_11um_Sndr))-1.0)
+    BB_Rad_11um_Sndr = c1*(Planck_Nu_11um_Sndr**3)/ &
+    (exp((c2*Planck_Nu_11um_Sndr)/ &
+    ((T_Planck-Planck_A1_11um_Sndr)/Planck_A2_11um_Sndr))-1.0)
 
-     BB_Rad_12um_Sndr = c1*(Planck_Nu_12um_Sndr**3)/ &
-            (exp((c2*Planck_Nu_12um_Sndr)/ &
-            ((T_Planck-Planck_A1_12um_Sndr)/Planck_A2_12um_Sndr))-1.0)
+    BB_Rad_12um_Sndr = c1*(Planck_Nu_12um_Sndr**3)/ &
+    (exp((c2*Planck_Nu_12um_Sndr)/ &
+    ((T_Planck-Planck_A1_12um_Sndr)/Planck_A2_12um_Sndr))-1.0)
 
-     BB_Rad_145um_Sndr = c1*(Planck_Nu_145um_Sndr**3)/ &
-            (exp((c2*Planck_Nu_145um_Sndr)/ &
-            ((T_Planck-Planck_A1_145um_Sndr)/Planck_A2_145um_Sndr))-1.0)
+    BB_Rad_145um_Sndr = c1*(Planck_Nu_145um_Sndr**3)/ &
+    (exp((c2*Planck_Nu_145um_Sndr)/ &
+    ((T_Planck-Planck_A1_145um_Sndr)/Planck_A2_145um_Sndr))-1.0)
 
-     BB_Rad_147um_Sndr = c1*(Planck_Nu_147um_Sndr**3)/ &
-            (exp((c2*Planck_Nu_147um_Sndr)/ &
-            ((T_Planck-Planck_A1_147um_Sndr)/Planck_A2_147um_Sndr))-1.0)
+    BB_Rad_147um_Sndr = c1*(Planck_Nu_147um_Sndr**3)/ &
+    (exp((c2*Planck_Nu_147um_Sndr)/ &
+    ((T_Planck-Planck_A1_147um_Sndr)/Planck_A2_147um_Sndr))-1.0)
 
-     BB_Rad_149um_Sndr = c1*(Planck_Nu_149um_Sndr**3)/ &
-            (exp((c2*Planck_Nu_149um_Sndr)/ &
-            ((T_Planck-Planck_A1_149um_Sndr)/Planck_A2_149um_Sndr))-1.0)
+    BB_Rad_149um_Sndr = c1*(Planck_Nu_149um_Sndr**3)/ &
+    (exp((c2*Planck_Nu_149um_Sndr)/ &
+    ((T_Planck-Planck_A1_149um_Sndr)/Planck_A2_149um_Sndr))-1.0)
 
-     BB_Rad_445um_Sndr = c1*(Planck_Nu_445um_Sndr**3)/ &
-            (exp((c2*Planck_Nu_445um_Sndr)/ &
-            ((T_Planck-Planck_A1_445um_Sndr)/Planck_A2_445um_Sndr))-1.0)
+    BB_Rad_445um_Sndr = c1*(Planck_Nu_445um_Sndr**3)/ &
+    (exp((c2*Planck_Nu_445um_Sndr)/ &
+    ((T_Planck-Planck_A1_445um_Sndr)/Planck_A2_445um_Sndr))-1.0)
 
-     BB_Rad_457um_Sndr = c1*(Planck_Nu_457um_Sndr**3)/ &
-            (exp((c2*Planck_Nu_457um_Sndr)/ &
-            ((T_Planck-Planck_A1_457um_Sndr)/Planck_A2_457um_Sndr))-1.0)
+    BB_Rad_457um_Sndr = c1*(Planck_Nu_457um_Sndr**3)/ &
+    (exp((c2*Planck_Nu_457um_Sndr)/ &
+    ((T_Planck-Planck_A1_457um_Sndr)/Planck_A2_457um_Sndr))-1.0)
 
   end subroutine POPULATE_PLANCK_TABLES_SOUNDER
 
-!------------------------------------------------------------------
-! function PLANCK_RAD_FAST(ichan, T, dB_dT) result(B)
-!
-! Subroutine to convert brightness temperature to radiance using a
-! look-up table *Function that returns a scalar*.
-!------------------------------------------------------------------
+  !------------------------------------------------------------------
+  ! function PLANCK_RAD_FAST(ichan, T, dB_dT) result(B)
+  !
+  ! Subroutine to convert brightness temperature to radiance using a
+  ! look-up table *Function that returns a scalar*.
+  !------------------------------------------------------------------
   function PLANCK_RAD_FAST(ichan, T, dB_dT) result(B)
     integer (kind=int4), intent(in) :: ichan
     real (kind=real4), intent(in) :: T
@@ -262,7 +262,7 @@
 
     !--- check for appropriate channel
     if (Ch(ichan)%Obs_Type /= THERMAL_OBS_TYPE .and. &
-        Ch(ichan)%Obs_Type /= MIXED_OBS_TYPE) return
+    Ch(ichan)%Obs_Type /= MIXED_OBS_TYPE) return
     if (Sensor%Chan_On_Flag_Default(ichan) == sym%NO) then
       print *, "unsupported channel number ",ichan," in Fast Planck Rad Computation, stopping"
       stop
@@ -281,12 +281,12 @@
 
   end function PLANCK_RAD_FAST
 
-!------------------------------------------------------------------------
-! function PLANCK_TEMP_FAST(ichan, B, dB_dT) result(T)
-!
-! Subroutine to convert radiance (B) to brightness temperature(T) using a
-! look-up table *Function that returns a scalar*.
-!------------------------------------------------------------------
+  !------------------------------------------------------------------------
+  ! function PLANCK_TEMP_FAST(ichan, B, dB_dT) result(T)
+  !
+  ! Subroutine to convert radiance (B) to brightness temperature(T) using a
+  ! look-up table *Function that returns a scalar*.
+  !------------------------------------------------------------------
   function PLANCK_TEMP_FAST(ichan, B, dB_dT) result(T)
     integer (kind=int4), intent(in) :: ichan
     real (kind=real4), intent(in) :: B
@@ -300,7 +300,7 @@
 
     !--- check for appropriate channel
     if (Ch(ichan)%Obs_Type /= THERMAL_OBS_TYPE .and. &
-        Ch(ichan)%Obs_Type /= MIXED_OBS_TYPE) return
+    Ch(ichan)%Obs_Type /= MIXED_OBS_TYPE) return
 
     if (Sensor%Chan_On_Flag_Default(ichan) == sym%NO) then
       print *, "unsupported channel number ",ichan," in Fast Planck Temp Computation, stopping"
@@ -319,13 +319,13 @@
 
   end function PLANCK_TEMP_FAST
 
-!------------------------------------------------------------------------
-! function PLANCK_TEMP_FAST_SOUNDER(ichan, B, dB_dT) result(T)
-!
-! Note: This function only for IFF HIRS and CrIS 11 and 12um ch.
-! Subroutine to convert radiance (B) to brightness temperature(T) using a
-! look-up table *Function that returns a scalar*.
-!------------------------------------------------------------------
+  !------------------------------------------------------------------------
+  ! function PLANCK_TEMP_FAST_SOUNDER(ichan, B, dB_dT) result(T)
+  !
+  ! Note: This function only for IFF HIRS and CrIS 11 and 12um ch.
+  ! Subroutine to convert radiance (B) to brightness temperature(T) using a
+  ! look-up table *Function that returns a scalar*.
+  !------------------------------------------------------------------
   function PLANCK_TEMP_FAST_SOUNDER(ichan, B) result(T)
     integer (kind=int4), intent(in) :: ichan
     real (kind=real4), intent(in) :: B
@@ -339,24 +339,24 @@
 
     !---- depending on ch # make temporate BB_Rad
     if (ichan == 20) then
-       BB_Rad_Tmp = BB_Rad_375um_Sndr
+      BB_Rad_Tmp = BB_Rad_375um_Sndr
     elseif (ichan == 31) then
-       BB_Rad_Tmp = BB_Rad_11um_Sndr
+      BB_Rad_Tmp = BB_Rad_11um_Sndr
     elseif (ichan == 32) then
-       BB_Rad_Tmp = BB_Rad_12um_Sndr
+      BB_Rad_Tmp = BB_Rad_12um_Sndr
     elseif (ichan == 145) then
-       BB_Rad_Tmp = BB_Rad_145um_Sndr
+      BB_Rad_Tmp = BB_Rad_145um_Sndr
     elseif (ichan == 147) then
-       BB_Rad_Tmp = BB_Rad_147um_Sndr
+      BB_Rad_Tmp = BB_Rad_147um_Sndr
     elseif (ichan == 149) then
-       BB_Rad_Tmp = BB_Rad_149um_Sndr
+      BB_Rad_Tmp = BB_Rad_149um_Sndr
     elseif (ichan == 445) then
-       BB_Rad_Tmp = BB_Rad_445um_Sndr
+      BB_Rad_Tmp = BB_Rad_445um_Sndr
     elseif (ichan == 457) then
-       BB_Rad_Tmp = BB_Rad_457um_Sndr
+      BB_Rad_Tmp = BB_Rad_457um_Sndr
     else
-       print *, "Unsupported channel number ",ichan," in Fast Planck Temp Sounder Computation"
-       stop
+      print *, "Unsupported channel number ",ichan," in Fast Planck Temp Sounder Computation"
+      stop
     endif
 
     !---- compute brightness temperature
@@ -369,9 +369,9 @@
 
   end function PLANCK_TEMP_FAST_SOUNDER
 
-!----------------------------------------------------------------------
-! function PLANCK_RAD(ichan, T) result(B)
-!----------------------------------------------------------------------
+  !----------------------------------------------------------------------
+  ! function PLANCK_RAD(ichan, T) result(B)
+  !----------------------------------------------------------------------
 
   function PLANCK_RAD(ichan, T) result(B)
     integer (kind=int4), intent(in) :: ichan
@@ -380,23 +380,23 @@
 
     !--- check for appropriate channel
     if (Ch(ichan)%Obs_Type /= THERMAL_OBS_TYPE .and. &
-        Ch(ichan)%Obs_Type /= MIXED_OBS_TYPE) return
+    Ch(ichan)%Obs_Type /= MIXED_OBS_TYPE) return
     if (Sensor%Chan_On_Flag_Default(ichan) == sym%NO) then
       print *, "unsupported channel number ",ichan," in Planck Rad Computation, stopping"
       stop
     endif
 
     B = c1*(Planck_Nu(ichan)**3)/ &
-        (exp((c2*Planck_Nu(ichan))/ &
-        ((T-Planck_A1(ichan))/Planck_A2(ichan)))-1.0)
+    (exp((c2*Planck_Nu(ichan))/ &
+    ((T-Planck_A1(ichan))/Planck_A2(ichan)))-1.0)
 
     return
 
   end function PLANCK_RAD
 
-!----------------------------------------------------------------------
-! function PLANCK_TEMP(ichan, B) result(T)
-!----------------------------------------------------------------------
+  !----------------------------------------------------------------------
+  ! function PLANCK_TEMP(ichan, B) result(T)
+  !----------------------------------------------------------------------
   function PLANCK_TEMP(ichan, B) result(T)
     integer (kind=int4), intent(in) :: ichan
     real (kind=real4), intent(in) :: B
@@ -404,7 +404,7 @@
 
     !--- check for appropriate channel
     if (Ch(ichan)%Obs_Type /= THERMAL_OBS_TYPE .and. &
-        Ch(ichan)%Obs_Type /= MIXED_OBS_TYPE) return
+    Ch(ichan)%Obs_Type /= MIXED_OBS_TYPE) return
     if (Sensor%Chan_On_Flag_Default(ichan) == sym%NO) then
       print *, "unsupported channel number ",ichan," in Planck Temp Computation, stopping"
       stop
@@ -416,23 +416,23 @@
 
   end function PLANCK_TEMP
 
- !----------------------------------------------------------------------
- ! Convert radiances based on channel centroid wavenumber (nu)
- ! from NASA standad (W m-2 um-1 sr-1)
- ! to NOAA standard (mW/cm^2/cm^-1/str)
- !
- !----------------------------------------------------------------------
- subroutine CONVERT_RADIANCE(Radiance,Nu,Missing_Value)
-  real (kind=real4), dimension(:,:), intent(inout):: Radiance
-  real (kind=real4), intent(in):: Nu
-  real (kind=real4), intent(in):: Missing_Value
+  !----------------------------------------------------------------------
+  ! Convert radiances based on channel centroid wavenumber (nu)
+  ! from NASA standad (W m-2 um-1 sr-1)
+  ! to NOAA standard (mW/cm^2/cm^-1/str)
+  !
+  !----------------------------------------------------------------------
+  subroutine CONVERT_RADIANCE(Radiance,Nu,Missing_Value)
+    real (kind=real4), dimension(:,:), intent(inout):: Radiance
+    real (kind=real4), intent(in):: Nu
+    real (kind=real4), intent(in):: Missing_Value
 
-  where(Radiance /= Missing_Value)
-       Radiance = Radiance * (((10000.0 / Nu )**2) / 10.0)
-  end where
+    where(Radiance /= Missing_Value)
+      Radiance = Radiance * (((10000.0 / Nu )**2) / 10.0)
+    end where
 
-  return
+    return
 
- end subroutine CONVERT_RADIANCE
+  end subroutine CONVERT_RADIANCE
 
 end module PLANCK_MOD
