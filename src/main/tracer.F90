@@ -36,7 +36,7 @@
             mask_lrc, i_lrc, j_lrc, &
             Cwp_Dcomp, Lwp_Dcomp, Iwp_Dcomp, Solar_Contamination_Mask, &
             Covar_Ch37_Ch31_5x5, Covar_Ch27_Ch38_5x5, Covar_Ch27_Ch31_5x5, &
-            Bt_375um_Sounder,Bt_11um_Sounder,Bt_12um_Sounder
+            Bt_375um_Sounder,Bt_11um_Sounder,Bt_12um_Sounder, Ems_Ch20_Median_3x3
         use calibration_constants_mod, only: Planck_A1, Planck_A2, Planck_Nu, Sun_Earth_Distance
         use viirs_clavrx_bridge, only: viirs_out => out
         use viirs_nasa_read_module, only: nasa_viirs_i5_bt, nasa_viirs_i4_bt, &
@@ -654,6 +654,7 @@
         call add_sym_f4_2d(Ch(31)%Sfc_Emiss, 'emiss_sfc_11_0um_nom')
         call add_sym_f4_2d(Ch(31)%Bt_Toa_Std_3x3, 'temp_11_0um_nom_stddev_3x3')
         call add_sym_f4_2d(Ch(1)%Ref_Toa_Std_3x3, 'refl_0_65um_nom_stddev_3x3')
+        call add_sym_f4_2d(Ems_Ch20_Median_3x3,'emiss_3_75um_nom_median_3x3')
 
         call add_sym_f4_2d(Ch(1)%Sfc_Ref_White_Sky,'refl_sfc_white_sky_0_65um_nom')
 
