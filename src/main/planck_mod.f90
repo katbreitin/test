@@ -6,7 +6,7 @@
 !       PLANCK (program)
 !
 ! PURPOSE: this module holds the routine to do rapid Planck
-!          computations using a table lookup approach. 
+!          computations using a table lookup approach.
 !
 ! DESCRIPTION: This has been shown to speed up CLAVR-x over using the
 !              explicit planck function with expontentials
@@ -35,7 +35,7 @@
 !   PLANCK_RAD
 !   PLANCK_TEMP
 !
-!  Modis Band   Avhrr Band   Abi Band   Wavelength  
+!  Modis Band   Avhrr Band   Abi Band   Wavelength
 !     01            1          2           0.63
 !     02            2          3           0.86
 !     06            3a         5           1.60
@@ -255,7 +255,7 @@
 !------------------------------------------------------------------
   function PLANCK_RAD_FAST(ichan, T, dB_dT) result(B)
     integer (kind=int4), intent(in) :: ichan
-    real (kind=real4), intent(in) :: T 
+    real (kind=real4), intent(in) :: T
     real (kind=real4), optional, intent(out) :: dB_dT
     real (kind=real4) :: B, dB_dT_tmp
     integer:: l
@@ -263,7 +263,7 @@
     !--- check for appropriate channel
     if (Ch(ichan)%Obs_Type /= THERMAL_OBS_TYPE .and. &
         Ch(ichan)%Obs_Type /= MIXED_OBS_TYPE) return
-    if (Sensor%Chan_On_Flag_Default(ichan) == sym%NO) then 
+    if (Sensor%Chan_On_Flag_Default(ichan) == sym%NO) then
       print *, "unsupported channel number ",ichan," in Fast Planck Rad Computation, stopping"
       stop
     endif
@@ -289,7 +289,7 @@
 !------------------------------------------------------------------
   function PLANCK_TEMP_FAST(ichan, B, dB_dT) result(T)
     integer (kind=int4), intent(in) :: ichan
-    real (kind=real4), intent(in) :: B 
+    real (kind=real4), intent(in) :: B
     real (kind=real4), optional, intent(out) :: dB_dT
     real (kind=real4) :: T
     real (kind=real4) :: dB_dT_Tmp
@@ -375,7 +375,7 @@
 
   function PLANCK_RAD(ichan, T) result(B)
     integer (kind=int4), intent(in) :: ichan
-    real (kind=real4), intent(in) :: T 
+    real (kind=real4), intent(in) :: T
     real (kind=real4) :: B
 
     !--- check for appropriate channel
@@ -393,13 +393,13 @@
     return
 
   end function PLANCK_RAD
-  
+
 !----------------------------------------------------------------------
-! function PLANCK_TEMP(ichan, B) result(T) 
+! function PLANCK_TEMP(ichan, B) result(T)
 !----------------------------------------------------------------------
   function PLANCK_TEMP(ichan, B) result(T)
     integer (kind=int4), intent(in) :: ichan
-    real (kind=real4), intent(in) :: B 
+    real (kind=real4), intent(in) :: B
     real (kind=real4) :: T
 
     !--- check for appropriate channel
@@ -418,7 +418,7 @@
 
  !----------------------------------------------------------------------
  ! Convert radiances based on channel centroid wavenumber (nu)
- ! from NASA standad (W m-2 um-1 sr-1) 
+ ! from NASA standad (W m-2 um-1 sr-1)
  ! to NOAA standard (mW/cm^2/cm^-1/str)
  !
  !----------------------------------------------------------------------
@@ -426,7 +426,7 @@
   real (kind=real4), dimension(:,:), intent(inout):: Radiance
   real (kind=real4), intent(in):: Nu
   real (kind=real4), intent(in):: Missing_Value
- 
+
   where(Radiance /= Missing_Value)
        Radiance = Radiance * (((10000.0 / Nu )**2) / 10.0)
   end where

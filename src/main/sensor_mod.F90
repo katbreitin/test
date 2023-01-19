@@ -165,7 +165,7 @@ module SENSOR_MOD
       , read_navigation_block_seviri &
       , read_seviri
 
-   use CX_FCI_MOD, only: READ_FCI
+   use CX_FCI_MOD, only: READ_FCI, read_fci_calib
 
    use VIIRS_CLAVRX_BRIDGE , only : &
        READ_VIIRS_DATE_TIME &
@@ -530,6 +530,7 @@ module SENSOR_MOD
         image % time_end = fci % time
 
         Image%Number_Of_Lines_Per_Segment = 139
+        call read_fci_calib()
         exit
       end if
 

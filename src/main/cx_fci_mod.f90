@@ -1,9 +1,50 @@
 module cx_fci_mod
   use FCI_MOD,only: fci_data
 
-  use pixel_common_mod, only: ch, image, sensor, nav, geo
+  use pixel_common_mod, only: ch, image, sensor, nav, geo, Ancil_Data_Dir
+
+  use CALIBRATION_CONSTANTS_MOD,only: &
+  planck_a1, planck_a2, planck_nu &
+  , sat_name, solar_ch20, ew_ch20, solar_ch20_nu, ch1_dark_count &
+  , Launch_Date, Band2_Correction_Start_Date, Band2_Correction_Factor &
+  , ABI_FPT_Thresh_038um, ABI_FPT_Thresh_062um, ABI_FPT_Thresh_067um &
+  , ABI_FPT_Thresh_073um, ABI_FPT_Thresh_085um, ABI_FPT_Thresh_097um &
+  , ABI_FPT_Thresh_104um, ABI_FPT_Thresh_110um, ABI_FPT_Thresh_120um &
+  , ABI_FPT_Thresh_133um
+
   implicit none
+
+
+  logical :: calib_is_read = .false.
 contains
+
+  subroutine read_fci_calib
+    use FILE_UTILS,only: Get_Lun
+    character (len=1024) :: coef_file
+    integer :: Instr_Const_lun
+    character(len=20) :: dum
+
+    coef_file = trim(Ancil_data_Dir)//'static/clavrx_constant_files/met12_instr.dat'
+
+    Instr_Const_lun = GET_LUN()
+    open(unit=Instr_Const_lun,file=trim(coef_file))
+
+    read(unit=Instr_Const_lun,fmt="(a7)") sat_name
+    read(unit=Instr_Const_lun,fmt="(a20)") dum
+    read(unit=Instr_Const_lun,fmt=*) Solar_Ch20
+    read(unit=Instr_Const_lun,fmt=*) Ew_Ch20
+    read(unit=Instr_Const_lun,fmt="(a20)") dum
+    read(unit=Instr_Const_lun,fmt=*) planck_a1(20), planck_a2(20), planck_nu(20)
+    read(unit=Instr_Const_lun,fmt=*) planck_a1(37), planck_a2(37), planck_nu(37)
+    read(unit=Instr_Const_lun,fmt=*) planck_a1(28), planck_a2(28), planck_nu(28)
+    read(unit=Instr_Const_lun,fmt=*) planck_a1(29), planck_a2(29), planck_nu(29)
+    read(unit=Instr_Const_lun,fmt=*) planck_a1(30), planck_a2(30), planck_nu(30)
+    read(unit=Instr_Const_lun,fmt=*) planck_a1(31), planck_a2(31), planck_nu(31)
+    read(unit=Instr_Const_lun,fmt=*) planck_a1(32), planck_a2(32), planck_nu(32)
+    read(unit=Instr_Const_lun,fmt=*) planck_a1(33), planck_a2(33), planck_nu(33)
+    calib_is_read = .true.
+
+  end subroutine
 
 
   subroutine read_fci (seg_nr)
@@ -19,7 +60,7 @@ contains
     integer :: ndims(2)
 
 
-
+    if (.not. calib_is_read) call read_fci_calib()
 
     call fci % config % set(trim(image%Level1b_Full_Name)//'/',fci_on)
     call fci % get (chunk = seg_nr ) !, start=[10,10],count=[20,20])

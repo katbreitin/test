@@ -535,7 +535,7 @@ contains
           case ( THERMAL_OBS_TYPE , MIXED_OBS_TYPE)
 
             Sc_Name_Rtm = SENSOR_NAME_FOR_RTM(Sensor%WMO_id,Sensor%Sensor_Name, Chan_Idx)
-            
+
             rtm_inp % sc_name = sc_name_rtm
             rtm_inp % chan_idx = Chan_Idx
             rtm_inp % which_rtm = rtm_opt
