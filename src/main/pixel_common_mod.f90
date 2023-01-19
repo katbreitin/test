@@ -814,6 +814,11 @@ module PIXEL_COMMON_MOD
   integer (kind=int2), dimension(:,:), allocatable, public,save, target:: Ch1_Counts
   integer (kind=int2), dimension(:,:), allocatable, public,save, target:: Ch2_Counts
   integer (kind=int2), dimension(:,:), allocatable, public,save, target:: Ch6_Counts
+  integer (kind=int2), dimension(:,:), allocatable, public,save, target:: Ch20_Counts
+  integer (kind=int2), dimension(:,:), allocatable, public,save, target:: Ch27_Counts
+  integer (kind=int2), dimension(:,:), allocatable, public,save, target:: Ch31_Counts
+  integer (kind=int2), dimension(:,:), allocatable, public,save, target:: Ch32_Counts
+  integer (kind=int2), dimension(:,:), allocatable, public,save, target:: Ch33_Counts
   real (kind=real4), dimension(:,:), allocatable, public,save:: Ch20_Counts_Filtered
 
   !--- sounder brightness temperatures
@@ -2045,6 +2050,26 @@ subroutine CREATE_REF_CHANNEL_ARRAYS(dim1,dim2)
       allocate(Ch6_Counts(dim1,dim2))
    endif
 
+   if (Sensor%Chan_On_Flag_Default(20) == sym%YES) then
+      allocate(Ch20_Counts(dim1,dim2))
+   endif
+
+   if (Sensor%Chan_On_Flag_Default(27) == sym%YES) then
+      allocate(Ch27_Counts(dim1,dim2))
+   endif
+
+   if (Sensor%Chan_On_Flag_Default(31) == sym%YES) then
+      allocate(Ch31_Counts(dim1,dim2))
+   endif
+
+   if (Sensor%Chan_On_Flag_Default(32) == sym%YES) then
+      allocate(Ch32_Counts(dim1,dim2))
+   endif
+
+   if (Sensor%Chan_On_Flag_Default(33) == sym%YES) then
+      allocate(Ch33_Counts(dim1,dim2))
+   endif
+
 end subroutine CREATE_REF_CHANNEL_ARRAYS
 
 subroutine RESET_REF_CHANNEL_ARRAYS
@@ -2104,6 +2129,26 @@ subroutine RESET_REF_CHANNEL_ARRAYS
       Ch6_Counts = Missing_Value_Int2
    endif
 
+   if (Sensor%Chan_On_Flag_Default(20) == sym%YES) then
+      Ch20_Counts = Missing_Value_Int2
+   endif
+
+   if (Sensor%Chan_On_Flag_Default(27) == sym%YES) then
+      Ch27_Counts = Missing_Value_Int2
+   endif
+
+   if (Sensor%Chan_On_Flag_Default(31) == sym%YES) then
+      Ch31_Counts = Missing_Value_Int2
+   endif
+
+   if (Sensor%Chan_On_Flag_Default(32) == sym%YES) then
+      Ch32_Counts = Missing_Value_Int2
+   endif
+
+   if (Sensor%Chan_On_Flag_Default(33) == sym%YES) then
+      Ch33_Counts = Missing_Value_Int2
+   endif
+
 end subroutine RESET_REF_CHANNEL_ARRAYS
 subroutine DESTROY_REF_CHANNEL_ARRAYS
 
@@ -2121,6 +2166,26 @@ subroutine DESTROY_REF_CHANNEL_ARRAYS
 
    if (Sensor%Chan_On_Flag_Default(6) == sym%YES) then
       deallocate(Ch6_Counts)
+   endif
+
+   if (Sensor%Chan_On_Flag_Default(20) == sym%YES) then
+      deallocate(Ch20_Counts)
+   endif
+
+   if (Sensor%Chan_On_Flag_Default(27) == sym%YES) then
+      deallocate(Ch27_Counts)
+   endif
+
+   if (Sensor%Chan_On_Flag_Default(31) == sym%YES) then
+      deallocate(Ch31_Counts)
+   endif
+
+   if (Sensor%Chan_On_Flag_Default(32) == sym%YES) then
+      deallocate(Ch32_Counts)
+   endif
+
+   if (Sensor%Chan_On_Flag_Default(33) == sym%YES) then
+      deallocate(Ch33_Counts)
    endif
 
 end subroutine DESTROY_REF_CHANNEL_ARRAYS

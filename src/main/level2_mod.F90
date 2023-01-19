@@ -1286,6 +1286,56 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Standard_Name = "refl_1_60um_nom_counts"
             Sds_Info(Var_Idx)%Long_Name = "refl_1_60um_nom_counts"
             if (allocated(Ch6_Counts)) Sds_Info(Var_Idx)%Sds_Data_2d_I2 => Ch6_Counts
+         case("temp_3_75um_nom_counts")
+            Sds_Info(Var_Idx)%Scaling_Type =  0_int1
+            Sds_Info(Var_Idx)%Actual_Range = [0.0,1024.0]
+            Sds_Info(Var_Idx)%Input_Data_Type_HDF =  DFNT_INT16
+            Sds_Info(Var_Idx)%Level2_Data_Type_HDF = DFNT_INT16
+            Sds_Info(Var_Idx)%Level2_Data_Type_NETCDF = NF90_SHORT
+            Sds_Info(Var_Idx)%Units =  "none"
+            Sds_Info(Var_Idx)%Standard_Name = "temp_3_75um_nom_counts"
+            Sds_Info(Var_Idx)%Long_Name = "temp_3_75um_nom_counts"
+            if (allocated(Ch20_Counts)) Sds_Info(Var_Idx)%Sds_Data_2d_I2 => Ch20_Counts
+         case("temp_6_7um_nom_counts")
+            Sds_Info(Var_Idx)%Scaling_Type =  0_int1
+            Sds_Info(Var_Idx)%Actual_Range = [0.0,1024.0]
+            Sds_Info(Var_Idx)%Input_Data_Type_HDF =  DFNT_INT16
+            Sds_Info(Var_Idx)%Level2_Data_Type_HDF = DFNT_INT16
+            Sds_Info(Var_Idx)%Level2_Data_Type_NETCDF = NF90_SHORT
+            Sds_Info(Var_Idx)%Units =  "none"
+            Sds_Info(Var_Idx)%Standard_Name = "temp_6_7um_nom_counts"
+            Sds_Info(Var_Idx)%Long_Name = "temp_6_7um_nom_counts"
+            if (allocated(Ch27_Counts)) Sds_Info(Var_Idx)%Sds_Data_2d_I2 => Ch27_Counts
+         case("temp_11_0um_nom_counts")
+            Sds_Info(Var_Idx)%Scaling_Type =  0_int1
+            Sds_Info(Var_Idx)%Actual_Range = [0.0,1024.0]
+            Sds_Info(Var_Idx)%Input_Data_Type_HDF =  DFNT_INT16
+            Sds_Info(Var_Idx)%Level2_Data_Type_HDF = DFNT_INT16
+            Sds_Info(Var_Idx)%Level2_Data_Type_NETCDF = NF90_SHORT
+            Sds_Info(Var_Idx)%Units =  "none"
+            Sds_Info(Var_Idx)%Standard_Name = "temp_11_0um_nom_counts"
+            Sds_Info(Var_Idx)%Long_Name = "temp_11_0um_nom_counts"
+            if (allocated(Ch31_Counts)) Sds_Info(Var_Idx)%Sds_Data_2d_I2 => Ch31_Counts
+         case("temp_12_0um_nom_counts")
+            Sds_Info(Var_Idx)%Scaling_Type =  0_int1
+            Sds_Info(Var_Idx)%Actual_Range = [0.0,1024.0]
+            Sds_Info(Var_Idx)%Input_Data_Type_HDF =  DFNT_INT16
+            Sds_Info(Var_Idx)%Level2_Data_Type_HDF = DFNT_INT16
+            Sds_Info(Var_Idx)%Level2_Data_Type_NETCDF = NF90_SHORT
+            Sds_Info(Var_Idx)%Units =  "none"
+            Sds_Info(Var_Idx)%Standard_Name = "temp_12_0um_nom_counts"
+            Sds_Info(Var_Idx)%Long_Name = "temp_12_0um_nom_counts"
+            if (allocated(Ch32_Counts)) Sds_Info(Var_Idx)%Sds_Data_2d_I2 => Ch32_Counts
+         case("temp_13_3um_nom_counts")
+            Sds_Info(Var_Idx)%Scaling_Type =  0_int1
+            Sds_Info(Var_Idx)%Actual_Range = [0.0,1024.0]
+            Sds_Info(Var_Idx)%Input_Data_Type_HDF =  DFNT_INT16
+            Sds_Info(Var_Idx)%Level2_Data_Type_HDF = DFNT_INT16
+            Sds_Info(Var_Idx)%Level2_Data_Type_NETCDF = NF90_SHORT
+            Sds_Info(Var_Idx)%Units =  "none"
+            Sds_Info(Var_Idx)%Standard_Name = "temp_13_3um_nom_counts"
+            Sds_Info(Var_Idx)%Long_Name = "temp_13_3um_nom_counts"
+            if (allocated(Ch33_Counts)) Sds_Info(Var_Idx)%Sds_Data_2d_I2 => Ch33_Counts
          !----------------------------------------------------------------------------------------------------
          ! 3x3 uniformity arrays
          !----------------------------------------------------------------------------------------------------

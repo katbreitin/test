@@ -34,6 +34,11 @@ use CONSTANTS_MOD, only: &
 
 use PIXEL_COMMON_MOD, only: &
    Ch1_Counts &
+   , Ch20_Counts &
+   , Ch27_Counts &
+   , Ch31_Counts &
+   , Ch32_Counts &
+   , Ch33_Counts &
    , image &
    , ch &
    , nav &
@@ -110,7 +115,7 @@ use CALIBRATION_CONSTANTS_MOD, only: &
          DARK_COMPOSITE_CLOUD_MASK
 
 
-   integer(kind=int4), public, parameter:: Goes_Xstride = 2    ! goes is oversampled by 50% in x
+   integer(kind=int4), public, parameter:: Goes_Xstride = 1    ! goes is oversampled by 50% in x
    integer(kind=int4), public, parameter:: Goes_Sndr_Xstride = 1
    integer(kind=int4), private, parameter:: Num_4km_Scans_Goes_Fd = 2704 
    integer(kind=int4), private, parameter:: Num_4km_Elem_Goes_Fd = 5200 
@@ -525,11 +530,10 @@ subroutine READ_GOES(Segment_Number,Channel_1_Filename, &
                                     Two_Byte_Temp, &
                                     Goes_Scan_Line_Flag)
 
-     !--- calibrate
-     call CALIBRATE_GOES_REFLECTANCE(Two_Byte_Temp,Ch1_Dark_Count,Time_Since_Launch,ch(1)%Ref_Toa)
+      !--- calibrate
+      call CALIBRATE_GOES_REFLECTANCE(Two_Byte_Temp,Ch1_Dark_Count,Time_Since_Launch,ch(1)%Ref_Toa)
 
-     !--- store ch1 counts for support of PATMOS-x calibration studies
-     Ch1_Counts = Two_Byte_Temp
+      Ch1_Counts = Two_Byte_Temp
 
    endif
 
@@ -556,6 +560,8 @@ subroutine READ_GOES(Segment_Number,Channel_1_Filename, &
 
       ch(20)%Rad_Toa = (Two_Byte_Temp - Goes_Ch2_Thermal_Intercept)/Goes_Ch2_Thermal_Slope
 
+      Ch20_Counts = Two_Byte_Temp
+
    endif
 
    !---   read channel 27 (GOES channel 3)
@@ -580,6 +586,8 @@ subroutine READ_GOES(Segment_Number,Channel_1_Filename, &
                                     Goes_Scan_Line_Flag)
 
       ch(27)%Rad_Toa = (Two_Byte_Temp - Goes_Ch3_Thermal_Intercept)/Goes_Ch3_Thermal_Slope
+
+      Ch27_Counts = Two_Byte_Temp
 
    endif
 
@@ -606,6 +614,8 @@ subroutine READ_GOES(Segment_Number,Channel_1_Filename, &
 
         ch(31)%Rad_Toa = (Two_Byte_Temp - Goes_Ch4_Thermal_Intercept)/Goes_Ch4_Thermal_Slope
 
+        Ch31_Counts = Two_Byte_Temp
+
    endif
 
    !---   read channel 32 (GOES channel 5)
@@ -631,6 +641,8 @@ subroutine READ_GOES(Segment_Number,Channel_1_Filename, &
 
       ch(32)%Rad_Toa = (Two_Byte_Temp - Goes_Ch5_Thermal_Intercept)/Goes_Ch5_Thermal_Slope
 
+      Ch32_Counts = Two_Byte_Temp
+
    endif
 
    !---   read channel 33 (GOES channel 6)
@@ -655,6 +667,8 @@ subroutine READ_GOES(Segment_Number,Channel_1_Filename, &
                                     Goes_Scan_Line_Flag)
 
       ch(33)%Rad_Toa = (Two_Byte_Temp - Goes_Ch6_Thermal_Intercept)/Goes_Ch6_Thermal_Slope
+
+      Ch33_Counts = Two_Byte_Temp
 
    endif
 
