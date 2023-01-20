@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <errno.h>
 
 
 int getpid_nocache(){
@@ -28,8 +29,17 @@ void reopen_files(int parent_pid){
             int flags = fcntl(fd, F_GETFL);
             flags &= (O_RDWR | O_WRONLY | O_RDONLY);
             close(fd);
-            open(proc_self, ret | flags);
-            lseek(fd, offset, SEEK_SET);
+            int new_fd = open(proc_self, flags);
+            if(new_fd == -1){
+                perror("error reopening file");
+                printf("%s\n", proc_self);
+                exit(1);
+            }
+            if(lseek(fd, offset, SEEK_SET)==-1){
+                perror("Error seeking");
+                printf("old_fd=%d, new_fd=%d\n", fd, new_fd);
+                exit(1);
+            }
         }
     }
 }

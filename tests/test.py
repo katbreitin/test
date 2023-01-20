@@ -21,6 +21,8 @@ import signal
 import os
 import re
 import asyncio
+import tracer_utils
+import pseg_utils
 
 CLAVRX = Path('../run/bin/clavrxorb').absolute()
 assert CLAVRX.exists(), str(CLAVRX)+' does not exist'
@@ -53,17 +55,22 @@ def save(func):
     save_funcs.append(func)
     return func
 
+async def run_parallel_segments(clavrxorb, work_dir):
+    prev_pwd = os.path.abspath(os.getcwd())
+    os.chdir(work_dir)
+    try:
+        return await pseg_utils.main(exe=str(clavrxorb))
+    finally:
+        os.chdir(prev_pwd)
+        # reset tracing since we have other tests without tracing
+        os.environ['CLAVRX_ENABLE_TRACER'] = ''
+
 
 async def run_one_segment(clavrxorb, work_dir):
     prev_pwd = os.path.abspath(os.getcwd())
-    import sys
-    sys.path.append(prev_pwd)
-    os.chdir(clavrxorb.parent)
-    # tracer_utils needs to see ./clavrxorb at (first) import
-    import tracer_utils
     os.chdir(work_dir)
     try:
-        pid = tracer_utils.start_clavrx('test_proc', num_clones=0, redirect=False, skip_output=False)
+        pid = tracer_utils.start_clavrx('test_proc', num_clones=0, redirect=False, skip_output=False, exe=str(clavrxorb))
         # wait until one netcdf write is complete
         wn = await tracer_utils.wait_until(pid, 6)
         if wn == -1:
@@ -83,7 +90,7 @@ async def run_one_segment(clavrxorb, work_dir):
         os.environ['CLAVRX_ENABLE_TRACER'] = ''
 
 
-def _run_it(main_l1b_file, aux_l1b_files=(), config_override=None, out_dir=None, mode=DEFAULT_MODE, only_1seg=False):
+def _run_it(main_l1b_file, aux_l1b_files=(), config_override=None, out_dir=None, mode=DEFAULT_MODE, only_1seg=False, parallel_segments=False):
     """
     Run clavrx case
 
@@ -130,7 +137,7 @@ def _run_it(main_l1b_file, aux_l1b_files=(), config_override=None, out_dir=None,
                             config[k][k2] = v2
                 else:
                     config[k] = v
-        config['temp_dir'] = str(tmpdir) #str(out_dir / 'temp_dir')
+        config['temp_dir'] = str(tmpdir) + '/temp_data_dir' #str(out_dir / 'temp_dir')
         options_file_content = build_options_file(config)
         file_list_content = build_file_list(out_dir, [main_l1b_link])
         level2_list_content = L2_LIST_CONTENT
@@ -147,6 +154,16 @@ def _run_it(main_l1b_file, aux_l1b_files=(), config_override=None, out_dir=None,
             loop = asyncio.get_event_loop()
             r = loop.run_until_complete(run_one_segment(CLAVRX, tmpdir))
             assert r == 0
+        elif parallel_segments:
+            loop = asyncio.get_event_loop()
+            try:
+                task = asyncio.ensure_future(run_parallel_segments(CLAVRX, tmpdir))
+                r = loop.run_until_complete(task)
+                assert r == 0
+            except BaseException as e:
+                task.cancel()
+                r = loop.run_until_complete(task)
+                raise e
         else:
             if mode=='perf':
                 p = subprocess.run(['perf','record','-F99','-g',CLAVRX], cwd=tmpdir)
@@ -159,7 +176,7 @@ def _run_it(main_l1b_file, aux_l1b_files=(), config_override=None, out_dir=None,
             assert p.returncode == 0
         return options_file_content
     finally:
-        rmtree(tmpdir)
+        rmtree(tmpdir, ignore_errors=True)
 
 def test_pgroup_bug():
     main_l1b_file = Path('./dummy')
@@ -261,7 +278,7 @@ def test_fusion(out_dir=None):
     FUSION = Path('/ships19/cloud/archive/Satellite_Input/HIRS-FUSION/NN/2020/001/NSS.GHRR.NN.D20001.S0000.E0143.B7532324.WI.fusion.nc')
     AVHRR = Path('/arcdata/polar/noaa/noaa18/2020/2020_01_01_001/avhrr/NSS.GHRR.NN.D20001.S0000.E0143.B7532324.WI')
     override = {'lut':'ecm2_lut_avhrr123_hirs_common_chs.nc'}
-    return _run_it(FUSION, [AVHRR], config_override=override, out_dir=out_dir, only_1seg=False)
+    return _run_it(FUSION, [AVHRR], config_override=override, out_dir=out_dir, parallel_segments=True)
 
 
 @save
