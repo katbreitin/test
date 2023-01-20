@@ -62,10 +62,14 @@ contains
 
     if (.not. calib_is_read) call read_fci_calib()
 
+    do i = 1,16
+      fci_on(i) = Sensor%Chan_On_Flag_Default ( Sensor%CLAVRx_Chan_Map(i)) == 1
+    end do
+
     call fci % config % set(trim(image%Level1b_Full_Name)//'/',fci_on)
     call fci % get (chunk = seg_nr ) !, start=[10,10],count=[20,20])
     do i = 1,16
-      if ( i .eq. 9) cycle
+    
 
       stride = 1
       ubnd = ubound(fci % ch(i) % rad)
