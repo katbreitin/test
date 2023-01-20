@@ -261,7 +261,7 @@ def test_fusion(out_dir=None):
     FUSION = Path('/ships19/cloud/archive/Satellite_Input/HIRS-FUSION/NN/2020/001/NSS.GHRR.NN.D20001.S0000.E0143.B7532324.WI.fusion.nc')
     AVHRR = Path('/arcdata/polar/noaa/noaa18/2020/2020_01_01_001/avhrr/NSS.GHRR.NN.D20001.S0000.E0143.B7532324.WI')
     override = {'lut':'ecm2_lut_avhrr123_hirs_common_chs.nc'}
-    return _run_it(FUSION, [AVHRR], config_override=override, out_dir=out_dir, only_1seg=True)
+    return _run_it(FUSION, [AVHRR], config_override=override, out_dir=out_dir, only_1seg=False)
 
 
 @save
