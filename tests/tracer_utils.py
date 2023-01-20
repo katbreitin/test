@@ -33,7 +33,7 @@ for t in ['i1','i2','i4','i8','f4']:
 
 
 def parse_elf(exe):
-    p = subprocess.run(['nm','-g',str(exe)], capture_output=True)
+    p = subprocess.run(['nm','-g',str(exe)], stdout=subprocess.PIPE)
 
     for l in p.stdout.decode().splitlines():
         try:

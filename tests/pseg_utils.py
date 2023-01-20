@@ -7,9 +7,6 @@ from tracer_utils import read_array, start_clavrx, peek, resume, kill, set_skip_
 import tracer_utils
 from pathlib import Path
 import subprocess
-import sys
-assert sys.version_info[0] == 3, 'Python 3 required'
-assert sys.version_info[1] >= 7, 'Python >= 3.7 required'
 
 async def handle_segment(pid, file_lock):
     try:
@@ -96,6 +93,7 @@ async def make_worker(pid_queue, file_lock, processing_done):
         
 
 async def main(exe='./clavrxorb'):
+    loop = asyncio.get_event_loop()
     max_workers = 8
     max_parent_lead = 2
     file_lock = asyncio.Lock()
@@ -106,10 +104,10 @@ async def main(exe='./clavrxorb'):
     # start parent
     parent_pid = start_clavrx('parent', num_clones=1, skip_output=False, redirect=False, exe=exe)
     try:
-        spawner_task = asyncio.create_task(spawner(parent_pid, processing_done, worker_pids))
+        spawner_task = loop.create_task(spawner(parent_pid, processing_done, worker_pids))
 
         for _ in range(max_workers):
-            workers.append(asyncio.create_task(make_worker(worker_pids, file_lock, processing_done)))
+            workers.append(loop.create_task(make_worker(worker_pids, file_lock, processing_done)))
         await spawner_task
         await asyncio.gather(*workers)
         print('PSeg Finished')
