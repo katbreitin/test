@@ -10,18 +10,17 @@ import shutil
 from contextlib import contextmanager
 from collections import defaultdict, namedtuple
 
-# CLAVRX
-exe = Path('./clavrxorb').absolute()
-
 WP_L1B  = 1
 WP_BEFORE_ECM2 = 5
 WP_ECM2 = 2
 WP_TYPE = 4
 WP_FINAL = 3
+WP_SAVE = 6
+WP_ALL_FINISH = 7
 
 
 SYMBOL_KEYS = {}
-for t in ['i1','i2','i4','i8','r4']:
+for t in ['i1','i2','i4','i8','f4']:
     for d in range(4):
         k = f'__tracer_MOD_symbol_names_{t}_{d}d_ptr'
         SYMBOL_KEYS[k] = {'type':t,'dims':d,'array':'names'}
@@ -32,49 +31,66 @@ for t in ['i1','i2','i4','i8','r4']:
         k = f'__tracer_MOD_num_symbols_{t}_{d}d'
         SYMBOL_KEYS[k] = {'type':t,'dims':d,'array':'len'}
 
-p = subprocess.run(['nm','-g',str(exe)], stdout=subprocess.PIPE)
 
-for l in p.stdout.decode().splitlines():
-    try:
-        addr,_,name = l.split()
-        if name in SYMBOL_KEYS:
-            SYMBOL_KEYS[name]['ptr'] = int(addr, 16)
-        elif name == '__tracer_MOD_rtm_shape_3d_addr':
-            RTM_SHAPE_3D_ADDR_ADDR = int(addr, 16)
-        elif name == '__tracer_MOD_num_symbols':
-            NUM_SYMBOLS_ADDR = int(addr, 16)
-        elif name == '__tracer_MOD_wait_number':
-            WAIT_NUMBER_ADDR = int(addr, 16)
-        elif name == '__tracer_MOD_signal_int':
-            SIGNAL_INT_ADDR = int(addr, 16)
-        elif name == '__tracer_MOD_child_pid':
-            CHILD_PID_ADDR = int(addr, 16)
-        elif name == '__tracer_MOD_num_rtm_symbols':
-            NUM_RTM_SYMBOLS_ADDR = int(addr, 16)
-        elif name == '__tracer_MOD_rtm_numel':
-            RTM_NUMEL_ADDR = int(addr, 16)
-        elif name == '__tracer_MOD_rtm_symbol_table_addr':
-            RTM_SYMBOL_TABLE_ADDR_ADDR = int(addr, 16)
-        elif name == '__tracer_MOD_rtm_symbol_names_addr':
-            RTM_SYMBOL_NAMES_ADDR_ADDR = int(addr, 16)
-        elif name == '__tracer_MOD_rtm_channel_allocated_addr':
-            RTM_CHAN_ALLOC_ADDR_ADDR = int(addr, 16)
-        elif name == '__tracer_MOD_number_of_lines':
-            NUM_LINES_ADDR = int(addr, 16)
-        elif name == '__tracer_MOD_skip_processing':
-            SKIP_PROCESSING_ADDR = int(addr, 16)
-        elif name == '__tracer_MOD_sibling_pids_addr':
-            SIBLING_PIDS_ADDR_ADDR = int(addr, 16)
-        elif name == '__pixel_common_mod_MOD_num_scans_level2_hdf':
-           NUM_SCANS_LEVEL2_HDF_ADDR  = int(addr, 16)
-    finally:
-        pass
+def parse_elf(exe):
+    p = subprocess.run(['nm','-g',str(exe)], capture_output=True)
 
-TABLE_POINTERS = defaultdict(dict)
-for d in SYMBOL_KEYS.values():
-    if 'ptr' in d:
-        TABLE_POINTERS[d['type'],d['dims']][d['array']] = d['ptr']
-TABLE_POINTERS = dict(TABLE_POINTERS.items())
+    for l in p.stdout.decode().splitlines():
+        try:
+            addr,_,name = l.split()
+            if name in SYMBOL_KEYS:
+                SYMBOL_KEYS[name]['ptr'] = int(addr, 16)
+            elif name == '__tracer_MOD_rtm_shape_3d_addr':
+                global RTM_SHAPE_3D_ADDR_ADDR
+                RTM_SHAPE_3D_ADDR_ADDR = int(addr, 16)
+            elif name == '__tracer_MOD_num_symbols':
+                global NUM_SYMBOLS_ADDR
+                NUM_SYMBOLS_ADDR = int(addr, 16)
+            elif name == '__tracer_MOD_wait_number':
+                global WAIT_NUMBER_ADDR
+                WAIT_NUMBER_ADDR = int(addr, 16)
+            elif name == '__tracer_MOD_signal_int':
+                global SIGNAL_INT_ADDR
+                SIGNAL_INT_ADDR = int(addr, 16)
+            elif name == '__tracer_MOD_child_pid':
+                global CHILD_PID_ADDR
+                CHILD_PID_ADDR = int(addr, 16)
+            elif name == '__tracer_MOD_num_rtm_symbols':
+                global NUM_RTM_SYMBOLS_ADDR
+                NUM_RTM_SYMBOLS_ADDR = int(addr, 16)
+            elif name == '__tracer_MOD_rtm_numel':
+                global RTM_NUMEL_ADDR
+                RTM_NUMEL_ADDR = int(addr, 16)
+            elif name == '__tracer_MOD_rtm_symbol_table_addr':
+                global RTM_SYMBOL_TABLE_ADDR_ADDR
+                RTM_SYMBOL_TABLE_ADDR_ADDR = int(addr, 16)
+            elif name == '__tracer_MOD_rtm_symbol_names_addr':
+                global RTM_SYMBOL_NAMES_ADDR_ADDR
+                RTM_SYMBOL_NAMES_ADDR_ADDR = int(addr, 16)
+            elif name == '__tracer_MOD_rtm_channel_allocated_addr':
+                global RTM_CHAN_ALLOC_ADDR_ADDR
+                RTM_CHAN_ALLOC_ADDR_ADDR = int(addr, 16)
+            elif name == '__tracer_MOD_number_of_lines':
+                global NUM_LINES_ADDR
+                NUM_LINES_ADDR = int(addr, 16)
+            elif name == '__tracer_MOD_skip_processing':
+                global SKIP_PROCESSING_ADDR
+                SKIP_PROCESSING_ADDR = int(addr, 16)
+            elif name == '__tracer_MOD_sibling_pids_addr':
+                global SIBLING_PIDS_ADDR_ADDR
+                SIBLING_PIDS_ADDR_ADDR = int(addr, 16)
+            elif name == '__pixel_common_mod_MOD_num_scans_level2_hdf':
+                global NUM_SCANS_LEVEL2_HDF_ADDR
+                NUM_SCANS_LEVEL2_HDF_ADDR  = int(addr, 16)
+        finally:
+            pass
+
+    global TABLE_POINTERS
+    TABLE_POINTERS = defaultdict(dict)
+    for d in SYMBOL_KEYS.values():
+        if 'ptr' in d:
+            TABLE_POINTERS[d['type'],d['dims']][d['array']] = d['ptr']
+    TABLE_POINTERS = dict(TABLE_POINTERS.items())
 
 
 def read_all_tables(pid, base_addr=None):
@@ -163,7 +179,7 @@ def read_arrayptr(pid, arrayptr):
         return read_array(pid, arrayptr.ptr, arrayptr.shape, np.int64)
     elif arrayptr.type == 'i1':
         return read_array(pid, arrayptr.ptr, arrayptr.shape, np.int8)
-    elif arrayptr.type == 'r4':
+    elif arrayptr.type == 'f4':
         return read_array(pid, arrayptr.ptr, arrayptr.shape, np.float32)
     else:
         raise ValueError(f'Unknown type {arrayptr.type}')
@@ -210,7 +226,8 @@ def get_scan_line_number(pid):
     v = read_arrayptr(pid, arrays['scan_line_number'])
     return np.ma.masked_equal(v, -999)
 
-def start_clavrx(name=None, num_clones=0, redirect=True, skip_output=True):
+def start_clavrx(name=None, num_clones=0, redirect=True, skip_output=True, exe='./clavrxorb'):
+    parse_elf(exe)
     pid = os.fork()
     if pid == 0:
         if name is None:
@@ -307,11 +324,14 @@ async def get_or_done(queue, done):
 
     
 @contextmanager
-def tmpdir(dir=None):
-    tmp = Path(tempfile.mkdtemp(prefix='viirs_superres_', dir=dir))
+def tmpdir(debug=False, **kwargs):
+    tmp = Path(tempfile.mkdtemp(**kwargs))
+    if debug:
+        print(tmp)
     try:
         yield tmp
     finally:
-        shutil.rmtree(tmp)
+        if not debug:
+            shutil.rmtree(tmp)
     
 
