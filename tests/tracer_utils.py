@@ -265,7 +265,7 @@ async def wait_until(pid, waitnum):
     while True:
         p,stat = os.waitpid(pid, os.WUNTRACED|os.WNOHANG)
         if (p,stat) == (0,0):
-            await asyncio.sleep(1)
+            await asyncio.sleep(.1)
         elif os.WIFSTOPPED(stat):
             if os.WSTOPSIG(stat) == 19:
                 # Sometimes there are signals that aren't the wait

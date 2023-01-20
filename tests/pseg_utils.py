@@ -74,25 +74,32 @@ async def spawner(parent_pid, processing_done, worker_queue):
         raise
 
 
+async def worker(pid_queue, file_lock, processing_done):
+    while True:
+        result = await get_or_done(pid_queue, processing_done)
+        if result is None:
+            return
+        else:
+            pid = result
+            await handle_segment(pid, file_lock)
+        
+
+
 async def main(exe='./clavrxorb'):
+    max_workers = 8
+    max_parent_lead = 2
     file_lock = asyncio.Lock()
     processing_done = asyncio.Event()
-    worker_pids = asyncio.Queue(1)
+    worker_pids = asyncio.Queue(max_parent_lead)
 
     # start parent
     parent_pid = start_clavrx('parent', num_clones=1, skip_output=False, redirect=False, exe=exe)
-    segment_tasks = []
+    workers = []
     spawner_task = asyncio.create_task(spawner(parent_pid, processing_done, worker_pids))
 
-    while True:
-        result = await get_or_done(worker_pids, processing_done)
-        if result is None:
-            await spawner_task
-            break
-        else:
-            pid = result
-        segment_tasks.append(asyncio.create_task(handle_segment(pid, file_lock)))
-
-    await asyncio.gather(*segment_tasks)
+    for _ in range(max_workers):
+        workers.append(asyncio.create_task(worker(worker_pids, file_lock, processing_done)))
+    await spawner_task
+    await asyncio.gather(*workers)
         
 
