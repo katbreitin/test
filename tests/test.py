@@ -59,7 +59,7 @@ async def run_parallel_segments(clavrxorb, work_dir):
     prev_pwd = os.path.abspath(os.getcwd())
     os.chdir(work_dir)
     try:
-        await pseg_utils.main(exe=str(clavrxorb))
+        return await pseg_utils.main(exe=str(clavrxorb))
     finally:
         os.chdir(prev_pwd)
         # reset tracing since we have other tests without tracing
@@ -156,8 +156,14 @@ def _run_it(main_l1b_file, aux_l1b_files=(), config_override=None, out_dir=None,
             assert r == 0
         elif parallel_segments:
             loop = asyncio.get_event_loop()
-            r = loop.run_until_complete(run_parallel_segments(CLAVRX, tmpdir))
-            assert r == 0
+            try:
+                task = asyncio.ensure_future(run_parallel_segments(CLAVRX, tmpdir))
+                r = loop.run_until_complete(task)
+                assert r == 0
+            except BaseException as e:
+                task.cancel()
+                r = loop.run_until_complete(task)
+                raise e
         else:
             if mode=='perf':
                 p = subprocess.run(['perf','record','-F99','-g',CLAVRX], cwd=tmpdir)
@@ -170,7 +176,7 @@ def _run_it(main_l1b_file, aux_l1b_files=(), config_override=None, out_dir=None,
             assert p.returncode == 0
         return options_file_content
     finally:
-        rmtree(tmpdir)
+        rmtree(tmpdir, ignore_errors=True)
 
 def test_pgroup_bug():
     main_l1b_file = Path('./dummy')

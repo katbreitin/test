@@ -1,6 +1,7 @@
 import os
 import signal
 import asyncio
+from asyncio import CancelledError
 import numpy as np
 from tracer_utils import read_array, start_clavrx, peek, resume, kill, set_skip_processing, mem_filename, wait_until, get_or_done, get_scan_line_number
 import tracer_utils
@@ -10,21 +11,27 @@ import sys
 assert sys.version_info[0] == 3, 'Python 3 required'
 assert sys.version_info[1] >= 7, 'Python >= 3.7 required'
 
-
 async def handle_segment(pid, file_lock):
-    resume(pid)
-    wn = await wait_until(pid, 3)
-    if wn == -1:
-        print(pid, 'UNEXPECTEDLY TERMINATED BEFORE PROCESSING COMPLETED')
-        return
-    async with file_lock:
+    try:
+        alive = True
         resume(pid)
-        wn = await wait_until(pid, 6)
-    if wn == -1:
-        print(pid, 'UNEXPECTEDLY TERMINATED BEFORE WRITE COMPLETED')
-        return
-    print('writing done, killing', pid)
-    await kill(pid)
+        wn = await wait_until(pid, 3)
+        if wn == -1:
+            alive = False
+            print(pid, 'UNEXPECTEDLY TERMINATED BEFORE PROCESSING COMPLETED')
+            raise ValueError(f'{pid} terminated before processing completed')
+        async with file_lock:
+            resume(pid)
+            wn = await wait_until(pid, 6)
+        if wn == -1:
+            alive = False
+            print(pid, 'UNEXPECTEDLY TERMINATED BEFORE WRITE COMPLETED')
+            raise ValueError(f'{pid} terminated before output write completed')
+        print('writing done')
+    finally:
+        if alive:
+            print('killing worker', pid)
+            await kill(pid)
 
 
 def increment_hdf_start(pid, num_scans):
@@ -40,18 +47,21 @@ def increment_hdf_start(pid, num_scans):
         
 async def spawner(parent_pid, processing_done, worker_queue):
     created_file = False
+    alive = True
     try:
         while True:
             wn = await wait_until(parent_pid, None)
             if wn == 7:
-                processing_done.set()
-                await kill(parent_pid)
+                print('Parent Done')
                 return
             elif wn == 1:
                 sibling_pids_addr = peek(parent_pid, tracer_utils.SIBLING_PIDS_ADDR_ADDR)
                 pids = read_array(parent_pid, sibling_pids_addr, 1, np.int32)
                 wn = await wait_until(pids[0], 1)
-                assert wn != -1, 'UNEXPECTEDLY TERMINATED BEFORE PROCESSING STARTED'
+                if wn == -1:
+                    alive = False
+                    print('UNEXPECTEDLY TERMINATED BEFORE PROCESSING STARTED')
+                    raise ValueError('UNEXPECTEDLY TERMINATED BEFORE PROCESSING STARTED')
 
                 if not created_file:
                     await kill(pids[0])
@@ -63,18 +73,19 @@ async def spawner(parent_pid, processing_done, worker_queue):
                     set_skip_processing(parent_pid)
                 created_file = True
             elif wn == -1:
+                alive = False
                 print('PARENT TERMINATED UNEXPECTEDLY')
-                processing_done.set()
-                return
+                raise ValueError('parent terminated unexpectedly')
             # resume parent
             resume(parent_pid)
-    except:
-        os.kill(parent_pid, signal.SIGTERM)
+    finally:
         processing_done.set()
-        raise
+        if alive:
+            print('Kill parent', parent_pid)
+            await kill(parent_pid)
 
 
-async def worker(pid_queue, file_lock, processing_done):
+async def make_worker(pid_queue, file_lock, processing_done):
     while True:
         result = await get_or_done(pid_queue, processing_done)
         if result is None:
@@ -84,22 +95,54 @@ async def worker(pid_queue, file_lock, processing_done):
             await handle_segment(pid, file_lock)
         
 
-
 async def main(exe='./clavrxorb'):
     max_workers = 8
     max_parent_lead = 2
     file_lock = asyncio.Lock()
     processing_done = asyncio.Event()
     worker_pids = asyncio.Queue(max_parent_lead)
+    workers = []
 
     # start parent
     parent_pid = start_clavrx('parent', num_clones=1, skip_output=False, redirect=False, exe=exe)
-    workers = []
-    spawner_task = asyncio.create_task(spawner(parent_pid, processing_done, worker_pids))
+    try:
+        spawner_task = asyncio.create_task(spawner(parent_pid, processing_done, worker_pids))
 
-    for _ in range(max_workers):
-        workers.append(asyncio.create_task(worker(worker_pids, file_lock, processing_done)))
-    await spawner_task
-    await asyncio.gather(*workers)
+        for _ in range(max_workers):
+            workers.append(asyncio.create_task(make_worker(worker_pids, file_lock, processing_done)))
+        await spawner_task
+        await asyncio.gather(*workers)
+        print('PSeg Finished')
+        return 0
+    except (Exception, CancelledError) as main_e:
+        print(str(main_e))
+        print('PSeg clean-up')
+        processing_done.set()
+        spawner_task.cancel()
+        for worker in workers:
+            worker.cancel()
+        for worker in workers:
+            try:
+                await worker
+            except CancelledError:
+                pass
+            except Exception as e:
+                print(str(e))
+        print('workers clean')
+        try:
+            await spawner_task
+        except CancelledError:
+            pass
+        except Exception as e:
+            print(str(e))
+        print('parent clean')
+
+        while True:
+            try:
+                await kill(worker_pids.get_nowait())
+            except asyncio.QueueEmpty:
+                break
+        print('queue clean')
+        raise main_e
         
 

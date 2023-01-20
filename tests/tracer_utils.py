@@ -320,7 +320,7 @@ async def get_or_done(queue, done):
             if done.is_set():
                 return None
             else:
-                await asyncio.sleep(1)
+                await asyncio.sleep(.1)
 
     
 @contextmanager
