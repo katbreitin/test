@@ -1,4 +1,4 @@
-! $Id: avhrr_reposition_mod.f90 3111 2019-01-25 18:14:02Z awalther $ 
+! $Id: avhrr_reposition_mod.f90 3111 2019-01-25 18:14:02Z awalther $
 !--------------------------------------------------------------------------------------
 ! Clouds from AVHRR Extended (CLAVR-x) 1b PROCESSING SOFTWARE Version 6.0
 !
@@ -8,7 +8,7 @@
 ! PURPOSE: this module houses the non-Nagle routines for repositioning the
 !          AVHRR lat and lon values for time corrections
 !
-! DESCRIPTION:  
+! DESCRIPTION:
 !             Note, the mjdn numbers vary in this module.  The values used to
 !             record the clock errors are referenced to Wednesday November 17, 1858
 !
@@ -43,12 +43,12 @@ module AVHRR_REPOSITION_MOD
    , bad_scan_flag &
    , nav &
    , AVHRR_GAC_Flag
-   
+
  use CX_DATE_TIME_TOOLS_MOD,only: &
   compute_month &
   , compute_day &
   , leap_year_fct
-  
+
  implicit none
  private
  public:: REPOSITION_FOR_CLOCK_ERROR, &
@@ -284,7 +284,7 @@ module AVHRR_REPOSITION_MOD
   48800.5, 48987.6, 49413.0, 49534.1, &
   49562.0, 49847.0, 50190.0, 50629.9, &
   50899.0, 51178.0/)
-   
+
   start_clock_error_n12 = (/ &
   0.02,-1.22,-0.99,-1.21,-1.16,-0.36, &
  -0.34,-0.42,-1.17,-0.09,-0.41, 0.07, &
@@ -402,7 +402,7 @@ module AVHRR_REPOSITION_MOD
                                    end_year, end_itime, &
                                    sat_number,clock_error)
 
-   integer(kind=int2), intent(in) :: start_year, &
+   integer, intent(in) :: start_year, &
                                      end_year
 
    integer(kind=int4), intent(in) :: start_itime, &
@@ -469,7 +469,7 @@ module AVHRR_REPOSITION_MOD
           num = num_m03
     endif
 
-    
+
     !--- check to see if there are any correction data for this sensor
     if (num > 0) then
         allocate(start_mjdn(num))
@@ -483,10 +483,10 @@ module AVHRR_REPOSITION_MOD
 
     !--- copy sensor specific data to local arrays
     if (sat_number == 7) then
-         start_mjdn = start_mjdn_n07 
-         end_mjdn = end_mjdn_n07 
-         start_clock_error = start_clock_error_n07 
-         end_clock_error = end_clock_error_n07 
+         start_mjdn = start_mjdn_n07
+         end_mjdn = end_mjdn_n07
+         start_clock_error = start_clock_error_n07
+         end_clock_error = end_clock_error_n07
     elseif (sat_number == 9) then
          start_mjdn = start_mjdn_n09
          end_mjdn = end_mjdn_n09
@@ -546,13 +546,13 @@ module AVHRR_REPOSITION_MOD
          real(DTMJDN(year,month,day,hour,minute,isecond),kind=real4) + &
          mjdn_offset
    ! print*,orbit_start_mjdn
-    
+
   ! orbit_start_mjdn = image%time_start % epoch_time_day() + &
   !       mjdn_offset
   ! orbit_end_mjdn = image%time_end % epoch_time_day() + &
-   !      mjdn_offset 
+   !      mjdn_offset
   !  print*,orbit_start_mjdn
-   
+
     !--- determine MJDN at end of orbit
     day = end_dom
     month = end_month
@@ -585,7 +585,7 @@ module AVHRR_REPOSITION_MOD
 
     end if
 
-    
+
 
    !------ interpolate start time
 
@@ -675,16 +675,16 @@ subroutine REPOSITION_FOR_CLOCK_ERROR(j1,j2,timerr,error_flag)
     end_month = COMPUTE_MONTH(int(Image%End_Doy,kind=int4),ileap)
     start_dom = COMPUTE_DAY(int(Image%Start_Doy,kind=int4),ileap)
     end_dom = COMPUTE_DAY(int(Image%End_Doy,kind=int4),ileap)
-    
+
 !--- convert scan line times to MJDN
  jj = 1
 
  valid_scan_loop: do j = j1,j1+j2-1
-     
+
 !--- check for bad scans
       if ((image%scan_time_ms(j) == missing_value_int4) .or. &
           (bad_scan_flag(j) == sym%YES))  then
-           cycle 
+           cycle
       endif
 
       valid_scan_index(jj) = j

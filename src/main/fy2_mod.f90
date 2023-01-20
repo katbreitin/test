@@ -7,7 +7,7 @@
 ! PURPOSE: This module contains all the subroutines needed to perform navigation and
 !          calibration for FY-2D/E
 !
-! DESCRIPTION: 
+! DESCRIPTION:
 !
 ! AUTHORS:
 !  Andrew Heidinger, Andrew.Heidinger@noaa.gov
@@ -36,7 +36,7 @@ use NUMERICAL_ROUTINES_MOD
 use GOES_MOD
 use FILE_UTILS, only: get_lun
 use VIEWING_GEOMETRY_MOD
-  
+
  implicit none
  private
  public :: FY_navigation, READ_FY
@@ -63,7 +63,7 @@ use VIEWING_GEOMETRY_MOD
  integer(kind=int4), private, parameter:: time_for_fd_scan =  1560000 !milliseconds (26min)
  real, private, save:: Scan_rate    !scan rate in millsec / line
  integer(kind=int4), private, parameter:: FY2_Byte_Shift = 0 !number of bytes to shift for FY2
- 
+
  CONTAINS
 !----------------------------------------------------------------
 ! read the FY2 constants into memory
@@ -111,7 +111,7 @@ end subroutine READ_FY_INSTR_CONSTANTS
    character(len=*), intent(in):: channel_1_filename
    TYPE (AREA_STRUCT), intent(in) :: AREAstr
    TYPE (GVAR_NAV), intent(in)    :: NAVstr_FY
-   integer(kind=int2), intent(in):: jday
+   integer, intent(in):: jday
    integer(kind=int4), intent(in):: image_time_ms
 
    character(len=1020):: channel_x_filename
@@ -132,17 +132,17 @@ end subroutine READ_FY_INSTR_CONSTANTS
    integer:: num_elements_this_image
    integer:: num_scans_this_image
 
-   !--- assume channel_1_file name has a unique "_1_" in the name. 
+   !--- assume channel_1_file name has a unique "_1_" in the name.
    !--- determine indices needed to replace that string
    ipos = index(channel_1_filename, "_1_")
    ilen = len(channel_1_filename)
-    
+
    first_line_in_segment = (segment_number-1)*Image%Number_Of_Lines_Per_Segment
 
    !---------------------------------------------------------------------------
    ! FY Navigation (Do Navigation first)
    !---------------------------------------------------------------------------
-   
+
    call FY_navigation(1,first_line_in_segment,&
                               Image%Number_Of_Elements,Image%Number_Of_Lines_Per_Segment,1,&
                               AREAstr,NAVstr_FY)
@@ -166,7 +166,7 @@ end subroutine READ_FY_INSTR_CONSTANTS
        if (ichan_goes == 4) ichan_modis = 27
        if (ichan_goes == 2) ichan_modis = 31
        if (ichan_goes == 3) ichan_modis = 32
-       
+
        write(ichan_goes_string,fmt="(I1.1)") ichan_goes
        if(ichan_goes > 9) write(ichan_goes_string,fmt="(I2.2)") ichan_goes
 
@@ -174,7 +174,7 @@ end subroutine READ_FY_INSTR_CONSTANTS
 
           channel_x_filename = channel_1_filename(1:ipos-1) // "_"//trim(ichan_goes_string)//"_" // &
                             channel_1_filename(ipos+3:ilen)
-          
+
           if (l1b_gzip == sym%YES .or. l1b_bzip2 == sym%YES) then
                channel_x_filename_full = trim(Temporary_Data_Dir)//trim(channel_x_filename)
           else
@@ -182,11 +182,11 @@ end subroutine READ_FY_INSTR_CONSTANTS
           endif
 
           channel_x_filename_full_uncompressed = trim(Image%Level1b_Path)//trim(channel_x_filename)
-                    
+
           if (l1b_gzip == sym%YES) then
               cmd = "gunzip -c "//trim(channel_x_filename_full_uncompressed)//".gz"// &
                                 " > "//trim(channel_x_filename_full)
-                                
+
               nc = len_trim(cmd)
               call univ_system_cmd_f(nc, trim(cmd), ierr)
 
@@ -208,21 +208,21 @@ end subroutine READ_FY_INSTR_CONSTANTS
 
 
     enddo
-    
+
     ! On first segment, reflectance, BT and rad tables from McIDAS Header
-    fy_file_id = get_lun()   
+    fy_file_id = get_lun()
     if(l1b_gzip == sym%YES .OR. l1b_bzip2 == sym%YES) THEN
       call MREAD_OPEN(trim(Temporary_Data_Dir)//trim(channel_1_filename)//CHAR(0), fy_file_id)
-    else 
+    else
       call MREAD_OPEN(trim(Image%Level1b_Path)//trim(channel_1_filename)//CHAR(0), fy_file_id)
-    endif  
+    endif
 
     call LOAD_FY_CALIBRATION(fy_file_id, AREAstr)
     call MREAD_CLOSE(fy_file_id)
 
    endif
-  
-        
+
+
     IF(Sensor%Chan_On_Flag_Default(1) == sym%YES) THEN
 
        if (l1b_gzip == sym%YES .or. l1b_bzip2 == sym%YES) then
@@ -239,29 +239,29 @@ end subroutine READ_FY_INSTR_CONSTANTS
                                     Image%Number_Of_Lines_Read_This_Segment,   &
                                     Two_Byte_Temp, &
                                     Goes_Scan_Line_Flag)
-     
-       
+
+
        call FY_Reflectance(Two_Byte_Temp,ch(1)%Ref_Toa(:,:))
-       
+
        !--- store ch1 counts for support of PATMOS-x calibration studies
        Ch1_Counts = Two_Byte_Temp
-       
-    
+
+
     endif
-    
-        
+
+
     IF(Sensor%Chan_On_Flag_Default(20) == sym%YES) THEN
 
        channel_x_filename = channel_1_filename(1:ipos-1) // "_5_" // &
                             channel_1_filename(ipos+3:ilen)
-       
+
        if (l1b_gzip == sym%YES .or. l1b_bzip2 == sym%YES) then
                channel_x_filename_full = trim(Temporary_Data_Dir)//trim(channel_x_filename)
        else
                channel_x_filename_full = trim(Image%Level1b_Path)//trim(channel_x_filename)
        endif
 
-       
+
        call GET_IMAGE_FROM_AREAFILE(trim(Channel_X_Filename_Full), &
                                     FY2_Byte_Shift, &
                                     AREAstr, FY_Xstride, &
@@ -270,12 +270,12 @@ end subroutine READ_FY_INSTR_CONSTANTS
                                     Image%Number_Of_Lines_Read_This_Segment,   &
                                     Two_Byte_Temp, &
                                     Goes_Scan_Line_Flag)
-     
-       
-       
-       
+
+
+
+
       call FY_RADIANCE_BT(5_int1, Two_Byte_Temp, ch(20)%Rad_Toa, ch(20)%Bt_Toa)
-        
+
     endif
 
 
@@ -299,17 +299,17 @@ end subroutine READ_FY_INSTR_CONSTANTS
                                     Image%Number_Of_Lines_Read_This_Segment,   &
                                     Two_Byte_Temp, &
                                     Goes_Scan_Line_Flag)
-     
-       
+
+
       call FY_RADIANCE_BT(4_int1, Two_Byte_Temp, ch(27)%Rad_Toa, ch(27)%Bt_Toa)
-           
-    ENDif    
-    
+
+    ENDif
+
     IF(Sensor%Chan_On_Flag_Default(31) == sym%YES) THEN
 
        channel_x_filename = channel_1_filename(1:ipos-1) // "_2_" // &
                             channel_1_filename(ipos+3:ilen)
-       
+
        if (l1b_gzip == sym%YES .or. l1b_bzip2 == sym%YES) then
                channel_x_filename_full = trim(Temporary_Data_Dir)//trim(channel_x_filename)
        else
@@ -324,16 +324,16 @@ end subroutine READ_FY_INSTR_CONSTANTS
                                     Image%Number_Of_Lines_Read_This_Segment,   &
                                     Two_Byte_Temp, &
                                     Goes_Scan_Line_Flag)
-     
-       
+
+
          call FY_RADIANCE_BT(2_int1, Two_Byte_Temp, ch(31)%Rad_Toa, ch(31)%Bt_Toa)
-         
+
     endif
-    
+
 
 
     IF(Sensor%Chan_On_Flag_Default(32) == sym%YES) THEN
-           
+
 
        channel_x_filename = channel_1_filename(1:ipos-1) // "_3_" // &
                             channel_1_filename(ipos+3:ilen)
@@ -352,16 +352,16 @@ end subroutine READ_FY_INSTR_CONSTANTS
                                     Image%Number_Of_Lines_Read_This_Segment,   &
                                     Two_Byte_Temp, &
                                     Goes_Scan_Line_Flag)
-     
+
          call FY_RADIANCE_BT(3_int1, Two_Byte_Temp, ch(32)%Rad_Toa, ch(32)%Bt_Toa)
-    
+
     endif
 
 
 
 !to here
 
-    
+
    do Line_Idx = Line_Idx_Min_Segment, Line_Idx_Min_Segment + Image%Number_Of_Lines_Read_This_Segment - 1
      Image%Scan_Number(Line_Idx) = first_line_in_segment + Line_Idx
      Image%Scan_Time_Ms(Line_Idx) = image_time_ms + (Image%Scan_Number(Line_Idx)-1) * Scan_rate
@@ -370,28 +370,28 @@ end subroutine READ_FY_INSTR_CONSTANTS
 !------------------------------------------------------------------------------
 ! FY Angles
 ! NOTE: These were private routines in the GOES module. Suggest they become
-!       public with different names, since they are used cross platform  
+!       public with different names, since they are used cross platform
 !------------------------------------------------------------------------------
    image_jday = jday
    image_time_hours = image_time_ms / 60.0 / 60.0 / 1000.0
-   
+
    do Line_Idx = Line_Idx_Min_Segment, Line_Idx_Min_Segment + Image%Number_Of_Lines_Read_This_Segment - 1
      do Elem_Idx = 1,Image%Number_Of_Elements
         call POSSOL(image_jday,image_time_hours, &
                     Nav%Lon_1b(Elem_Idx,Line_Idx),Nav%Lat_1b(Elem_Idx,Line_Idx), &
                     Geo%Solzen(Elem_Idx,Line_Idx),Geo%Solaz(Elem_Idx,Line_Idx))
-                    
+
         !--- because FY2 has solar contamination, we will set the
         !    Solar_Contamination_Mask will be set in pixel_routines in
-        !    the SET_SOLAR_CONTAMINATION_MASK routine.       
-        
-         
+        !    the SET_SOLAR_CONTAMINATION_MASK routine.
+
+
      enddo
       call COMPUTE_SATELLITE_ANGLES(Sensor%Geo_Sub_Satellite_Longitude,  &
                                     Sensor%Geo_Sub_Satellite_Latitude, Line_Idx)
    enddo
-   
-      
+
+
    !--- ascending node
    Elem_Idx = Image%Number_Of_Elements/2
    do Line_Idx = Line_Idx_Min_Segment+1, Line_Idx_Min_Segment + Image%Number_Of_Lines_Read_This_Segment - 1
@@ -401,9 +401,9 @@ end subroutine READ_FY_INSTR_CONSTANTS
      endif
    enddo
    Nav%Ascend(Line_Idx_Min_Segment) = Nav%Ascend(Line_Idx_Min_Segment+1)
-    
-   
-    
+
+
+
  end subroutine READ_FY
 
 
@@ -419,22 +419,22 @@ end subroutine READ_FY_INSTR_CONSTANTS
     DO j=1, Image%Number_Of_Lines_Read_This_Segment
       DO i=1, Image%Number_Of_Elements
         if ( .not. Geo%Space_Mask(i,j)  .and. Geo%Solzen(i,j) < 90.0) THEN
-         
+
             !Not sure if I need to add 1 here
             index = int(FY_Counts(i,j),kind=int2)
 
             alb_temp(i,j) = Missing_Value_Real4
 
             IF((index .GT. 0) .AND. (index .LE. 1024)) THEN
-                        
+
                 Alb_Temp(i,j) = &
                     (real(ref_table(2,1,index),kind=real4) / &
                      100.)
-            ENDif                        
- 
+            ENDif
+
         ELSE
             Alb_Temp(i,j) = Missing_Value_Real4
-        ENDif      
+        ENDif
       END DO
     END DO
 
@@ -446,10 +446,10 @@ end subroutine READ_FY_INSTR_CONSTANTS
                             AREAstr,NAVstr_FY)
     integer(kind=int4) :: xstart, ystart
     integer(kind=int4) :: xsize, ysize
-    integer(kind=int4) :: xstride  
+    integer(kind=int4) :: xstride
     type (AREA_STRUCT) :: AREAstr
     type (GVAR_NAV), intent(in)    :: NAVstr_FY
-    
+
     integer :: i, j, ii, jj, ierr, imode
     real(kind=real4) :: elem, line, height
     real(kind=real4) :: dlon, dlat
@@ -457,47 +457,47 @@ end subroutine READ_FY_INSTR_CONSTANTS
     real(kind=real4), dimension(8) :: angles
 
     NAVstr_FY_NAV = NAVstr_FY
-    
+
     imode = -1
     height = 0.0     !Used for parallax correction
-    
+
     Nav%Lat = Missing_Value_Real4
     Nav%Lon = Missing_Value_Real4
-    
-               
+
+
     if (NAVstr_FY%nav_type == 'GMSX') THEN
-    
+
         jj = 1 + (ystart)*AREAstr%line_res
-            
+
         DO j=1, ysize
             line = real(AREAstr%north_bound) + real(jj - 1) + &
                     real(AREAstr%line_res)/2.0
-               
+
             DO i=1, xsize
                 ii = ((i+(xstart-1)) - 1)*(AREAstr%elem_res*(xstride)) + 1
-        
+
                 elem = real(AREAstr%west_vis_pixel) + real(ii - 1) + &
 	                   real(AREAstr%elem_res*(xstride))/2.0
-                   
+
                 call MGIVSR(imode,elem,line,dlon,dlat,height,&
                             angles,mjd,ierr)
-                
+
                 Geo%Space_Mask(i,j) = .true.
-            
+
                 if (ierr == 0) THEN
                      Geo%Space_Mask(i,j) = .false.
                      Nav%Lat_1b(i,j) = dlat
                      Nav%Lon_1b(i,j) = dlon
                 endif
-                
+
             enddo
-            
+
             jj = jj + AREAstr%line_res
         enddo
-        
+
     endif
-    
-      
+
+
  end subroutine FY_NAVIGATION
 
 !------------------------------------------------------------------
@@ -509,16 +509,16 @@ end subroutine READ_FY_INSTR_CONSTANTS
     integer (kind=INT2), dimension(:,:), intent(in):: FY_Counts
     integer (kind=int1), intent(in) :: chan_num
     real (kind=real4), DIMENSION(:,:), intent(out):: temp1, rad2
-    
+
     integer :: i, j, index
 
     DO j = 1, Image%Number_Of_Lines_Read_This_Segment
       DO i = 1, Image%Number_Of_Elements
         index = int(FY_Counts(i,j),kind=int2) + 1
-        
+
         if ( .not. Geo%Space_Mask(i,j)   .AND. &
-           (index <= 1024) .AND. (index >= 1)) THEN 
-           
+           (index <= 1024) .AND. (index >= 1)) THEN
+
          rad2(i,j) = real(rad_table(chan_num,1,index),kind=real4)/1000.0
          temp1(i,j) = real(bt_table(chan_num,1,index),kind=real4)/100.0
         ELSE
@@ -527,10 +527,10 @@ end subroutine READ_FY_INSTR_CONSTANTS
         endif
       END DO
     END DO
-    
-  
+
+
   end subroutine FY_RADIANCE_BT
-  
+
 
 
 !---------------------------------------------------------------------
@@ -547,25 +547,25 @@ subroutine load_fy_calibration(lun, AREAstr)
                         band_offset_9, band_offset_7, dir_offset, avoid_warning
   real(kind=real4) :: albedo, temperature, radiance
   real(kind=real4), dimension(5)  :: a_fy, b_fy, nu_fy
-    
+
   avoid_warning = lun
-  
+
   ! Constants taken from:
   ! http://fengyunuds.cma.gov.cn/FYCV_EN/PublishInfo/PublishPage.aspx?SuperiorID=1&ChildCatalogID=%2010082-1
   ! GSICS calibrations
-  
+
   if (AREAstr%sat_id_num == 36) THEN
-  
+
     nu_fy(5) = 2601.9680
     nu_fy(4) = 1429.0728
     nu_fy(2) = 923.4366
     nu_fy(3) = 839.4041
-  
+
     a_fy(5) = 0.9814
     a_fy(4) = 0.9874
     a_fy(2) = 0.9979
     a_fy(3) = 0.9980
-  
+
     b_fy(5) = 2.98396
     b_fy(4) = 1.5094
     b_fy(2) = 0.3865
@@ -573,58 +573,58 @@ subroutine load_fy_calibration(lun, AREAstr)
   endif
 
   if (AREAstr%sat_id_num  == 37) THEN
-  
+
     nu_fy(5) = 2568.2084
     nu_fy(4) = 1436.5964
     nu_fy(2) = 923.0511
     nu_fy(3) = 820.0376
-  
+
     a_fy(5) = 0.9815
     a_fy(4) = 0.9883
     a_fy(2) = 0.9981
     a_fy(3) = 0.9986
-  
+
     b_fy(5) = 2.9366
     b_fy(4) = 1.3981
     b_fy(2) = 0.3609
     b_fy(3) = 0.2661
   endif
-     
+
   !---------------------------------------------------------------------
   ! Read from the calibration block.
   !---------------------------------------------------------------------
-  
+
   call mreadf_int_o(lun,AREAstr%cal_offset,4,6528,ibuf)
   !if (AREAstr%swap_bytes > 0) call swap_bytes4(ibuf,6528)
-  
+
   dir_offset = ibuf(4)
   band_offset_2 = ibuf(6)
   band_offset_14 = ibuf(8)
   band_offset_15 = ibuf(10)
   band_offset_9 = ibuf(12)
-  band_offset_7 = ibuf(14)  
-  
+  band_offset_7 = ibuf(14)
+
   nref = 256
   nbt = 1024
   nref_table_fy = nref
   nbt_table_fy = nbt
-    
+
   !---------------------------------------------------------------------
   ! Load the visible channel calibration table for HiRID/MVIS calibration
   !---------------------------------------------------------------------
-  
+
   do j = 1,4
     do i=1,256,4
       offset = band_offset_2/4 + (j-1) * 64
       albedo = real(ibuf(offset+i/4+1),kind=real4) / 10000.
-      
-      ref_table(2,j,i)   = nint(albedo * 100.) 
+
+      ref_table(2,j,i)   = nint(albedo * 100.)
       ref_table(2,j,i+1) = nint(albedo * 100.)
       ref_table(2,j,i+2) = nint(albedo * 100.)
       ref_table(2,j,i+3) = nint(albedo * 100.)
     end do
   end do
-  
+
   !---------------------------------------------------------------------
   ! Load the IR channel calibration table.
   !---------------------------------------------------------------------
@@ -633,11 +633,11 @@ subroutine load_fy_calibration(lun, AREAstr)
     offset = band_offset_7/4
     temperature = real(ibuf(offset + i),kind=real4) / 1000.
     bt_table(5,1,i) = nint(temperature * 100.)
-       
+
     radiance = c1*(nu_fy(5)**3)/(exp((c2*nu_fy(5))/ &
                (a_fy(5)*temperature+b_fy(5)))-1.0)
     rad_table(5,1,i) = nint(radiance * 1000.)
-    
+
     !  6.8 micron
     offset = band_offset_9/4
     temperature = real(ibuf(offset + i),kind=real4) / 1000.
@@ -645,7 +645,7 @@ subroutine load_fy_calibration(lun, AREAstr)
     radiance = c1*(nu_fy(4)**3)/(exp((c2*nu_fy(4))/ &
                (a_fy(4)*temperature+b_fy(4)))-1.0)
     rad_table(4,1,i) = nint(radiance * 1000.)
-    
+
     ! 10.8 micron
     offset = band_offset_14/4
     temperature = real(ibuf(offset + i),kind=real4) / 1000.
@@ -653,16 +653,16 @@ subroutine load_fy_calibration(lun, AREAstr)
     radiance = c1*(nu_fy(2)**3)/(exp((c2*nu_fy(2))/ &
                (a_fy(2)*temperature+b_fy(2)))-1.0)
     rad_table(2,1,i) = nint(radiance * 1000.)
-        
+
     ! 12.0 micron
     offset = band_offset_15/4
     temperature = real(ibuf(offset + i),kind=real4) / 1000.
     bt_table(3,1,i) = nint(temperature * 100.)
     radiance = c1*(nu_fy(3)**3)/(exp((c2*nu_fy(3))/ &
                (a_fy(3)*temperature+b_fy(3)))-1.0)
-    rad_table(3,1,i) = nint(radiance * 1000.) 
+    rad_table(3,1,i) = nint(radiance * 1000.)
   end do
- 
+
 end subroutine load_fy_calibration
 
 
@@ -736,10 +736,10 @@ subroutine MGIVSR(IMODE,RPIX,RLIN,RLON,RLAT,RHGT, &
        real(kind=real4), dimension(8), intent(out) :: RINF
        real(kind=real8), intent(out) :: DSCT
        integer, intent(out) :: IRTN
-       
+
        integer :: LMODE
        real(kind=real8) :: WKCOS, WKSIN
-    
+
 !       real*4     RPIX,RLIN,RLON,RLAT,RHGT,RINF(8)
 !      integer*4  MAP(672,4)
  !
@@ -774,8 +774,8 @@ subroutine MGIVSR(IMODE,RPIX,RLIN,RLON,RLAT,RHGT, &
        RELMNT = NAVstr_FY_NAV%RELMNT
        VMIS = NAVstr_FY_NAV%VMIS
        ELMIS = NAVstr_FY_NAV%ELMIS
-       DSPIN = NAVstr_FY_NAV%DSPIN     
-       
+       DSPIN = NAVstr_FY_NAV%DSPIN
+
        PI    =  3.141592653D0
        CDR   =  PI/180.D0
        CRD   =  180.D0/PI

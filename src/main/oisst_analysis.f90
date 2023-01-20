@@ -33,83 +33,83 @@
 !
 !
 ! data is one degree resolution
-! 
+!
 ! http://www.emc.ncep.noaa.gov/research/cmb/sst_analysis/
 !
 ! global (89.875S - 89.875N)  (1440 x 720) starts at 89.5S and GM
 !
 !
 !  DESCRIPTION OF THE DAILY OI SEA SURFACE TEMPERATURE (SST) ANALYSIS Version2
-!  
-!  The SST analysis is computed daily on a 0.25 degree latitude/longitude grid. 
-!  This is version 1.0. There are two products with different satellite data. 
-!  Both products use in situ data from ships and buoys. Also SSTs are generated 
-!  for sea-ice concentrations above 50%. The sea ice for 1981-2004 is from 
-!  http://nsidc.org/data/nsidc-0051.html 
-!  (Cavalieri D., C. Parkinson, P. Gloerson, and H.J. Zwally. 1997, updated 2005. 
-!  Sea ice concentrations from Nimbus-7 SMMR and DMSP SSM/I passive microwave data, 
-!  June to September 2001. Boulder, CO, USA). The sea ice from 2005 to present is from 
-!  http://polar.ncep.noaa.gov/seaice/ 
-!  (Grumbine, R. W., 1996: Automated passive microwave sea ice concentration 
-!  analysis at NCEP, 13pp. Unpublished manuscript available from NCEP/NWS/NOAA, 
+!
+!  The SST analysis is computed daily on a 0.25 degree latitude/longitude grid.
+!  This is version 1.0. There are two products with different satellite data.
+!  Both products use in situ data from ships and buoys. Also SSTs are generated
+!  for sea-ice concentrations above 50%. The sea ice for 1981-2004 is from
+!  http://nsidc.org/data/nsidc-0051.html
+!  (Cavalieri D., C. Parkinson, P. Gloerson, and H.J. Zwally. 1997, updated 2005.
+!  Sea ice concentrations from Nimbus-7 SMMR and DMSP SSM/I passive microwave data,
+!  June to September 2001. Boulder, CO, USA). The sea ice from 2005 to present is from
+!  http://polar.ncep.noaa.gov/seaice/
+!  (Grumbine, R. W., 1996: Automated passive microwave sea ice concentration
+!  analysis at NCEP, 13pp. Unpublished manuscript available from NCEP/NWS/NOAA,
 !  5200 Auth Road, Camp Springs, MD, 20746, USA.)
-!  
-!  The first product uses NODC's AVHRR Pathfinder Version 5 
-!  http://pathfinder.nodc.noaa.gov 
-!  for September 1, 1981 though December 31, 2005 and the operational US Navy AVHRR data 
-!  (May, D.A., M. M. Parmeter, D. S. Olszewski and B. D. McKenzie, 1998: Operational 
-!  processing of satellite sea surface temperature retrievals at the Naval Oceanographic 
-!  Office, Bull. Amer. Met. Soc., 79, 397-407) from January 1, 2006, through present. 
+!
+!  The first product uses NODC's AVHRR Pathfinder Version 5
+!  http://pathfinder.nodc.noaa.gov
+!  for September 1, 1981 though December 31, 2005 and the operational US Navy AVHRR data
+!  (May, D.A., M. M. Parmeter, D. S. Olszewski and B. D. McKenzie, 1998: Operational
+!  processing of satellite sea surface temperature retrievals at the Naval Oceanographic
+!  Office, Bull. Amer. Met. Soc., 79, 397-407) from January 1, 2006, through present.
 !  This product will henceforth be referred to as the AVHRR product.
-!  
-!  The second product adds AMSR-E version 5 data obtained from 
-!  http://www.remss.com/ 
-!  along with the AVHRR data used in version 1a and is available from June 1, 2002, 
-!  (the start of AMSR-E) through present. This product will henceforth be 
+!
+!  The second product adds AMSR-E version 5 data obtained from
+!  http://www.remss.com/
+!  along with the AVHRR data used in version 1a and is available from June 1, 2002,
+!  (the start of AMSR-E) through present. This product will henceforth be
 !  termed the AVHRR + AMSR product.
-!  
-!  Both analyses include a bias correction of the satellite data with respect to 
-!  in situ data using an empirical orthogonal teleconnection (EOT) algorithm. 
-!  A short description of the complete analysis procedure can be found in the 
+!
+!  Both analyses include a bias correction of the satellite data with respect to
+!  in situ data using an empirical orthogonal teleconnection (EOT) algorithm.
+!  A short description of the complete analysis procedure can be found in the
 !  AMS extended abstract file (Reynolds-reviewed-rev.pdf).
-!  
-!  The SST analyses are available in individual daily files. The AVHRR product 
-!  is named avhrr-only-v2.YYYYMMDD where YYYY is the year, MM is the month, 
-!  and DD is the day. The files can be found on 
-!  ftp://eclipse.ncdc.noaa.gov/pub/OI-daily-v2/IEEE/YYYY/AVHRR 
-!  where YYYY is the year: 1981 to present. The files were written in IEEE 
-!  binary (big-endian) and must be decompressed using gunzip. 
+!
+!  The SST analyses are available in individual daily files. The AVHRR product
+!  is named avhrr-only-v2.YYYYMMDD where YYYY is the year, MM is the month,
+!  and DD is the day. The files can be found on
+!  ftp://eclipse.ncdc.noaa.gov/pub/OI-daily-v2/IEEE/YYYY/AVHRR
+!  where YYYY is the year: 1981 to present. The files were written in IEEE
+!  binary (big-endian) and must be decompressed using gunzip.
 !  The AVHRR + AMSR-E product is written with the same format as the AVHRR product.
 !  However, the file names are avhrr-only-v2.YYYYMMDD. The files can be found on
-!  ftp://eclipse.ncdc.noaa.gov/pub/OI-daily-v2/IEEE/YYYY/AVHRR-AMSR 
+!  ftp://eclipse.ncdc.noaa.gov/pub/OI-daily-v2/IEEE/YYYY/AVHRR-AMSR
 !  where YYYY is the year: 2002 to present.
-!  
-!  Each file contains 4 records with integer*4 year, month, day, 
-!  followed by a gridded integer*2 array. The first array is SST. 
-!  The second array is the SST anomaly with respect to a 1971-2000 
-!  base period. The third array is the sea ice concentration. 
-!  The fourth array is the standard deviation of the analysis error 
-!  which includes sampling, random and bias error. 
-!  
-!  Note: The SST, SST ANOMALY AND ERROR ARRAYS MUST BE MULTIPLIED BY 0.01 
-!  TO CONVERT THE VALUES TO DEGREE C. The sea ice concentration array is in per cent (0-100). 
+!
+!  Each file contains 4 records with integer*4 year, month, day,
+!  followed by a gridded integer*2 array. The first array is SST.
+!  The second array is the SST anomaly with respect to a 1971-2000
+!  base period. The third array is the sea ice concentration.
+!  The fourth array is the standard deviation of the analysis error
+!  which includes sampling, random and bias error.
+!
+!  Note: The SST, SST ANOMALY AND ERROR ARRAYS MUST BE MULTIPLIED BY 0.01
+!  TO CONVERT THE VALUES TO DEGREE C. The sea ice concentration array is in per cent (0-100).
 !  Missing values are -999.
-!  
-!  All arrays consist of 1440 spatial points in longitude from 0.125E to 359.875E 
-!  in intervals of 0.25 increasing eastward, and 720 spatial points in latitude 
+!
+!  All arrays consist of 1440 spatial points in longitude from 0.125E to 359.875E
+!  in intervals of 0.25 increasing eastward, and 720 spatial points in latitude
 !  from 89.875S to 89.875N in intervals of 0.25 increasing northward.
-!  
+!
 !  Each day consists of four FORTRAN records:
-!  1. Three 4-byte integers for the year, month and day followed by 
+!  1. Three 4-byte integers for the year, month and day followed by
 !     1440*720 2-byte integer SST values.
-!  2. Three 4-byte integers for the year, month and day followed by 
+!  2. Three 4-byte integers for the year, month and day followed by
 !     1440*720 2-byte integer SST anomaly values.
-!  3. Three 4-byte integers for the year, month and day followed by 
+!  3. Three 4-byte integers for the year, month and day followed by
 !     1440*720 2-byte integer error values.
-!  4. Three 4-byte integers for the year, month and day followed by 
+!  4. Three 4-byte integers for the year, month and day followed by
 !     1440*720 2-byte integer ice concentration values.
-!  
-!  Each record is written with a FORTRAN unformatted write which adds 
+!
+!  Each record is written with a FORTRAN unformatted write which adds
 !  an extra 4 byte header and trailer word to the total record.
 !--------------------------------------------------------------------------------------
 module OISST_ANALYSIS
@@ -127,8 +127,8 @@ module OISST_ANALYSIS
 
   public:: GET_PIXEL_SST_ANALYSIS, GET_OISST_MAP_FILENAME, READ_OISST_ANALYSIS_MAP
 
-  integer, parameter, private:: num_lon_sst_anal =1440, num_lat_sst_anal= 720 
-  real, parameter, private:: first_lon_sst_anal = 0.125, first_lat_sst_anal = -89.875, & 
+  integer, parameter, private:: num_lon_sst_anal =1440, num_lat_sst_anal= 720
+  real, parameter, private:: first_lon_sst_anal = 0.125, first_lat_sst_anal = -89.875, &
                             last_lon_sst_anal = 359.875, last_lat_sst_anal = 89.875
   real, parameter, private:: del_lon_sst_anal = (last_lon_sst_anal - first_lon_sst_anal)/(num_lon_sst_anal-1)
   real, parameter, private:: del_lat_sst_anal = (last_lat_sst_anal - first_lat_sst_anal)/(num_lat_sst_anal-1)
@@ -151,9 +151,9 @@ module OISST_ANALYSIS
   function GET_OISST_MAP_FILENAME(year_in,day_of_year,oisst_path) result(oisst_filename)
 
    character(*), intent(in) :: oisst_path
-   integer(kind=int2), intent(in):: year_in
-   integer(kind=int2), intent(in):: day_of_year
-  
+   integer, intent(in):: year_in
+   integer, intent(in):: day_of_year
+
    character(len=1020) :: oisst_filename
    character(len=1020) :: oisst_filename_tmp
    character(len=1020) :: oisst_filename_tmp_preliminary
@@ -168,22 +168,22 @@ module OISST_ANALYSIS
 
    do iday=0, MAX_OISST_LATENCY - 1
       jday = day_of_year - iday
-      year = year_in 
+      year = year_in
       ileap = leap_year_fct(year)
-      
+
       if (jday < 1) then
          year = year - 1
          ileap = leap_year_fct(year)
          jday = (365 + ileap) + jday
-      end if 
-       
+      end if
+
       month = compute_month(jday, ileap)
       day = compute_day(jday, ileap)
       write (year_string,fmt="(I4)") year
       write (month_string, '(I2.2)') month
       write (day_string,   '(I2.2)') day
 
-      
+
       ! V2 OISST
       oisst_filename_tmp= "avhrr-only-v2."//year_string//month_string//day_string
       oisst_filename_tmp = trim(oisst_path)//trim(year_string)//"/"//trim(oisst_filename_tmp)
@@ -191,26 +191,26 @@ module OISST_ANALYSIS
       oisst_filename_tmp = trim(oisst_filename_tmp)//".nc"
 
       ! V2r1 OISST
-      ! this has a slightly different naming convention than the V2 version, so we need to 
+      ! this has a slightly different naming convention than the V2 version, so we need to
       ! build the preliminary and actual names - WCS3
       oisst_filename_tmp_v21= "oisst-avhrr-v02r01."//year_string//month_string//day_string
       oisst_filename_tmp_v21 = trim(oisst_path)//trim(year_string)//"/"//trim(oisst_filename_tmp_v21)
       oisst_filename_tmp_preliminary_v21 = trim(oisst_filename_tmp_v21)//"_preliminary.nc"
       oisst_filename_tmp_v21 = trim(oisst_filename_tmp_v21)//".nc"
-      
+
       ! This tests to see if either file exists
       if ((file_test(trim(oisst_filename_tmp)) ) .OR. &
            (file_test(trim(oisst_filename_tmp_v21)) ) )then
-           
+
            !default is to use the old naming convention, secondary is the "new" name
-           
+
            if (file_test(trim(oisst_filename_tmp)) ) then
                  oisst_filename = oisst_filename_tmp
                  call MESG("Found "//trim(oisst_filename_tmp), &
                             level=Verb_Lev%VERBOSE)
                 exit
            endif
-           
+
            if (file_test(trim(oisst_filename_tmp_v21)) ) then
                  oisst_filename = oisst_filename_tmp_v21
                  call MESG("Found "//trim(oisst_filename_tmp_v21),&
@@ -219,20 +219,20 @@ module OISST_ANALYSIS
            endif
       end if
 
-      
+
       !--- check for preliminary file (true of recent files)
       !--- same check as above done for OISST v2.1
-      
+
       if ((file_test(trim(oisst_filename_tmp_preliminary)) ) .OR. &
            (file_test(trim(oisst_filename_tmp_preliminary_v21)) ) ) then
-                      
+
            if (file_test(trim(oisst_filename_tmp_preliminary)) ) then
                  oisst_filename = oisst_filename_tmp_preliminary
                  call MESG("Found "//trim(oisst_filename_tmp_preliminary), &
                             level=Verb_Lev%VERBOSE)
                 exit
            endif
-           
+
            if (file_test(trim(oisst_filename_tmp_preliminary_v21)) ) then
                  oisst_filename = oisst_filename_tmp_preliminary_v21
                  call MESG("Found "//trim(oisst_filename_tmp_preliminary_v21), &
@@ -242,11 +242,11 @@ module OISST_ANALYSIS
       end if
 
    end do
-   
+
    if (oisst_filename == "no_file") then
       call MESG("WARNING, OISST file read failed", level=Verb_Lev%WARNING)
    endif
-      
+
    return
 
 end function GET_OISST_MAP_FILENAME
@@ -267,7 +267,7 @@ end function GET_OISST_MAP_FILENAME
    !------------------------------------------------------------------------------
 
    call OPEN_NETCDF(trim(sst_anal_name), ncid)
-   if (ncid < 0) then 
+   if (ncid < 0) then
      call MESG("Error opening OISST Analysis file, file = "//trim(sst_anal_name), level=Verb_Lev%WARNING)
      use_sst_anal = 0
      return
@@ -275,7 +275,7 @@ end function GET_OISST_MAP_FILENAME
 
    sds_start_4d = 1
    sds_edge_4d(1) = num_lon_sst_anal
-   sds_edge_4d(2) = num_lat_sst_anal 
+   sds_edge_4d(2) = num_lat_sst_anal
    sds_edge_4d(3) = 1
    sds_edge_4d(4) = 1
    sds_stride_4d = 1
@@ -378,7 +378,7 @@ subroutine GET_PIXEL_SST_ANALYSIS(j1,j2)
         sst_anal(i,j) = (1.0-lon_weight)*(1.0-lat_weight)*oisst_anal_map(ilon_sst_anal,ilat_sst_anal) + &
                      (lon_weight)*(1.0-lat_weight)*oisst_anal_map(ilon_sst_anal_x,ilat_sst_anal) + &
                      (1.0-lon_weight)*(lat_weight)*oisst_anal_map(ilon_sst_anal,ilat_sst_anal_x) + &
-                     (lon_weight)*(lat_weight)*oisst_anal_map(ilon_sst_anal_x,ilat_sst_anal_x) 
+                     (lon_weight)*(lat_weight)*oisst_anal_map(ilon_sst_anal_x,ilat_sst_anal_x)
      else
 
         sst_anal(i,j) = oisst_anal_map(ilon_sst_anal,ilat_sst_anal)

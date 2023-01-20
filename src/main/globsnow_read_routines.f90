@@ -27,7 +27,7 @@
 !
 ! Includes: GET_GlobSnow_FILENAME
 !           READ_GlobSnow_ANALYSIS_MAP
-!           GET_PIXEL_GlobSnow_ANALYSIS 
+!           GET_PIXEL_GlobSnow_ANALYSIS
 !
 !--------------------------------------------------------------------------------------
 module GLOBSNOW_READ_ROUTINES
@@ -41,7 +41,7 @@ module GLOBSNOW_READ_ROUTINES
   public:: GET_GLOBSNOW_FILENAME
   public:: READ_GLOBSNOW_ANALYSIS_MAP
   integer, parameter, public:: Num_Lon_GlobSnow = 721
-  integer, parameter, public:: Num_Lat_GlobSnow = 721 
+  integer, parameter, public:: Num_Lat_GlobSnow = 721
   real, parameter, private:: GLOBSNOW_SWE_THRESHOLD = 0.001
   real, parameter, private:: Min_Lat_GlobSnow = 35.0
   real, parameter, private:: Max_Lat_GlobSnow = 85.0
@@ -67,8 +67,8 @@ module GLOBSNOW_READ_ROUTINES
 
  FUNCTION GET_GlobSnow_FILENAME(year_in,day_of_year,GlobSnow_path) result(GlobSnow_filename)
    CHARACTER(*), intent(in) :: GlobSnow_path
-   integer(kind=int2), intent(in):: year_in
-   integer(kind=int2), intent(in):: day_of_year
+   integer, intent(in):: year_in
+   integer, intent(in):: day_of_year
    integer:: GlobSnow_option
    CHARACTER(len=1020) :: GlobSnow_filename,GlobSnow_full
    CHARACTER(len=1020) :: GlobSnow_filename_tmp
@@ -84,13 +84,13 @@ module GLOBSNOW_READ_ROUTINES
 
      do iday=0, MAX_GLOBSNOW_LATENCY - 1
        jday = day_of_year - iday
-       year = year_in 
+       year = year_in
        ileap = leap_year_fct(year)
        if (jday < 1) then
          year = year - 1
          ileap = leap_year_fct(year)
          jday = (365 + ileap) + jday
-       endif 
+       endif
        month = compute_month(jday, ileap)
        day = compute_day(jday, ileap)
        write (year_string,fmt="(I4)") year
@@ -100,7 +100,7 @@ module GLOBSNOW_READ_ROUTINES
        GlobSnow_filename_tmp= trim(year_string)//"/" &
                  //"GlobSnow_SWE_L3A_"//year_string//month_string//day_string//"_v1.0.hdf"
        GlobSnow_full = trim(GlobSnow_path)//trim(GlobSnow_filename_tmp)
-       
+
        if (file_test(trim(GlobSnow_full)) ) then
          GlobSnow_filename = GlobSnow_filename_tmp
          print *, EXE_PROMPT, "Found ", trim(GlobSnow_filename_tmp)
@@ -113,7 +113,7 @@ module GLOBSNOW_READ_ROUTINES
  END FUNCTION GET_GlobSnow_FILENAME
 
 !----------------------------------------------------------------------------------------
-! 
+!
 ! Name: READ_GlobSnow_ANALYSIS_MAP
 !
 ! Description: Opens and reads in globsnow hdf file and converts snow water equivalent
@@ -134,18 +134,18 @@ module GLOBSNOW_READ_ROUTINES
    integer(kind=int4):: sfend, sfstart, sfselect, sfrdata, sfendacc, &
                         sfginfo, sfn2index
    real(kind=real4), dimension(:,:), allocatable :: buffer_map
-   
-   
-   integer, dimension(2):: start, stride, edge 
-     
+
+
+   integer, dimension(2):: start, stride, edge
+
 
    !--- uncompress
  !  system_string = "gunzip -c "//trim(GlobSnow_name)// &
  !       " > temp_GlobSnow_file"
   ! call system(system_string)
- 
+
   ! file_temp = "temp_GlobSnow_file"
-  
+
    file_temp = GlobSnow_name
 
 !-------------------------------------------------------------------------------------
@@ -171,19 +171,19 @@ module GLOBSNOW_READ_ROUTINES
    else
 !    print "(a,'Successful read from ',a,' from sd_id: ',i0)",EXE_PROMPT,trim(sds_name),sd_id
    endif
- 
+
 !   if (edge(1) < 0) edge(1) = sds_dims(1)
 !   if (edge(2) < 0) edge(2) = sds_dims(2)
- 
+
 !   edge(1) = min((sds_dims(1) - start(1)),edge(1))
 !   edge(2) = min((sds_dims(2) - start(2)),edge(2))
- 
+
    allocate(buffer_map(edge(1),edge(2)),stat=astatus)
    if (astatus /= 0) then
      print "(a,'Not enough memory to allocate 2d buffer.')",EXE_PROMPT
      stop
    endif
- 
+
    !--- read from this sds
    istatus = sfrdata(sds_id, start, stride, edge, buffer_map) + istatus
 
@@ -199,7 +199,7 @@ module GLOBSNOW_READ_ROUTINES
    else
 !    print "(a,'Successful Read of GlobSnow from ',a)",EXE_PROMPT,trim(GlobSnow_name)
    endif
-   
+
    GlobSnow_Map = buffer_map
 
  end subroutine READ_GLOBSNOW_ANALYSIS_MAP
@@ -209,8 +209,8 @@ module GLOBSNOW_READ_ROUTINES
 ! Name: GET_PIXEL_GLOBSNOW_ANALYSIS
 !
 ! Description: Locate GlobSnow map value for each AVHRR pixel. The GlobSnow data is on an
-!              Equal-Area Scalable Earth Grid (EASE-Grid) and provides the whole Northern 
-!              Hemisphere (lambert's equal-area azimuthal projection) in a single data 
+!              Equal-Area Scalable Earth Grid (EASE-Grid) and provides the whole Northern
+!              Hemisphere (lambert's equal-area azimuthal projection) in a single data
 !              field. The nominal resolution of a single pixel is 25 km x 25 km
 !
 !  Input: Latitude - pixel Latitudes of the segment
@@ -229,7 +229,7 @@ module GLOBSNOW_READ_ROUTINES
   integer(kind=int1), dimension(:,:), intent(out)::Snow_Out
   integer:: ielem
   integer:: iline
-  real:: xLon, xLat  
+  real:: xLon, xLat
 ! radius of the earth (km), authalic sphere based on International datum
   real,parameter:: Re_km = 6371.228
 ! nominal cell size in kilometers
@@ -243,17 +243,17 @@ module GLOBSNOW_READ_ROUTINES
   integer ::  ny
   integer ::  nx_map
   integer ::  ny_map
-  
+
   nx = size(Snow_Out,1)
   ny = size(Snow_Out,2)
   nx_map = Num_Lon_GlobSnow
-  ny_map = Num_Lat_GlobSnow 
+  ny_map = Num_Lat_GlobSnow
 
   !-- compute derived constants here outside of loop
   Rg = Re_km/Cell_km
   c0 = (Num_Lon_GlobSnow-1)/2.0
   r0 = (Num_Lat_GlobSnow-1)/2.0
-  
+
   !---------------------------------------------------------------------
   ! loop of pixels in this segment
   !---------------------------------------------------------------------
@@ -280,7 +280,7 @@ module GLOBSNOW_READ_ROUTINES
       !----------------------------------------------------------------------------------------
       ! convert lat/lon coordinates to EASE-grid row/column coordinates
       !
-      !  Input : latitude - local variable Latitude 
+      !  Input : latitude - local variable Latitude
       !          longitude - local variable Longitude
       !
       !  Output: col - column coordinate for EASE-grid

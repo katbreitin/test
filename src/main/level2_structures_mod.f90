@@ -17,10 +17,10 @@ module LEVEL2_STRUCTURES_MOD
     character(len=20):: Data_Type
     character(len=1020):: File_Name
     character(len=1020):: File_1b
-    integer(kind=int2):: Start_Year
-    integer(kind=int2):: End_Year
-    integer(kind=int2):: Start_Day
-    integer(kind=int2):: End_Day
+    integer:: Start_Year
+    integer:: End_Year
+    integer:: Start_Day
+    integer:: End_Day
     real(kind=real4):: Start_Time
     real(kind=real4):: End_Time
     integer(kind=int4):: Num_Cells
@@ -65,8 +65,8 @@ module LEVEL2_STRUCTURES_MOD
     real(kind=real4):: geo_sub_lon
     real(kind=real4):: geo_sub_lat
     real(kind=real4):: timerr_seconds
-    character(len=10):: mask_mode  
-    character(len=50):: acha_mode  
+    character(len=10):: mask_mode
+    character(len=50):: acha_mode
     character(len=50):: acha_mode_user
     integer(kind=int4):: dcomp_mode
     integer(kind=int4):: wmo_sc_code
@@ -120,12 +120,12 @@ module LEVEL2_STRUCTURES_MOD
     integer(kind=int1), dimension(:,:,:), pointer:: Sds_Data_3d_I1 => NULL()
     real, dimension(:), pointer:: Sds_Data_1d_R4 => NULL()
     real, dimension(:,:), pointer:: Sds_Data_2d_R4 => NULL()
-    
+
     contains
-    
+
     procedure:: info => Sds_Struct__info
-    
-    
+
+
   end type Sds_Struct
 
   type (L2_Glob_Attr_Definition), public:: Clavrx_Global_Attr
@@ -136,15 +136,15 @@ contains
 !    prints info on screen for debugging
   subroutine Sds_Struct__info(self)
     class(sds_struct) :: self
-    
+
     print*,self % sds_name
     print*,self % rank
     print*,self % valid_range
     print*,self % actual_range
-  
-  
-  
-  end subroutine 
+
+
+
+  end subroutine
 
 
 !-------------------------------------------------------------------------
@@ -180,7 +180,7 @@ contains
     character(len=*), intent(in):: mask_mode
     character(len=*), intent(in):: acha_mode, acha_mode_user
     integer(kind=int4), intent(in):: dcomp_mode
-    integer(kind=int2), intent(in)::  start_year,end_year,start_day,end_day
+    integer, intent(in)::  start_year,end_year,start_day,end_day
     real(kind=real4), intent(in)::  resolution_km, dlat, ch1_gain_low, ch1_gain_high, &
                            ch2_gain_low, ch2_gain_high, &
                            ch3a_gain_low, ch3a_gain_high, &

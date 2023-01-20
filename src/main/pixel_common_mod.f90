@@ -361,19 +361,19 @@ module PIXEL_COMMON_MOD
     character(len=1020):: Level1b_Full_Name
     character(len=1020):: Level1b_Path
     character(len=1020):: Level1b_Fusion_Name
-    integer(kind=int4):: Orbit_Number
-    integer(kind=int4):: Number_Of_Elements
-    integer(kind=int4):: Number_Of_Lines
-    integer(kind=int4):: Number_Of_Lines_Per_Segment
-    integer(kind=int4):: Number_Of_Lines_Read_This_Segment
-    integer(kind=int4):: Number_Of_Segments
-    integer(kind=int4):: Segment_Number
-    integer(kind=int2):: Start_Year
-    integer(kind=int2):: Start_Doy
-    integer(kind=int4):: Start_Time
-    integer(kind=int2):: End_Year
-    integer(kind=int2):: End_Doy
-    integer(kind=int4):: End_Time
+    integer :: Orbit_Number
+    integer :: Number_Of_Elements
+    integer :: Number_Of_Lines
+    integer :: Number_Of_Lines_Per_Segment
+    integer :: Number_Of_Lines_Read_This_Segment
+    integer :: Number_Of_Segments
+    integer :: Segment_Number
+    integer :: Start_Year
+    integer :: Start_Doy
+    integer :: Start_Time
+    integer :: End_Year
+    integer :: End_Doy
+    integer :: End_Time
     type(date_type) :: time_start
     type(date_type) :: time_end
     integer(kind=int4):: X_Stride
