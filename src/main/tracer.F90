@@ -997,7 +997,7 @@
           ! Check heap-allocated value, which may have been set during wait
           if(skip_processing == 1) then
             Skip_Processing_Flag = SYM%YES
-          else
+          else if(skip_processing == 0) then
             Skip_Processing_Flag = SYM%NO
           endif
           ! Reset to default
