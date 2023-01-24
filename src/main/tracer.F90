@@ -595,6 +595,10 @@
         symbol_names_i1_1d(num_symbols_i1_1d) = 'chan_on_flag_default';
 
         call add_sym_i4_1d(Image%Scan_Number,'scan_line_number')
+        call add_sym_f4_1d(Image%Utc_Scan_Time_Hours,'scan_line_time')
+        call add_sym_i4_1d(Image%Scan_Time_Ms,'scan_time_ms')
+
+        call add_sym_i1_1d(Nav%Ascend,'asc_des_flag')
 
         call add_sym_i1_2d(CLDMASK%Cld_Mask,'cldmask')
         call add_sym_f4_2d(CLDMASK%Prior_Cld_Probability,'prior_cloud_probability')
@@ -609,6 +613,8 @@
         call add_sym_i1_2d(Cld_Phase,'cloud_phase')
         call add_sym_f4_2d(Nav%Lat, 'latitude')
         call add_sym_f4_2d(Nav%Lon, 'longitude')
+        call add_sym_i4_2d(Nav%X, 'nav_x')
+        call add_sym_i4_2d(Nav%Y, 'nav_y')
         call add_sym_i1_2d(Solar_Contamination_Mask,'solar_contamination_mask')
         call add_sym_f4_2d(Geo%Solzen,'solar_zenith_angle')
         call add_sym_f4_2d(Geo%Solaz,'solar_azimuth_angle')
