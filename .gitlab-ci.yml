@@ -8,6 +8,7 @@ build:
     paths:
       - build.log
       - run/bin/clavrxorb
+      - run/bin/clavrxorb.debug
       - run/bin/comp_asc_des_level2b
       - run/bin/drive_subset_level2b
 

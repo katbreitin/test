@@ -24,7 +24,7 @@ import asyncio
 import tracer_utils
 import pseg_utils
 
-CLAVRX = Path('../run/bin/clavrxorb').absolute()
+CLAVRX = Path('../run/bin/clavrxorb.debug').absolute()
 assert CLAVRX.exists(), str(CLAVRX)+' does not exist'
 
 HERE = Path(__file__).absolute().parent
