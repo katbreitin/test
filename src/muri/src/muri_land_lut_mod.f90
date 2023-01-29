@@ -285,7 +285,6 @@ contains
       integer :: i_band, i_mode, i_opt
 		integer :: band
 		integer , parameter :: N_BANDs=3
-		real :: aerosol_land_map(4,360,180)
 	  
       integer :: pos_sol
       integer :: pos_sat
@@ -340,7 +339,7 @@ contains
 	   ! Continental model is reserved for different retrieval
 	
 	   ! need to read "aerosol_land_map" as integer in read LUT
-       land_fine_mode = NINT(aerosol_land_map(season_index,ilat,ilon) + 2)
+        land_fine_mode = NINT(this%aerosol_land_map(season_index,ilat,ilon)+2)
 		 this %land_fine_mode=land_fine_mode
 		
 		! print*,'selected land fine mode',land_fine_mode 
