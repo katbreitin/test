@@ -45,7 +45,7 @@ module GLOBSNOW_READ_ROUTINES
   real, parameter, private:: GLOBSNOW_SWE_THRESHOLD = 0.001
   real, parameter, private:: Min_Lat_GlobSnow = 35.0
   real, parameter, private:: Max_Lat_GlobSnow = 85.0
-  real(kind=real4), dimension(Num_Lon_GlobSnow,Num_Lat_GlobSnow), public, save:: GlobSnow_Map
+  real(kind=real4), allocatable, dimension(:,:), public :: GlobSnow_Map
 
   integer(kind=int4), parameter, private :: MAX_GLOBSNOW_LATENCY = 3 !including current day
 
@@ -200,6 +200,8 @@ module GLOBSNOW_READ_ROUTINES
 !    print "(a,'Successful Read of GlobSnow from ',a)",EXE_PROMPT,trim(GlobSnow_name)
    endif
 
+   if (.not. allocated(GlobSnow_Map))  &
+        allocate(GlobSnow_Map(Num_Lon_GlobSnow, Num_Lat_GlobSnow))
    GlobSnow_Map = buffer_map
 
  end subroutine READ_GLOBSNOW_ANALYSIS_MAP

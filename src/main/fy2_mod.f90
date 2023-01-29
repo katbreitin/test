@@ -53,9 +53,8 @@ use VIEWING_GEOMETRY_MOD
  integer, PRIVATE :: nbt_table_FY
  CHARACTER(len=4), PRIVATE:: calib_type
 
- integer (kind=int4), dimension(nchan_FY,ndet_FY,ntable_FY), PRIVATE  :: ref_table
- integer (kind=int4), dimension(nchan_FY,ndet_FY,ntable_FY), PRIVATE  :: bt_table
- integer (kind=int4), dimension(nchan_FY,ndet_FY,ntable_FY), PRIVATE  :: rad_table
+ integer(kind=int4), allocatable, dimension(:,:,:), PRIVATE :: ref_table,  &
+      bt_table, rad_table
 
  integer(kind=int4), private, parameter:: FY_Xstride = 1
  integer(kind=int4), private, parameter:: num_4km_scans_fd = 3712
@@ -547,6 +546,13 @@ subroutine load_fy_calibration(lun, AREAstr)
                         band_offset_9, band_offset_7, dir_offset, avoid_warning
   real(kind=real4) :: albedo, temperature, radiance
   real(kind=real4), dimension(5)  :: a_fy, b_fy, nu_fy
+
+  if (.not. allocated(ref_table))  &
+       allocate(ref_table(nchan_FY,ndet_FY,ntable_FY))
+  if (.not. allocated(bt_table))  &
+       allocate(bt_table(nchan_FY,ndet_FY,ntable_FY))
+  if (.not. allocated(rad_table))  &
+       allocate(rad_table(nchan_FY,ndet_FY,ntable_FY))
 
   avoid_warning = lun
 

@@ -58,9 +58,8 @@ private :: MGIVSR
  integer, PRIVATE :: nbt_table_mtsat
  character(len=4), SAVE, PRIVATE:: calib_type
 
- integer (kind=int4), dimension(nchan_mtsat,ndet_mtsat,ntable_mtsat), PRIVATE  :: ref_table
- integer (kind=int4), dimension(nchan_mtsat,ndet_mtsat,ntable_mtsat), PRIVATE  :: bt_table
- integer (kind=int4), dimension(nchan_mtsat,ndet_mtsat,ntable_mtsat), PRIVATE  :: rad_table
+ integer(kind=int4), allocatable, dimension(:,:,:), PRIVATE :: ref_table,  &
+      bt_table, rad_table
 
  integer(kind=int4), public, parameter:: Mtsat_Xstride = 1
  integer(kind=int4), private, parameter:: Num_4km_Scans_Fd = 3712
@@ -413,6 +412,13 @@ subroutine LOAD_MTSAT_CALIBRATION(lun, AREAstr)
   real(kind=real4) :: albedo, temperature, radiance
   real(kind=real4), dimension(5)  :: a_mtsat, b_mtsat, nu_mtsat
 
+  if (.not. allocated(ref_table))  &
+       allocate(ref_table(nchan_mtsat,ndet_mtsat,ntable_mtsat))
+  if (.not. allocated(bt_table))  &
+       allocate(bt_table(nchan_mtsat,ndet_mtsat,ntable_mtsat))
+  if (.not. allocated(rad_table))  &
+       allocate(rad_table(nchan_mtsat,ndet_mtsat,ntable_mtsat))
+  
   call mreadf_int_o(lun,AREAstr%cal_offset,4,6528,ibuf)
   !if (AREAstr%swap_bytes > 0) call swap_bytes4(ibuf,6528)
 

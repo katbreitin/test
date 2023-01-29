@@ -101,8 +101,8 @@ use VIEWING_GEOMETRY_MOD, only: &
  CHARACTER(len=4), PRIVATE:: Calib_Type
 
  real (kind=real4), dimension(Ntable_COMS), PRIVATE  :: Ref_Table
- integer (kind=int4), dimension(nchan_COMS,ndet_COMS,Ntable_COMS), PRIVATE  :: bt_table
- integer (kind=int4), dimension(nchan_COMS,ndet_COMS,Ntable_COMS), PRIVATE  :: rad_table
+ integer(kind=int4), allocatable, dimension(:,:,:), PRIVATE :: bt_table
+ integer(kind=int4), allocatable, dimension(:,:,:), PRIVATE :: rad_table
 
  integer(kind=int4), private, parameter:: COMS_Xstride = 1
  integer(kind=int4), private, parameter:: num_4km_scans_fd = 2750
@@ -441,6 +441,11 @@ end subroutine READ_COMS_INSTR_CONSTANTS
                         band_offset_9, band_offset_7, dir_offset
   real(kind=real4) :: albedo, temperature, radiance
 
+  if (.not. allocated(bt_table))  &
+       allocate(bt_table(nchan_COMS,ndet_COMS,Ntable_COMS))
+  if (.not. allocated(rad_table))  &
+       allocate(rad_table(nchan_COMS,ndet_COMS,Ntable_COMS))
+  
   call mreadf_int_o(lun,AREAstr%cal_offset,4,6528,ibuf)
   !if (AREAstr%swap_bytes > 0) call swap_bytes4(ibuf,6528)
 

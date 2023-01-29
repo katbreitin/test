@@ -184,15 +184,10 @@ contains
       integer :: l
       integer, parameter :: ND = 10
       integer, parameter  :: N_CHANNELS = 10   !<  number of channels modis
-      real :: coefc ( NCC, NM , N_CHANNELS )
-      real :: coefo  (NCO,NM, N_CHANNELS)
-      real :: coefd  (ncd,nm, N_CHANNELS)
-      real :: coefs  (ncs,nm, N_CHANNELS)
-      real :: coefl  (ncl,nm, N_CHANNELS)
     
       integer :: lun_s (NK)
       integer :: krec
-      integer :: i,j,k
+      integer :: i, k
       
       !- executable
 
@@ -228,38 +223,22 @@ contains
       
       ! call open_files ( cfile, 4, lun_s ) 
 
+      call this%allocate_it(N_CHANNELS)
+
+      ! - return only detector averaged values
       do k = 1 , N_CHANNELS
-            krec = k 
-            read(lun_s(1),rec=krec) ((coefd(i,j,k),i=1,ncd),j=1,nm)
-            read(lun_s(2),rec=krec) ((coefo(i,j,k),i=1,nco),j=1,nm)
-            read(lun_s(3),rec=krec) ((coefc(i,j,k),i=1,ncc),j=1,nm)
-            read(lun_s(4),rec=krec) ((coefl(i,j,k),i=1,ncl),j=1,nm)
-            read(lun_s(5),rec=krec) ((coefs(i,j,k),i=1,ncs),j=1,nm)
+         krec = k 
+         read(lun_s(1), rec=krec) this%dry(1:ncd,1:nm,k)
+         read(lun_s(2), rec=krec) this%ozon(1:nco,1:nm,k)
+         read(lun_s(3), rec=krec) this%wvp_cont(1:ncc,1:nm,k)
+         read(lun_s(4), rec=krec) this%wvp_liquid(1:ncl,1:nm,k)
+         read(lun_s(5), rec=krec) this%wvp_solid(1:ncs,1:nm,k)
       end do
          
       do l=1,nk
          close(lun_s(l))
       end do
-         
-    !  if ( big_endian) then
-    !     call flip_rtc(coefd,ncd,nm, N_CHANNELS)
-    !     call flip_rtc(coefo,nco,nm, N_CHANNELS)
-    !     call flip_rtc(coefc,ncc,nm, N_CHANNELS)
-    !     call flip_rtc(coefl,ncl,nm, N_CHANNELS)
-    !     call flip_rtc(coefs,ncs,nm, N_CHANNELS)
-    !  end if
-         
-      call this % allocate_it(N_CHANNELS)
-         
-      ! - return only detector averaged values
-      this % dry        = coefd 
-      this % ozon       = coefo       
-      this % wvp_cont   = coefc 
-      this % wvp_solid  = coefs 
-      this % wvp_liquid = coefl 
-         
-      
-      
+                 
       this % modis_channel_eqv = [ 20,37,27,28,29,30,38,31,32,33 ]
       this % native_channel = [(i , i=7 , 16 ) , 1 ]
         
@@ -282,15 +261,10 @@ contains
       integer :: l
       integer, parameter :: ND = 7
       integer, parameter  :: N_CHANNELS = 7   !<  number of channels 
-      real :: coefc ( NCC, NM , N_CHANNELS )
-      real :: coefo  (NCO,NM, N_CHANNELS)
-      real :: coefd  (ncd,nm, N_CHANNELS)
-      real :: coefs  (ncs,nm, N_CHANNELS)
-      real :: coefl  (ncl,nm, N_CHANNELS)
 
       integer :: lun_s (NK)
       integer :: krec
-      integer :: i,j,k
+      integer :: i, k
 
       !- executable
 
@@ -301,28 +275,21 @@ contains
       cfile = 'fy3dxxx101.dat'
       call open_files ( cfile, 5, lun_s )
 
+      call this%allocate_it(N_CHANNELS)
+
+      ! - return only detector averaged values     
       do k = 1 , N_CHANNELS
-            krec = k
-            read(lun_s(1),rec=krec) ((coefd(i,j,k),i=1,ncd),j=1,nm)
-            read(lun_s(2),rec=krec) ((coefo(i,j,k),i=1,nco),j=1,nm)
-            read(lun_s(3),rec=krec) ((coefc(i,j,k),i=1,ncc),j=1,nm)
-            read(lun_s(4),rec=krec) ((coefl(i,j,k),i=1,ncl),j=1,nm)
-            read(lun_s(5),rec=krec) ((coefs(i,j,k),i=1,ncs),j=1,nm)
+         krec = k
+         read(lun_s(1),rec=krec) this%dry(1:ncd,1:nm,k)
+         read(lun_s(2),rec=krec) this%ozon(1:nco,1:nm,k)
+         read(lun_s(3),rec=krec) this%wvp_cont(1:ncc,1:nm,k)
+         read(lun_s(4),rec=krec) this%wvp_liquid(1:ncl,1:nm,k)
+         read(lun_s(5),rec=krec) this%wvp_solid(1:ncs,1:nm,k)
       end do
 
       do l=1,nk
          close(lun_s(l))
       end do
-
-
-      call this % allocate_it(N_CHANNELS)
-
-      ! - return only detector averaged values
-      this % dry        = coefd
-      this % ozon       = coefo
-      this % wvp_cont   = coefc
-      this % wvp_solid  = coefs
-      this % wvp_liquid = coefl
 
       this % modis_channel_eqv = [ 19,20,23,28,29,31,32 ]
       this % native_channel = [(i , i=19 , 25 ) , 1 ]
@@ -443,18 +410,13 @@ contains
       
       character ( len =100) :: cfile = 'modisdet.com.101.xxx_end'
       
-      integer :: l , m
+      integer :: l
       integer, parameter :: ND = 10
       integer, parameter  :: N_CHANNELS = 17   !<  number of channels modis
-      real :: coefc ( NCC, NM , 0:ND, N_CHANNELS )
-      real :: coefo  (NCO,NM, 0:ND,N_CHANNELS)
-      real :: coefd  (ncd,nm, 0:ND,N_CHANNELS)
-      real :: coefs  (ncs,nm, 0:ND,N_CHANNELS)
-      real :: coefl  (ncl,nm, 0:ND,N_CHANNELS)
      
       integer :: lun_s (5)
       integer :: krec
-      integer :: i,j,k
+      integer :: i, j, k
       integer :: ksat, nsat
       integer, parameter :: NDT = ND + 1 
       integer , parameter :: NRPS = N_CHANNELS * NDT
@@ -489,32 +451,25 @@ contains
          
       
       end do
-      
+
+      call this%allocate_it(N_CHANNELS)
+
       ! * read in coefficients
-      
+
+      ! - return only detector averaged values (m = 0)
       krec = ikrec
-      do m=0,ND
-         do k=1,N_CHANNELS
-            krec = krec + 1
-            read(lun_s(1),rec=krec) ((coefd(i,j,m,k),i=1,ncd),j=1,nm)
-            read(lun_s(2),rec=krec) ((coefo(i,j,m,k),i=1,nco),j=1,nm)
-            read(lun_s(3),rec=krec) ((coefc(i,j,m,k),i=1,ncc),j=1,nm)
-            read(lun_s(4),rec=krec) ((coefl(i,j,m,k),i=1,ncl),j=1,nm)
-            read(lun_s(5),rec=krec) ((coefs(i,j,m,k),i=1,ncs),j=1,nm)
-         end do
+      do k=1,N_CHANNELS
+         krec = krec + 1
+         read(lun_s(1), rec=krec) this%dry(1:ncd,1:nm,k)
+         read(lun_s(2), rec=krec) this%ozon(1:nco,1:nm,k)
+         read(lun_s(3), rec=krec) this%wvp_cont(1:ncc,1:nm,k)
+         read(lun_s(4), rec=krec) this%wvp_liquid(1:ncl,1:nm,k)
+         read(lun_s(5), rec=krec) this%wvp_solid(1:ncs,1:nm,k)
       end do
       do l=1,nk
          close(lun_s(l))
       enddo
-      call this % allocate_it(N_CHANNELS)
-      
-      ! - return only detector averaged values
-      this % dry        = coefd (:,:,0,:)
-      this % ozon       = coefo (:,:,0,:)      
-      this % wvp_cont   = coefc (:,:,0,:)
-      this % wvp_solid  = coefs (:,:,0,:)
-      this % wvp_liquid = coefl (:,:,0,:)
-      
+     
       this % modis_channel_eqv = [ (i,i=20,36),1 ]
       this % native_channel = [ (i,i=20,36),1 ]
         
@@ -668,19 +623,18 @@ contains
          integer :: n_channels
          integer :: koff
          integer :: lun_s(5)
-         integer :: i,j,k,l
+         integer :: k, l
          integer :: krec
          
-         call this % allocate_it(N_CHANNELS)
-         
+         call this%allocate_it(N_CHANNELS)
          
          do k=1,N_CHANNELS
             krec = k + koff
-            read(lun_s(1),rec=krec) ((this % dry(i,j,k),i=1,ncd),j=1,nm)   
-            read(lun_s(2),rec=krec) ((this % ozon(i,j,k),i=1,nco),j=1,nm)
-            read(lun_s(3),rec=krec) ((this % wvp_cont(i,j,k),i=1,ncc),j=1,nm)
-            read(lun_s(4),rec=krec) ((this % wvp_liquid(i,j,k),i=1,ncl),j=1,nm)
-            read(lun_s(5),rec=krec) ((this % wvp_solid(i,j,k),i=1,ncs),j=1,nm)
+            read(lun_s(1), rec=krec) this%dry(1:ncd,1:nm,k)   
+            read(lun_s(2), rec=krec) this%ozon(1:nco,1:nm,k)
+            read(lun_s(3), rec=krec) this%wvp_cont(1:ncc,1:nm,k)
+            read(lun_s(4), rec=krec) this%wvp_liquid(1:ncl,1:nm,k)
+            read(lun_s(5), rec=krec) this%wvp_solid(1:ncs,1:nm,k)
          end do
          
           do l=1,nk
@@ -698,15 +652,10 @@ contains
       integer :: l
       integer, parameter :: ND = 8
       integer, parameter  :: N_CHANNELS = 8   !<  number of channels modis
-      real :: coefc ( NCC, NM , N_CHANNELS )
-      real :: coefo  (NCO,NM, N_CHANNELS)
-      real :: coefd  (ncd,nm, N_CHANNELS)
-      real :: coefs  (ncs,nm, N_CHANNELS)
-      real :: coefl  (ncl,nm, N_CHANNELS)
     
       integer :: lun_s (NK)
       integer :: krec
-      integer :: i,j,k
+      integer :: i, k
       
       !- executable
 
@@ -727,36 +676,22 @@ contains
       
       ! call open_files ( cfile, 4, lun_s ) 
 
+      call this%allocate_it(N_CHANNELS)
+         
+      ! - return only detector averaged values
       do k = 1 , N_CHANNELS
-            krec = k 
-            read(lun_s(1),rec=krec) ((coefd(i,j,k),i=1,ncd),j=1,nm)
-            read(lun_s(2),rec=krec) ((coefo(i,j,k),i=1,nco),j=1,nm)
-            read(lun_s(3),rec=krec) ((coefc(i,j,k),i=1,ncc),j=1,nm)
-            read(lun_s(4),rec=krec) ((coefl(i,j,k),i=1,ncl),j=1,nm)
-            read(lun_s(5),rec=krec) ((coefs(i,j,k),i=1,ncs),j=1,nm)
+         krec = k
+         read(lun_s(1), rec=krec) this%dry(1:ncd,1:nm,k)
+         read(lun_s(2), rec=krec) this%ozon(1:nco,1:nm,k)
+         read(lun_s(3), rec=krec) this%wvp_cont(1:ncc,1:nm,k)
+         read(lun_s(4), rec=krec) this%wvp_liquid(1:ncl,1:nm,k)
+         read(lun_s(5), rec=krec) this%wvp_solid(1:ncs,1:nm,k)
       end do
          
       do l=1,nk
          close(lun_s(l))
       end do
-         
-    !  if ( big_endian) then
-    !     call flip_rtc(coefd,ncd,nm, N_CHANNELS)
-    !     call flip_rtc(coefo,nco,nm, N_CHANNELS)
-    !     call flip_rtc(coefc,ncc,nm, N_CHANNELS)
-    !     call flip_rtc(coefl,ncl,nm, N_CHANNELS)
-    !     call flip_rtc(coefs,ncs,nm, N_CHANNELS)
-    !  end if
-         
-      call this % allocate_it(N_CHANNELS)
-         
-      ! - return only detector averaged values
-      this % dry        = coefd 
-      this % ozon       = coefo       
-      this % wvp_cont   = coefc 
-      this % wvp_solid  = coefs 
-      this % wvp_liquid = coefl 
-         
+
       this % modis_channel_eqv = [ 33,32,31,29,28,27,20,22 ]
       this % native_channel = [(i , i=1 , 8 ) , 1 ]
         

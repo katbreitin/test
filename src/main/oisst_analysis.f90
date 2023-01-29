@@ -134,12 +134,9 @@ module OISST_ANALYSIS
   real, parameter, private:: del_lat_sst_anal = (last_lat_sst_anal - first_lat_sst_anal)/(num_lat_sst_anal-1)
   real, parameter, private:: min_sst_anal = -4.0, max_sst_anal=36.0
 
-  integer(kind=i2), dimension(num_lon_sst_anal,num_lat_sst_anal,1,1) ::  &
-       temp_i2_buffer
-  real(kind=real4), dimension(num_lon_sst_anal,num_lat_sst_anal), private, save:: oisst_anal_map
-  real(kind=real4), dimension(num_lon_sst_anal,num_lat_sst_anal), private, save:: oisst_err_map
-  real(kind=real4), dimension(num_lon_sst_anal,num_lat_sst_anal), private, save:: oisst_anal_map_uni
-  real(kind=real4), dimension(num_lon_sst_anal,num_lat_sst_anal), private, save:: oisst_cice_map
+  integer(i2), allocatable, dimension(:,:,:,:) :: temp_i2_buffer
+  real(f4), allocatable, dimension(:,:), private :: oisst_anal_map,  &
+       oisst_err_map, oisst_anal_map_uni, oisst_cice_map
 
   integer(kind=int4), parameter, private :: MAX_OISST_LATENCY = 5 !including current day
 
@@ -262,6 +259,17 @@ end function GET_OISST_MAP_FILENAME
    integer:: ncid
    integer, dimension(4) :: sds_start_4d, sds_edge_4d, sds_stride_4d
 
+   if (.not. allocated(temp_i2_buffer))  &
+        allocate(temp_i2_buffer(num_lon_sst_anal,num_lat_sst_anal,1,1))
+   if (.not. allocated(oisst_anal_map))  &
+        allocate(oisst_anal_map(num_lon_sst_anal,num_lat_sst_anal))
+   if (.not. allocated(oisst_anal_map_uni))  &
+        allocate(oisst_anal_map_uni(num_lon_sst_anal,num_lat_sst_anal))
+   if (.not. allocated(oisst_cice_map))  &
+        allocate(oisst_cice_map(num_lon_sst_anal,num_lat_sst_anal))
+   if (.not. allocated(oisst_err_map))  &
+        allocate(oisst_err_map(num_lon_sst_anal,num_lat_sst_anal))
+   
    !------------------------------------------------------------------------------
    ! read in data
    !------------------------------------------------------------------------------

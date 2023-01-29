@@ -110,9 +110,9 @@ module ABI_MOD
   integer, PARAMETER  :: NDET_ABI = 1
   integer, PARAMETER  :: NTABLE_ABI = 65536
 
-  real (kind=real4), dimension(6,Ntable_ABI), PRIVATE  :: Ref_Table
-  integer (kind=int4), dimension(16,ndet_ABI,Ntable_ABI), PRIVATE  :: bt_table
-  integer (kind=int4), dimension(16,ndet_ABI,Ntable_ABI), PRIVATE  :: rad_table
+  real (kind=real4), allocatable, dimension(:,:), PRIVATE :: Ref_Table
+  integer (kind=int4), allocatable, dimension(:,:,:), PRIVATE :: bt_table
+  integer (kind=int4), allocatable, dimension(:,:,:), PRIVATE :: rad_table
 
   integer(kind=int4), private, parameter:: ABI_Xstride = 1
   integer(kind=int4), private, parameter:: num_4km_scans_fd = 5424
@@ -245,6 +245,8 @@ CONTAINS
     ! - executable
     ! --------------------------------------
 
+    if (.not. allocated(Ref_Table)) allocate(Ref_table(6,Ntable_ABI))
+    
     !--- assume channel_1_file name has a unique "_1_" in the name.
     !--- determine indices needed to replace that string
     ipos = index(channel_1_filename, "_1_")
@@ -489,6 +491,9 @@ CONTAINS
     real(kind=real8) :: calb_cnstCnt2rad
     real(kind=real8) :: calb_rad2albedo
 
+    if (.not. allocated(bt_table)) allocate(bt_table(16,ndet_ABI,Ntable_ABI))
+    if (.not. allocated(rad_table)) allocate(rad_table(16,ndet_ABI,Ntable_ABI))
+    
     !--- Store the correct calibration source type in the AREA structure.  It will be
     !--- important if the calibration type changes.
     call mreadf_int_o(lun,0,4,64,i4buf)

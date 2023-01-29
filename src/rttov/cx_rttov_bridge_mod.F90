@@ -54,7 +54,7 @@ module cx_rttov_bridge_mod
   ! RTTOV variables/structures
   !====================
   TYPE(rttov_options)              :: opts                     ! Options structure
-  TYPE(rttov_coefs)                :: coefs                    ! Coefficients structure
+  TYPE(rttov_coefs), allocatable :: coefs                    ! Coefficients structure
   TYPE(rttov_chanprof),    POINTER :: chanprof(:)    => NULL() ! Input channel/profile list
   LOGICAL(KIND=jplm),      POINTER :: calcemis(:)    => NULL() ! Flag to indicate calculation of emissivity within RTTOV
   TYPE(rttov_emissivity),  POINTER :: emissivity(:)  => NULL() ! Input/output surface emissivity
@@ -181,6 +181,7 @@ subroutine compute_transmission_rttov ( &
   ! --------------------------------------------------------------------------
   ! 2. Read coefficients
   ! --------------------------------------------------------------------------
+  if (.not. allocated(coefs)) allocate(coefs)
   CALL rttov_read_coefs(errorstatus, coefs, opts, file_coef=rt_sensor%coef_filename)
   IF (errorstatus /= errorstatus_success) THEN
     WRITE(*,*) 'fatal error reading coefficients'
@@ -366,7 +367,7 @@ subroutine compute_transmission_rttov ( &
   IF (errorstatus /= errorstatus_success) THEN
     WRITE(*,*) 'coefs deallocation error'
   ENDIF
-
+  if (allocated(coefs)) deallocate(coefs)
 
 end subroutine compute_transmission_rttov
 

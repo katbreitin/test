@@ -62,7 +62,7 @@
         integer(i8), volatile :: sibling_pids_addr
 
         ! 8-bit Int (integer(i1)) -- 3 dimensions
-        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_i1_3d
         integer(i8), dimension(n_symbols_max) :: symbol_ptrs_i1_3d
         integer(i8), dimension(3, n_symbols_max) :: symbol_shapes_i1_3d
@@ -70,7 +70,7 @@
              symbol_ptrs_i1_3d_ptr, symbol_shapes_i1_3d_ptr
 
         ! 32-bit Float (real(f4)) -- 3 dimensions
-        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_f4_3d
         integer(i8), dimension(n_symbols_max) :: symbol_ptrs_f4_3d
         integer(i8), dimension(3, n_symbols_max) :: symbol_shapes_f4_3d
@@ -78,7 +78,7 @@
              symbol_ptrs_f4_3d_ptr, symbol_shapes_f4_3d_ptr
 
         ! 8-bit Int (integer(i1)) -- 2 dimensions
-        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_i1_2d
         integer(i8), dimension(n_symbols_max) :: symbol_ptrs_i1_2d
         integer(i8), dimension(2, n_symbols_max) :: symbol_shapes_i1_2d
@@ -86,7 +86,7 @@
              symbol_ptrs_i1_2d_ptr, symbol_shapes_i1_2d_ptr
 
         ! 32-bit Int (integer(i4)) -- 2 dimensions
-        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_i4_2d
         integer(i8), dimension(n_symbols_max) :: symbol_ptrs_i4_2d
         integer(i8), dimension(2, n_symbols_max) :: symbol_shapes_i4_2d
@@ -94,7 +94,7 @@
              symbol_ptrs_i4_2d_ptr, symbol_shapes_i4_2d_ptr
 
         ! 64-bit Int (integer(i8)) -- 2 dimensions
-        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_i8_2d
         integer(i8), dimension(n_symbols_max) :: symbol_ptrs_i8_2d
         integer(i8), dimension(2, n_symbols_max) :: symbol_shapes_i8_2d
@@ -102,7 +102,7 @@
              symbol_ptrs_i8_2d_ptr, symbol_shapes_i8_2d_ptr
 
         ! 32-bit Float (real(f4)) -- 2 dimensions
-        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_f4_2d
         integer(i8), dimension(n_symbols_max) :: symbol_ptrs_f4_2d
         integer(i8), dimension(2, n_symbols_max) :: symbol_shapes_f4_2d
@@ -110,7 +110,7 @@
              symbol_ptrs_f4_2d_ptr, symbol_shapes_f4_2d_ptr
 
         ! 8-bit Int (integer(i1)) -- 1 dimension
-        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_i1_1d
         integer(i8), dimension(n_symbols_max) :: symbol_ptrs_i1_1d
         integer(i8), dimension(1, n_symbols_max) :: symbol_shapes_i1_1d
@@ -118,7 +118,7 @@
              symbol_ptrs_i1_1d_ptr, symbol_shapes_i1_1d_ptr
 
         ! 32-bit Int (integer(i4)) -- 1 dimension
-        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_i4_1d
         integer(i8), dimension(n_symbols_max) :: symbol_ptrs_i4_1d
         integer(i8), dimension(1, n_symbols_max) :: symbol_shapes_i4_1d
@@ -126,7 +126,7 @@
              symbol_ptrs_i4_1d_ptr, symbol_shapes_i4_1d_ptr
 
         ! 64-bit Int (integer(i8)) -- 1 dimension
-        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_i8_1d
         integer(i8), dimension(n_symbols_max) :: symbol_ptrs_i8_1d
         integer(i8), dimension(1, n_symbols_max) :: symbol_shapes_i8_1d
@@ -134,7 +134,7 @@
              symbol_ptrs_i8_1d_ptr, symbol_shapes_i8_1d_ptr
 
         ! 32-bit Float (real(f4)) -- 1 dimension
-        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_f4_1d
         integer(i8), dimension(n_symbols_max) :: symbol_ptrs_f4_1d
         integer(i8), dimension(1, n_symbols_max) :: symbol_shapes_f4_1d
@@ -142,12 +142,14 @@
              symbol_ptrs_f4_1d_ptr, symbol_shapes_f4_1d_ptr
 
         ! 32-bit Float (real(f4)) -- 0 dimensions
-        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_f4_0d
         integer(i8), dimension(n_symbols_max) :: symbol_ptrs_f4_0d
         integer(i8), volatile :: num_symbols_f4_0d, symbol_names_f4_0d_ptr,  &
              symbol_ptrs_f4_0d_ptr, symbol_shapes_f4_0d_ptr
 
+        logical :: dyn_arrays_allocated = .FALSE.
+        
         integer(i4), volatile :: number_of_lines
         integer(i4), volatile :: wait_number
         integer(i4), volatile :: skip_processing = -1
@@ -496,12 +498,33 @@
       end subroutine
 
 
+      subroutine allocate_dyn_arrays()
+      
+        implicit none
+
+        integer :: n
+
+        n = n_symbols_max
+
+        allocate(symbol_names_f4_0d(n))
+        allocate(symbol_names_i1_1d(n), symbol_names_i4_1d(n),  &
+             symbol_names_i8_1d(n), symbol_names_f4_1d(n))
+        allocate(symbol_names_i1_2d(n), symbol_names_i4_2d(n),  &
+             symbol_names_i8_2d(n), symbol_names_f4_2d(n))
+        allocate(symbol_names_i1_3d(n), symbol_names_f4_3d(n))
+
+        dyn_arrays_allocated = .TRUE.
+      end subroutine allocate_dyn_arrays
+
+      
       subroutine load_symbols()
           integer i;
           integer j;
           integer c;
           character(LEN=symbol_length_max) varname
 
+          if (.not. dyn_arrays_allocated) call allocate_dyn_arrays
+          
           num_symbols_f4_3d = 0
           symbol_shapes_f4_3d_ptr = loc(symbol_shapes_f4_3d)
           symbol_ptrs_f4_3d_ptr = loc(symbol_ptrs_f4_3d)

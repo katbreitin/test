@@ -101,7 +101,7 @@ module cx_rttov_sfc_emiss
 
    type(rttov_emis_atlas_data)       :: atlas
 
-   type(rttov_coefs)                 :: coefs
+   type(rttov_coefs), allocatable :: coefs
    type(rttov_options)               :: opts
 
    type init_status_type
@@ -139,6 +139,7 @@ contains
 
       call rt_sensor % init(Sensor%WMO_id,trim(rttov_path))
 
+      if (.not. allocated(coefs)) allocate(coefs)
       call rttov_read_coefs(         &
                 err,                &
                 coefs,              &
@@ -351,6 +352,7 @@ contains
 !---------------------------------------
   call rttov_deallocate_emis_atlas(atlas)
   call rttov_dealloc_coefs(err, coefs)
+  if (allocated(coefs)) deallocate(coefs)
 
    if (associated(chanprof)) deallocate(chanprof)
 

@@ -1006,15 +1006,20 @@ SUBROUTINE write_formatted(text_1,  style_1,  text_2,  style_2,  text_3,  style_
                            text_19, style_19, text_20, style_20, text_21, style_21,   &
                            text_22, style_22, text_23, style_23, text_24, style_24
 
+    integer, parameter :: max_len_outp_str = 256,  &
+                          max_n_output_strings = 512
+    
     INTEGER         :: output_string_count
 
-    INTEGER         :: output_lengths(512)
+    integer, dimension(max_n_output_strings) :: output_lengths
     INTEGER         :: i
 
-    CHARACTER * 256 :: format_string
+    character(len=max_len_outp_str) :: format_string
     CHARACTER * 16  :: escape_sequence
-    CHARACTER * 256 :: output_strings(512)
+    character(len=max_len_outp_str), allocatable, dimension(:) :: output_strings
 
+
+    allocate(output_strings(max_n_output_strings))
 
     output_string_count = 0
     format_string       = ''

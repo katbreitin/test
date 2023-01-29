@@ -72,8 +72,8 @@ module VIIRS_NASA_HRES_READ_MOD
     logical :: is_set
     integer :: nx_pattern = 6400
     integer :: ny_pattern = 32 
-    integer :: mask (6400,32)
-    integer :: idx (6400,32)
+    integer, pointer, dimension(:,:) :: mask => NULL(),  &
+                                        idx => NULL()
     
     integer :: n_lines_gap_short = 1280
     integer :: n_lines_gap_long = 2016
@@ -81,7 +81,7 @@ module VIIRS_NASA_HRES_READ_MOD
     procedure :: set => viirs_iband_bowtie_type__set
   end type
   
-  type ( viirs_iband_bowtie_type ) :: bowtie_coef
+  type(viirs_iband_bowtie_type) :: bowtie_coef
   
   
 contains
@@ -194,6 +194,12 @@ subroutine read_viirs_nasa_hres_data (in_config)
   
   if ( first_run) then
     print*,'START:  READ nasa viirs hres ',trim(in_config % filename)
+
+    if (.not. associated(bowtie_coef%mask)) then
+       allocate(  &
+            bowtie_coef%mask(bowtie_coef%nx_pattern,bowtie_coef%ny_pattern),  &
+            bowtie_coef%idx(bowtie_coef%nx_pattern,bowtie_coef%ny_pattern))
+    end if
     
     ! make bow tie pattern mask
     call bowtie_coef % set

@@ -85,6 +85,7 @@ module CONSTANTS_MOD
   !--- useful constants
   integer(kind=int4), public, parameter :: MAX_STR_LEN = 256
   integer(kind=int4), public, parameter :: LARGE_HDF_NUMBER = 999999999
+  integer, parameter, public :: MAX_N_TEMP_FILE_NAMES = 100
 
   !--- cvs strings to be written as attributes
   character(120), public :: ACHA_Version

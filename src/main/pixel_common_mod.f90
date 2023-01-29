@@ -28,6 +28,7 @@
 ! CREATE_PIXEL_ARRAYS - allocate memory for pixel level arrays
 ! DESTROY_PIXEL_ARRAYS - deallocate memory for pixel level arrays
 ! RESET_PIXEL_ARRAYS_TO_MISSING - set pixel arrays to missing
+! INITIAL_PIXEL_COMMON_ALLOC - initial allocation of high-level module arrays
 !
 ! File I/O: None
 !
@@ -142,7 +143,7 @@ module PIXEL_COMMON_MOD
   , Missing_Value_Real4 &
   , sym &
   , nchan_clavrx &
-  , Max_Num_Cld_Test_Bytes
+  , Max_Num_Cld_Test_Bytes, MAX_N_TEMP_FILE_NAMES
 
   use CLASS_TIME_DATE, only: &
       date_type
@@ -151,7 +152,8 @@ module PIXEL_COMMON_MOD
   private
   public:: CREATE_PIXEL_ARRAYS, &
            DESTROY_PIXEL_ARRAYS, &
-           RESET_PIXEL_ARRAYS_TO_MISSING
+           RESET_PIXEL_ARRAYS_TO_MISSING, &
+           INITIAL_PIXEL_COMMON_ALLOC
 
   private:: CREATE_NAV_ARRAYS, RESET_NAV_ARRAYS, DESTROY_NAV_ARRAYS
   private:: CREATE_GEO_ARRAYS, RESET_GEO_ARRAYS, DESTROY_GEO_ARRAYS
@@ -181,7 +183,7 @@ module PIXEL_COMMON_MOD
 
   !--- arrays to keep track of files written to temporary directory, max 100 assumed
   integer, public, save:: Number_Of_Temporary_Files
-  character(len=1020),dimension(100), public, save:: Temporary_File_Name
+  character(len=1020), allocatable, dimension(:), public :: Temporary_File_Name
 
   !--- variables to control one-pixel diagnostic dump for ACHA (if both > 0,
   !--- dump is activated
@@ -625,7 +627,7 @@ module PIXEL_COMMON_MOD
 
 
   !---- declare structures using above types
-  type(observations), dimension(Nchan_Clavrx), public, save, target :: Ch
+  type(observations), allocatable, dimension(:), public, target :: Ch
   type(sensor_definition), public, save, target :: Sensor
   type(image_definition), public, save, target :: Image
   type(geometry_definition), public, save, target :: Geo
@@ -1119,8 +1121,22 @@ module PIXEL_COMMON_MOD
 
  contains
 
+
 !----------------------------------------------------------------------------
-! This routine allocate the memory for the pixel arrays
+! This routine performs the initial allocation of high-level module arrays
+!----------------------------------------------------------------------------
+subroutine INITIAL_PIXEL_COMMON_ALLOC()
+
+implicit none
+
+allocate(Ch(Nchan_Clavrx))
+allocate(Temporary_File_Name(MAX_N_TEMP_FILE_NAMES))
+
+end subroutine INITIAL_PIXEL_COMMON_ALLOC
+
+   
+!----------------------------------------------------------------------------
+! This routine allocates the memory for the pixel arrays
 !----------------------------------------------------------------------------
 subroutine CREATE_PIXEL_ARRAYS()
   integer:: dim1
