@@ -947,7 +947,6 @@
               flush output_unit
               child_pid = sibling_clone()
               if(child_pid == 0) then
-                call reopen_files(probe_pid)
                 ! child
                 my_pid = getpid_nocache()
                 ! Make a new tempdir
@@ -969,6 +968,7 @@
                 return
               else
                 sibling_pids(i) = child_pid
+                call reopen_files(probe_pid)
               endif
             enddo
             print*, sibling_pids
