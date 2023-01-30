@@ -687,7 +687,7 @@ CONTAINS
     !<<<<<<<<<<<<<<<<<<<<<<< Arguments >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     !Coming in
     CHARACTER (len = *), INTENT(in) :: str
-
+  
     !Going out:
     !result of the function
 
