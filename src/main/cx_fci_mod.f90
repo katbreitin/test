@@ -51,7 +51,7 @@ contains
     integer, intent(in) :: seg_nr
     type(fci_data) :: fci
     logical :: fci_on(16) = .true.
-    integer :: i,ii
+    integer :: i
     integer :: idx_cx
     integer :: c_seg_lines
     integer :: stride
@@ -69,7 +69,7 @@ contains
     call fci % config % set(trim(image%Level1b_Full_Name)//'/',fci_on)
     call fci % get (chunk = seg_nr ) !, start=[10,10],count=[20,20])
     do i = 1,16
-    
+
 
       stride = 1
       ubnd = ubound(fci % ch(i) % rad)

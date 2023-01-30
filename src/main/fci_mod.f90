@@ -10,7 +10,6 @@ module fci_mod
      , relative_azimuth &
      , glint_angle &
      , scattering_angle
-  !use cx_real_boolean_mod
 
   use cx_geo__define, only: geo_str
 
@@ -95,7 +94,7 @@ contains
     class(fci_config) :: self
     character(len=*), intent(in)  :: path
     logical, intent(in)  :: ch_on(16)
-    character(len=1020) :: file_identifier
+
 
     ! some tests if files are there
     self % file_list => file_search(trim(path),'*.nc')
@@ -111,7 +110,7 @@ contains
   !
   subroutine fci_data__get (self,chunk, start, count, time_only)
     class(fci_data) :: self
-    integer :: i, ii, jj
+    integer :: i
     integer, intent(in) :: chunk  ! the chunk out of 40 for this granule
     integer, intent(in), optional :: start(2)
     integer, intent(in), optional :: count(2)
@@ -123,17 +122,12 @@ contains
     real, allocatable :: dum_1d(:)
     integer :: status
     real,allocatable :: time(:)
-    type(date_type) :: tt
-    character ( len = 128), allocatable :: Sds_Name(:)
-    character ( len = 128), allocatable :: Att_Name(:)
-    integer :: nsds , ftype,natt
+
     character (len =1024) :: lonlat_file1km
     character (len =1024) :: lonlat_file2km
     logical :: t_only = .false.
     integer :: stride(2)
 
-    integer :: day_of_year
-    real :: hour_frac
     real, parameter :: Pi = 3.14159265359
     real , parameter :: DTOR = PI / 180.
     character(len=1024) :: lat_lon_path
@@ -289,7 +283,7 @@ contains
       end do  ! channel loop i
 
     end   subroutine fci_data__get
-    
+
     ! https://www.eumetsat.int/media/45923
     ! page 44
     !  radiance = (counts * scale_factor) + add_offset for counts below or equal op
@@ -313,9 +307,7 @@ contains
       type ( cx_sds_type), pointer :: ps => null()
       real :: add_offset_cold(1),add_offset_warm
       real :: slope_cold (1), slope_warm
-      real :: missing(1)
       integer :: MISS_VALUE(1)
-      real :: scaled(1)
       logical :: att_exist
       integer, allocatable:: temp_1d(:)
       integer :: dim1, dim2

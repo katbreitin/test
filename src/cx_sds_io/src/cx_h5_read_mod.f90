@@ -44,10 +44,9 @@ module cx_h5_read_mod
 contains
 
 
-  function group_info (root_id,name, obj_name, obj_type)
+  function group_info (root_id, obj_name, obj_type)
     integer :: group_info
     integer (HID_T) :: root_id
-    character(len=*) :: name
     character(len=*) :: obj_name
     integer :: obj_type
     integer :: hdferr
@@ -76,18 +75,14 @@ contains
     character ( len = MAXNCNAM), intent(out), allocatable :: sds_name(:)
     character ( len = MAXNCNAM), intent(out), allocatable :: att_name(:)
     integer (HID_T) :: file_id, root_id
-    integer :: obj_type, obj_type1
-    integer( SIZE_T) :: obj_count
+    integer :: obj_type
     integer :: hdferr
     INTEGER :: ErrorFlag
     integer :: s_type,nlinks,max_corder
-    integer :: nmem,nmem1
-    character(len = 100) :: obj_name, obj_name1
     integer :: i, ii
     character(len =100) :: dir
     type(LinkedList) :: list_sds
     type(LinkedListNode), pointer :: node_ptr
-    character(len=200) ::sds_name1
 
     obj_type = 1
     ErrorFlag=0
@@ -179,7 +174,7 @@ contains
   !
   !
   function h5_get_file_sds(h5_file, nsds, sdata,  sds_name &
-     , start_inp, stride_inp &
+    , start_inp, stride_inp &
     , count_inp)
 
     integer :: h5_get_file_sds
@@ -254,7 +249,7 @@ contains
           counts = (/dims(1),count_inp(2)/)
           ! correct for smaller data sets
           counts(2) = min(counts(2),dims(2)-start_inp(2))
-      
+
           call H5ReadDataset ( h5_file, sds_name(1),offs,counts, dataset_2d_i )
 
         else
@@ -314,7 +309,7 @@ contains
     sdata(1) % attr(1) % data % r4values = 0.00
     sdata(1) % attr(2) % data % r4values = 1.00
     sdata(1) % attr(3) % data % i4values = 0
-    sdata(1) % attr(4) % data % i1values = 0
+    sdata(1) % attr(4) % data % i1values = int(0,1)
 
 
     if ( dclass .eq. DCLASS_INT ) then
@@ -329,7 +324,7 @@ contains
 
       sdata(1) % attr(3) % data % i4values = att_i4
 
-      sdata(1) % attr(4) % data % i1values = 1
+      sdata(1) % attr(4) % data % i1values = int(1,1)
     end if
 
 
