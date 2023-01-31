@@ -125,6 +125,14 @@
         integer(i8), volatile :: num_symbols_i4_1d, symbol_names_i4_1d_ptr,  &
              symbol_ptrs_i4_1d_ptr, symbol_shapes_i4_1d_ptr
 
+        ! 32-bit Int (integer(i4)) -- 0 dimension
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
+             symbol_names_i4_0d
+        integer(i8), dimension(n_symbols_max) :: symbol_ptrs_i4_0d
+        integer(i8), dimension(1, n_symbols_max) :: symbol_shapes_i4_0d
+        integer(i8), volatile :: num_symbols_i4_0d, symbol_names_i4_0d_ptr,  &
+             symbol_ptrs_i4_0d_ptr, symbol_shapes_i4_0d_ptr
+
         ! 64-bit Int (integer(i8)) -- 1 dimension
         character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_i8_1d
@@ -506,7 +514,7 @@
 
         n = n_symbols_max
 
-        allocate(symbol_names_f4_0d(n))
+        allocate(symbol_names_f4_0d(n), symbol_names_i4_0d(n))
         allocate(symbol_names_i1_1d(n), symbol_names_i4_1d(n),  &
              symbol_names_i8_1d(n), symbol_names_f4_1d(n))
         allocate(symbol_names_i1_2d(n), symbol_names_i4_2d(n),  &
@@ -558,6 +566,10 @@
           symbol_shapes_i4_1d_ptr = loc(symbol_shapes_i4_1d)
           symbol_ptrs_i4_1d_ptr = loc(symbol_ptrs_i4_1d)
           symbol_names_i4_1d_ptr = loc(symbol_names_i4_1d)
+
+          num_symbols_i4_0d = 0
+          symbol_ptrs_i4_0d_ptr = loc(symbol_ptrs_i4_0d)
+          symbol_names_i4_0d_ptr = loc(symbol_names_i4_0d)
 
           num_symbols_i8_1d = 0
           symbol_shapes_i8_1d_ptr = loc(symbol_shapes_i8_1d)
@@ -611,6 +623,11 @@
         num_symbols_f4_0d = num_symbols_f4_0d + 1;
         symbol_ptrs_f4_0d(num_symbols_f4_0d) = loc(Sun_Earth_Distance);
         symbol_names_f4_0d(num_symbols_f4_0d) = 'sun_earth_distance';
+
+        ! start month
+        num_symbols_i4_0d = num_symbols_i4_0d + 1;
+        symbol_ptrs_i4_0d(num_symbols_i4_0d) = loc(Image%time_start%Month);
+        symbol_names_i4_0d(num_symbols_i4_0d) = 'start_month';
 
         ! chan_on_flag_default
         num_symbols_i1_1d = num_symbols_i1_1d + 1;
