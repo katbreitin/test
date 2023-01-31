@@ -1545,9 +1545,6 @@
                    Cloud_Fraction_Background = NUCAPS%Cld_Fraction
                endif
 
-               !--- WAITPOINT before cloud mask
-               call waitpoint(5)
-
                !--- cloud mask
                if (Use_Aux_Flag == sym%USE_AUX .and. Cloud_Mask_Aux_Read_Flag == sym%YES) then
 

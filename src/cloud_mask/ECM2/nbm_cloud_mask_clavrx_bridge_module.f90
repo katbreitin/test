@@ -264,6 +264,9 @@ contains
       print *, "GOES16 SBAF Called"
       call ABI_GOES16_SBAF(Sensor%WMO_Id)
     endif
+
+   !--- WAITPOINT before cloud mask
+   call waitpoint(5)
    
    !---------------------------------------------------------------------
    ! loop over pixels 
