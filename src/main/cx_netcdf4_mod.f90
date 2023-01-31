@@ -35,6 +35,8 @@ module CX_NETCDF4_MOD
    , NF90_INQUIRE_VARIABLE   &
    , NF90_INQ_NCID &
    , NF90_INQUIRE_ATTRIBUTE &
+   , NF90_BYTE  &
+   , NF90_SHORT &
    , NF90_FLOAT &
    , NF90_DOUBLE
 
@@ -634,9 +636,9 @@ module CX_NETCDF4_MOD
    ! Read and Unscale 2D arrays Two-Byte Integers
    ! ----------------------------------------------------------
    subroutine read_and_unscale_netcdf_2d (nc_file_id, var_start, var_stride, &
-        var_dim, var_name, var_output_unscaled)
+                                          var_dim, var_name, var_output_unscaled)
 
-      use univ_kind_defs_mod, only: i2, i4
+      use univ_kind_defs_mod, only: i1, i2, i4
 
       integer, intent(in) :: nc_file_id
       integer, dimension(2), intent(in) :: var_start
@@ -644,7 +646,13 @@ module CX_NETCDF4_MOD
       integer, dimension(2), intent(in) :: var_dim
       character(len=*), intent(in) :: var_name
 
-      integer(kind=i4), dimension(var_dim(1),var_dim(2)) :: var_output_scaled
+!     integer(kind=i4), dimension(var_dim(1),var_dim(2)) :: var_output_scaled
+
+      integer(kind=i1), dimension(:,:), allocatable :: var_output_scaled_i1
+      integer(kind=i2), dimension(:,:), allocatable :: var_output_scaled_i2
+      integer(kind=4), dimension(:,:), allocatable :: var_output_scaled_r4
+      integer(kind=8), dimension(:,:), allocatable :: var_output_scaled_r8
+
       real(kind=4) , intent(out), dimension(:,:) :: var_output_unscaled
       real(kind=4) , dimension(var_dim(1),var_dim(2)) :: var_output_unscaled_temp
       real(kind=4):: add_offset, scale_factor
@@ -659,18 +667,21 @@ module CX_NETCDF4_MOD
             print *, "Error: Unable to get variable id for ", trim(var_name)
             return
       endif
+
       status = nf90_inquire_variable(nc_file_id, nc_var_id, xtype=xtype)
-      if(status /= nf90_noerr) then
+      if (status /= nf90_noerr) then
             print *, "Unable to determine variable type", trim(var_name)
             STOP 51
       endif
-      if(xtype .eq. NF90_FLOAT) then
-            print *, "TypeError: Do not use READ_AND_UNSCALE() on float variable: ", trim(var_name)
-            STOP 52
-      else if(xtype .eq. NF90_DOUBLE) then
-            print *, "TypeError: Do not use READ_AND_UNSCALE() on double variable: ", trim(var_name)
-            STOP 52
-      endif
+ 
+     !if (xtype .eq. NF90_FLOAT) then
+     !      print *, xtype, NF90_FLOAT
+     !      print *, "TypeError: Do not use READ_AND_UNSCALE() on float variable: ", trim(var_name)
+     !      STOP 52
+     !else if(xtype .eq. NF90_DOUBLE) then
+     !      print *, "TypeError: Do not use READ_AND_UNSCALE() on double variable: ", trim(var_name)
+     !      STOP 52
+     !endif
 
       status = nf90_get_att(nc_file_id, nc_var_id, "add_offset", add_offset)
       if (status /= 0) add_offset = 0.0
@@ -682,32 +693,87 @@ module CX_NETCDF4_MOD
       if (status /= 0) fill_value = -999.0
 
       !get Variable
-      status = nf90_get_var(nc_file_id, nc_var_id, var_output_scaled, start=var_start, &
-                            count=var_dim, stride=var_stride)
+      select case (xtype)
+        case (NF90_BYTE) 
+          allocate(var_output_scaled_i1(var_dim(1),var_dim(2)))
+          status = nf90_get_var(nc_file_id, nc_var_id, var_output_scaled_i1, start=var_start, &
+                                count=var_dim, stride=var_stride)
+       case (NF90_SHORT) 
+           allocate(var_output_scaled_i2(var_dim(1),var_dim(2)))
+           status = nf90_get_var(nc_file_id, nc_var_id, var_output_scaled_i2, start=var_start, &
+                                 count=var_dim, stride=var_stride)
+       case (NF90_FLOAT) 
+           allocate(var_output_scaled_r4(var_dim(1),var_dim(2)))
+           status = nf90_get_var(nc_file_id, nc_var_id, var_output_scaled_r4, start=var_start, &
+                                 count=var_dim, stride=var_stride)
+       case (NF90_DOUBLE) 
+           allocate(var_output_scaled_r8(var_dim(1),var_dim(2)))
+           status = nf90_get_var(nc_file_id, nc_var_id, var_output_scaled_r8, start=var_start, &
+                                 count=var_dim, stride=var_stride)
+      end select
 
+      !status = nf90_get_var(nc_file_id, nc_var_id, var_output_scaled, start=var_start, &
+      !                      count=var_dim, stride=var_stride)
                           
       if ((status /= nf90_noerr)) then
-            print *,'Error: ',  trim(nf90_strerror(status)),'   ', trim(var_name)
-             print *, "in read_and_unscale_netcdf_2d"
+          print *,'Error: ',  trim(nf90_strerror(status)),'   ', trim(var_name)
+          print *, "in read_and_unscale_netcdf_2d"
           print *, "var name = ", trim(var_name)
           print *, "var start = ", var_start
           print *, "var count = ", var_dim
           print *, "var stride = ", var_stride
           print *, "varname =  ",trim(var_name)
-          print *, "shape var_output_scaled = ", shape(var_output_scaled)
-            stop
-            return
+          print *, "shape var_output_scaled = ", var_dim(1), var_dim(2)
+          if (allocated(var_output_scaled_i1)) deallocate(var_output_scaled_i1)
+          if (allocated(var_output_scaled_i2)) deallocate(var_output_scaled_i2)
+          if (allocated(var_output_scaled_r4)) deallocate(var_output_scaled_r4)
+          if (allocated(var_output_scaled_r8)) deallocate(var_output_scaled_r8)
+          stop
+          return
       endif
 
       !--- unscale
-      where(var_output_scaled /= fill_value)
-         var_output_unscaled_temp = add_offset + scale_factor * var_output_scaled
-      elsewhere
-         var_output_unscaled_temp = Missing_Value_Netcdf
-      endwhere
+      !where(var_output_scaled /= fill_value)
+      !   var_output_unscaled_temp = add_offset + scale_factor * var_output_scaled
+      !elsewhere
+      !   var_output_unscaled_temp = Missing_Value_Netcdf
+      !endwhere
+
+      select case (xtype)
+        case (NF90_BYTE) 
+          where(var_output_scaled_i1 /= fill_value)
+             var_output_unscaled_temp = add_offset + scale_factor * var_output_scaled_i1
+          elsewhere
+             var_output_unscaled_temp = Missing_Value_Netcdf
+          endwhere
+        case (NF90_SHORT) 
+          where(var_output_scaled_i2 /= fill_value)
+             var_output_unscaled_temp = add_offset + scale_factor * var_output_scaled_i2
+          elsewhere
+             var_output_unscaled_temp = Missing_Value_Netcdf
+          endwhere
+        case (NF90_FLOAT) 
+          where(var_output_scaled_r4 /= fill_value)
+             var_output_unscaled_temp = add_offset + scale_factor * var_output_scaled_r4
+          elsewhere
+             var_output_unscaled_temp = Missing_Value_Netcdf
+          endwhere
+        case (NF90_DOUBLE) 
+          where(var_output_scaled_r8 /= fill_value)
+             var_output_unscaled_temp = add_offset + scale_factor * var_output_scaled_r8
+          elsewhere
+             var_output_unscaled_temp = Missing_Value_Netcdf
+          endwhere
+      end select
 
       var_output_unscaled = Missing_Value_Netcdf
       var_output_unscaled(1:var_dim(1),1:var_dim(2)) = var_output_unscaled_temp
+
+      !--- deallocate
+      if (allocated(var_output_scaled_i1)) deallocate(var_output_scaled_i1)
+      if (allocated(var_output_scaled_i2)) deallocate(var_output_scaled_i2)
+      if (allocated(var_output_scaled_r4)) deallocate(var_output_scaled_r4)
+      if (allocated(var_output_scaled_r8)) deallocate(var_output_scaled_r8)
 
    end subroutine read_and_unscale_netcdf_2d
 
