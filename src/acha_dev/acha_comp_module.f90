@@ -231,6 +231,7 @@ subroutine COMPUTE_TAU_REFF_ACHA(Beta, &
               Re_Beta_110um_COEF_ICE(1)*(Beta-1.0) + &
               Re_Beta_110um_COEF_ICE(2)*(Beta-1.0)**2 + &
               Re_Beta_110um_COEF_ICE(3)*(Beta-1.0)**3
+
    else
     Temp_R4 = Re_Beta_110um_COEF_WATER(0) +  &
               Re_Beta_110um_COEF_WATER(1)*(Beta-1.0) + &

@@ -543,6 +543,10 @@ subroutine OPTIMAL_ESTIMATION(Iter_Idx,Iter_Idx_Min,Iter_Idx_Max,nx,ny, &
   Singular_Flag =  INVERT_MATRIX(Sx_inv, Sx, p)
   if (Singular_Flag == 1 .and. .not.  Singular_Warned_Before ) then
    print *, "Cloud Height warning ==> Singular Sx in ACHA "
+   print *, "x = ", x
+   print *, "xa = ", x_Ap
+   print *, "y = ", y
+   print *, "f = ", f
    print *, "Sx_inv = ", Sx_Inv
    print *, "Sa_Inv = ", Sa_Inv
    print *, "AKM = ", AKM
@@ -552,6 +556,7 @@ subroutine OPTIMAL_ESTIMATION(Iter_Idx,Iter_Idx_Min,Iter_Idx_Max,nx,ny, &
    Converged_Flag = 0
    Fail_Flag = 1
    Singular_Warned_Before = .true.
+   stop
    return
   endif
 
