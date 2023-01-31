@@ -457,7 +457,7 @@
             symbol_ptrs_i1_1d(num_symbols_i1_1d) = loc(sym);
             symbol_names_i1_1d(num_symbols_i1_1d) = nam;
             ! I want row-major shapes
-            symbol_shapes_i1_1d(1,num_symbols_i4_1d) = size(sym)
+            symbol_shapes_i1_1d(1,num_symbols_i1_1d) = size(sym)
         endif
       end subroutine
 
@@ -616,6 +616,7 @@
         num_symbols_i1_1d = num_symbols_i1_1d + 1;
         symbol_ptrs_i1_1d(num_symbols_i1_1d) = loc(Sensor%Chan_On_Flag_Default);
         symbol_names_i1_1d(num_symbols_i1_1d) = 'chan_on_flag_default';
+        symbol_shapes_i1_1d(1,num_symbols_i1_1d) = size(Sensor%Chan_On_Flag_Default)
 
         call add_sym_i4_1d(Image%Scan_Number,'scan_line_number')
         call add_sym_f4_1d(Image%Utc_Scan_Time_Hours,'scan_line_time')
