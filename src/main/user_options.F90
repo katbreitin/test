@@ -993,7 +993,7 @@ contains
       end if
 
       !--- final check if algorithms can run
-      call EXPERT_MODE_CHANNEL_ALGORITHM_CHECK ( SensorName )
+      call EXPERT_MODE_CHANNEL_ALGORITHM_CHECK ( )
 
       !--- force missing Himawari8/9 HCAST channels turned off
       if ((Image%DB_Flag) .and. (trim(SensorName) == 'AHI')) then
@@ -1608,10 +1608,8 @@ contains
    ! --------------------------------------------------------------------
    !  every incosistency between channel settings and algorithm mode
    ! --------------------------------------------------------------------
-   subroutine  EXPERT_MODE_CHANNEL_ALGORITHM_CHECK ( SensorName )
-      character (len=*) , intent(in) :: SensorName
+   subroutine  EXPERT_MODE_CHANNEL_ALGORITHM_CHECK ( )
 
-      integer :: Valid_Channels (Nchan_Clavrx)
       logical :: Not_Run_Flag
 
       if ( Expert_Mode < 6 ) return

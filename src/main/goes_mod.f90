@@ -7,7 +7,7 @@
 !
 ! PURPOSE: This module handles the processing of GOES Level-1b files in PATMOS-x
 !
-! DESCRIPTION: 
+! DESCRIPTION:
 !
 ! AUTHORS:
 !  Andrew Heidinger, Andrew.Heidinger@noaa.gov
@@ -58,7 +58,7 @@ use PIXEL_COMMON_MOD, only: &
    , number_of_temporary_files &
    , l1b_bzip2 &
    , l1b_gzip
-   
+
 use CALIBRATION_CONSTANTS_MOD, only: &
    planck_nu &
    , planck_a1 &
@@ -73,20 +73,20 @@ use CALIBRATION_CONSTANTS_MOD, only: &
    , ch1_gain_low_0 &
    , ch1_degrad_low_1 &
    , ch1_degrad_low_2
-   
-   
+
+
    use class_time_date, only: date_type
-      
+
    use PLANCK_MOD, only: &
       planck_temp_fast
 
   use CX_SPATIAL_METRICS_MOD,only: &
     compute_median
-   
+
    use FILE_UTILS, only: &
       get_lun &
      , file_test
-   
+
    use VIEWING_GEOMETRY_MOD, only: &
       sensor_zenith &
       , sensor_azimuth &
@@ -94,9 +94,9 @@ use CALIBRATION_CONSTANTS_MOD, only: &
       , glint_angle &
       , scattering_angle &
       , possol
-      
-    use CLAVRX_MESSAGE_MOD, only: mesg, verb_lev   
-      
+
+    use CLAVRX_MESSAGE_MOD, only: mesg, verb_lev
+
    implicit none
    private
 
@@ -117,8 +117,8 @@ use CALIBRATION_CONSTANTS_MOD, only: &
 
    integer(kind=int4), public, parameter:: Goes_Xstride = 1    ! goes is oversampled by 50% in x
    integer(kind=int4), public, parameter:: Goes_Sndr_Xstride = 1
-   integer(kind=int4), private, parameter:: Num_4km_Scans_Goes_Fd = 2704 
-   integer(kind=int4), private, parameter:: Num_4km_Elem_Goes_Fd = 5200 
+   integer(kind=int4), private, parameter:: Num_4km_Scans_Goes_Fd = 2704
+   integer(kind=int4), private, parameter:: Num_4km_Elem_Goes_Fd = 5200
    integer(kind=int4), private, parameter:: time_for_fd_Scan_goes =  1560000 !milliseconds
    real, private, save:: Scan_rate    !scan rate in millsec / line
    character(len=1020), save, public:: Dark_Comp_Data_Dir_Temp
@@ -133,7 +133,7 @@ use CALIBRATION_CONSTANTS_MOD, only: &
 !C	Imager ONA repeat sinusoid T.
 !C
 
-        type, public:: IMGR_SIN 
+        type, public:: IMGR_SIN
           integer :: mag_Sinu
           integer :: phase_ang_Sinu
         end type IMGR_SIN
@@ -150,7 +150,7 @@ use CALIBRATION_CONSTANTS_MOD, only: &
 !C
 !C	Imager repeat T.
 !C
-        type, public:: IMGR_RP 
+        type, public:: IMGR_RP
            integer :: exp_mag
            integer :: exp_Time_const
            integer :: mean_att_ang_const
@@ -175,7 +175,7 @@ type, public:: AREA_STRUCT
    integer ::Num_Line              ! Number of lines in image (Y-SIZE)
    integer ::Num_Elem              ! Number of elememts in image (X-SIZE)
    integer ::Bytes_Per_Pixel       ! Number of bytes per data element
-   integer ::Line_Res              ! Line resolution (Y-RES) 
+   integer ::Line_Res              ! Line resolution (Y-RES)
    integer ::Elem_Res              ! Element resolution (X-RES)
    integer ::Num_Chan              ! Number of bands (Z-RES)
    integer ::Num_Byte_Ln_Prefix    ! Number of bytes in line prefix (multiple of 4)
@@ -282,8 +282,8 @@ end type AREA_STRUCT
           integer(kind=int4) :: BRES ! Base resolution of AREA file.
 
         end type GVAR_NAV
-  
-      
+
+
    real(kind=real4),save:: Goes_Ch2_Thermal_Intercept = 0.0
    real(kind=real4),save:: Goes_Ch3_Thermal_Intercept = 0.0
    real(kind=real4),save:: Goes_Ch4_Thermal_Intercept = 0.0
@@ -431,7 +431,7 @@ subroutine READ_GOES(Segment_Number,Channel_1_Filename, &
    character(len=*), intent(in):: Channel_1_Filename
    type (AREA_STRUCT), intent(in) :: AREAstr
    type (GVAR_NAV), intent(in)    :: NAVstr
-   integer(kind=int2), intent(in):: jday
+   integer , intent(in):: jday
    integer(kind=int4), intent(in):: Image_Time_Ms
    real(kind=real4), intent(in):: Time_Since_Launch
 
@@ -451,7 +451,7 @@ subroutine READ_GOES(Segment_Number,Channel_1_Filename, &
    integer(kind=int4):: First_Line_In_Segment
    character(len=1):: Ichan_Goes_String
 
-   !--- assume Channel_1_file name has a unique "_1_" in the name. 
+   !--- assume Channel_1_file name has a unique "_1_" in the name.
    !--- determine indices needed to replace that string
    ipos = index(Channel_1_Filename, "_1_")
    ilen = len(Channel_1_Filename)
@@ -728,7 +728,7 @@ subroutine READ_GOES(Segment_Number,Channel_1_Filename, &
    ! Solar and Sensor Angles
    !------------------------------------------------------------------------------
    Image_jday = jday
-  
+
    Image_Time_Hours = real(sum(real(Image%Scan_Time_Ms,kind=real8), Image%Scan_Time_Ms > 0) / &
                       real(max(1,count(Image%Scan_Time_Ms > 0)),kind=real8),kind=real4)
    if (Image_Time_Hours <= 0.0) then
@@ -769,9 +769,9 @@ subroutine READ_GOES_SNDR(Segment_Number,Channel_1_Filename, &
    character(len=*), intent(in):: Channel_1_Filename
    type (AREA_STRUCT), intent(in) :: AREAstr
    type (GVAR_NAV), intent(in)    :: NAVstr
-   integer(kind=int2), intent(in):: jday
+   integer , intent(in):: jday
    integer(kind=int4), intent(in):: Image_Time_Ms
-   
+
 
    character(len=1020):: Channel_X_Filename
    character(len=1020):: Channel_X_Filename_Full
@@ -789,7 +789,7 @@ subroutine READ_GOES_SNDR(Segment_Number,Channel_1_Filename, &
    integer(kind=int4):: First_Line_In_Segment
    character(len=2):: Ichan_Goes_String
 
-   !--- assume Channel_1_file name has a unique "_1_" in the name. 
+   !--- assume Channel_1_file name has a unique "_1_" in the name.
    !--- determine indices needed to replace that string
    ipos = index(Channel_1_Filename, "_1_")
    ilen = len(Channel_1_Filename)
@@ -940,7 +940,7 @@ subroutine READ_GOES_SNDR(Segment_Number,Channel_1_Filename, &
       ch(34)%Rad_Toa = (ch(34)%Rad_Toa - Goes_Ch4_Thermal_Intercept)/Goes_Ch4_Thermal_Slope
 
    endif
-   
+
    !---   read channel 33 (GOES Sounder channel 5)
    if (Sensor%Chan_On_Flag_Default(33) == sym%YES) then
 
@@ -993,8 +993,8 @@ subroutine READ_GOES_SNDR(Segment_Number,Channel_1_Filename, &
       ch(32)%Rad_Toa = (ch(32)%Rad_Toa - Goes_Ch7_Thermal_Intercept)/Goes_Ch7_Thermal_Slope
 
    endif
-   
-   
+
+
       !---   read channel 31 (GOES Sounder channel 8)
    if (Sensor%Chan_On_Flag_Default(31) == sym%YES) then
 
@@ -1018,10 +1018,10 @@ subroutine READ_GOES_SNDR(Segment_Number,Channel_1_Filename, &
 
       ch(31)%Rad_Toa= UNSIGNED_TO_REAL4(Two_Byte_Temp)
       ch(31)%Rad_Toa = (ch(31)%Rad_Toa - Goes_Ch8_Thermal_Intercept)/Goes_Ch8_Thermal_Slope
-      
+
    endif
-   
-   
+
+
       !---   read channel 30 (GOES Sounder channel 9)
    if (Sensor%Chan_On_Flag_Default(30) == sym%YES) then
 
@@ -1047,7 +1047,7 @@ subroutine READ_GOES_SNDR(Segment_Number,Channel_1_Filename, &
       ch(30)%Rad_Toa = (ch(30)%Rad_Toa - Goes_Ch9_Thermal_Intercept)/Goes_Ch9_Thermal_Slope
 
    endif
-   
+
       !---   read channel 28 (GOES Sounder channel 10)
    if (Sensor%Chan_On_Flag_Default(28) == sym%YES) then
 
@@ -1073,7 +1073,7 @@ subroutine READ_GOES_SNDR(Segment_Number,Channel_1_Filename, &
       ch(28)%Rad_Toa = (ch(28)%Rad_Toa - Goes_Ch10_Thermal_Intercept)/Goes_Ch10_Thermal_Slope
 
    endif
-   
+
       !---   read channel 27 (GOES Sounder channel 12)
    if (Sensor%Chan_On_Flag_Default(27) == sym%YES) then
 
@@ -1099,7 +1099,7 @@ subroutine READ_GOES_SNDR(Segment_Number,Channel_1_Filename, &
       ch(27)%Rad_Toa = (ch(27)%Rad_Toa - Goes_Ch12_Thermal_Intercept)/Goes_Ch12_Thermal_Slope
 
    endif
-   
+
       !---   read channel 25 (GOES Sounder channel 13)
    if (Sensor%Chan_On_Flag_Default(25) == sym%YES) then
 
@@ -1120,13 +1120,13 @@ subroutine READ_GOES_SNDR(Segment_Number,Channel_1_Filename, &
                                     Image%Number_Of_Lines_Read_This_Segment,   &
                                     Two_Byte_Temp, &
                                     Goes_Scan_Line_Flag)
-       
+
       ch(25)%Rad_Toa= UNSIGNED_TO_REAL4(Two_Byte_Temp)
       ch(25)%Rad_Toa = (ch(25)%Rad_Toa - Goes_Ch13_Thermal_Intercept)/Goes_Ch13_Thermal_Slope
 
    endif
-   
-   
+
+
       !---   read channel 24 (GOES Sounder channel 14)
    if (Sensor%Chan_On_Flag_Default(24) == sym%YES) then
 
@@ -1152,7 +1152,7 @@ subroutine READ_GOES_SNDR(Segment_Number,Channel_1_Filename, &
       ch(24)%Rad_Toa = (ch(24)%Rad_Toa - Goes_Ch14_Thermal_Intercept)/Goes_Ch14_Thermal_Slope
 
    endif
-   
+
       !---   read channel 23 (GOES Sounder channel 16)
    if (Sensor%Chan_On_Flag_Default(23) == sym%YES) then
 
@@ -1178,7 +1178,7 @@ subroutine READ_GOES_SNDR(Segment_Number,Channel_1_Filename, &
       ch(23)%Rad_Toa = (ch(23)%Rad_Toa - Goes_Ch16_Thermal_Intercept)/Goes_Ch16_Thermal_Slope
 
    endif
-   
+
       !---   read channel 21 (GOES Sounder channel 17)
    if (Sensor%Chan_On_Flag_Default(21) == sym%YES) then
 
@@ -1204,8 +1204,8 @@ subroutine READ_GOES_SNDR(Segment_Number,Channel_1_Filename, &
       ch(21)%Rad_Toa = (ch(21)%Rad_Toa - Goes_Ch17_Thermal_Intercept)/Goes_Ch17_Thermal_Slope
 
    endif
-   
-   
+
+
       !---   read channel 20 (GOES Sounder channel 18)
    if (Sensor%Chan_On_Flag_Default(20) == sym%YES) then
 
@@ -1233,7 +1233,7 @@ subroutine READ_GOES_SNDR(Segment_Number,Channel_1_Filename, &
    endif
 
 
-   
+
       !---   read channel 2 (GOES Sounder channel 19)
    if (Sensor%Chan_On_Flag_Default(1) == sym%YES) then
 
@@ -1359,7 +1359,7 @@ subroutine READ_GOES_SNDR(Segment_Number,Channel_1_Filename, &
 
      enddo
    enddo
-   
+
    !------------------------------------------------------------------------------
    ! Goes Navigation
    !------------------------------------------------------------------------------
@@ -1380,7 +1380,7 @@ subroutine READ_GOES_SNDR(Segment_Number,Channel_1_Filename, &
      call COMPUTE_SATELLITE_ANGLES(Sensor%Geo_Sub_Satellite_Longitude,  &
                                    Sensor%Geo_Sub_Satellite_Latitude, Line_Idx)
    enddo
-   
+
    !--- scan number and time
    First_Line_In_Segment = (Segment_Number-1)*Image%Number_Of_Lines_Per_Segment
    do Line_Idx = Line_Idx_Min_Segment, Line_Idx_Min_Segment + Image%Number_Of_Lines_Read_This_Segment - 1
@@ -1581,7 +1581,7 @@ end subroutine READ_GOES_SNDR
 404 close(unit=1)
     print *, "Error reading GOES Headers. File is probably empty"
     stop 4
-    
+
 
  ! print *, "elements = ", Num_Elements_This_image, Num_4km_Elem_Goes_Fd/Goes_Xstride
  ! print *, "lines = ", num_Scans_This_image, Num_4km_Scans_Goes_Fd
@@ -1605,8 +1605,8 @@ end subroutine READ_GOES_SNDR
                                     Num_Lines_Read, Image_Buffer, &
                                     Goes_Scan_Line_Flag)
 
- character(len=*), intent(in):: filename 
- integer(kind=int4), intent(in):: Byte_Shift 
+ character(len=*), intent(in):: filename
+ integer(kind=int4), intent(in):: Byte_Shift
  type (AREA_STRUCT), intent(in) :: AREAstr
  integer(kind=int4), intent(in):: Xstride
  integer(kind=int4), intent(in):: Segment_Number
@@ -1627,7 +1627,7 @@ end subroutine READ_GOES_SNDR
  integer(kind=int4):: Word_Start_Prefix
  integer(kind=int4):: Word_End
  integer(kind=int4):: Line_Idx
- integer(kind=int2), dimension(:), allocatable:: Word_Buffer,imgbuf 
+ integer(kind=int2), dimension(:), allocatable:: Word_Buffer,imgbuf
  integer(kind=int1), dimension(:), allocatable:: Word_Buffer_I1
  integer:: Nwords
  integer(kind=int4), DIMENSION(64) :: i4buf_temp
@@ -1637,18 +1637,18 @@ end subroutine READ_GOES_SNDR
  ! get number of bytes per pixel and num bytes per line for current file
  ! this is needed because the 0.64 and other channels have different values
  ! in the MTSAT HIRID format.
-  
+
  call MREADF_INT(trim(filename)//CHAR(0),0,4,64,dummy,i4buf_temp)
  bytes_per_pixel = i4buf_temp(11)
  num_byte_ln_prefix = i4buf_temp(15)
 
  Image_Buffer = 0
 
- bytes_per_line = Num_Byte_Ln_Prefix + (AREAstr%Num_Elem*Bytes_Per_Pixel) 
+ bytes_per_line = Num_Byte_Ln_Prefix + (AREAstr%Num_Elem*Bytes_Per_Pixel)
 
  Words_In_Prefix = num_byte_ln_prefix / Bytes_Per_Pixel
 
- Words_Per_Line = Words_In_Prefix + AREAstr%Num_Elem 
+ Words_Per_Line = Words_In_Prefix + AREAstr%Num_Elem
 
  First_Line_In_Segment = (Segment_Number-1)*Num_Lines_Per_Segment + 1
 
@@ -1661,7 +1661,7 @@ end subroutine READ_GOES_SNDR
 
  allocate(Word_Buffer(Number_Of_Words_In_Segment), imgbuf(Number_Of_Words_In_Segment))
 
- !--- Account for different Bytes_Per_Pixel value (Some MTSAT data is 1 byte per pixel) 
+ !--- Account for different Bytes_Per_Pixel value (Some MTSAT data is 1 byte per pixel)
  select case (Bytes_Per_Pixel)
 
    case(1)
@@ -1680,7 +1680,7 @@ end subroutine READ_GOES_SNDR
      where (Word_Buffer < 0)
       Word_Buffer = Word_Buffer + 256
      end where
-  
+
    case(2)
 
      call MREADF_INT(filename//CHAR(0), &
@@ -1688,7 +1688,7 @@ end subroutine READ_GOES_SNDR
                  Bytes_Per_Pixel, &
                  Number_Of_Words_In_Segment, &
                  Number_Of_Words_Read,Word_Buffer)
-     
+
    case default
 
      print *, EXE_PROMPT, "Unsupported Bytes_Per_Pixel Value in GET_IMAGE_FROM AREAFILE, stopping"
@@ -1698,14 +1698,14 @@ end subroutine READ_GOES_SNDR
 
  !--- update number of scans read
  Num_Lines_Read = Number_Of_Words_Read / Words_Per_Line
- 
- !--- extract scanline time from prefix - note issues with Word_End 
+
+ !--- extract scanline time from prefix - note issues with Word_End
  do Line_Idx = 1, Num_Lines_Read
     Word_Start = (Words_In_Prefix + AREAstr%Num_Elem)*(Line_Idx-1) + Words_In_Prefix + 1
     Word_End = min(Word_Start + (AREAstr%Num_Elem-1),Number_Of_Words_In_Segment)
     Nwords = int(Word_End - Word_Start)/Xstride + 1
     Image_Buffer(1:Nwords,Line_Idx) = ishft(Word_Buffer(Word_Start:Word_End:Xstride),Byte_Shift)
-     
+
     Word_Start_Prefix = (Words_In_Prefix + AREAstr%Num_Elem)*(Line_Idx-1) + 1
 
     if (allocated(Image%Scan_Time_Ms)) then
@@ -1770,7 +1770,7 @@ subroutine  GET_GOES_NAVIGATION(Segment_Number, Num_Lines_Per_Segment, &
 !     Line = real(AREAstr%North_Bound) + real(Line_Idx_Temp - 1) + &
 !            real(AREAstr%Line_Res)/2.0
 
-      if(trim(Sensor%Sensor_Name) == 'GOES_IP_SOUNDER') then 
+      if(trim(Sensor%Sensor_Name) == 'GOES_IP_SOUNDER') then
          line = (real(AREAstr%north_bound) + real(Line_Idx_Temp - 1) + 9.0) / 10.0
       else
 
@@ -1792,10 +1792,10 @@ subroutine  GET_GOES_NAVIGATION(Segment_Number, Num_Lines_Per_Segment, &
 !         Elem = real(AREAstr%West_Vis_Pixel) + real(Elem_Idx_Temp - 1) + &
 !                real(AREAstr%Elem_Res*(Xstride))/2.0
 
-        ! For sounder, convert McIDAS elem to GVAR elem. 
+        ! For sounder, convert McIDAS elem to GVAR elem.
         ! Copied from McIDAS code, nvxgvar.dlm, v1.16
-        if(trim(Sensor%Sensor_Name) == 'GOES_IP_SOUNDER') then 
-           elem = (real(AREAstr%west_vis_pixel) + real(Elem_Idx_Temp - 1) + 9.0) / 10.0  
+        if(trim(Sensor%Sensor_Name) == 'GOES_IP_SOUNDER') then
+           elem = (real(AREAstr%west_vis_pixel) + real(Elem_Idx_Temp - 1) + 9.0) / 10.0
         else
 
            !--- Navigate to the center of the pixel.  CLAVRx.
@@ -1806,8 +1806,8 @@ subroutine  GET_GOES_NAVIGATION(Segment_Number, Num_Lines_Per_Segment, &
            !elem = anint((Elem_Idx_Temp - 1.0)*real(AREAstr%Elem_Res)+real(AREAstr%west_vis_pixel))
 
         end if
-        
-        
+
+
          CALL COMP_ES(NAVstr, Line, Elem, Elev, Scan)
 
          !--- Convert angles to lat/lon
@@ -1894,10 +1894,10 @@ end subroutine GET_GOES_NAVIGATION
 !     AUTHOR:         KELLY DEAN
 !
 !     CREATED:        October 1994
-!   
+!
 !     DEVELOPED FOR:  CIRA/COLORAdo STATE UNIVERSITY
 !
-!     PURPOSE:        
+!     PURPOSE:
 !	Procedure INST2E accepts the single precision roll, pitch and yaw
 !    angles of an instrument and returns the double precision instrument
 !    to earth coordinates transformation matrix.
@@ -1919,7 +1919,7 @@ end subroutine GET_GOES_NAVIGATION
 !				 transformation matrix
 !	 AT     real*8	    Instrument to ECEF coordinates  OUT
 !				 transformation matrix
-!    
+!
 !     VARIABLES:
 !       NAME:    PURPOSE:
 !       ****************  integer    *****************
@@ -1973,10 +1973,10 @@ end subroutine GET_GOES_NAVIGATION
 !     AUTHOR:         Garrett Campbell and Kelly Dean
 !
 !     CREATED:        October 1994
-!   
+!
 !     DEVELOPED FOR:  CIRA/COLORAdo STATE UNIVERSITY
 !
-!     PURPOSE:        
+!     PURPOSE:
 !	Function TIME50 will take the epoch time from the GVAR NAVstr%and
 !      convert it to Minutes from January 1, 1950.  NOTE - Epoch time in
 !      the NAVstr%is not in the same format as other BCD times.C
@@ -1986,7 +1986,7 @@ end subroutine GET_GOES_NAVIGATION
 !     ARGUMENTS:
 !       NAME:   type:       PURPOSE:                          IN/OUT:
 !	btim     BYTE        Binary coded data (BCD) time      IN
-!    
+!
 !     FUNCTIONS:
 !       NAME:   type:       PURPOSE:                        LIBRARY:
 !       MOD     integer     Returns a remainder              Intrinsic
@@ -2068,17 +2068,17 @@ end subroutine GET_GOES_NAVIGATION
 !     Make the year, Julian day, Hour, Minute, and seconds.
 !
       ny = year_1000 * 1000 + year_100 * 100 + year_10 * 10 + year_1
-      nd = day_100 * 100 + day_10 * 10 + day_1 
+      nd = day_100 * 100 + day_10 * 10 + day_1
       nh = Hour_10 * 10 + Hour_1
       nm = min_10 * 10 + min_1
       s  = sec_10 * 10.0D0 + sec_1 +                               &
           msec_100 * 0.1D0 + msec_10 * 0.01D0 + msec_1 * 0.001D0
 
 !
-!     HERE WE CONVERT integer YEAR AND DAY OF YEAR TO NUMBER OF                 
-!     DAYS FROM 0 HOUR UT, 1950 JAN. 1.0                                        
-!     THIS CONVERTION IS BASED ON AN ALGORITHM BY FLIEGEL AND VAN               
-!     FLANDERN, COMM. OF ACM, VOL.11, NO. 10, OCT. 1968 (P.657)                 
+!     HERE WE CONVERT integer YEAR AND DAY OF YEAR TO NUMBER OF
+!     DAYS FROM 0 HOUR UT, 1950 JAN. 1.0
+!     THIS CONVERTION IS BASED ON AN ALGORITHM BY FLIEGEL AND VAN
+!     FLANDERN, COMM. OF ACM, VOL.11, NO. 10, OCT. 1968 (P.657)
 !
       j = nd + 1461 * (ny + 4799) / 4 - 3 *     &
          ( ( ny + 4899 ) / 100 ) / 4 - 2465022
@@ -2098,10 +2098,10 @@ end subroutine GET_GOES_NAVIGATION
 !     AUTHOR:         KELLY DEAN
 !
 !     CREATED:        October 1994
-!   
+!
 !     DEVELOPED FOR:  CIRA/COLORAdo STATE UNIVERSITY
 !
-!     PURPOSE:        
+!     PURPOSE:
 !	Procedure LModel accepts an input time and a set of O&A parameters
 !	and computes position of the satellite, the attitude angles and
 !	attitudes misalignment and the instrument to earth fixed coordinates
@@ -2124,7 +2124,7 @@ end subroutine GET_GOES_NAVIGATION
 !	TU       real*8      Epoch time from Jan 1, 1950 (Minutes)   IN
 !	RLAT     real*8	     Subsatellite Geodetic latitude (rad)    OUT
 !	RLON     real*8	     Subsatellite Geodetic Longitude (rad)   OUT
-!    
+!
 !     subroutineS:
 !       NAME:   PURPOSE:                                    LIBRARY:
 !        INST2E   Computes instrument to earth coordinates      GVARnav
@@ -2141,14 +2141,14 @@ end subroutine GET_GOES_NAVIGATION
 !     VARIABLES:
 !       NAME:    PURPOSE:
 !       ****************  real*8       *****************
-!       XS     NORMALIZED S/C POSITION IN ECEF COORDINATES              
-!       BT    ECEF TO INSTRUMENT COORDINATES TRANSFORMATION            
-!       Q3    USED IN subroutine LPOINT                                
-!       PITCH PITCH ANGLES OF INSTRUMENT (RAD)            
-!       ROLL  ROLL ANGLES OF INSTRUMENT (RAD)            
-!       YAW   YAW ANGLES OF INSTRUMENT (RAD)             
-!       PMA  PITCH MISALIGNMENTS OF INSTRUMENT (RAD)         
-!       RMA  ROLL MISALIGNMENTS OF INSTRUMENT (RAD)         
+!       XS     NORMALIZED S/C POSITION IN ECEF COORDINATES
+!       BT    ECEF TO INSTRUMENT COORDINATES TRANSFORMATION
+!       Q3    USED IN subroutine LPOINT
+!       PITCH PITCH ANGLES OF INSTRUMENT (RAD)
+!       ROLL  ROLL ANGLES OF INSTRUMENT (RAD)
+!       YAW   YAW ANGLES OF INSTRUMENT (RAD)
+!       PMA  PITCH MISALIGNMENTS OF INSTRUMENT (RAD)
+!       RMA  ROLL MISALIGNMENTS OF INSTRUMENT (RAD)
 !	R    Normalized satellite distance (km)
 !	TS   Time from EPOCH (Minutes)
 !	B    Spacecraft to earth fixed coordinates transmation matrix
@@ -2159,7 +2159,7 @@ end subroutine GET_GOES_NAVIGATION
 !	LAM  IMC longitude (rad)
 !	U    Argument of latitude (rad)
 !	SU   DSIN(U)
-!	CU   DCOS(U)                                             
+!	CU   DCOS(U)
 !	SI   Sine of the orbit inclination
 !	CI   Cosine of the orbit inclination
 !	SLAT Sine of geocentric latitude
@@ -2185,7 +2185,7 @@ end subroutine GET_GOES_NAVIGATION
 !
 !     COMMON BLOCKS:
 !       NAME:     CONTENTS:
-!       ELCOMM     Instrument position and attitude variables and 
+!       ELCOMM     Instrument position and attitude variables and
 !                   transformation matrix
 !
 !     -------------------------------------------------------
@@ -2217,7 +2217,7 @@ end subroutine GET_GOES_NAVIGATION
 !
 !     COMMON BLOCKS:
 !
-      COMMON /ELCOMM/ xs, bt, q3, pitch, roll, yaw, pma, rma 
+      COMMON /ELCOMM/ xs, bt, q3, pitch, roll, yaw, pma, rma
 !
 !     INITIALIZATIONS: (Description mathematical and earth-related constants)
 !
@@ -2227,9 +2227,9 @@ end subroutine GET_GOES_NAVIGATION
       RAD    = PI / 180D0  ! Degrees to radians conversion (PI/180)
       NOMORB = 42164.365D0 !  Nominal radial distance of satellite (km)
       AE     = 6378.137D0  !  Earth equatorial radius (km)
-      FER    = 1.0D0 - ( 6356.7533D0 / AE )  ! Earth flattening coefficient 
-      AEBE2  = 1.0D0 / (1.0D0 - FER )**2 
-      AEBE3  = AEBE2 - 1. 
+      FER    = 1.0D0 - ( 6356.7533D0 / AE )  ! Earth flattening coefficient
+      AEBE2  = 1.0D0 / (1.0D0 - FER )**2
+      AEBE3  = AEBE2 - 1.
       AEBE4  = ( 1.0D0 - FER )**4-1.
 !
 !     ******--------------------------------------------******
@@ -2237,12 +2237,12 @@ end subroutine GET_GOES_NAVIGATION
 !     ******--------------------------------------------******
 !
 !     Determine the IMC status
-! 
-      IMCstatus = IBITS(NAVstr%stat,6,1)  
+!
+      IMCstatus = IBITS(NAVstr%stat,6,1)
 !
 !     Assign referenec values to the subsatellite longitude and
 !     latitude, the radial distance and the orbit yaw.
-!                                                                               
+!
       LAM = NAVstr%ref_long * 1.0D-7
       DR  = NAVstr%ref_rad_dist
       PHI = NAVstr%ref_lat
@@ -2345,7 +2345,7 @@ end subroutine GET_GOES_NAVIGATION
 !
 !     Conversion of the IMC_active longitude and orbit yaw to the subsatellite
 !     longitude and the orbit inclination (REF: GOES-PCC-TM-2473). Inputs
-!     required for earth location and gridding 
+!     required for earth location and gridding
 !
       SLAT = DSIN(PHI)
       SYAW = DSIN(PSI)
@@ -2359,7 +2359,7 @@ end subroutine GET_GOES_NAVIGATION
         U = 1.570796D0
       else if (SLAT .LT. 0.0D0 ) then
         U = 4.712389D0
-      else 
+      else
         U = LAM
       endif
 !
@@ -2412,7 +2412,7 @@ end subroutine GET_GOES_NAVIGATION
 !	PRINT *, ' IMC turned off............'
 !
 !     Computes the solar orbit angle
-!                                                                               
+!
          WA = ( NAVstr%solar_rate * 1.0D-7 ) * TS
 !
 !     Computes the difference between current time, TS, and the
@@ -2425,7 +2425,7 @@ end subroutine GET_GOES_NAVIGATION
          ROLL = ROLL + GATT(NAVstr%roll_att,WA,TE)
 !
 !     Computes Pitch + Pitch Misalignment
-!                                                                               
+!
          PITCH = PITCH + GATT(NAVstr%pitch_att,WA,TE)
 !
 !     Computes YAW
@@ -2433,7 +2433,7 @@ end subroutine GET_GOES_NAVIGATION
          YAW = YAW + GATT(NAVstr%yaw_att,WA,TE)
 !
 !     Computes roll misalignment
-!                                                                               
+!
          RMA = GATT(NAVstr%roll_misalgn,WA,TE)
 !
 !     Computes pitch misalignment
@@ -2459,7 +2459,7 @@ end subroutine GET_GOES_NAVIGATION
       return
 
       CONTAINS
- 
+
 !=======================================================================
 !     G A T T
 !=======================================================================
@@ -2468,10 +2468,10 @@ end subroutine GET_GOES_NAVIGATION
 !     AUTHOR:         KELLY DEAN
 !
 !     CREATED:        October 1994
-!   
+!
 !     DEVELOPED FOR:  CIRA/COLORAdo STATE UNIVERSITY
 !
-!     PURPOSE:        
+!     PURPOSE:
 !	   This function computes an attitude/misalignment angle from
 !	 a given subset of the O&A parameters.
 !
@@ -2480,10 +2480,10 @@ end subroutine GET_GOES_NAVIGATION
 !     ARGUMENTS:
 !       NAME:   type:       PURPOSE:                        IN/OUT:
 !        IMGR_REP  STRUCTURE
-!        TE        real*8     Input exponential time          IN 
+!        TE        real*8     Input exponential time          IN
 !                             delay from epoch (Minutes)
 !	 WA	   real*8     Input solar orbit angle (rad)   IN
-!    
+!
 !     FUNCTIONS:
 !       NAME:   type:       PURPOSE:                        LIBRARY:
 !        DCOS    real*8      Cosine ( Double precision )      INTRINSIC
@@ -2516,7 +2516,7 @@ end subroutine GET_GOES_NAVIGATION
 !
 !	Computes the exponential term.
 !
-      if ( TE .GE. 0.0D0 ) then 
+      if ( TE .GE. 0.0D0 ) then
        GATT = GATT + (IMGR_REP%exp_mag * 1.0D-7 ) *     &
             EXP(-te / ( IMGR_REP%exp_Time_const * 1.0D-2 ))
       endif
@@ -2840,156 +2840,156 @@ end subroutine GET_GOES_NAVIGATION
       IERR=0
       RETURN
       END SUBROUTINE LPOINT
-!***********************************************************************        
-!***********************************************************************        
-!**                                                                             
-!**   INTEGRAL SYSTEMS, INC.                                                    
-!**                                                                             
-!***********************************************************************        
-!**                                                                             
-!**   PROJECT   : OPERATIONS GROUND EQUIPMENT FOR GOES-NEXT                     
-!**   SYSTEM    : EARTH LOCATION USERS GUIDE                                    
-!**   ROUTINE   : GPOINT                                                        
-!**   SOURCE    : F.GPOINT                                                      
-!**   LOAD NAME : ANY                                                           
-!**   PROGRAMMER: IGOR LEVINE                                                   
-!**                                                                             
-!**   VER.    DATA    BY   COMMENT                                              
-!**   ----  --------  ---  ---------------------------------------------        
-!**   A     12/10/87  IL   INITIAL CREATION                                     
-!**   A     06/10/88  IL   REPLACED ASIN WITH ATAN TO SAVE TIME                 
-!**   A     06/02/89  IL   COORDINATE AXES CHANGED ACCORDING TO                 
-!**                        FORD'S DEFINITION IN SDAIP, DRL 504-01               
-!**                                                                             
-!***********************************************************************        
-!**                                                                             
-!**   THIS subroutine CONVERTS GEOGRAPHIC LATITUDE AND LONGITUDE                
-!**   TO THE RELATED ELEVATION AND SCAN ANGLES.                                 
-!**                                                                             
-!***********************************************************************        
-!**                                                                             
-!**   CALLED BY       : ANY                                                     
-!**   COMMONS MODIFIED: NONE                                                    
-!**   INPUTS          : NONE                                                    
-!**   OUTPUTS         : NONE                                                    
-!**   ROUTINES CALLED : NONE                                                    
-!**                                                                             
-!***********************************************************************        
-!***********************************************************************        
-      subroutine GPOINT(RLAT,RLON,ALF,GAM,IERR)                                 
-!                                                                               
-!     CALLING parameterS                                                        
-!                                                                               
-      real*8   RLAT    ! GEOGRAPHIC LATITUDE IN RADIANS (INPUT)            
-      real*8   RLON    ! GEOGRAPHIC LONGITUDE IN RADIANS (INPUT)           
-      real*8   ALF     ! ELEVATION ANGLE IN RADIANS (OUTPUT)               
-      real*8   GAM     ! SCAN ANGLE IN RADIANS (OUTPUT)                    
-      integer IERR     ! OUTPUT STATUS
-!                             0 - SUCCESSFUL COMPLETION,         
-!                             1 - POINT WITH GIVEN LAT/LON IS INVISIBLE         
+!***********************************************************************
+!***********************************************************************
+!**
+!**   INTEGRAL SYSTEMS, INC.
+!**
+!***********************************************************************
+!**
+!**   PROJECT   : OPERATIONS GROUND EQUIPMENT FOR GOES-NEXT
+!**   SYSTEM    : EARTH LOCATION USERS GUIDE
+!**   ROUTINE   : GPOINT
+!**   SOURCE    : F.GPOINT
+!**   LOAD NAME : ANY
+!**   PROGRAMMER: IGOR LEVINE
+!**
+!**   VER.    DATA    BY   COMMENT
+!**   ----  --------  ---  ---------------------------------------------
+!**   A     12/10/87  IL   INITIAL CREATION
+!**   A     06/10/88  IL   REPLACED ASIN WITH ATAN TO SAVE TIME
+!**   A     06/02/89  IL   COORDINATE AXES CHANGED ACCORDING TO
+!**                        FORD'S DEFINITION IN SDAIP, DRL 504-01
+!**
+!***********************************************************************
+!**
+!**   THIS subroutine CONVERTS GEOGRAPHIC LATITUDE AND LONGITUDE
+!**   TO THE RELATED ELEVATION AND SCAN ANGLES.
+!**
+!***********************************************************************
+!**
+!**   CALLED BY       : ANY
+!**   COMMONS MODIFIED: NONE
+!**   INPUTS          : NONE
+!**   OUTPUTS         : NONE
+!**   ROUTINES CALLED : NONE
+!**
+!***********************************************************************
+!***********************************************************************
+      subroutine GPOINT(RLAT,RLON,ALF,GAM,IERR)
 !
-!     LOCAL VARIABLES                                                           
+!     CALLING parameterS
+!
+      real*8   RLAT    ! GEOGRAPHIC LATITUDE IN RADIANS (INPUT)
+      real*8   RLON    ! GEOGRAPHIC LONGITUDE IN RADIANS (INPUT)
+      real*8   ALF     ! ELEVATION ANGLE IN RADIANS (OUTPUT)
+      real*8   GAM     ! SCAN ANGLE IN RADIANS (OUTPUT)
+      integer IERR     ! OUTPUT STATUS
+!                             0 - SUCCESSFUL COMPLETION,
+!                             1 - POINT WITH GIVEN LAT/LON IS INVISIBLE
+!
+!     LOCAL VARIABLES
 !
       real*8 F(3)      ! POINTING VECTOR IN EARTH CENTERED COORDINATES
       real*8 FT(3)     ! POINTING VECTOR IN INSTRUMENT COORDINATES
       real*8 U(3)      ! COORDINATES OF THE EARTH POINT (KM)
       real*8 SING,SLAT,W1,W2  ! WORK SPACE
-!                                                                               
-!     INCLUDE FILES                                                             
-!                                                                               
-      real*8 PI                                                                 
-           parameter (PI=3.141592653589793D0)                                   
-      real*8 DEG                                                                
-           parameter (DEG=180.D0/PI)                                            
-      real*8 RAD                                                                
-           parameter (RAD=PI/180.D0)                                            
-!                    DEGREES TO RADIANS CONVERSION PI/180                       
-      real*8 NOMORB                                                             
-           parameter (NOMORB=42164.365D0)                                       
-!                    NOMINAL RADIAL DISTANCE OF SATELLITE (km)                  
-      real*8 AE                                                                 
-           parameter (AE=6378.137D0)                                            
-!                    EARTH EQUATORIAL RADIUS (km)                               
-      real*8 FER                                                                
-           parameter (FER=1.D0-(6356.7533D0/AE))                                
-!                    EARTH FLATTENING COEFFICIENT = 1-(BE/AE)                   
-      real*4 AEBE2                                                              
-           parameter (AEBE2=1.D0/(1.D0-FER)**2)                                 
-      real*4 AEBE3                                                              
-           parameter (AEBE3=AEBE2-1.)                                           
-      real*4 AEBE4                                                              
+!
+!     INCLUDE FILES
+!
+      real*8 PI
+           parameter (PI=3.141592653589793D0)
+      real*8 DEG
+           parameter (DEG=180.D0/PI)
+      real*8 RAD
+           parameter (RAD=PI/180.D0)
+!                    DEGREES TO RADIANS CONVERSION PI/180
+      real*8 NOMORB
+           parameter (NOMORB=42164.365D0)
+!                    NOMINAL RADIAL DISTANCE OF SATELLITE (km)
+      real*8 AE
+           parameter (AE=6378.137D0)
+!                    EARTH EQUATORIAL RADIUS (km)
+      real*8 FER
+           parameter (FER=1.D0-(6356.7533D0/AE))
+!                    EARTH FLATTENING COEFFICIENT = 1-(BE/AE)
+      real*4 AEBE2
+           parameter (AEBE2=1.D0/(1.D0-FER)**2)
+      real*4 AEBE3
+           parameter (AEBE3=AEBE2-1.)
+      real*4 AEBE4
            parameter (AEBE4=(1.D0-FER)**4-1.)
-      real*8 XS(3)                                                              
-!                      NORMALIZED S/C POSITION IN ECEF COORDINATES              
-      real*8 BT(3,3)                                                            
-!                      ECEF TO INSTRUMENT COORDINATES TRANSFORMATION            
-      real*8  Q3                                                                
-!                      USED IN subroutine LPOINT                                
-      real*8 PITCH,ROLL,YAW                                                     
-!                          PITCH,ROLL,YAW ANGLES OF INSTRUMENT (RAD)            
-      real*8 PMA,RMA                                                            
-!                          PITCH,ROLL MISALIGNMENTS OF INSTRUMENT (RAD)         
+      real*8 XS(3)
+!                      NORMALIZED S/C POSITION IN ECEF COORDINATES
+      real*8 BT(3,3)
+!                      ECEF TO INSTRUMENT COORDINATES TRANSFORMATION
+      real*8  Q3
+!                      USED IN subroutine LPOINT
+      real*8 PITCH,ROLL,YAW
+!                          PITCH,ROLL,YAW ANGLES OF INSTRUMENT (RAD)
+      real*8 PMA,RMA
+!                          PITCH,ROLL MISALIGNMENTS OF INSTRUMENT (RAD)
          COMMON /ELCOMM/ XS,BT,Q3,PITCH,ROLL,YAW,PMA,RMA
-!***********************************************************************        
-!                                                                               
-!     COMPUTES SINUS OF GEOGRAPHIC (GEODETIC) LATITUDE                          
-!                                                                               
+!***********************************************************************
+!
+!     COMPUTES SINUS OF GEOGRAPHIC (GEODETIC) LATITUDE
+!
       SING=DSIN(RLAT)
-      W1=AEBE4*SING*SING                                                        
-!                                                                               
-!     SINUS OF THE GEOCENTRIC LATITUDE                                          
-!                                                                               
+      W1=AEBE4*SING*SING
+!
+!     SINUS OF THE GEOCENTRIC LATITUDE
+!
       SLAT=((0.375D0*W1-0.5D0)*W1+1.0D0)*SING/AEBE2
-!                                                                               
-!     COMPUTES LOCAL EARTH RADIUS AT SPECIFIED POINT                            
-!                                                                               
-      W2=SLAT*SLAT                                                              
-      W1=AEBE3*W2                                                               
+!
+!     COMPUTES LOCAL EARTH RADIUS AT SPECIFIED POINT
+!
+      W2=SLAT*SLAT
+      W1=AEBE3*W2
       W1=(0.375D0*W1-0.5D0)*W1+1.D0
-!                                                                               
-!     COMPUTES CARTESIAN COORDINATES OF THE POINT                               
-!                                                                               
-      U(3)=SLAT*W1                                                              
+!
+!     COMPUTES CARTESIAN COORDINATES OF THE POINT
+!
+      U(3)=SLAT*W1
       W2=W1*DSQRT(1.0D0-W2)
       U(1)=W2*DCOS(RLON)
       U(2)=W2*DSIN(RLON)
-!                                                                               
-!     POINTING VECTOR FROM SATELLITE TO THE EARTH POINT                         
-!                                                                               
-      F(1)=U(1)-XS(1)                                                           
-      F(2)=U(2)-XS(2)                                                           
-      F(3)=U(3)-XS(3)                                                           
-      W2=U(1)*SNGL(F(1))+U(2)*SNGL(F(2))+           & 
-         U(3)*SNGL(F(3))*AEBE2                                                  
-!                                                                               
-!     VERIFIES VISIBILITY OF THE POINT                                          
-!                                                                               
+!
+!     POINTING VECTOR FROM SATELLITE TO THE EARTH POINT
+!
+      F(1)=U(1)-XS(1)
+      F(2)=U(2)-XS(2)
+      F(3)=U(3)-XS(3)
+      W2=U(1)*SNGL(F(1))+U(2)*SNGL(F(2))+           &
+         U(3)*SNGL(F(3))*AEBE2
+!
+!     VERIFIES VISIBILITY OF THE POINT
+!
       if (W2.GT.0.0D0) then
-!                               INVISIBLE POINT ON THE EARTH                    
-                   IERR=1                                                       
+!                               INVISIBLE POINT ON THE EARTH
+                   IERR=1
                    ALF=99999.0D0
                    GAM=99999.0D0
-                   return                                                       
-       end if                                                                   
-!                                                                               
-!     CONVERTS POINTING VECTOR TO INSTRUMENT COORDINATES                        
-!                                                                               
-      FT(1)=BT(1,1)*F(1)+BT(2,1)*F(2)+BT(3,1)*F(3)                              
-      FT(2)=BT(1,2)*F(1)+BT(2,2)*F(2)+BT(3,2)*F(3)                              
-      FT(3)=BT(1,3)*F(1)+BT(2,3)*F(2)+BT(3,3)*F(3)                              
-!                                                                               
-!     CONVERTS POINTING VECTOR TO SCAN AND ELEVATION ANGLES AND                 
-!     CORRECTS FOR THE ROLL AND PITCH MISALIGNMENTS                             
-!                                                                               
-      GAM=ATAN(FT(1)/SQRT(FT(2)**2+FT(3)**2))                                   
+                   return
+       end if
+!
+!     CONVERTS POINTING VECTOR TO INSTRUMENT COORDINATES
+!
+      FT(1)=BT(1,1)*F(1)+BT(2,1)*F(2)+BT(3,1)*F(3)
+      FT(2)=BT(1,2)*F(1)+BT(2,2)*F(2)+BT(3,2)*F(3)
+      FT(3)=BT(1,3)*F(1)+BT(2,3)*F(2)+BT(3,3)*F(3)
+!
+!     CONVERTS POINTING VECTOR TO SCAN AND ELEVATION ANGLES AND
+!     CORRECTS FOR THE ROLL AND PITCH MISALIGNMENTS
+!
+      GAM=ATAN(FT(1)/SQRT(FT(2)**2+FT(3)**2))
       ALF=-DATAN(FT(2)/FT(3))
       W1=DSIN(ALF)
       W2=DCOS(ALF)
       ALF=ALF+RMA*(1.0D0-W2)+PMA*W1*(1.0D0+DTAN(GAM))
-      GAM=GAM-RMA*W1                                                            
-      IERR=0                                                                    
-      return                                                                    
-      end  subroutine GPOINT                                                                      
+      GAM=GAM-RMA*W1
+      IERR=0
+      return
+      end  subroutine GPOINT
 !=======================================================================
 !     C O M P _ E S
 !=======================================================================
@@ -2998,10 +2998,10 @@ end subroutine GET_GOES_NAVIGATION
 !     AUTHOR:         KELLY DEAN
 !
 !     CREATED:        January 1995
-!   
+!
 !     DEVELOPED FOR:  CIRA/COLORADO STATE UNIVERSITY
 !
-!     PURPOSE:        
+!     PURPOSE:
 !		Compute the elevation and scan angles related to the
 !	satellite line and pixel numbers.
 !
@@ -3014,7 +3014,7 @@ end subroutine GET_GOES_NAVIGATION
 ! 	 pixel    real*8      Satellite pixel number         IN
 ! 	 elev     real*8      Elevation angle (rad)          OUT
 ! 	 scan     real*8      Scan angle (rad)               OUT
-!    
+!
 !     CONSTANTS:
 !       NAME:    PURPOSE:
 !       ****************  real*8     *****************
@@ -3050,7 +3050,7 @@ end subroutine GET_GOES_NAVIGATION
 !     ******--------  MAIN BODY STARTS HERE  -----------******
 !     ******--------------------------------------------******
 !
-      if ( NAVstr%instr == 1 ) then 
+      if ( NAVstr%instr == 1 ) then
 !	Recompute elevation and scan biases based on user inputs of
 !	cycles and increments obtained from GVAR.
        elvmax(NAVstr%instr) = ( NAVstr%ns_cyl *      &
@@ -3058,13 +3058,13 @@ end subroutine GET_GOES_NAVIGATION
                                NAVstr%ns_inc ) *      &
                                elvinc(NAVSTR%instr)
        scnmax(NAVstr%instr) = ( NAVstr%ew_cyl *     &
-                                incmax(NAVstr%instr) +     & 
+                                incmax(NAVstr%instr) +     &
                                 NAVstr%ew_inc ) *      &
                                 scninc(NAVstr%instr)
 !      Compute elevation angle (rad)
-       elev = elvmax(NAVstr%instr) + (4.50 - line) * elvln(NAVstr%instr) 
+       elev = elvmax(NAVstr%instr) + (4.50 - line) * elvln(NAVstr%instr)
 !      Compute scan angle (rad)
-       scan = (pixel - 1.0) * scnpx(NAVstr%instr) - scnmax(NAVstr%instr) 
+       scan = (pixel - 1.0) * scnpx(NAVstr%instr) - scnmax(NAVstr%instr)
       else IF( NAVstr%instr == 2 ) then
 !	Recompute elevation and scan biases based on user inputs of
 !	cycles and increments obtained from GVAR.
@@ -3073,11 +3073,11 @@ end subroutine GET_GOES_NAVIGATION
                                 NAVstr%ns_inc ) *     &
                                 elvinc(NAVstr%instr)
        scnmax(NAVstr%instr) = ( NAVstr%ew_cyl *     &
-                                incmax(NAVstr%instr) + & 
+                                incmax(NAVstr%instr) + &
                                 NAVstr%ew_inc ) *  &
                                 scninc(NAVstr%instr)
 !      Compute elevation angle (rad)
-       elev = elvmax(NAVstr%instr) + (2.50 - line) * elvln(NAVstr%instr) 
+       elev = elvmax(NAVstr%instr) + (2.50 - line) * elvln(NAVstr%instr)
 !      Compute scan angle (rad)
        scan = (pixel - 1.0)*scnpx(NAVstr%instr)-scnmax(NAVstr%instr)
       else
@@ -3097,10 +3097,10 @@ end subroutine GET_GOES_NAVIGATION
 !     AUTHOR:         KELLY DEAN
 !
 !     CREATED:        January 1995
-!   
+!
 !     DEVELOPED FOR:  CIRA/COLORAdo STATE UNIVERSITY
 !
-!     PURPOSE:        
+!     PURPOSE:
 !	  Subroutine COMP_LP converts elevation and scan angles to the
 !       fractional line and pixel numbers.
 !
@@ -3161,26 +3161,26 @@ end subroutine GET_GOES_NAVIGATION
                                 NAVstr%ew_inc ) *           &
                                 scninc(NAVstr%instr)
 !       Compute fractional line number.
-      RL = ( ELVMAX(NAVstr%instr) - ELEV ) / ELVLN(NAVstr%instr) 
+      RL = ( ELVMAX(NAVstr%instr) - ELEV ) / ELVLN(NAVstr%instr)
       RL = RL + 4.5D0
 !       Compute fractional pixel number.
-       RP = ( SCNMAX(NAVstr%instr) + SCAN ) / SCNPX(NAVstr%instr)+1.0D0 
+       RP = ( SCNMAX(NAVstr%instr) + SCAN ) / SCNPX(NAVstr%instr)+1.0D0
       else if ( NAVstr%instr == 2 ) then
 !       Recompute elevation and scan biases based on user inputs of
 !       cycles and increments obtained from GVAR.
         elvmax(NAVstr%instr)  = ( (9 - NAVstr%ns_cyl) *    &
                                 incmax(NAVstr%instr) -     &
                                 NAVstr%ns_inc ) *     &
-                                elvinc(NAVstr%instr)   
+                                elvinc(NAVstr%instr)
         scnmax(NAVstr%instr) = ( NAVstr%ew_cyl *     &
-                                incmax(NAVstr%instr) +    & 
+                                incmax(NAVstr%instr) +    &
                                 NAVstr%ew_inc ) *     &
                                 scninc(NAVstr%instr)
 !       Compute fractional line number.
-        RL = ( ELVMAX(NAVstr%instr) - ELEV ) / ELVLN(NAVstr%instr) 
+        RL = ( ELVMAX(NAVstr%instr) - ELEV ) / ELVLN(NAVstr%instr)
         RL = RL + 2.5D0
 !       Compute fractional pixel number.
-        RP = ( SCNMAX(NAVstr%instr)+SCAN ) / SCNPX(NAVstr%instr)+1.0D0 
+        RP = ( SCNMAX(NAVstr%instr)+SCAN ) / SCNPX(NAVstr%instr)+1.0D0
       else
 !      Unknown instrument.....
        RL = 0.0D0
@@ -3194,11 +3194,11 @@ end subroutine GET_GOES_NAVIGATION
 !======================================================================
 !--------------------------------------------------------------
 ! Subroutine to make geostationary satellite azimuth field
-!   
+!
 !     glon = longitude of sub-satellite point (positive for western hem)
 !     glat = latitude of sub-satellite point (positive for northern hem)
 !
-!     zenith  = satellite zenith view angle 
+!     zenith  = satellite zenith view angle
 !     azimuth = satellite azimuth angle clockwise from north
 !--------------------------------------------------------------
  subroutine COMPUTE_SATELLITE_ANGLES(glon, glat, Line_Idx)
@@ -3227,17 +3227,17 @@ end subroutine GET_GOES_NAVIGATION
 
       Geo%Satzen(Elem_Idx,Line_Idx) = SENSOR_ZENITH(GEO_ALTITUDE,satlon,satlat, &
                                       Nav%Lon_1b(Elem_Idx,Line_Idx),Nav%Lat_1b(Elem_Idx,Line_Idx))
-      
+
       Geo%Sataz(Elem_Idx,Line_Idx) = SENSOR_AZIMUTH(Satlon,Satlat, &
                                                 Nav%Lon_1b(Elem_Idx,Line_Idx),Nav%Lat_1b(Elem_Idx,Line_Idx))
 
       Geo%Relaz(Elem_Idx,Line_Idx) = RELATIVE_AZIMUTH(Geo%Solaz(Elem_Idx,Line_Idx),Geo%Sataz(Elem_Idx,Line_Idx))
 
       Geo%Glintzen(Elem_Idx,Line_Idx) = GLINT_ANGLE(Geo%Solzen(Elem_Idx,Line_Idx), &
-                                                    Geo%Satzen(Elem_Idx,Line_Idx),Geo%Relaz(Elem_Idx,Line_Idx)) 
+                                                    Geo%Satzen(Elem_Idx,Line_Idx),Geo%Relaz(Elem_Idx,Line_Idx))
 
       Geo%Scatangle(Elem_Idx,Line_Idx) = SCATTERING_ANGLE(Geo%Solzen(Elem_Idx,Line_Idx), &
-                                             Geo%Satzen(Elem_Idx,Line_Idx),Geo%Relaz(Elem_Idx,Line_Idx)) 
+                                             Geo%Satzen(Elem_Idx,Line_Idx),Geo%Relaz(Elem_Idx,Line_Idx))
 
     else
 
@@ -3254,7 +3254,7 @@ end subroutine GET_GOES_NAVIGATION
 
  end subroutine COMPUTE_SATELLITE_ANGLES
 !-----------------------------------------------------------------------------
-! Logic copied from MCIDAS gvar_pfx.for, version unknown (last edit 23Dec2006) 
+! Logic copied from MCIDAS gvar_pfx.for, version unknown (last edit 23Dec2006)
 ! Print the data block prefix (time)
 !
 ! buf = an int2 vector of the areafile words on a line including the prefix
@@ -3279,7 +3279,7 @@ subroutine PRINT_PREFIX(Buf, Ms_Time)
   integer:: min_size
 
   equivalence(buf2, ldoc)
-  
+
 ! caused error on 1km
 ! buf2(:) = buf(:128)
 
@@ -3288,8 +3288,8 @@ subroutine PRINT_PREFIX(Buf, Ms_Time)
   buf2(1:min_size) = buf(1:min_size)
 
   call UNPKTIME (ldoc ,itimes,9+LOC)
- 
-! print *, "itimes = ", itimes 
+
+! print *, "itimes = ", itimes
   Year = itimes(1)*1000 + itimes(2)*100 + itimes(3)*10 + itimes(4)
   Dayofyr = itimes(5)*100 + itimes(6)*10 + itimes(7)
   Hour = itimes(8)*10 + itimes(9)
@@ -3303,7 +3303,7 @@ subroutine PRINT_PREFIX(Buf, Ms_Time)
 !      read *
   !Calculate miliseconds since midnight of current day
    Ms_Time = (((Hour * 60 * 60) + (Minute * 60) + Sec) * 1000) + Msec
- 
+
   !Calculates fractions of an Hour since midnight of current day
   Minute_Time = minute + (((msec / 1000.0) + sec) / 60.0 )
   Frac_Hours = Hour + (Minute_Time / 60.0)
@@ -3315,7 +3315,7 @@ end subroutine PRINT_PREFIX
 
 !-------------------------------------------------------------------------------------------
 ! FIXME: provisional routine -- from Mcidas, extracts line date and time from data buffer
-! Minimally modified to compile with gfortran options 
+! Minimally modified to compile with gfortran options
 !-------------------------------------------------------------------------------------------
 subroutine UNPKTIME (LDOC,ITIMES,LOC)
 
@@ -3334,8 +3334,8 @@ subroutine UNPKTIME (LDOC,ITIMES,LOC)
   integer(kind=int1):: lword
   integer(kind=int1), intent(in) :: ldoc(:)
 
-  integer LOC       
-  integer i,k,iword 
+  integer LOC
+  integer i,k,iword
 
   equivalence (lword,iword)
   data mask1 /z'0000000F'/, mask2 /z'000000F0'/
@@ -3404,44 +3404,44 @@ subroutine DETERMINE_DARK_COMPOSITE_NAME(AREAstr)
          Goes_Name = "goes15"
     case(55)
          Goes_Name = "met8"
-    case(56) 
+    case(56)
          Goes_Name = "met9"
     case(57)
          Goes_Name = "met10"
-    case(171) 
+    case(171)
          Goes_Name = "mtsat-1r"
-    case(172) 
+    case(172)
          Goes_Name = "mtsat-2"
-    case(810) 
+    case(810)
          Goes_Name = "coms-1"
     case default
          return
  end select
- 
- 
+
+
  !----------------------------------------------------------------------
  ! loop through today and previous days to find the most current file
  ! if no file can be found, the file name is set to "no_file"
  !----------------------------------------------------------------------
- 
+
  Dark_Composite_Name = "no_file"
- 
+
  time_obj = Image% time_start
 
  do doy_idx = 0, MAX_LATENCY - 1
-    call time_obj % add_time ( day = (-1) * doy_idx)   
-   
+    call time_obj % add_time ( day = (-1) * doy_idx)
+
     Dark_Comp_Data_Dir_Temp = trim(Dark_Comp_Data_Dir) // &
-                              trim(Goes_Name)//"/"// time_obj % yyyy//"/"                           
-                              
+                              trim(Goes_Name)//"/"// time_obj % yyyy//"/"
+
     print *, "Looking for dark sky composite files in "// &
          trim(Dark_Comp_Data_Dir_Temp)
 
-   
-    Dark_Composite_Name = trim(Goes_Name)//"_"//time_obj %  date_string('yyyy_doy_hhmm')//  &                     
+
+    Dark_Composite_Name = trim(Goes_Name)//"_"//time_obj %  date_string('yyyy_doy_hhmm')//  &
                            "_drk_ch1_pix.dat"
-     
-                           
+
+
     Does_File_Exist = file_test(trim(Dark_Comp_Data_Dir_Temp)// &
                                   trim(Dark_Composite_Name))
 
@@ -3530,7 +3530,7 @@ subroutine READ_DARK_COMPOSITE_COUNTS(Segment_Number,Xstride,Dark_Composite_File
 
    !--- on the first segment, open the file and read the Area and Nav headers
    !--- and compute the offsets between the image and the dark composite
-   if (Segment_Number == 1) then 
+   if (Segment_Number == 1) then
 
         dark_length=len_trim(Dark_Composite_Name)
         Dark_Name_Full = trim(Dark_Comp_Data_Dir_Temp)//trim(Dark_Composite_Name)
@@ -3545,7 +3545,7 @@ subroutine READ_DARK_COMPOSITE_COUNTS(Segment_Number,Xstride,Dark_Composite_File
                         Dark_Composite_Name(1:dark_length-3)
           nc = len_trim(cmd)
           call univ_system_cmd_f(nc, trim(cmd), io_status)
- 
+
           !add its name to list of temp files for deletion at end
           Number_of_Temporary_Files = Number_of_Temporary_Files + 1
           Temporary_File_Name(Number_of_Temporary_Files) = Dark_Composite_Name(1:dark_length-3)
@@ -3630,8 +3630,8 @@ subroutine READ_DARK_COMPOSITE_COUNTS(Segment_Number,Xstride,Dark_Composite_File
             Dark_Composite_Name = "no_file"
             return
         endif
-       
-   endif 
+
+   endif
 
    if (Dark_Composite_Name /= "no_file") then
 
@@ -3639,7 +3639,7 @@ subroutine READ_DARK_COMPOSITE_COUNTS(Segment_Number,Xstride,Dark_Composite_File
     First_Line_In_Segment = (Segment_Number-1)*Num_Lines_Per_Segment + 1
 
     First_Line_In_Segment = First_Line_In_Segment + Line_Offset    !check this!!!!
- 
+
     Last_Line_In_Segment = min(AREAstr_Image%Num_Line,Segment_Number*Num_Lines_Per_Segment)
 
 
@@ -3665,13 +3665,13 @@ subroutine READ_DARK_COMPOSITE_COUNTS(Segment_Number,Xstride,Dark_Composite_File
      Dark_Comp_Counts = Dark_Comp_Counts_Temp
 
      if (AREAstr_Dark%West_Vis_Pixel < AREAstr_Image%West_Vis_Pixel) then
-       Dark_Comp_Counts(1:Num_Elements_Dark - Element_Offset) = Dark_Comp_Counts_Temp(Element_Offset+1:Num_Elements_Dark) 
+       Dark_Comp_Counts(1:Num_Elements_Dark - Element_Offset) = Dark_Comp_Counts_Temp(Element_Offset+1:Num_Elements_Dark)
        Dark_Comp_Counts(Num_Elements_Dark-Element_Offset+1:Num_Elements_Dark) = Big_Count
      endif
 
      if (AREAstr_Dark%West_Vis_Pixel > AREAstr_Image%West_Vis_Pixel) then
        Dark_Comp_Counts(1:Element_Offset) = Big_Count
-       Dark_Comp_Counts(Element_Offset+1:Num_Elements_Dark) = Dark_Comp_Counts_Temp(1:Num_Elements_Dark-Element_Offset) 
+       Dark_Comp_Counts(Element_Offset+1:Num_Elements_Dark) = Dark_Comp_Counts_Temp(1:Num_Elements_Dark-Element_Offset)
        Dark_Comp_Counts(Num_Elements_Dark-Element_Offset+1:Num_Elements_Dark) = Big_Count
      endif
 
@@ -3687,7 +3687,7 @@ subroutine READ_DARK_COMPOSITE_COUNTS(Segment_Number,Xstride,Dark_Composite_File
     enddo
 
    endif
-  
+
    !--- close file
    if (Segment_Number == Image%Number_Of_Segments) then
       close(unit=Dark_Lun_Data)
@@ -3725,7 +3725,7 @@ real:: Ch1_Gain
 
    !--- calibrate the counts (this is an un-normalized reflectance)
    Reflectance = Missing_Value_Real4
-   where(Counts /= Missing_Value_Int2) 
+   where(Counts /= Missing_Value_Int2)
        Reflectance = Ch1_Gain*(Counts - Dark_Count)
    end where
 
@@ -3755,9 +3755,9 @@ subroutine POST_PROCESS_GOES_DARK_COMPOSITE(Ref_Ch1_Dark)
    real(kind=real4):: Z_Median
    real(kind=real4):: Z_Mean
    real(kind=real4):: Z_Std_Median
-  
-   Num_Elements = size(Ref_Ch1_Dark(:,1)) 
-   Num_Lines = size(Ref_Ch1_Dark(1,:)) 
+
+   Num_Elements = size(Ref_Ch1_Dark(:,1))
+   Num_Lines = size(Ref_Ch1_Dark(1,:))
 
    !--- copy to a global scratch array
    Temp_Pix_Array_1 = Ref_Ch1_Dark
@@ -3767,19 +3767,19 @@ element_loop:   Do Elem_Idx = 1, Num_Elements
 line_loop:  DO Line_Idx = 1, Num_Lines
 
    !--- check for valid data
-   if (Geo%Space_Mask(Elem_Idx,Line_Idx)) cycle 
-   if (Bad_Pixel_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle 
+   if (Geo%Space_Mask(Elem_Idx,Line_Idx)) cycle
+   if (Bad_Pixel_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle
 
    ELem_Idx_1 = max(1,min(Num_Elements,Elem_Idx - N_box))
    ELem_Idx_2 = max(1,min(Num_Elements,Elem_Idx + N_box))
    Line_Idx_1 = max(1,min(Num_Lines,Line_Idx - N_box))
    Line_Idx_2 = max(1,min(Num_Lines,Line_Idx + N_box))
 
-!  if (Land_Class_Local(Elem_Idx,Line_Idx) /= Land_Class_Allowed) cycle 
+!  if (Land_Class_Local(Elem_Idx,Line_Idx) /= Land_Class_Allowed) cycle
 !  Ref_Ch1_Dark_Min = minval(Temp_Pix_Array_1(Elem_Idx_1:Elem_Idx_2,Line_Idx_1:Line_Idx_2))
 !  if (Ref_Ch1_Dark_Min /= Missing_Value_Real4) then
 !     Ref_Ch1_Dark(Elem_Idx,Line_Idx) = Ref_Ch1_Dark_Min
-!  endif 
+!  endif
 
 
    !--- compute median
@@ -3789,7 +3789,7 @@ line_loop:  DO Line_Idx = 1, Num_Lines
 
    if (Z_Median /= Missing_Value_Real4) then
       Ref_Ch1_Dark(Elem_Idx,Line_Idx) = Z_Median
-   endif 
+   endif
 
 end do line_loop
 
@@ -3812,21 +3812,21 @@ subroutine DARK_COMPOSITE_CLOUD_MASK(Cloud_Mask)
    real, parameter:: Solzen_Max_Threshold = 60.0
    real, parameter:: Ref_Delta_Cloud = 10.0
    real, parameter:: Ref_Delta_Clear = 5.0
-  
-   Num_Elements = size(Cloud_Mask(:,1)) 
-   Num_Lines = size(Cloud_Mask(1,:)) 
- 
+
+   Num_Elements = size(Cloud_Mask(:,1))
+   Num_Lines = size(Cloud_Mask(1,:))
+
 element_loop:   Do Elem_Idx = 1, Num_Elements
 
 line_loop:  DO Line_Idx = 1, Num_Lines
 
    !--- check for valid data
-   if (Geo%Space_Mask(Elem_Idx,Line_Idx) ) cycle 
-   if (Bad_Pixel_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle 
-   if (Geo%Solzen(Elem_Idx,Line_Idx) > Solzen_Max_Threshold) cycle 
-   if (Sfc%Snow(Elem_Idx,Line_Idx) /= sym%NO_SNOW) cycle 
-   if (ch(1)%Ref_Toa(Elem_Idx,Line_Idx) == Missing_Value_Real4) cycle 
-   if (Ref_Ch1_Dark_Composite(Elem_Idx,Line_Idx) == Missing_Value_Real4) cycle 
+   if (Geo%Space_Mask(Elem_Idx,Line_Idx) ) cycle
+   if (Bad_Pixel_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle
+   if (Geo%Solzen(Elem_Idx,Line_Idx) > Solzen_Max_Threshold) cycle
+   if (Sfc%Snow(Elem_Idx,Line_Idx) /= sym%NO_SNOW) cycle
+   if (ch(1)%Ref_Toa(Elem_Idx,Line_Idx) == Missing_Value_Real4) cycle
+   if (Ref_Ch1_Dark_Composite(Elem_Idx,Line_Idx) == Missing_Value_Real4) cycle
 
    !---  if clear or prob clear, look for cloud
    if (Cloud_Mask(Elem_Idx,Line_Idx) == sym%CLEAR .or.      &
@@ -3866,10 +3866,10 @@ elemental function UNSIGNED_TO_REAL4(i) result (r)
   real(kind=real4) :: r
 
   integer(kind=int4), parameter :: INT2_SIGN_CORRECTION_OFFSET = 65536
-  
+
   if(i < 0) then
      r = real(i,kind=real4) + INT2_SIGN_CORRECTION_OFFSET
-  else 
+  else
      r = real(i,kind=real4)
   end if
 

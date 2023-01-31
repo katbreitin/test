@@ -3222,10 +3222,10 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
                                 Ch3a_dark_count
   integer(kind=int4), intent(in):: Start_Time
   integer(kind=int4), intent(in):: End_Time
-  integer(kind=int2), intent(in):: Start_Year
-  integer(kind=int2), intent(in):: End_Year
-  integer(kind=int2), intent(in):: Start_Day
-  integer(kind=int2), intent(in):: End_Day
+  integer, intent(in):: Start_Year
+  integer, intent(in):: End_Year
+  integer, intent(in):: Start_Day
+  integer, intent(in):: End_Day
   character(len=4):: l1b_ext
   character(len=1020):: File_1b_root
 

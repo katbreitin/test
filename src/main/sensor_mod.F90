@@ -165,7 +165,7 @@ module SENSOR_MOD
       , read_navigation_block_seviri &
       , read_seviri
 
-   use CX_FCI_MOD, only: READ_FCI
+   use CX_FCI_MOD, only: READ_FCI, read_fci_calib
 
    use VIIRS_CLAVRX_BRIDGE , only : &
        READ_VIIRS_DATE_TIME &
@@ -530,6 +530,7 @@ module SENSOR_MOD
         image % time_end = fci % time
 
         Image%Number_Of_Lines_Per_Segment = 139
+        call read_fci_calib()
         exit
       end if
 
@@ -716,9 +717,10 @@ module SENSOR_MOD
           Image%Start_Time = image % time_start %msec_of_day !millisec
 
           !--- Image End
-          call READ_NETCDF_GLOBAL_ATTRIBUTE(trim(L1b_Full_File_Name), 'time_coverage_end', End_Year_Mon_Day_HH_MM_Tmp)
+          call READ_NETCDF_GLOBAL_ATTRIBUTE(trim(L1b_Full_File_Name) &
+            , 'time_coverage_end', End_Year_Mon_Day_HH_MM_Tmp)
           End_Year_Tmp_Str = End_Year_Mon_Day_HH_MM_Tmp(1:4)
-          read(End_Year_Tmp_Str,*) End_Year_Tmp                 ! convert to integer
+          read(End_Year_Tmp_Str,*) End_Year_Tmp
           End_Mon_Tmp_Str = End_Year_Mon_Day_HH_MM_Tmp(6:7)
           read(End_Mon_Tmp_Str,*) End_Mon_Tmp
           End_DD_Tmp_Str = End_Year_Mon_Day_HH_MM_Tmp(9:10)
@@ -731,7 +733,8 @@ module SENSOR_MOD
           read(End_Sec_Tmp_Str,*) End_Sec_Tmp
           End_Msec_Tmp_Str = End_Year_Mon_Day_HH_MM_Tmp(21:21)
           read(End_Msec_Tmp_Str,*) End_Msec_Tmp
-          call image % time_end % set_date(End_Year_Tmp, End_Mon_Tmp, End_DD_Tmp, End_HH_Tmp, End_Min_Tmp, End_Sec_Tmp)
+          call image % time_end % set_date(End_Year_Tmp, End_Mon_Tmp &
+            , End_DD_Tmp, End_HH_Tmp, End_Min_Tmp, End_Sec_Tmp)
           Image%End_Year = image % time_end%year
           Image%End_Doy = image % time_end % dayOfYear
           Image%End_Time = image % time_end % msec_of_day !millisec

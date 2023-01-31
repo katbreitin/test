@@ -148,7 +148,7 @@ subroutine CLOUD_SHADOW_RETR (  &
       integer :: count_equal_lon_lat
 
       ! initialize output
-      shad_arr = 0
+      shad_arr(i,j) = 0
 
       ! initialize
       count_equal_lon_lat = 0

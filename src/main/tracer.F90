@@ -36,7 +36,7 @@
             mask_lrc, i_lrc, j_lrc, &
             Cwp_Dcomp, Lwp_Dcomp, Iwp_Dcomp, Solar_Contamination_Mask, &
             Covar_Ch37_Ch31_5x5, Covar_Ch27_Ch38_5x5, Covar_Ch27_Ch31_5x5, &
-            Bt_375um_Sounder,Bt_11um_Sounder,Bt_12um_Sounder
+            Bt_375um_Sounder,Bt_11um_Sounder,Bt_12um_Sounder, Ems_Ch20_Median_3x3
         use calibration_constants_mod, only: Planck_A1, Planck_A2, Planck_Nu, Sun_Earth_Distance
         use viirs_clavrx_bridge, only: viirs_out => out
         use viirs_nasa_read_module, only: nasa_viirs_i5_bt, nasa_viirs_i4_bt, &
@@ -62,7 +62,7 @@
         integer(i8), volatile :: sibling_pids_addr
 
         ! 8-bit Int (integer(i1)) -- 3 dimensions
-        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_i1_3d
         integer(i8), dimension(n_symbols_max) :: symbol_ptrs_i1_3d
         integer(i8), dimension(3, n_symbols_max) :: symbol_shapes_i1_3d
@@ -70,7 +70,7 @@
              symbol_ptrs_i1_3d_ptr, symbol_shapes_i1_3d_ptr
 
         ! 32-bit Float (real(f4)) -- 3 dimensions
-        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_f4_3d
         integer(i8), dimension(n_symbols_max) :: symbol_ptrs_f4_3d
         integer(i8), dimension(3, n_symbols_max) :: symbol_shapes_f4_3d
@@ -78,7 +78,7 @@
              symbol_ptrs_f4_3d_ptr, symbol_shapes_f4_3d_ptr
 
         ! 8-bit Int (integer(i1)) -- 2 dimensions
-        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_i1_2d
         integer(i8), dimension(n_symbols_max) :: symbol_ptrs_i1_2d
         integer(i8), dimension(2, n_symbols_max) :: symbol_shapes_i1_2d
@@ -86,7 +86,7 @@
              symbol_ptrs_i1_2d_ptr, symbol_shapes_i1_2d_ptr
 
         ! 32-bit Int (integer(i4)) -- 2 dimensions
-        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_i4_2d
         integer(i8), dimension(n_symbols_max) :: symbol_ptrs_i4_2d
         integer(i8), dimension(2, n_symbols_max) :: symbol_shapes_i4_2d
@@ -94,7 +94,7 @@
              symbol_ptrs_i4_2d_ptr, symbol_shapes_i4_2d_ptr
 
         ! 64-bit Int (integer(i8)) -- 2 dimensions
-        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_i8_2d
         integer(i8), dimension(n_symbols_max) :: symbol_ptrs_i8_2d
         integer(i8), dimension(2, n_symbols_max) :: symbol_shapes_i8_2d
@@ -102,7 +102,7 @@
              symbol_ptrs_i8_2d_ptr, symbol_shapes_i8_2d_ptr
 
         ! 32-bit Float (real(f4)) -- 2 dimensions
-        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_f4_2d
         integer(i8), dimension(n_symbols_max) :: symbol_ptrs_f4_2d
         integer(i8), dimension(2, n_symbols_max) :: symbol_shapes_f4_2d
@@ -110,7 +110,7 @@
              symbol_ptrs_f4_2d_ptr, symbol_shapes_f4_2d_ptr
 
         ! 8-bit Int (integer(i1)) -- 1 dimension
-        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_i1_1d
         integer(i8), dimension(n_symbols_max) :: symbol_ptrs_i1_1d
         integer(i8), dimension(1, n_symbols_max) :: symbol_shapes_i1_1d
@@ -118,7 +118,7 @@
              symbol_ptrs_i1_1d_ptr, symbol_shapes_i1_1d_ptr
 
         ! 32-bit Int (integer(i4)) -- 1 dimension
-        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_i4_1d
         integer(i8), dimension(n_symbols_max) :: symbol_ptrs_i4_1d
         integer(i8), dimension(1, n_symbols_max) :: symbol_shapes_i4_1d
@@ -126,7 +126,7 @@
              symbol_ptrs_i4_1d_ptr, symbol_shapes_i4_1d_ptr
 
         ! 64-bit Int (integer(i8)) -- 1 dimension
-        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_i8_1d
         integer(i8), dimension(n_symbols_max) :: symbol_ptrs_i8_1d
         integer(i8), dimension(1, n_symbols_max) :: symbol_shapes_i8_1d
@@ -134,7 +134,7 @@
              symbol_ptrs_i8_1d_ptr, symbol_shapes_i8_1d_ptr
 
         ! 32-bit Float (real(f4)) -- 1 dimension
-        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_f4_1d
         integer(i8), dimension(n_symbols_max) :: symbol_ptrs_f4_1d
         integer(i8), dimension(1, n_symbols_max) :: symbol_shapes_f4_1d
@@ -142,12 +142,14 @@
              symbol_ptrs_f4_1d_ptr, symbol_shapes_f4_1d_ptr
 
         ! 32-bit Float (real(f4)) -- 0 dimensions
-        character(len=symbol_length_max), dimension(n_symbols_max) ::  &
+        character(len=symbol_length_max), allocatable, dimension(:) ::  &
              symbol_names_f4_0d
         integer(i8), dimension(n_symbols_max) :: symbol_ptrs_f4_0d
         integer(i8), volatile :: num_symbols_f4_0d, symbol_names_f4_0d_ptr,  &
              symbol_ptrs_f4_0d_ptr, symbol_shapes_f4_0d_ptr
 
+        logical :: dyn_arrays_allocated = .FALSE.
+        
         integer(i4), volatile :: number_of_lines
         integer(i4), volatile :: wait_number
         integer(i4), volatile :: skip_processing = -1
@@ -496,12 +498,33 @@
       end subroutine
 
 
+      subroutine allocate_dyn_arrays()
+      
+        implicit none
+
+        integer :: n
+
+        n = n_symbols_max
+
+        allocate(symbol_names_f4_0d(n))
+        allocate(symbol_names_i1_1d(n), symbol_names_i4_1d(n),  &
+             symbol_names_i8_1d(n), symbol_names_f4_1d(n))
+        allocate(symbol_names_i1_2d(n), symbol_names_i4_2d(n),  &
+             symbol_names_i8_2d(n), symbol_names_f4_2d(n))
+        allocate(symbol_names_i1_3d(n), symbol_names_f4_3d(n))
+
+        dyn_arrays_allocated = .TRUE.
+      end subroutine allocate_dyn_arrays
+
+      
       subroutine load_symbols()
           integer i;
           integer j;
           integer c;
           character(LEN=symbol_length_max) varname
 
+          if (.not. dyn_arrays_allocated) call allocate_dyn_arrays
+          
           num_symbols_f4_3d = 0
           symbol_shapes_f4_3d_ptr = loc(symbol_shapes_f4_3d)
           symbol_ptrs_f4_3d_ptr = loc(symbol_ptrs_f4_3d)
@@ -595,6 +618,10 @@
         symbol_names_i1_1d(num_symbols_i1_1d) = 'chan_on_flag_default';
 
         call add_sym_i4_1d(Image%Scan_Number,'scan_line_number')
+        call add_sym_f4_1d(Image%Utc_Scan_Time_Hours,'scan_line_time')
+        call add_sym_i4_1d(Image%Scan_Time_Ms,'scan_time_ms')
+
+        call add_sym_i1_1d(Nav%Ascend,'asc_des_flag')
 
         call add_sym_i1_2d(CLDMASK%Cld_Mask,'cldmask')
         call add_sym_f4_2d(CLDMASK%Prior_Cld_Probability,'prior_cloud_probability')
@@ -609,6 +636,8 @@
         call add_sym_i1_2d(Cld_Phase,'cloud_phase')
         call add_sym_f4_2d(Nav%Lat, 'latitude')
         call add_sym_f4_2d(Nav%Lon, 'longitude')
+        call add_sym_i4_2d(Nav%X, 'nav_x')
+        call add_sym_i4_2d(Nav%Y, 'nav_y')
         call add_sym_i1_2d(Solar_Contamination_Mask,'solar_contamination_mask')
         call add_sym_f4_2d(Geo%Solzen,'solar_zenith_angle')
         call add_sym_f4_2d(Geo%Solaz,'solar_azimuth_angle')
@@ -654,6 +683,7 @@
         call add_sym_f4_2d(Ch(31)%Sfc_Emiss, 'emiss_sfc_11_0um_nom')
         call add_sym_f4_2d(Ch(31)%Bt_Toa_Std_3x3, 'temp_11_0um_nom_stddev_3x3')
         call add_sym_f4_2d(Ch(1)%Ref_Toa_Std_3x3, 'refl_0_65um_nom_stddev_3x3')
+        call add_sym_f4_2d(Ems_Ch20_Median_3x3,'emiss_3_75um_nom_median_3x3')
 
         call add_sym_f4_2d(Ch(1)%Sfc_Ref_White_Sky,'refl_sfc_white_sky_0_65um_nom')
 
@@ -917,7 +947,6 @@
               flush output_unit
               child_pid = sibling_clone()
               if(child_pid == 0) then
-                call reopen_files(probe_pid)
                 ! child
                 my_pid = getpid_nocache()
                 ! Make a new tempdir
@@ -939,6 +968,7 @@
                 return
               else
                 sibling_pids(i) = child_pid
+                call reopen_files(probe_pid)
               endif
             enddo
             print*, sibling_pids
@@ -996,7 +1026,7 @@
           ! Check heap-allocated value, which may have been set during wait
           if(skip_processing == 1) then
             Skip_Processing_Flag = SYM%YES
-          else
+          else if(skip_processing == 0) then
             Skip_Processing_Flag = SYM%NO
           endif
           ! Reset to default

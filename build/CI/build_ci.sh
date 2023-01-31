@@ -16,3 +16,6 @@ cd build
 cp CI/user_change_me.cfg env_settings
 ./admin clean ALL
 ./admin build debug
+mv ../run/bin/clavrxorb ../run/bin/clavrxorb.debug
+./admin clean ALL
+./admin build

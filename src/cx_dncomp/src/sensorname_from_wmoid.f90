@@ -66,6 +66,9 @@ function sensorname_from_wmoid (id) result(sensor_name)
          sensor_name = 'GOES-17'
       case(272)
           sensor_name = 'GOES-18'
+        case(289)
+          ! fake fake fale  should be FCI
+            sensor_name = 'MODIS-AQUA'
       case(705)
          sensor_name = 'NOAA-05'
       case(706)

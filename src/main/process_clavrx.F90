@@ -291,6 +291,7 @@
     , Destroy_Pixel_Arrays &
     , Create_Pixel_Arrays &
     , Reset_Pixel_Arrays_To_Missing  &
+    , initial_pixel_common_alloc &
     , nav_opt &
     , file_list &
     , dir_level2 &
@@ -676,6 +677,8 @@
    ! SIGINT
    call univ_reg_sigint_handler(cleanup_tempdir__exit)
 
+   call initial_pixel_common_alloc
+   
    !*************************************************************************
    ! Marker: Open high spatial resolution ancillary data files
    !*************************************************************************

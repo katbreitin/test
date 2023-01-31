@@ -8,12 +8,12 @@
 ! PURPOSE: This module houses all of the routines necessary to interface with
 !          NCEP Reanalysis Data
 !
-! DESCRIPTION: 
+! DESCRIPTION:
 !            Note this is hardcoded for the current 2.5x2.5 degree data.  It checks
 !            to make sure that this is the case, if not, it reports this and stops
 !
 !            this restriction comes from the mapping of the T62 gaussian fields to
-!            to the 2.5x2.5 fields.  This step uses a nearest neighbor approach and 
+!            to the 2.5x2.5 fields.  This step uses a nearest neighbor approach and
 !            should be revisted or this step should be moved outside of CLAVR-x.
 !
 ! AUTHORS:
@@ -34,7 +34,7 @@
 ! Public Routines
 !  READ_NCEP_REANALYSIS_DATA - main routine to read in the fields from the
 !                             NCEP Reanalysis
-! 
+!
 ! Private Routines
 !  READ_DATA_1D - routines to read in one-dimensional fields
 !  READ_DATA_2D - routines to read in two-dimensional fields
@@ -93,9 +93,9 @@ contains
 subroutine READ_NCEP_REANALYSIS_DATA(start_year, start_jday, start_itime, &
                                      end_jday, end_itime, data_dir)
 
-  ! Input/output arguments                                     
+  ! Input/output arguments
   character(len=*), intent(in) :: data_dir
-  integer(kind=int2), intent(in) :: start_year, start_jday, end_jday
+  integer, intent(in) :: start_year, start_jday, end_jday
   integer(kind=int4), intent(in) :: start_itime, end_itime
 
   ! Other vars
@@ -123,13 +123,13 @@ subroutine READ_NCEP_REANALYSIS_DATA(start_year, start_jday, start_itime, &
   integer :: levels(50) = -1
   integer :: i
   integer :: j
-  
+
   integer(kind=int4) :: bot
   integer(kind=int4) :: top
   integer(kind=int4) :: level
   real (kind=real4), allocatable, dimension(:) :: lat
   real (kind=real4), allocatable, dimension(:) :: lon
- 
+
   real::level1b_file_start_time
   real::level1b_file_end_time
   real::level1b_file_mean_time
@@ -144,8 +144,8 @@ write (year_string, '(I4.4)') start_year
 
 !--- determine ncep field indices that bound the mean orbit time
 !--- year starts with bot=1. Read routines account for zero index
-level1b_file_start_time = start_jday + start_itime/86400000.0_real4 
-level1b_file_end_time = end_jday + end_itime/86400000.0_real4 
+level1b_file_start_time = start_jday + start_itime/86400000.0_real4
+level1b_file_end_time = end_jday + end_itime/86400000.0_real4
 level1b_file_mean_time = 0.5*(level1b_file_start_time + level1b_file_end_time)
 mean_doy = int(level1b_file_mean_time)
 mean_hours = (level1b_file_mean_time - mean_doy)*24.0
@@ -339,19 +339,19 @@ nwp%p_trop = ncep_p_trop
     enddo
   enddo
 
-!---- compute wind speed 
+!---- compute wind speed
 nwp%wnd_spd_10m = missing_value_real4
-where((nwp%u_wnd_10m .NER. missing_ncep) .and. (nwp%v_wnd_10m .NER. missing_ncep)) 
+where((nwp%u_wnd_10m .NER. missing_ncep) .and. (nwp%v_wnd_10m .NER. missing_ncep))
  nwp%wnd_spd_10m = sqrt(nwp%u_wnd_10m**2 + nwp%v_wnd_10m**2)
 end where
 
-!---- compute wind direction 
+!---- compute wind direction
 nwp%wnd_dir_10m = missing_value_real4
 where((nwp%wnd_spd_10m .GER. 0.0) .and. (nwp%v_wnd_10m .NER. missing_ncep))
  nwp%wnd_dir_10m = acos(-1.0*nwp%v_wnd_10m/nwp%wnd_spd_10m) / dtor     !in degrees  (0 to 180)
 end where
 where((nwp%u_wnd_10m .GER. 0.0 ) .and. (nwp%u_wnd_10m .NER. missing_ncep))
- nwp%wnd_dir_10m = 360.0 - nwp%wnd_dir_10m     
+ nwp%wnd_dir_10m = 360.0 - nwp%wnd_dir_10m
 end where
 
 ! convert z_prof_nwp to km
@@ -400,10 +400,10 @@ character(len=128):: sds_name
 ! HDF API declaration
 integer:: sfstart, sfend, sfselect, sfn2index, sfginfo, sfrdata, sfendacc
 
-          
+
 
 !print "(a)", "reading 1D variable '"//trim(var_name)//"' from "//trim(ncep_file)
-          
+
 sd_id = sfstart(ncep_file, DFACC_READ)
 if (sd_id == FAIL) then
    print *, "failed open on "//trim(ncep_file)//" file"
@@ -465,7 +465,7 @@ end subroutine READ_DATA_1D
 !-----------------------------------------------------------------------
 subroutine READ_UNI_DATA_2D(ncep_file, var_name, var)
 
-! Input/output arguments                                     
+! Input/output arguments
 character(len=*), intent(in) :: ncep_file, var_name
 real(kind=real4), intent(out), allocatable, dimension(:,:) :: var
 
@@ -605,7 +605,7 @@ end subroutine READ_UNI_DATA_2D
 !-----------------------------------------------------------------------
 subroutine READ_DATA_2D(ncep_file, var_name, var, bot, top, x_interp)
 
-! Input/output arguments                                     
+! Input/output arguments
 character(len=*), intent(in) :: ncep_file, var_name
 integer(kind=int4), intent(in) :: bot, top
 real(kind=real4), intent(in) :: x_interp
@@ -768,7 +768,7 @@ end subroutine READ_DATA_2D
 
 subroutine READ_DATA_3D(ncep_file, var_name, var, bot, top, x_interp)
 
-! Input/output arguments                                     
+! Input/output arguments
 character(len=*), intent(in) :: ncep_file, var_name
 integer(kind=int4), intent(in) :: bot, top
 real(kind=real4), intent(in) :: x_interp

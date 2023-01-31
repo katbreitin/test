@@ -10,7 +10,6 @@ module fci_mod
      , relative_azimuth &
      , glint_angle &
      , scattering_angle
-  !use cx_real_boolean_mod
 
   use cx_geo__define, only: geo_str
 
@@ -95,7 +94,7 @@ contains
     class(fci_config) :: self
     character(len=*), intent(in)  :: path
     logical, intent(in)  :: ch_on(16)
-    character(len=1020) :: file_identifier
+
 
     ! some tests if files are there
     self % file_list => file_search(trim(path),'*.nc')
@@ -111,7 +110,7 @@ contains
   !
   subroutine fci_data__get (self,chunk, start, count, time_only)
     class(fci_data) :: self
-    integer :: i, ii, jj
+    integer :: i
     integer, intent(in) :: chunk  ! the chunk out of 40 for this granule
     integer, intent(in), optional :: start(2)
     integer, intent(in), optional :: count(2)
@@ -123,20 +122,16 @@ contains
     real, allocatable :: dum_1d(:)
     integer :: status
     real,allocatable :: time(:)
-    type(date_type) :: tt
-    character ( len = 128), allocatable :: Sds_Name(:)
-    character ( len = 128), allocatable :: Att_Name(:)
-    integer :: nsds , ftype,natt
+
     character (len =1024) :: lonlat_file1km
     character (len =1024) :: lonlat_file2km
     logical :: t_only = .false.
     integer :: stride(2)
 
-    integer :: day_of_year
-    real :: hour_frac
     real, parameter :: Pi = 3.14159265359
     real , parameter :: DTOR = PI / 180.
     character(len=1024) :: lat_lon_path
+
 
      ! ---------------
      file_chunk = trim(self%config%path)//trim(self %config %file_list(chunk))
@@ -199,44 +194,49 @@ contains
 
       do i=1,16
 
+        ! read radiance for all channels
         if ( self % config % chan(i) ) then
-
-          !  if (  trim(chn_string(i)) .ne. 'ir_38') cycle
-          status=  cx_sds_read (trim(file_chunk), &
-          '/data/'//trim(chn_string(i))//'/measured/effective_radiance' &
-          , self%ch(i)%rad ,start=start, count = count, stride = stride)
-
-
-          !  else
-          !  status=  cx_sds_read_fci_ir38 (trim(file_chunk), &
-          !    '/data/'//trim(chn_string(i))//'/measured/effective_radiance' &
-          !    , self%ch(i)%rad ,start=start, count = count,)
-
-
-
-          !    end if
+          if (  trim(chn_string(i)) .ne. 'ir_38') then
+            status=  cx_sds_read (trim(file_chunk), &
+            '/data/'//trim(chn_string(i))//'/measured/effective_radiance' &
+            ,self%ch(i)%rad ,start=start, count = count, stride = stride)
+          else  ! ir 38
+            ! ir 38 has two offsets add_slopes
+            ! need to read the raw data  and all 4 coefs
+            call read_fci_ir38(file_chunk,self%ch(i)%rad)
+         end if
           ! var_names
 
-
-          if ( i .lt. 9) THEN
+          ! calculate reflectance for ch 1-9
+          !  read page 50 of https://www.eumetsat.int/media/45923
+          if ( i .lt. 10) THEN
             status =    cx_sds_read (trim(file_chunk), &
             '/data/'//trim(chn_string(i))// &
             '/measured/channel_effective_solar_irradiance' &
             , irrad )
 
-            ! TODO   T-CHECK
-            !  read page 50 of https://www.eumetsat.int/media/45923
+            ! = ch 9 is low resolution
+            if (i .eq. 9) then
+              self%ch(i)%rfl = 100.* (PI * self%ch(i)%rad(1:5568,1:139) &
+              * self % earth_sun_distance**2) &
+              /  ( irrad(1) * cos(self % geo % solzen * DTOR))
 
-            self%ch(i)%rfl = 100.* (PI * self%ch(i)%rad(1:11136,1:278) &
-            * self % earth_sun_distance**2) &
-            /  ( irrad(1) * cos(self % geo1km % solzen * DTOR))
+              where (self%ch(i)%rad(1:5568,1:139) .lt. 0.)
+                self%ch(i)%rfl = -999.
+              end where
+            else
+              self%ch(i)%rfl = 100.* (PI * self%ch(i)%rad(1:11136,1:278) &
+              * self % earth_sun_distance**2) &
+              /  ( irrad(1) * cos(self % geo1km % solzen * DTOR))
 
-            where (self%ch(i)%rad(1:11136,1:278) .lt. 0.)
-              self%ch(i)%rfl = -999.
-            end where
+              where (self%ch(i)%rad(1:11136,1:278) .lt. 0.)
+                self%ch(i)%rfl = -999.
+              end where
 
+            end if
           end if
 
+          ! compute Brightness temperature
           if ( i .gt. 8 ) then
             status =    cx_sds_read (trim(file_chunk), &
             '/data/'//trim(chn_string(i))// &
@@ -283,6 +283,75 @@ contains
       end do  ! channel loop i
 
     end   subroutine fci_data__get
+
+    ! https://www.eumetsat.int/media/45923
+    ! page 44
+    !  radiance = (counts * scale_factor) + add_offset for counts below or equal op
+    !   to 4095
+    !  radiance = (counts * warm_scale_factor) + warm_add_offset for counts above 4095
+    subroutine read_fci_ir38 (file,out)
+      use cx_sds_io_mod, only:cx_sds_read_raw
+      use  cx_sds_type_definitions_mod, only: &
+      cx_sds_type &
+      , cx_att_type &
+      , cx_sds_data_type
+      USE    ReadH5Dataset,only: H5ReadAttribute
+      implicit none
+      character(len=*), intent(in):: file
+      real, intent(out), allocatable :: out(:,:)
+      real, allocatable :: raw(:,:)
+      integer:: status
+      character(len=20) :: chn_string= 'ir_38'
+      type (cx_sds_type), allocatable, target :: sds(:)
+      type ( cx_sds_data_type), pointer :: pd => null()
+      type ( cx_sds_type), pointer :: ps => null()
+      real :: add_offset_cold(1),add_offset_warm
+      real :: slope_cold (1), slope_warm
+      integer :: MISS_VALUE(1)
+      logical :: att_exist
+      integer, allocatable:: temp_1d(:)
+      integer :: dim1, dim2
+      character(len =1020) :: var
+
+      var  = '/data/'//trim(chn_string)//'/measured/effective_radiance'
+      status=  cx_sds_read_raw (trim(file), trim(var) , sds)
+
+      pd=>sds(1) % data
+      ps=>sds(1)
+
+
+      add_offset_cold = ps %get_att('add_offset',exist = att_exist)
+      !if ( .not. att_exist) add_offset_cold = 0.
+
+      slope_cold = ps%get_att('scale_factor',exist = att_exist)
+      !  if ( .not. att_exist) slope_cold = 1.
+      MISS_VALUE = ps%get_att('_FillValue',exist = att_exist)
+      call H5ReadAttribute( file,trim(var)//'/warm_add_offset',add_offset_warm)
+      call H5ReadAttribute( file,trim(var)//'/warm_scale_factor',slope_warm)
+
+      dim1 = pd%dimsize(1)
+      dim2 = pd%dimsize(2)
+      allocate(out(dim1,dim2))
+      allocate(raw(dim1,dim2))
+      allocate(temp_1d(pd%nval))
+      temp_1d = pd % i4values
+      raw = reshape (temp_1d,(/dim1,dim2/))
+
+      out = raw * slope_cold(1) + add_offset_cold(1)
+      where ( raw .gt. 4095)
+        out = raw * slope_warm + add_offset_warm
+      end where
+
+      where ( raw .EQ. MISS_VALUE(1))
+        out = -999.
+      end where
+
+      deallocate(raw)
+      deallocate(temp_1d)
+
+
+
+    end subroutine
 
 
 end module fci_mod

@@ -86,8 +86,8 @@ module AEROSOL_PROPERTIES
  real, dimension(Naz), save, private::az_Lut
  real, save, public:: lambda_ref
  real, save, private:: delta_Solzen,delta_zen,delta_az,delta_tau
- real, dimension(Nsolzen,nzen,Ntau,Naz), save, private::  Ref_Lut_Ch1_aer, &
-                                                 Ref_Lut_Ch2_aer,Ref_Lut_Ch3a_aer
+ real, allocatable, dimension(:,:,:,:), private :: Ref_Lut_Ch1_aer,  &
+      Ref_Lut_Ch2_aer, Ref_Lut_Ch3a_aer
 
 !--- other module-wide variables
  real, dimension(Ntau), save, private::temp_Ref_Lut
@@ -292,6 +292,13 @@ end subroutine AER_RET
    read(unit=ch1_lun,fmt="(4i5)") nzen1, Naz1, Nsolzen1,Ntau1
    read(unit=ch2_lun,fmt="(4i5)") nzen2, Naz2, Nsolzen2,Ntau2
    read(unit=ch3a_lun,fmt="(4i5)") nzen3, Naz3, Nsolzen3,Ntau3
+
+   if (.not. allocated(Ref_Lut_Ch1_aer))  &
+        allocate(Ref_Lut_Ch1_aer(Nsolzen,nzen,Ntau,Naz))
+   if (.not. allocated(Ref_Lut_Ch2_aer))  &
+        allocate(Ref_Lut_Ch2_aer(Nsolzen,nzen,Ntau,Naz))
+   if (.not. allocated(Ref_Lut_Ch3a_aer))  &
+        allocate(Ref_Lut_Ch3a_aer(Nsolzen,nzen,Ntau,Naz))
 
    Ref_Lut_Ch1_aer = 0.0
    Ref_Lut_Ch2_aer = 0.0

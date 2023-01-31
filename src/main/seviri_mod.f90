@@ -160,7 +160,7 @@ contains
     integer(kind=int4), intent(in):: Segment_Number
     character(len=*), intent(in):: Channel_1_Filename
     TYPE (AREA_STRUCT), intent(in) :: AREAstr
-    integer(kind=int2), intent(in):: Day_Of_Year
+    integer, intent(in):: Day_Of_Year
     integer(kind=int4), intent(in):: Image_Time_Ms
 
     character(len=1020):: Channel_X_Filename

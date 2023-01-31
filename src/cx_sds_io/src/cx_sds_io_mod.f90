@@ -40,6 +40,8 @@ module cx_sds_io_mod
       h5_get_finfo &
       , h5_get_file_sds
 
+    use compare_float_numbers
+
    implicit none
    private
 
@@ -182,7 +184,8 @@ contains
       !#ifdef MFHDF
       if ( ftype .eq. 1) print*, 'hallo' !cx_sds_finfo = hdf_get_finfo(file, nsds, sds_name, natt, att_name)
       !#endif
-      if ( ftype .eq. 2) cx_sds_varinfo = ncdf_get_varinfo(file,  var, natt, att_name, ndim, dim)
+      if ( ftype .eq. 2) cx_sds_varinfo = ncdf_get_varinfo(file,  var, &
+            natt, att_name, ndim, dim)
 
       if ( ftype .eq. 3) then
          !cx_sds_finfo = h5_get_finfo(file, nsds, sds_name, natt, att_name)
@@ -203,7 +206,7 @@ contains
       type (cx_att_type),intent(out) :: att
       integer :: ftype
 
-      integer :: natt
+      integer :: natt = 0
       type(cx_att_type),  allocatable :: attrs(:)
 
       integer :: i
@@ -213,9 +216,7 @@ contains
       ftype = file_type(file)
 
       if ( ftype .eq. 1 ) then
-
          cx_sds_att = hdf_get_file_att(trim(file), natt, attrs)
-
       end if
 
       if ( ftype .eq. 2 ) then
@@ -223,11 +224,9 @@ contains
       end if
 
       do i = 1, natt
-
          if (trim(att_name) .EQ. trim(attrs(i) % name )) then
             att = attrs(i)
          end if
-
       end do
 
 
@@ -319,7 +318,7 @@ contains
       type (cx_sds_type),  intent(out), allocatable, target :: sds(:)
       integer, optional, intent(in) :: start(:), stride(:), count(:)
 
-      integer :: nsds, ii
+      integer :: nsds
       integer :: ftype
 
       cx_sds_read_raw = -1
@@ -419,11 +418,11 @@ contains
 
     out = temp_1d
 
-    if (scaled(1) .EQ. 1) then
+    if (scaled(1) .EqualTo. 1.) then
       out = out * slope(1) + add_offset(1)
     end if
 
-    where (temp_1d .EQ. missing(1))
+    where (temp_1d .EqualTo. missing(1))
       out = -999.
     end where
 
@@ -456,17 +455,17 @@ contains
     type ( cx_sds_data_type), pointer :: pd => null()
     type ( cx_sds_type), pointer :: ps => null()
 
-    integer :: dim1, dim2, ii
+    integer :: dim1, dim2
     real :: add_offset(1)
     real :: slope (1)
-    real :: missing(1)
-    integer :: MISS_VALUE(1)
+    real :: MISS_VALUE(1)
     real :: scaled(1)
     logical :: att_exist
 
     ! -  executable
 
-    if (  cx_sds_read_raw ( file, sds_name, sds, start=start, stride=stride, count=count) < 0 ) goto 9999
+    if (  cx_sds_read_raw ( file, sds_name, sds, start=start &
+                 , stride=stride, count=count) < 0 ) goto 9999
 
 
 
@@ -480,15 +479,11 @@ contains
     scaled = ps%get_att('SCALED')
     MISS_VALUE = ps%get_att('missing',exist = att_exist)
 
-
-
-
     if ( .not. att_exist) MISS_VALUE = ps%get_att('_FillValue',exist = att_exist)
 
-
-    if ( add_offset(1) .NE. -999.) scaled(1) = 1
+    if ( .not. ( add_offset(1) .EqualTo. -999.)) scaled(1) = 1
     ! for  ATMS files which have bad attribute setting
-    if (( add_offset(1) .EQ. -999.) .AND. (slope(1) .gt. 0)) then
+    if (( add_offset(1) .EqualTo. -999.) .AND. (slope(1) .gt. 0)) then
       add_offset(:) = 0.
       scaled(1) = 1
     end if
@@ -509,12 +504,12 @@ contains
 
       out = reshape (temp_1d,(/dim1,dim2/))
 
-      if (scaled(1) .EQ. 1) then
+      if (scaled(1) .EqualTo. 1.) then
 
         out = out * slope(1) + add_offset(1)
       end if
 
-      where (reshape (temp_1d,(/dim1,dim2/)) .EQ. MISS_VALUE(1))
+      where (reshape (temp_1d,(/dim1,dim2/)) .EqualTo. MISS_VALUE(1))
         out = -999.
       end where
 
@@ -557,7 +552,7 @@ contains
      real :: add_offset(1)
      real :: slope (1)
      real :: missing(1)
-     real :: scaled(1)
+     integer :: scaled(1)
 
 
      if (  cx_sds_read_raw ( file, sds_name, sds) < 0 ) goto 9999
@@ -567,7 +562,7 @@ contains
      add_offset = ps%get_att('add_offset')
      slope = ps%get_att('scale_factor')
      missing = ps%get_att('SCALED_MISSING')
-     scaled = ps%get_att('SCALED')
+     scaled = int(ps%get_att('SCALED'))
 
 
 
@@ -588,7 +583,7 @@ contains
      end if
 
 
-     where (reshape (temp_1d,(/dim1,dim2,dim3/)) .EQ. missing(1))
+     where (reshape (temp_1d,(/dim1,dim2,dim3/)) .EqualTo. missing(1))
         out = -999.
      end where
 
@@ -619,7 +614,7 @@ contains
      real :: add_offset(1)
      real :: slope (1)
      real :: missing(1)
-     real :: scaled(1)
+     integer :: scaled(1)
 
 
      if (  cx_sds_read_raw ( file, sds_name, sds) < 0 ) goto 9999
@@ -629,7 +624,7 @@ contains
      add_offset = ps%get_att('add_offset')
      slope = ps%get_att('scale_factor')
      missing = ps%get_att('SCALED_MISSING')
-     scaled = ps%get_att('SCALED')
+     scaled = int(ps%get_att('SCALED'))
 
 
 
@@ -651,7 +646,7 @@ contains
      end if
 
 
-     where (reshape (temp_1d,(/dim1,dim2,dim3,dim4/)) .EQ. missing(1))
+     where (reshape (temp_1d,(/dim1,dim2,dim3,dim4/)) .EqualTo. missing(1))
         out = -999.
      end where
 
@@ -687,7 +682,7 @@ contains
      real :: add_offset(1)
      real :: slope (1)
      real :: missing(1)
-     real :: scaled(1)
+     integer :: scaled(1)
 
 
      if (  cx_sds_read_raw ( file, sds_name, sds) < 0 ) goto 9999
@@ -697,7 +692,7 @@ contains
      add_offset = ps%get_att('add_offset')
      slope = ps%get_att('scale_factor')
      missing = ps%get_att('SCALED_MISSING')
-     scaled = ps%get_att('SCALED')
+     scaled = int(ps%get_att('SCALED'))
 
 
 
@@ -722,7 +717,7 @@ contains
      end if
 
 
-     where (reshape (temp_1d,(/dim1,dim2,dim3,dim4,dim5/)) .EQ. missing(1))
+     where (reshape (temp_1d,(/dim1,dim2,dim3,dim4,dim5/)) .EqualTo. missing(1))
         out = -999.
      end where
 
@@ -753,7 +748,7 @@ contains
      real :: add_offset(1)
      real :: slope (1)
      real :: missing(1)
-     real :: scaled(1)
+     integer :: scaled(1)
 
 
      if (  cx_sds_read_raw ( file, sds_name, sds, start=start &
@@ -764,7 +759,7 @@ contains
      add_offset = ps%get_att('add_offset')
      slope = ps%get_att('scale_factor')
      missing = ps%get_att('SCALED_MISSING')
-     scaled = ps%get_att('SCALED')
+     scaled = int(ps%get_att('SCALED'))
 
 
 
@@ -787,7 +782,7 @@ contains
      end if
 
 
-     where (reshape (temp_1d,(/dim1,dim2,dim3,dim4,dim5,dim6/)) .EQ. missing(1))
+     where (reshape (temp_1d,(/dim1,dim2,dim3,dim4,dim5,dim6/)) .EqualTo. missing(1))
         out = -999.
      end where
 
@@ -823,7 +818,7 @@ contains
      real :: add_offset(1)
      real :: slope (1)
      real :: missing(1)
-     real :: scaled(1)
+     integer :: scaled(1)
 
 
      if (  cx_sds_read_raw ( file, sds_name, sds) < 0 ) goto 9999
@@ -833,7 +828,7 @@ contains
      add_offset = ps%get_att('add_offset')
      slope = ps%get_att('scale_factor')
      missing = ps%get_att('SCALED_MISSING')
-     scaled = ps%get_att('SCALED')
+     scaled = int(ps%get_att('SCALED'))
 
      allocate(temp_1d(pd%nval))
      call pd%transform_to_real(temp_1d)
@@ -855,7 +850,7 @@ contains
      end if
 
 
-     where (reshape (temp_1d,(/dim1,dim2,dim3,dim4,dim5,dim6,dim7/)) .EQ. missing(1))
+     where (reshape (temp_1d,(/dim1,dim2,dim3,dim4,dim5,dim6,dim7/)) .EqualTo. missing(1))
         out = -999.
      end where
 
