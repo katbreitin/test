@@ -29,7 +29,7 @@
         use pixel_common_mod, only: Sfc,Nav,Geo,Ch,CLDMASK,Tracer_Flag,Skip_Output,CCL, ACHA, &
             Zen_Idx_RTM, NWP_PIX, Tau_DCOMP, Tau_DCOMP_1, Tau_DCOMP_2, Tau_DCOMP_3, &
             Reff_DCOMP, Reff_DCOMP_1, Reff_DCOMP_2, REFF_DCOMP_3, &
-            Cld_Type, Cld_Phase, DCOMP_Quality_Flag, &
+            Cld_Type, Cld_Phase, DCOMP_Quality_Flag, Sst_Anal_Uni, &
             Insolation_DCOMP, Insolation_Diffuse_DCOMP, &
             Image, Temporary_Data_Dir, Tc_Opaque_Cloud, Zc_Opaque_Cloud, &
             Bad_Pixel_Mask, Sensor, &
@@ -657,6 +657,7 @@
         call add_sym_i4_2d(Nav%X, 'nav_x')
         call add_sym_i4_2d(Nav%Y, 'nav_y')
         call add_sym_i1_2d(Solar_Contamination_Mask,'solar_contamination_mask')
+        call add_sym_f4_2d(Sst_Anal_Uni, 'sst_background_uni_3x3')
         call add_sym_f4_2d(Geo%Solzen,'solar_zenith_angle')
         call add_sym_f4_2d(Geo%Solaz,'solar_azimuth_angle')
         call add_sym_f4_2d(Geo%Lunzen,'lunar_zenith_angle')
