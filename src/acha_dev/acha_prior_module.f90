@@ -26,7 +26,6 @@ module ACHA_PRIOR_MODULE
   private:: EYRE_MENZEL
   private:: SELECT_CHAN_RAD
   private:: EMISSIVITY
-! private:: NULL_PIX_POINTERS 
 
   !--- include the non-system specific variables
   include 'include/acha_parameters.inc'
@@ -119,7 +118,7 @@ module ACHA_PRIOR_MODULE
 
   !--- set flags
   USE_QRNN_FLAG = .false.
-  USE_EM_FLAG = .true.
+  USE_EM_FLAG =  .false.
   USE_CIRAP_FLAG = .true.
   USE_LRC_LOCAL_FLAG = .false. !.true.
   ALLOW_RETYPE = .true.
@@ -260,13 +259,13 @@ module ACHA_PRIOR_MODULE
 
     call SELECT_CHANNELS_EYRE_MENZEL(Input,Symbol)
 
-    if (N_Chan_EM > 0) then 
-       call EYRE_MENZEL(Input,Symbol,Pc_EM,Tc_EM,Zc_EM,Ec_EM,N_EM,Res_EM,N_Std_EM,CV_EM,Ec_Res_EM)
-    endif
+     if (N_Chan_EM > 0) then 
+        call EYRE_MENZEL(Input,Symbol,Pc_EM,Tc_EM,Zc_EM,Ec_EM,N_EM,Res_EM,N_Std_EM,CV_EM,Ec_Res_EM)
+     endif
 
-    Diag%Array_1 = Tc_EM
-    Diag%Array_2 = Pc_EM
-    Diag%Array_3 = Ec_EM
+!   Diag%Array_1 = Tc_EM
+!   Diag%Array_2 = Pc_EM
+!   Diag%Array_3 = Ec_EM
 
     !--- use EM for ice clouds
     where(Pc_EM /= MISSING_VALUE_REAL4 .and. &
@@ -296,58 +295,6 @@ module ACHA_PRIOR_MODULE
           Input%Tc_Ap_Uncer = 20.0
           Input%Ec_Ap_Uncer = 0.5
     endwhere
-
-
-
-!   print *, 'number using EM = ', count( Input%Tc_Ap ==Tc_EM)
-
-!   !---- use highly confident EM results for high clouds not matter the type
-!   where(Pc_EM /= MISSING_VALUE_REAL4 .and. &
-!         Tc_EM < Input%Tc_Opaque .and. &
-!         Pc_EM < 500.0 .and. &
-!         Ec_EM > 0.01 .and. &
-!         CV_EM < 1.0 .and. &
-!         Ec_Res_EM < 0.10 .and. &
-!         (Input%Ice_Cloud_Probability > 0.10 .or. &
-!         Input%Cloud_Phase_Uncertainty > 0.10))
-!         
-!         Input%Tc_Ap = Tc_EM
-!         Input%Ec_Ap = Ec_EM
-!         Input%Tc_Ap_Uncer = 20.0
-!         Input%Ec_Ap_Uncer = 0.5
-
-!   end where
-! do Line_Idx = 1, Input%Number_Of_Lines
-! do Elem_Idx = 1, Input%Number_Of_Elements
-
-!    !------ find water pixel that are replaced by EM
-!    if (Input%Cloud_Type(Elem_Idx,Line_Idx) >= 2 .and. Input%Cloud_Type(Elem_Idx,Line_Idx) <= 4 .and. &
-!        (Input%Tc_Ap(Elem_Idx,Line_Idx) - Input%Tc_Opaque(Elem_Idx,Line_Idx)  < -5.0) .and. &
-!         Pc_EM(Elem_Idx,Line_Idx) /= MISSING_VALUE_REAL4) then
-
-!        print *, 'WATER EM ', Input%Tc_Ap(Elem_Idx,Line_Idx), &
-!        Tc_EM(Elem_Idx,Line_Idx),Input%Tc_Opaque(Elem_Idx,Line_Idx),  &
-!        Pc_Em(Elem_Idx,Line_Idx),Ec_EM(Elem_Idx,Line_Idx),  &
-!        Res_EM(Elem_Idx,Line_Idx),CV_Em(Elem_Idx,Line_Idx),Ec_Res_Em(Elem_Idx,Line_Idx), &
-!        Input%Ice_Cloud_Probability(Elem_Idx,Line_Idx), &
-!        Input%Cloud_Phase_Uncertainty(Elem_Idx,Line_Idx)
-
-!    endif
-! enddo
-! enddo
-
-!   where(Input%Cloud_Phase_Uncertainty > 0.10 .and. Tc_EM /=MISSING_VALUE_REAL4 .and. Tc_EM < 250.0)
-!          Input%Tc_Ap = Tc_EM
-!          Input%Ec_Ap = Ec_EM
-!          Input%Tc_Ap_Uncer = 20.0
-!          Input%Ec_Ap_Uncer = 0.5
-!  endwhere
-
-!  !---- don't allow EM for highly confident water clouds
-!   where(Input%Ice_Cloud_Probability < 0.05 .and. &
-!         Input%Cloud_Phase_Uncertainty < 0.10)
-
-!  endwhere
 
    deallocate(Pc_EM,Tc_EM,Zc_EM,Ec_EM,N_EM,Res_EM,N_Std_EM,CV_EM,Ec_Res_EM)
 
@@ -964,7 +911,7 @@ subroutine COMPUTE_APRIORI_BASED_ON_PHASE_ETROPO( &
   endif
 
  end subroutine COMPUTE_APRIORI_BASED_ON_TOPA
- !----------------------------------------------------------------------
+!----------------------------------------------------------------------
 !
 !----------------------------------------------------------------------
 subroutine SELECT_CHANNELS_EYRE_MENZEL(Input,Symbol)
@@ -1119,6 +1066,8 @@ subroutine EYRE_MENZEL(Input,Symbol,Pc_EM,Tc_EM,Zc_EM,Ec_EM,N_EM,Res_EM,N_Std_EM
 
          call SELECT_CHAN_RAD(Elem_Idx,Line_Idx,Chan_Idx,Input,ACHA_RTM_NWP)
 
+         cycle
+
          delta_overcast_clear = (BB_Rad(P_Lev_Idx) - Clr_Rad) 
 
          delta_obs_clear = (Obs_Rad - Clr_Rad) 
@@ -1145,7 +1094,9 @@ subroutine EYRE_MENZEL(Input,Symbol,Pc_EM,Tc_EM,Zc_EM,Ec_EM,N_EM,Res_EM,N_Std_EM
 
        Chan_Loop_2: do Chan_Idx = 1, N_Chan_EM
 
-         call SELECT_CHAN_RAD(Elem_Idx,Line_Idx,Chan_Idx,Input,ACHA_RTM_NWP)
+         !call SELECT_CHAN_RAD(Elem_Idx,Line_Idx,Chan_Idx,Input,ACHA_RTM_NWP)
+
+         cycle
 
          delta_overcast_clear = (BB_Rad(P_Lev_Idx) - Clr_Rad) 
 
@@ -1213,6 +1164,7 @@ subroutine SELECT_CHAN_RAD(Elem_Idx,Line_Idx,Chan_Idx,Input,ACHA_RTM_NWP)
   integer, intent(in):: Elem_Idx,Line_Idx,Chan_Idx
   type(acha_input_struct),intent(in) :: Input
   type(acha_rtm_nwp_struct),intent(in) :: ACHA_RTM_NWP
+
 
          select case (EM_Chan_Idx(Chan_Idx))
 

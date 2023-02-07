@@ -27,6 +27,7 @@ module ACHA_NUM_MOD
   public:: COMPUTE_MEDIAN_SEGMENT
   public:: FINDGEN
   private:: COMPUTE_MEDIAN
+  public:: COMPUTE_TIME_HOURS_ACHA
 
   !--- include the non-system specific variables
   include 'include/acha_parameters.inc'
@@ -1118,6 +1119,25 @@ subroutine KD_TREE_INTERP_2pred(Mask_In,Mask_Out,pred_var1,pred_var2,Num_Element
         r(i) = i
     enddo
  end function findgen
+
+ !---------------------------------------------------------------
+ function COMPUTE_TIME_HOURS_ACHA()   result(time_hours)
+   character(len=8):: system_date
+   character(len=10):: system_time
+   character(len=5):: system_time_zone
+   integer, dimension(8):: system_time_value
+
+   real:: time_hours
+
+   call DATE_AND_TIME(system_date,system_time,system_time_zone, system_time_value)
+
+   time_hours = real(system_time_value(5)) +  &
+                     (real(system_time_value(6)) + &
+                      real(system_time_value(7) + &
+                      real(system_time_value(8))/1000.0)/60.0)/60.0
+   return
+
+  end function COMPUTE_TIME_HOURS_ACHA
 
 !----------------------------------------------------------------------
 ! End of Module

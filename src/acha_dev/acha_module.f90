@@ -272,7 +272,9 @@ module AWG_CLOUD_HEIGHT
 !  March 2020 - major rewrite, remove processing order
 !
 !------------------------------------------------------------------------------
-  subroutine  AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol_In, Output, Diag, Dump)
+  subroutine  AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol_In, Output, &
+                                         First_Full_Ret_Time_Sum, Second_Full_Ret_Time_Sum, &
+                                         Diag, Dump)
 
   !===============================================================================
   !  Argument Declaration
@@ -401,6 +403,10 @@ module AWG_CLOUD_HEIGHT
   real(kind=real4):: Emiss_Sfc_142um
 
   real(kind=real4):: Zc_Thick
+
+  real(kind=real4) :: Start_Time_Point_Hours, End_Time_Point_Hours
+  real(kind=real4), intent(inout) :: First_Full_Ret_Time_Sum
+  real(kind=real4), intent(inout) :: Second_Full_Ret_Time_Sum
 
 !-----------------------------------------------------------------------
 ! BEGIN EXECUTABLE CODE
@@ -939,6 +945,7 @@ if (Dump_Diag) then
      write(unit=Lun_Iter_Dump,fmt=*) "Call to 3-Parameter Retrieval"
      write(unit=Lun_Iter_Dump,fmt=*) "========================================================"
 endif
+    Start_Time_Point_Hours = COMPUTE_TIME_HOURS_ACHA()
 
     call FULL_ACHA_RETRIEVAL(&
          Input,Acha_Mode_Flag, Symbol, &
@@ -1006,131 +1013,142 @@ endif
          AKM(5,5) = 0.0
          Fail_Flag(Elem_Idx,Line_Idx) = Fail_Flag_Simple(Elem_Idx,Line_Idx)
 
+         End_Time_Point_Hours = COMPUTE_TIME_HOURS_ACHA()
+
+         First_Full_Ret_Time_Sum = First_Full_Ret_Time_Sum + (End_Time_Point_Hours - Start_Time_Point_Hours)
+
          !---- if a full retrieval is wanted but simple retrieval failed, skip
          if (FULL_RETRIEVAL .and. Fail_Flag_Simple(Elem_Idx,Line_Idx) == symbol%YES) then
            cycle
          endif
 
+         Start_Time_Point_Hours = COMPUTE_TIME_HOURS_ACHA()
 
          !---- if a full retrieval is wanted but simple retrieval worked, continue
-if (FULL_RETRIEVAL .and. Fail_Flag_Simple(Elem_Idx,Line_Idx) == symbol%NO) then
+         if (FULL_RETRIEVAL .and. Fail_Flag_Simple(Elem_Idx,Line_Idx) == symbol%NO) then
 
-! MULTI_LAYER_LOGIC_FLAG
-! 0 - (baseline) just use the multilayer id in cloud type
-! 1 - treat all multilayer like cirrus
-! 2 - assume all cirrus are multilayer and let acha decide
+         ! MULTI_LAYER_LOGIC_FLAG
+         ! 0 - (baseline) just use the multilayer id in cloud type
+         ! 1 - treat all multilayer like cirrus
+         ! 2 - assume all cirrus are multilayer and let acha decide
 
-    if (MULTI_LAYER_LOGIC_FLAG == 1) then
-       if (Cloud_Type == Symbol%Overlap_Type) Cloud_Type = Symbol%Cirrus_Type
-    endif
-    if (MULTI_LAYER_LOGIC_FLAG == 2) then
-       if (Cloud_Type == Symbol%Cirrus_Type) Cloud_Type = Symbol%Overlap_Type
-    endif
+         if (MULTI_LAYER_LOGIC_FLAG == 1) then
+            if (Cloud_Type == Symbol%Overlap_Type) Cloud_Type = Symbol%Cirrus_Type
+         endif
 
-    if (Cloud_Type == symbol%Overlap_Type .or. Input%Cloud_Phase_Uncertainty(Elem_Idx,Line_Idx) >= 0.10)  then
-    !if (Cloud_Type == symbol%Overlap_Type) then
+         if (MULTI_LAYER_LOGIC_FLAG == 2) then
+            if (Cloud_Type == Symbol%Cirrus_Type) Cloud_Type = Symbol%Overlap_Type
+         endif
 
-     !---  use simple retrieval as first guess for full retrieval
-     if (x(1) /= MISSING_VALUE_REAL4) x_ap(1) = x(1)
-     if (x(2) /= MISSING_VALUE_REAL4) x_ap(2) = x(2)
-     if (x(3) /= MISSING_VALUE_REAL4) x_ap(3) = x(3)
-     if (Sx(1,1) /= MISSING_VALUE_REAL4) Sa(1,1) = max(Tc_Ap_Uncer_Min**2,1.0*Sx(1,1))
-     if (Sx(2,2) /= MISSING_VALUE_REAL4) Sa(2,2) = max(Ec_Ap_Uncer_Min**2,1.0*Sx(2,2))
-     if (Sx(3,3) /= MISSING_VALUE_REAL4) Sa(3,3) = max(Beta_Ap_Uncer_Min**2,1.0*Sx(3,3))
-     Singular_Flag =  INVERT_MATRIX(Sa, Sa_Inv, Num_Param)
-     if (Singular_Flag == 1) print *, "Cloud Height warning ==> Singular Sa in ACHA", Sa(1,1),Sa(2,2),Sa(3,3),Sa(4,4),Sa(5,5)
+         if (Cloud_Type == symbol%Overlap_Type .or. Input%Cloud_Phase_Uncertainty(Elem_Idx,Line_Idx) >= 0.10)  then
+         !if (Cloud_Type == symbol%Overlap_Type) then
 
-     if (Dump_Diag) then
-        write(unit=Lun_Iter_Dump,fmt=*) "========================================================"
-        write(unit=Lun_Iter_Dump,fmt=*) "Call to 5-Parameter Retrieval"
-        write(unit=Lun_Iter_Dump,fmt=*) "========================================================"
-     endif
+          !---  use simple retrieval as first guess for full retrieval
+          if (x(1) /= MISSING_VALUE_REAL4) x_ap(1) = x(1)
+          if (x(2) /= MISSING_VALUE_REAL4) x_ap(2) = x(2)
+          if (x(3) /= MISSING_VALUE_REAL4) x_ap(3) = x(3)
+          if (Sx(1,1) /= MISSING_VALUE_REAL4) Sa(1,1) = max(Tc_Ap_Uncer_Min**2,1.0*Sx(1,1))
+          if (Sx(2,2) /= MISSING_VALUE_REAL4) Sa(2,2) = max(Ec_Ap_Uncer_Min**2,1.0*Sx(2,2))
+          if (Sx(3,3) /= MISSING_VALUE_REAL4) Sa(3,3) = max(Beta_Ap_Uncer_Min**2,1.0*Sx(3,3))
+          Singular_Flag =  INVERT_MATRIX(Sa, Sa_Inv, Num_Param)
+          if (Singular_Flag == 1) print *, "Cloud Height warning ==> Singular Sa in ACHA", Sa(1,1),Sa(2,2),Sa(3,3),Sa(4,4),Sa(5,5)
 
-     !--- call retrieval
-     call FULL_ACHA_RETRIEVAL(&
-          Input,Acha_Mode_Flag, Symbol, &
-          Num_Obs,Num_Param,y,y_variance,f,x_Ap,Sa_Inv,x,Sx,AKM,&
-          Output%Conv_Test(Elem_Idx,Line_Idx),Output%Cost(Elem_Idx,Line_Idx), &
-          Output%Goodness(Elem_Idx,Line_Idx),Convergence_Criteria, &
-          ACHA_RTM_NWP%Z_Prof,Tsfc_Est,T_Tropo,Z_Tropo,P_Tropo, Cloud_Type, &
-          Input%Cosine_Zenith_Angle(Elem_Idx,Line_Idx), &
-          Output%Zc_Base(Elem_Idx,Line_Idx), &
-          ACHA_RTM_NWP, &
-          Beta_110um_142um_Coef_Water, &
-          Beta_110um_139um_Coef_Water, &
-          Beta_110um_136um_Coef_Water, &
-          Beta_110um_133um_Coef_Water, &
-          Beta_110um_104um_Coef_Water, &
-          Beta_110um_097um_Coef_Water, &
-          Beta_110um_085um_Coef_Water, &
-          Beta_110um_073um_Coef_Water, &
-          Beta_110um_067um_Coef_Water, &
-          Beta_110um_062um_Coef_Water, &
-          Beta_110um_038um_Coef_Water, &
-          Beta_110um_142um_Coef_Ice, &
-          Beta_110um_139um_Coef_Ice, &
-          Beta_110um_136um_Coef_Ice, &
-          Beta_110um_133um_Coef_Ice, &
-          Beta_110um_104um_Coef_Ice, &
-          Beta_110um_097um_Coef_Ice, &
-          Beta_110um_085um_Coef_Ice, &
-          Beta_110um_073um_Coef_Ice, &
-          Beta_110um_067um_Coef_Ice, &
-          Beta_110um_062um_Coef_Ice, &
-          Beta_110um_038um_Coef_Ice, &
-          Emiss_Sfc_038um, &
-          Emiss_Sfc_062um, &
-          Emiss_Sfc_067um, &
-          Emiss_Sfc_073um, &
-          Emiss_Sfc_085um, &
-          Emiss_Sfc_097um, &
-          Emiss_Sfc_104um, &
-          Emiss_Sfc_110um, &
-          Emiss_Sfc_120um, &
-          Emiss_Sfc_133um, &
-          Emiss_Sfc_136um, &
-          Emiss_Sfc_139um, &
-          Emiss_Sfc_142um, &
-          Output%Tc_Eff(Elem_Idx,Line_Idx), &
-          Converged_Flag(Elem_Idx,Line_Idx), &
-          Fail_Flag_Full(Elem_Idx,Line_Idx), &
-          Dump_Diag, &
-          Lun_Iter_Dump)
-    endif
-    Fail_Flag(Elem_Idx,Line_Idx) = Fail_Flag_Full(Elem_Idx,Line_Idx)
+          if (Dump_Diag) then
+             write(unit=Lun_Iter_Dump,fmt=*) "========================================================"
+             write(unit=Lun_Iter_Dump,fmt=*) "Call to 5-Parameter Retrieval"
+             write(unit=Lun_Iter_Dump,fmt=*) "========================================================"
+          endif
 
- endif
+          !--- call retrieval
+          call FULL_ACHA_RETRIEVAL(&
+               Input,Acha_Mode_Flag, Symbol, &
+               Num_Obs,Num_Param,y,y_variance,f,x_Ap,Sa_Inv,x,Sx,AKM,&
+               Output%Conv_Test(Elem_Idx,Line_Idx),Output%Cost(Elem_Idx,Line_Idx), &
+               Output%Goodness(Elem_Idx,Line_Idx),Convergence_Criteria, &
+               ACHA_RTM_NWP%Z_Prof,Tsfc_Est,T_Tropo,Z_Tropo,P_Tropo, Cloud_Type, &
+               Input%Cosine_Zenith_Angle(Elem_Idx,Line_Idx), &
+               Output%Zc_Base(Elem_Idx,Line_Idx), &
+               ACHA_RTM_NWP, &
+               Beta_110um_142um_Coef_Water, &
+               Beta_110um_139um_Coef_Water, &
+               Beta_110um_136um_Coef_Water, &
+               Beta_110um_133um_Coef_Water, &
+               Beta_110um_104um_Coef_Water, &
+               Beta_110um_097um_Coef_Water, &
+               Beta_110um_085um_Coef_Water, &
+               Beta_110um_073um_Coef_Water, &
+               Beta_110um_067um_Coef_Water, &
+               Beta_110um_062um_Coef_Water, &
+               Beta_110um_038um_Coef_Water, &
+               Beta_110um_142um_Coef_Ice, &
+               Beta_110um_139um_Coef_Ice, &
+               Beta_110um_136um_Coef_Ice, &
+               Beta_110um_133um_Coef_Ice, &
+               Beta_110um_104um_Coef_Ice, &
+               Beta_110um_097um_Coef_Ice, &
+               Beta_110um_085um_Coef_Ice, &
+               Beta_110um_073um_Coef_Ice, &
+               Beta_110um_067um_Coef_Ice, &
+               Beta_110um_062um_Coef_Ice, &
+               Beta_110um_038um_Coef_Ice, &
+               Emiss_Sfc_038um, &
+               Emiss_Sfc_062um, &
+               Emiss_Sfc_067um, &
+               Emiss_Sfc_073um, &
+               Emiss_Sfc_085um, &
+               Emiss_Sfc_097um, &
+               Emiss_Sfc_104um, &
+               Emiss_Sfc_110um, &
+               Emiss_Sfc_120um, &
+               Emiss_Sfc_133um, &
+               Emiss_Sfc_136um, &
+               Emiss_Sfc_139um, &
+               Emiss_Sfc_142um, &
+               Output%Tc_Eff(Elem_Idx,Line_Idx), &
+               Converged_Flag(Elem_Idx,Line_Idx), &
+               Fail_Flag_Full(Elem_Idx,Line_Idx), &
+               Dump_Diag, &
+               Lun_Iter_Dump)
+         endif
+
+         Fail_Flag(Elem_Idx,Line_Idx) = Fail_Flag_Full(Elem_Idx,Line_Idx)
+
+      endif
+
+      End_Time_Point_Hours = COMPUTE_TIME_HOURS_ACHA()
+
+      Second_Full_Ret_Time_Sum = Second_Full_Ret_Time_Sum + (End_Time_Point_Hours - Start_Time_Point_Hours)
  
- if (Dump_Diag) then
-     write(unit=Lun_Iter_Dump,fmt=*) "========================================================"
-     write(unit=Lun_Iter_Dump,fmt=*) "Returned from ACHA_RETRIEVAL"
-     write(unit=Lun_Iter_Dump,fmt=*) "========================================================"
-     write(unit=Lun_Iter_Dump,fmt=*) "final f = ", f
-     write(unit=Lun_Iter_Dump,fmt=*) "      y = ", y
-     write(unit=Lun_Iter_Dump,fmt=*) "final x = ", x
-     write(unit=Lun_Iter_Dump,fmt=*) "   x_ap = ", x_ap
-     write(unit=Lun_Iter_Dump,fmt=*) "Converged_Flag = ", Converged_Flag(Elem_Idx,Line_Idx)
-     write(unit=Lun_Iter_Dump,fmt=*) "Fail_Flag = ", Fail_Flag(Elem_Idx,Line_Idx)
- endif
+      if (Dump_Diag) then
+          write(unit=Lun_Iter_Dump,fmt=*) "========================================================"
+          write(unit=Lun_Iter_Dump,fmt=*) "Returned from ACHA_RETRIEVAL"
+          write(unit=Lun_Iter_Dump,fmt=*) "========================================================"
+          write(unit=Lun_Iter_Dump,fmt=*) "final f = ", f
+          write(unit=Lun_Iter_Dump,fmt=*) "      y = ", y
+          write(unit=Lun_Iter_Dump,fmt=*) "final x = ", x
+          write(unit=Lun_Iter_Dump,fmt=*) "   x_ap = ", x_ap
+          write(unit=Lun_Iter_Dump,fmt=*) "Converged_Flag = ", Converged_Flag(Elem_Idx,Line_Idx)
+          write(unit=Lun_Iter_Dump,fmt=*) "Fail_Flag = ", Fail_Flag(Elem_Idx,Line_Idx)
+      endif
 
-  !--- Save the OE to the Output Structure
-  call SAVE_X_2_OUTPUT(Elem_Idx,Line_Idx,Symbol,Cloud_Type,Fail_Flag(Elem_Idx,Line_Idx), &
-                  x,x_ap,Sa,Sx,AKM,Meta_Data_Flags,Output)
+       !--- Save the OE to the Output Structure
+       call SAVE_X_2_OUTPUT(Elem_Idx,Line_Idx,Symbol,Cloud_Type,Fail_Flag(Elem_Idx,Line_Idx), &
+                       x,x_ap,Sa,Sx,AKM,Meta_Data_Flags,Output)
 
-! if (Fail_Flag(Elem_Idx,Line_Idx) == symbol%YES) then 
-!         print *, Fail_Flag_Simple(ELem_Idx,Line_Idx), Fail_Flag_Full(Elem_Idx,Line_Idx)
-!         write(unit=6,fmt="(20F6.1)") x, y, f-y
-!         print *, Output%Conv_Test(Elem_Idx,Line_Idx),Output%Cost(Elem_Idx,Line_Idx),&
-!         Output%Goodness(Elem_Idx,Line_Idx),Convergence_Criteria
-!         print *
-!         stop
-! endif
+     ! if (Fail_Flag(Elem_Idx,Line_Idx) == symbol%YES) then 
+     !         print *, Fail_Flag_Simple(ELem_Idx,Line_Idx), Fail_Flag_Full(Elem_Idx,Line_Idx)
+     !         write(unit=6,fmt="(20F6.1)") x, y, f-y
+     !         print *, Output%Conv_Test(Elem_Idx,Line_Idx),Output%Cost(Elem_Idx,Line_Idx),&
+     !         Output%Goodness(Elem_Idx,Line_Idx),Convergence_Criteria
+     !         print *
+     !         stop
+     ! endif
 
-  !--- null profile pointers each time 
-  call NULL_PIX_POINTERS(Input, ACHA_RTM_NWP)
+       !--- null profile pointers each time 
+       call NULL_PIX_POINTERS(Input, ACHA_RTM_NWP)
 
-  !--- set output packed quality flags
-  call SET_OUTPUT_PACKED_QF(Output,Elem_Idx,Line_Idx)
+       !--- set output packed quality flags
+       call SET_OUTPUT_PACKED_QF(Output,Elem_Idx,Line_Idx)
 
  end do Element_Loop
 end do Line_Loop

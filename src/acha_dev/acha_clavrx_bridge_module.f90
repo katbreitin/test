@@ -52,12 +52,19 @@ module ACHA_CLAVRX_BRIDGE
    implicit none
 
    logical, save:: First_Call = .true.
+   logical, save:: Last_Call = .false.
 
    logical:: DQF_Set_Flag
+
+   real(kind=real4):: Start_Time_Point_Hours
+   real(kind=real4):: End_Time_Point_Hours
+   real(kind=real4), save:: Time1, Time2, Time3
+   real(kind=real4), save:: Prior_Time, Comp_Time
 
    if (First_Call .eqv. .true.) then
        call MESG('ACHA starts ', color = 46)
    endif
+   if (Image%Segment_Number == Image%Number_Of_Segments) Last_Call = .true.
 
    !---null pointers before filling them
    call NULL_INPUT()
@@ -66,6 +73,14 @@ module ACHA_CLAVRX_BRIDGE
    !-------------------------------------------
    !--- initialize structures
    !-------------------------------------------
+
+   if (First_Call) then
+           Time1 = 0.0
+           Time2 = 0.0
+           Time3 = 0.0
+           Prior_Time = 0.0
+           Comp_Time = 0.0
+   endif
 
    !--- store integer values
    call SET_INPUT()
@@ -83,8 +98,12 @@ module ACHA_CLAVRX_BRIDGE
    call SET_DUMP()
 
    !---- Construct ACHA apriori
+   Start_Time_Point_Hours = COMPUTE_TIME_HOURS_ACHA()
    !call ACHA_PRIOR(Input, Symbol, Output)
    call ACHA_PRIOR(Input, Symbol, Output, Diag=Diag)
+   End_Time_Point_Hours = COMPUTE_TIME_HOURS_ACHA()
+
+   Prior_Time = Prior_Time + (End_Time_Point_Hours - Start_Time_Point_Hours)
 
    !--- Determine if there is any DQF information
    DQF_Set_Flag = .false.
@@ -135,7 +154,7 @@ module ACHA_CLAVRX_BRIDGE
    !-----------------------------------------------------------------------
    !--- Call to AWG Cloud Height Algorithm (ACHA)
    !-----------------------------------------------------------------------
-   call AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol, Output)
+   call AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol, Output, Time1, Time2)
    !call AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol, Output, Dump=Dump)
    !call AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol, Output, Diag=Diag)
    !call AWG_CLOUD_HEIGHT_ALGORITHM(Input, Symbol, Output, Dump=Dump, Diag=Diag)
@@ -143,7 +162,11 @@ module ACHA_CLAVRX_BRIDGE
    !-----------------------------------------------------------------------
    !--- Call algorithm to make ACHA optical and microphysical properties
    !-----------------------------------------------------------------------
+   Start_Time_Point_Hours = COMPUTE_TIME_HOURS_ACHA()
    call ACHA_COMP_ALGORITHM(Input, Symbol, Output)
+   End_Time_Point_Hours = COMPUTE_TIME_HOURS_ACHA()
+
+   Comp_Time = Comp_Time + (End_Time_Point_Hours - Start_Time_Point_Hours)
 
    !-----------------------------------------------------------------------
    !--- Call to Geometrical Shadow Algorithm
@@ -190,6 +213,18 @@ module ACHA_CLAVRX_BRIDGE
    call SET_ACHA_VERSION(Acha_Version)
   
    First_Call = .false.
+   if (Last_Call) then
+      Prior_Time =  60.0*60.0*(Prior_Time)
+      Comp_Time =  60.0*60.0*(Comp_Time)
+      Time1 =  60.0*60.0*(Time1)
+      Time2 =  60.0*60.0*(Time2)
+      Time3 =  60.0*60.0*(Time3)
+      print *, "ACHA Prior Time (sec) = ", Prior_Time
+      print *, "ACHA 3param Ret Time (sec) = ", Time1
+      print *, "ACHA 5param Ret Time (sec) = ", Time2
+      print *, "ACHA Comp Time (sec) = ", Comp_Time
+   endif
+
 
  end subroutine AWG_CLOUD_HEIGHT_BRIDGE
 
