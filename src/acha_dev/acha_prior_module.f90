@@ -13,7 +13,7 @@ module ACHA_PRIOR_MODULE
            ACHA_FETCH_PIXEL_NWP_RTM, &
            LOCATE, Acha_Diag_Struct, Acha_Dump_Struct, COUNTSUBSTRING, &
            ABI_Use_104um_Flag
-
+! use TIMER_MOD
   use CX_REAL_BOOLEAN_MOD
   use KDTREE2_MODULE
   use ACHA_NUM_MOD
@@ -26,6 +26,7 @@ module ACHA_PRIOR_MODULE
   private:: EYRE_MENZEL
   private:: SELECT_CHAN_RAD
   private:: EMISSIVITY
+! private:: NULL_PIX_POINTERS
 
   !--- include the non-system specific variables
   include 'include/acha_parameters.inc'
@@ -42,8 +43,22 @@ module ACHA_PRIOR_MODULE
   real, private:: Clr_Rad
   real, private:: Obs_Rad
   integer, private:: Chan_Idx_11um
+! type(timer) :: ts
 
-  contains 
+  type data_ch_em
+    logical :: is_set = .false.
+    real,dimension(Num_Levels_Rtm_Prof):: BB_Rad
+    real:: Clr_Rad
+    real:: Obs_Rad
+  end type  data_ch_em
+  type data_em
+    type(data_ch_em) :: ch(N_Chan_EM_Max)
+    logical :: is_set = .false.
+  contains
+    procedure :: set => data_em_set
+  end type data_em
+  
+  contains
 
 !------------------------------------------------------------------------------
 ! AWG Cloud Height Algorithm (ACHA)
@@ -67,7 +82,7 @@ module ACHA_PRIOR_MODULE
   !============================================================================
   !  Pixel level RTM structure
   !============================================================================
- 
+
   type(acha_rtm_nwp_struct) :: ACHA_RTM_NWP
 
   !============================================================================
@@ -107,6 +122,13 @@ module ACHA_PRIOR_MODULE
 
   real:: Dummy_R4, dT_dP
 
+! logical :: first_run = .true.
+! if (first_run) then
+!    call ts % init(['sel chn rad.','ALL ACHA   .'])
+!    first_run = .false.
+! end if
+! call ts % tic(2)
+
   !--- initialize diagnostic output
   if (present(Diag) .and. Diag_Warning_Flag == 0) then
       print *, "ACHA PRIOR ===>  Diagnostic Output Turned On"
@@ -118,7 +140,7 @@ module ACHA_PRIOR_MODULE
 
   !--- set flags
   USE_QRNN_FLAG = .false.
-  USE_EM_FLAG =  .false.
+  USE_EM_FLAG = .true.
   USE_CIRAP_FLAG = .true.
   USE_LRC_LOCAL_FLAG = .false. !.true.
   ALLOW_RETYPE = .true.
@@ -186,12 +208,12 @@ module ACHA_PRIOR_MODULE
 
     Line_Loop_3: do Line_Idx = 1, Input%Number_Of_Lines
       Elem_Loop_3: do Elem_Idx = 1, Input%Number_Of_Elements
- 
+
         if (Input%Invalid_Data_Mask(Elem_Idx,Line_Idx) == symbol%YES) cycle
         if (Input%QRNN_Pc(Elem_Idx,Line_Idx) < 100.0) cycle
         if (Input%Cloud_Mask(Elem_Idx,Line_Idx) <= 1) cycle
         if (Input%QRNN_Pc(Elem_Idx,Line_Idx) < 150.0) cycle
- 
+
         call ACHA_FETCH_PIXEL_NWP_RTM(Input, Symbol, &
                                   Elem_Idx,Line_Idx, &
                                   ACHA_RTM_NWP,RTM_NWP_Error_Flag)
@@ -203,7 +225,7 @@ module ACHA_PRIOR_MODULE
 
         !--- estimate lapse rate for temperature uncertainty
         dT_dP = (ACHA_RTM_NWP%T_Prof(Lev_Idx) - ACHA_RTM_NWP%T_Prof(Lev_Idx-1)) / &
-                (ACHA_RTM_NWP%P_Prof(Lev_Idx) - ACHA_RTM_NWP%P_Prof(Lev_Idx-1)) 
+                (ACHA_RTM_NWP%P_Prof(Lev_Idx) - ACHA_RTM_NWP%P_Prof(Lev_Idx-1))
 
         Input%Tc_Ap_Uncer(Elem_Idx,Line_Idx) = Input%QRNN_Pc_Uncer(Elem_Idx,Line_Idx) * dT_dP
 
@@ -259,13 +281,13 @@ module ACHA_PRIOR_MODULE
 
     call SELECT_CHANNELS_EYRE_MENZEL(Input,Symbol)
 
-     if (N_Chan_EM > 0) then 
-        call EYRE_MENZEL(Input,Symbol,Pc_EM,Tc_EM,Zc_EM,Ec_EM,N_EM,Res_EM,N_Std_EM,CV_EM,Ec_Res_EM)
-     endif
+    if (N_Chan_EM > 0) then
+       call EYRE_MENZEL(Input,Symbol,Pc_EM,Tc_EM,Zc_EM,Ec_EM,N_EM,Res_EM,N_Std_EM,CV_EM,Ec_Res_EM)
+    endif
 
-!   Diag%Array_1 = Tc_EM
-!   Diag%Array_2 = Pc_EM
-!   Diag%Array_3 = Ec_EM
+    Diag%Array_1 = Tc_EM
+    Diag%Array_2 = Pc_EM
+    Diag%Array_3 = Ec_EM
 
     !--- use EM for ice clouds
     where(Pc_EM /= MISSING_VALUE_REAL4 .and. &
@@ -279,7 +301,7 @@ module ACHA_PRIOR_MODULE
            Input%Ec_Ap = Ec_EM
            Input%Tc_Ap_Uncer = 20.0
            Input%Ec_Ap_Uncer = 0.5
-          
+
     end where
 
     !--- believe high clouds where phase is uncertain
@@ -296,6 +318,58 @@ module ACHA_PRIOR_MODULE
           Input%Ec_Ap_Uncer = 0.5
     endwhere
 
+
+
+!   print *, 'number using EM = ', count( Input%Tc_Ap ==Tc_EM)
+
+!   !---- use highly confident EM results for high clouds not matter the type
+!   where(Pc_EM /= MISSING_VALUE_REAL4 .and. &
+!         Tc_EM < Input%Tc_Opaque .and. &
+!         Pc_EM < 500.0 .and. &
+!         Ec_EM > 0.01 .and. &
+!         CV_EM < 1.0 .and. &
+!         Ec_Res_EM < 0.10 .and. &
+!         (Input%Ice_Cloud_Probability > 0.10 .or. &
+!         Input%Cloud_Phase_Uncertainty > 0.10))
+!
+!         Input%Tc_Ap = Tc_EM
+!         Input%Ec_Ap = Ec_EM
+!         Input%Tc_Ap_Uncer = 20.0
+!         Input%Ec_Ap_Uncer = 0.5
+
+!   end where
+! do Line_Idx = 1, Input%Number_Of_Lines
+! do Elem_Idx = 1, Input%Number_Of_Elements
+
+!    !------ find water pixel that are replaced by EM
+!    if (Input%Cloud_Type(Elem_Idx,Line_Idx) >= 2 .and. Input%Cloud_Type(Elem_Idx,Line_Idx) <= 4 .and. &
+!        (Input%Tc_Ap(Elem_Idx,Line_Idx) - Input%Tc_Opaque(Elem_Idx,Line_Idx)  < -5.0) .and. &
+!         Pc_EM(Elem_Idx,Line_Idx) /= MISSING_VALUE_REAL4) then
+
+!        print *, 'WATER EM ', Input%Tc_Ap(Elem_Idx,Line_Idx), &
+!        Tc_EM(Elem_Idx,Line_Idx),Input%Tc_Opaque(Elem_Idx,Line_Idx),  &
+!        Pc_Em(Elem_Idx,Line_Idx),Ec_EM(Elem_Idx,Line_Idx),  &
+!        Res_EM(Elem_Idx,Line_Idx),CV_Em(Elem_Idx,Line_Idx),Ec_Res_Em(Elem_Idx,Line_Idx), &
+!        Input%Ice_Cloud_Probability(Elem_Idx,Line_Idx), &
+!        Input%Cloud_Phase_Uncertainty(Elem_Idx,Line_Idx)
+
+!    endif
+! enddo
+! enddo
+
+!   where(Input%Cloud_Phase_Uncertainty > 0.10 .and. Tc_EM /=MISSING_VALUE_REAL4 .and. Tc_EM < 250.0)
+!          Input%Tc_Ap = Tc_EM
+!          Input%Ec_Ap = Ec_EM
+!          Input%Tc_Ap_Uncer = 20.0
+!          Input%Ec_Ap_Uncer = 0.5
+!  endwhere
+
+!  !---- don't allow EM for highly confident water clouds
+!   where(Input%Ice_Cloud_Probability < 0.05 .and. &
+!         Input%Cloud_Phase_Uncertainty < 0.10)
+
+!  endwhere
+
    deallocate(Pc_EM,Tc_EM,Zc_EM,Ec_EM,N_EM,Res_EM,N_Std_EM,CV_EM,Ec_Res_EM)
 
   endif
@@ -303,7 +377,7 @@ module ACHA_PRIOR_MODULE
   !
   !-------------------------------------------------------------------------------------------------
   if ((USE_LRC_LOCAL_FLAG) .and. &
-      (associated(Input%Elem_Idx_LRC_Input)) .and. & 
+      (associated(Input%Elem_Idx_LRC_Input)) .and. &
       (associated(Input%Elem_Idx_LRC_Input))) then
 
      Line_Loop_2: do Line_Idx = 1, Input%Number_Of_Lines
@@ -320,7 +394,7 @@ module ACHA_PRIOR_MODULE
   endif
 
   !-------------------------------------------------------------------------------------------------
-  ! KDTREE Lower Cloud 
+  ! KDTREE Lower Cloud
   !-------------------------------------------------------------------------------------------------
   allocate(Mask_In(Input%Number_Of_Elements,Input%Number_Of_Lines), &
            Mask_Out(Input%Number_Of_Elements,Input%Number_Of_Lines))
@@ -357,7 +431,7 @@ module ACHA_PRIOR_MODULE
   deallocate(Temp_Array_R4)
 
   !-------------------------------------------------------------------------------------------------
-  ! KDTREE Ice Cloud 
+  ! KDTREE Ice Cloud
   !-------------------------------------------------------------------------------------------------
   if (OPICEKD_Flag) then
 
@@ -425,7 +499,7 @@ module ACHA_PRIOR_MODULE
      where(Ice_Prob_Norm /= MISSING_VALUE_REAL4)
         Input%Ice_Prob_Ap = Ice_Prob_Norm
         Input%Ice_Prob_Ap_Uncer = Input%Cloud_Phase_Uncertainty
-     end where 
+     end where
 
   endif
 
@@ -473,10 +547,10 @@ module ACHA_PRIOR_MODULE
      where(Input%Ice_Prob_Ap /= MISSING_VALUE_REAL4 .and. &
            Input%Ice_Prob_Ap < 0.5)
            Input%Ice_Prob_Ap = 0.0
-     end where 
+     end where
      where(Input%Ice_Prob_Ap >= 0.5)
            Input%Ice_Prob_Ap = 1.0
-     end where 
+     end where
   endif
 
   if (CONSTRAIN_ICE_PROB) then
@@ -500,8 +574,8 @@ module ACHA_PRIOR_MODULE
   ! Increase Uncertainty for Tc_Ap if phase uncertain
   !-------------------------------------------------------------------------------------------------
   where(Input%Cloud_Phase_Uncertainty >= 0.20)
-    Input%Tc_Ap_Uncer = 100.0 
-    Input%Ec_Ap_Uncer = 1.0 
+    Input%Tc_Ap_Uncer = 100.0
+    Input%Ec_Ap_Uncer = 1.0
   endwhere
 
   !-----------------------------------------------------------------------
@@ -513,7 +587,7 @@ module ACHA_PRIOR_MODULE
   endwhere
 
   !-------------------------------------------------------------------------------------------------
-  ! Set Clear to Missing  
+  ! Set Clear to Missing
   !-------------------------------------------------------------------------------------------------
   where(Input%Cloud_Mask == Symbol%CLEAR .or. Input%Cloud_Mask == Symbol%PROB_CLEAR)
    Input%Tc_Ap = MISSING_VALUE_REAL4
@@ -526,10 +600,10 @@ module ACHA_PRIOR_MODULE
    Input%Beta_Ap_Uncer = MISSING_VALUE_REAL4
    Input%Ice_Prob_Ap_Uncer = MISSING_VALUE_REAL4
    Input%Lower_Tc_Ap_Uncer = MISSING_VALUE_REAL4
-  end where      
+  end where
 
   !-------------------------------------------------------------------------------------------------
-  !  Constrain 
+  !  Constrain
   !-------------------------------------------------------------------------------------------------
   where(Input%Tc_Ap_Uncer /= MISSING_VALUE_REAL4 .and.  &
         Input%Tc_Ap_Uncer < Tc_Ap_Uncer_Min)
@@ -583,7 +657,8 @@ module ACHA_PRIOR_MODULE
 !-------------------------------------------------------------------------------------------
 ! end extra source
 !-------------------------------------------------------------------------------------------
-
+! call ts % tac(2)
+! call ts % summary()
 
   end subroutine ACHA_PRIOR
 
@@ -622,7 +697,7 @@ subroutine COMPUTE_APRIORI_BASED_ON_TYPE( &
                            T110um, &
                            Tc_Opaque_Lrc, &
                            Tc_Opaque, &
-                           Mu, & 
+                           Mu, &
                            Tc_Ap, &
                            Tc_Ap_Uncer, &
                            Ec_Ap, &
@@ -754,7 +829,7 @@ subroutine COMPUTE_APRIORI_BASED_ON_TYPE( &
         Beta_Ap = Beta_Ap_Water
         Beta_Ap_Uncer = Beta_Ap_Uncer_Water
         return
-   endif 
+   endif
 
    !--- if here, you failed
    Success_Flag = .false.
@@ -772,7 +847,7 @@ subroutine COMPUTE_APRIORI_BASED_ON_PHASE_ETROPO( &
                            T110um, &
                            Tc_Opaque_Lrc, &
                            Tc_Opaque, &
-                           Mu, & 
+                           Mu, &
                            Tc_Ap, &
                            Tc_Ap_Uncer, &
                            Ec_Ap, &
@@ -850,7 +925,7 @@ subroutine COMPUTE_APRIORI_BASED_ON_PHASE_ETROPO( &
     !Tc_Ap = Tc_Ap_Cirrus
     !Tc_Ap_Uncer = Tc_Ap_Uncer_Cirrus
 
-    !---- for very thick clouds, we want to ignore the LRC to 
+    !---- for very thick clouds, we want to ignore the LRC to
     !---  to maintain spatial structure like overshooting columns
     if (Emiss_110um_Tropo > 0.95 .and. Tc_Opaque /= MISSING_VALUE_REAL4) then
       Tc_Ap = Tc_Opaque
@@ -864,7 +939,7 @@ subroutine COMPUTE_APRIORI_BASED_ON_PHASE_ETROPO( &
     endif
 
     !--- emissivity and beta a priori
-    Ec_Ap = min(0.99,max(0.1,Emiss_110um_Tropo)) 
+    Ec_Ap = min(0.99,max(0.1,Emiss_110um_Tropo))
     Ec_Ap_Uncer = Ec_Ap_Uncer_Cirrus
     Beta_Ap = Beta_Ap_Ice
     Beta_Ap_Uncer = Beta_Ap_Uncer_Ice
@@ -922,52 +997,52 @@ subroutine SELECT_CHANNELS_EYRE_MENZEL(Input,Symbol)
 
    if (Input%Chan_On_062um == symbol%YES) then
       N_Chan_EM = N_Chan_EM + 1
-      EM_Chan_Idx(N_Chan_EM) = 37 
+      EM_Chan_Idx(N_Chan_EM) = 37
    endif
    if (Input%Chan_On_067um == symbol%YES) then
       N_Chan_EM = N_Chan_EM + 1
-      EM_Chan_Idx(N_Chan_EM) = 27 
+      EM_Chan_Idx(N_Chan_EM) = 27
    endif
    if (Input%Chan_On_073um == symbol%YES) then
       N_Chan_EM = N_Chan_EM + 1
-      EM_Chan_Idx(N_Chan_EM) = 28 
+      EM_Chan_Idx(N_Chan_EM) = 28
    endif
    if (Input%Chan_On_085um == symbol%YES) then
       N_Chan_EM = N_Chan_EM + 1
-      EM_Chan_Idx(N_Chan_EM) = 29 
+      EM_Chan_Idx(N_Chan_EM) = 29
    endif
    if (Input%Chan_On_097um == symbol%YES) then
       N_Chan_EM = N_Chan_EM + 1
-      EM_Chan_Idx(N_Chan_EM) = 30 
+      EM_Chan_Idx(N_Chan_EM) = 30
    endif
    if (Input%Chan_On_104um == symbol%YES) then
       N_Chan_EM = N_Chan_EM + 1
-      EM_Chan_Idx(N_Chan_EM) = 38 
+      EM_Chan_Idx(N_Chan_EM) = 38
    endif
    if (Input%Chan_On_110um == symbol%YES) then
       N_Chan_EM = N_Chan_EM + 1
-      EM_Chan_Idx(N_Chan_EM) = 31 
+      EM_Chan_Idx(N_Chan_EM) = 31
       Chan_Idx_11um = N_Chan_EM
    endif
    if (Input%Chan_On_120um == symbol%YES) then
       N_Chan_EM = N_Chan_EM + 1
-      EM_Chan_Idx(N_Chan_EM) = 32 
+      EM_Chan_Idx(N_Chan_EM) = 32
    endif
    if (Input%Chan_On_133um == symbol%YES) then
       N_Chan_EM = N_Chan_EM + 1
-      EM_Chan_Idx(N_Chan_EM) = 33 
+      EM_Chan_Idx(N_Chan_EM) = 33
    endif
    if (Input%Chan_On_136um == symbol%YES) then
       N_Chan_EM = N_Chan_EM + 1
-      EM_Chan_Idx(N_Chan_EM) = 34 
+      EM_Chan_Idx(N_Chan_EM) = 34
    endif
    if (Input%Chan_On_139um == symbol%YES) then
       N_Chan_EM = N_Chan_EM + 1
-      EM_Chan_Idx(N_Chan_EM) = 35 
+      EM_Chan_Idx(N_Chan_EM) = 35
    endif
    if (Input%Chan_On_142um == symbol%YES) then
       N_Chan_EM = N_Chan_EM + 1
-      EM_Chan_Idx(N_Chan_EM) = 36 
+      EM_Chan_Idx(N_Chan_EM) = 36
    endif
 
    !--- if no absorbing channel, turn off EM
@@ -1020,6 +1095,7 @@ subroutine EYRE_MENZEL(Input,Symbol,Pc_EM,Tc_EM,Zc_EM,Ec_EM,N_EM,Res_EM,N_Std_EM
   real, parameter:: N_Max_Thresh = 1.00
   real, parameter:: Rad_Ratio_Thresh = 1.00
   type(acha_rtm_nwp_struct) :: ACHA_RTM_NWP
+  type(data_em) :: d_em
 
   Pc_EM = MISSING_VALUE_REAL4
   Ec_EM = MISSING_VALUE_REAL4
@@ -1050,13 +1126,14 @@ subroutine EYRE_MENZEL(Input,Symbol,Pc_EM,Tc_EM,Zc_EM,Ec_EM,N_EM,Res_EM,N_Std_EM
     if (RTM_NWP_Error_Flag /= 0) cycle
 
 
-     Tropo_Level_Idx = ACHA_RTM_NWP%Tropo_Level   
-     Sfc_Level_Idx = ACHA_RTM_NWP%Sfc_Level   
+     Tropo_Level_Idx = ACHA_RTM_NWP%Tropo_Level
+     Sfc_Level_Idx = ACHA_RTM_NWP%Sfc_Level
 
      !--- intialize residual with large number
      Residual_Min = huge(Residual_Min)
      P_Lev_Idx_Opt = Sfc_Level_Idx
 
+     call d_em % set(Elem_Idx,Line_Idx,Input,ACHA_RTM_NWP,N_Chan_EM)
      Press_Loop: do P_Lev_Idx = Tropo_Level_Idx, Sfc_Level_Idx
 
        numer_sum = 0.0
@@ -1064,16 +1141,13 @@ subroutine EYRE_MENZEL(Input,Symbol,Pc_EM,Tc_EM,Zc_EM,Ec_EM,N_EM,Res_EM,N_Std_EM
 
        Chan_Loop: do Chan_Idx = 1, N_Chan_EM
 
-         call SELECT_CHAN_RAD(Elem_Idx,Line_Idx,Chan_Idx,Input,ACHA_RTM_NWP)
+         delta_overcast_clear = (d_em % ch(Chan_Idx)%  BB_Rad(P_Lev_Idx) &
+            - d_em % ch(Chan_Idx)%Clr_Rad)
 
-         cycle
-
-         delta_overcast_clear = (BB_Rad(P_Lev_Idx) - Clr_Rad) 
-
-         delta_obs_clear = (Obs_Rad - Clr_Rad) 
+         delta_obs_clear = (d_em % ch(Chan_Idx)%Obs_Rad - d_em % ch(Chan_Idx)%Clr_Rad)
 
          !--- remove channels without signal
-         if (100.0*abs(delta_overcast_clear/Clr_Rad) .ltr. Rad_Ratio_Thresh) cycle
+         if (100.0*abs(delta_overcast_clear/d_em % ch(Chan_Idx)%Clr_Rad) .ltr. Rad_Ratio_Thresh) cycle
 
          numer_sum = numer_sum + delta_obs_clear *  delta_overcast_clear
          denom_sum = denom_sum + delta_overcast_clear**2
@@ -1094,13 +1168,9 @@ subroutine EYRE_MENZEL(Input,Symbol,Pc_EM,Tc_EM,Zc_EM,Ec_EM,N_EM,Res_EM,N_Std_EM
 
        Chan_Loop_2: do Chan_Idx = 1, N_Chan_EM
 
-         !call SELECT_CHAN_RAD(Elem_Idx,Line_Idx,Chan_Idx,Input,ACHA_RTM_NWP)
+         delta_overcast_clear = (d_em % ch(Chan_Idx)%BB_Rad(P_Lev_Idx) - d_em % ch(Chan_Idx)%Clr_Rad)
 
-         cycle
-
-         delta_overcast_clear = (BB_Rad(P_Lev_Idx) - Clr_Rad) 
-
-         delta_obs_clear = (Obs_Rad - Clr_Rad) 
+         delta_obs_clear = (d_em % ch(Chan_Idx)%Obs_Rad - d_em % ch(Chan_Idx)%Clr_Rad)
 
          !--- remove channels without signal
          if (100.0*abs(delta_overcast_clear/Clr_Rad) .ltr. Rad_Ratio_Thresh) cycle
@@ -1151,7 +1221,7 @@ subroutine EYRE_MENZEL(Input,Symbol,Pc_EM,Tc_EM,Zc_EM,Ec_EM,N_EM,Res_EM,N_Std_EM
      !-- compute emissivity
      call SELECT_CHAN_RAD(Elem_Idx,Line_Idx,Chan_Idx_11um,Input,ACHA_RTM_NWP)
 
-     Ec_EM(Elem_Idx,Line_Idx) = EMISSIVITY(Obs_Rad, Clr_Rad, BB_Rad(Lev_Idx)) 
+     Ec_EM(Elem_Idx,Line_Idx) = EMISSIVITY(Obs_Rad, Clr_Rad, BB_Rad(Lev_Idx))
 
   end do Element_Loop
   end do Line_Loop
@@ -1160,11 +1230,35 @@ end subroutine EYRE_MENZEL
 !--------------------------------------------------------------------------------------------------
 !
 !--------------------------------------------------------------------------------------------------
+
+subroutine data_em_set (self, Elem_Idx,Line_Idx,Input, ACHA_RTM_NWP,chn_max )
+  class(data_em) :: self
+  integer, intent(in):: Elem_Idx,Line_Idx
+  type(acha_input_struct),intent(in) :: Input
+  type(acha_rtm_nwp_struct),intent(in) :: ACHA_RTM_NWP
+  integer :: chn_max
+  integer :: ch_idx
+
+  do ch_idx =1,chn_max
+    call SELECT_CHAN_RAD(Elem_Idx,Line_Idx,Ch_Idx,Input,ACHA_RTM_NWP)
+    self % ch(ch_idx) % bb_rad = bb_rad
+    self % ch(ch_idx) % clr_rad = clr_rad
+    self % ch(ch_idx) % obs_rad = obs_rad
+    self % ch % is_set = .true.
+  end do
+ self%is_set = .true.
+end subroutine
+
+
+!---------------------------------------------------------------------------
+!
+!---------------------------------------------------------------------------
 subroutine SELECT_CHAN_RAD(Elem_Idx,Line_Idx,Chan_Idx,Input,ACHA_RTM_NWP)
   integer, intent(in):: Elem_Idx,Line_Idx,Chan_Idx
   type(acha_input_struct),intent(in) :: Input
   type(acha_rtm_nwp_struct),intent(in) :: ACHA_RTM_NWP
 
+  !call ts%tic(1)
 
          select case (EM_Chan_Idx(Chan_Idx))
 
@@ -1229,6 +1323,8 @@ subroutine SELECT_CHAN_RAD(Elem_Idx,Line_Idx,Chan_Idx,Input,ACHA_RTM_NWP)
             Obs_Rad = Input%Rad_142um(Elem_Idx,Line_Idx)
 
     end select
+
+    !call ts%tac(1)
 
  end subroutine SELECT_CHAN_RAD
 
