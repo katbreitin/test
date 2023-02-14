@@ -2143,9 +2143,11 @@ module SENSOR_MOD
                ! Longitude of actual Sub-Satellite Point for Met-8 when it was operational.  For Met-8 Indian
                ! Ocean service, the subpoint from the AREA file is used.
                if (AREAstr%Sat_Id_Num == 51 .AND. Year_temp < 2016 ) Sensor%Geo_Sub_Satellite_Longitude = -3.477996
-               if (AREAstr%Sat_Id_Num == 52 ) Sensor%Geo_Sub_Satellite_Longitude = -0.159799     ! Longitude of actual Sub-Satellite Point for Met-9
+               !--- Met-9 is at IODC
+               !--- if (AREAstr%Sat_Id_Num == 52 ) Sensor%Geo_Sub_Satellite_Longitude = -0.159799     ! Longitude of actual Sub-Satellite Point for Met-9
                if (AREAstr%Sat_Id_Num == 53 ) Sensor%Geo_Sub_Satellite_Longitude = 0.06          ! Longitude of actual Sub-Satellite Point for Met-10
-               if (AREAstr%Sat_Id_Num == 354 ) Sensor%Geo_Sub_Satellite_Longitude = 0.26         ! Longitude of actual Sub-Satellite Point for Met-11
+               !--- Just use McIDAS AREA file Nav info.
+               !---if (AREAstr%Sat_Id_Num == 354 ) Sensor%Geo_Sub_Satellite_Longitude = 0.26         ! Longitude of actual Sub-Satellite Point for Met-11
                AREAstr%Cal_Offset = AREAstr%reserved(3)
 
             !test for MTSAT
