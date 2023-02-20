@@ -946,6 +946,7 @@ end subroutine COMPUTE_TSFC
 
   ! for these sensors, no correction is needed
   if (trim(Sensor%Sensor_Name) == 'VIIRS') return
+  if (trim(Sensor%Sensor_Name) == 'VGAC') return
   if (trim(Sensor%Sensor_Name) == 'VIIRS-ifF') return
   if (trim(Sensor%Sensor_Name) == 'AVHRR-ifF') return
   if (trim(Sensor%Sensor_Name) == 'METIMAGE') return
