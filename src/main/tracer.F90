@@ -654,6 +654,8 @@
         call add_sym_i1_2d(Cld_Phase,'cloud_phase')
         call add_sym_f4_2d(Nav%Lat, 'latitude')
         call add_sym_f4_2d(Nav%Lon, 'longitude')
+        call add_sym_f4_2d(Nav%Lat_1b, 'latitude_1b')
+        call add_sym_f4_2d(Nav%Lon_1b, 'longitude_1b')
         call add_sym_i4_2d(Nav%X, 'nav_x')
         call add_sym_i4_2d(Nav%Y, 'nav_y')
         call add_sym_i1_2d(Solar_Contamination_Mask,'solar_contamination_mask')
