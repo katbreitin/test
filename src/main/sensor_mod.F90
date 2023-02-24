@@ -924,7 +924,7 @@ module SENSOR_MOD
               call READ_AHI_INSTR_CONSTANTS(trim(Sensor%Instr_Const_File))
 !        case('AHI9')
 !             call READ_AHI_INSTR_CONSTANTS(trim(Sensor%Instr_Const_File))
-         case('VIIRS','VIIRS-NASA','VGAC','VIIRS-NASA-HRES')
+         case('VIIRS','VIIRS-NASA','VGAC','protoVGAC','VIIRS-NASA-HRES')
               if (.not. Sensor%Fusion_Flag) then
                 call READ_VIIRS_INSTR_CONSTANTS(trim(Sensor%Instr_Const_File))
               else
@@ -1772,7 +1772,7 @@ module SENSOR_MOD
 
       !---  VGAC NOAA-20
       if (index(Image%Level1b_Name, 'VGAC_VJ1') > 0) then
-         Sensor%Sensor_Name = 'VGAC'
+         Sensor%Sensor_Name = 'protoVGAC'
          Sensor%Spatial_Resolution_Meters = 3900
          Sensor%Platform_Name = 'NOAA-20'
          Sensor%WMO_Id = 225
@@ -2371,7 +2371,7 @@ module SENSOR_MOD
 
       endif
 
-      if (trim(Sensor%Sensor_Name) == 'VGAC') then
+      if (trim(Sensor%Sensor_Name) == 'VGAC' .or. trim(Sensor%Sensor_Name) == 'protoVGAC') then
          Dir_File = trim(Image%Level1b_Path) // trim(Image%Level1b_Name)
 
          call READ_NUMBER_OF_SCANS_VGAC (trim(Dir_File),Image%Number_Of_Lines, &
