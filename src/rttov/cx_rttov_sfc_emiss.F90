@@ -351,7 +351,7 @@ contains
 
 !---------------------------------------
   call rttov_deallocate_emis_atlas(atlas)
-  call rttov_dealloc_coefs(err, coefs)
+  if (allocated(coefs)) call rttov_dealloc_coefs(err, coefs)
   if (allocated(coefs)) deallocate(coefs)
 
    if (associated(chanprof)) deallocate(chanprof)
