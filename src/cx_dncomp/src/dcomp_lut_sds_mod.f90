@@ -30,9 +30,9 @@ contains
     character ( len =*), intent(in) :: file
 
     real , allocatable, intent(out) :: sat_zen ( :)
-    real , allocatable,  intent(out) :: sol_zen ( :)
+    real , allocatable, intent(out) :: sol_zen ( :)
     real , allocatable, intent(out) :: rel_azi ( :)
-    real , allocatable,  intent(out) :: cod ( :)
+    real , allocatable, intent(out) :: cod ( :)
     real , allocatable, intent(out) :: cps ( :)
 
 
