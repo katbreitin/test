@@ -29,7 +29,9 @@
         use pixel_common_mod, only: Sfc,Nav,Geo,Ch,CLDMASK,Tracer_Flag,Skip_Output,CCL, ACHA, &
             Zen_Idx_RTM, NWP_PIX, Tau_DCOMP, Tau_DCOMP_1, Tau_DCOMP_2, Tau_DCOMP_3, &
             Reff_DCOMP, Reff_DCOMP_1, Reff_DCOMP_2, REFF_DCOMP_3, &
-            Cld_Type, Cld_Phase, DCOMP_Quality_Flag, Sst_Anal_Uni, &
+            Cld_Type, Cld_Phase, DCOMP_Quality_Flag, &
+            DCOMP_Quality_Flag_1, DCOMP_Quality_Flag_2, &
+            DCOMP_Quality_Flag_3, Sst_Anal_Uni, &
             Insolation_DCOMP, Insolation_Diffuse_DCOMP, &
             Image, Temporary_Data_Dir, Tc_Opaque_Cloud, Zc_Opaque_Cloud, &
             Bad_Pixel_Mask, Sensor, &
@@ -824,6 +826,9 @@
         call add_sym_f4_2d(Lwp_Dcomp, 'cld_lwp_dcomp')
         call add_sym_f4_2d(Iwp_Dcomp, 'cld_iwp_dcomp')
         call add_sym_i1_2d(DCOMP_Quality_Flag, 'dcomp_quality')
+        call add_sym_i1_2d(DCOMP_Quality_Flag_1, 'dcomp_quality_1')
+        call add_sym_i1_2d(DCOMP_Quality_Flag_2, 'dcomp_quality_2')
+        call add_sym_i1_2d(DCOMP_Quality_Flag_3, 'dcomp_quality_3')
         call add_sym_f4_2d(Insolation_DCOMP, 'insolation_dcomp')
         call add_sym_f4_2d(Insolation_Diffuse_DCOMP, 'insolation_diffuse_dcomp')
 

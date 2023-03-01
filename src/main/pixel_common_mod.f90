@@ -967,6 +967,9 @@ module PIXEL_COMMON_MOD
      integer (kind=int1), dimension(:,:), allocatable, public,target, save:: Tau_DCOMP_Qf
      integer (kind=int1), dimension(:,:), allocatable, public,target, save:: Reff_DCOMP_Qf
      integer (kind=int1), dimension(:,:), allocatable, public,target, save:: DCOMP_Quality_Flag
+     integer (kind=int1), dimension(:,:), allocatable, public,target, save:: DCOMP_Quality_Flag_1
+     integer (kind=int1), dimension(:,:), allocatable, public,target, save:: DCOMP_Quality_Flag_2
+     integer (kind=int1), dimension(:,:), allocatable, public,target, save:: DCOMP_Quality_Flag_3
      integer (kind=int2), dimension(:,:), allocatable, public,target, save:: DCOMP_Info_Flag
      real (kind=real4), dimension(:,:), allocatable, public,target, save:: Cwp_Fit
      real (kind=real4), dimension(:,:), allocatable, public,target, save:: Reff_DCOMP_Fit
@@ -2941,6 +2944,9 @@ subroutine CREATE_DCOMP_ARRAYS(dim1,dim2)
       allocate(Tau_DCOMP_Qf(dim1,dim2))
       allocate(Reff_DCOMP_Qf(dim1,dim2))
       allocate(DCOMP_Quality_Flag(dim1,dim2))
+      allocate(DCOMP_Quality_Flag_1(dim1,dim2))
+      allocate(DCOMP_Quality_Flag_2(dim1,dim2))
+      allocate(DCOMP_Quality_Flag_3(dim1,dim2))
       allocate(DCOMP_Info_Flag(dim1,dim2))
       allocate(Cloud_063um_Albedo(dim1,dim2))
       allocate(Cloud_063um_Spherical_Albedo(dim1,dim2))
@@ -2999,6 +3005,9 @@ subroutine RESET_DCOMP_ARRAYS()
       Tau_DCOMP_Qf = Missing_Value_Int1
       Reff_DCOMP_Qf = Missing_Value_Int1
       DCOMP_Quality_Flag = 0
+      DCOMP_Quality_Flag_1 = 0
+      DCOMP_Quality_Flag_2 = 0
+      DCOMP_Quality_Flag_3 = 0
       DCOMP_Info_Flag = 0
       Cloud_063um_Albedo = Missing_Value_Real4
       Cloud_063um_Spherical_Albedo = Missing_Value_Real4
@@ -3057,6 +3066,9 @@ subroutine DESTROY_DCOMP_ARRAYS()
       deallocate(Tau_DCOMP_Qf)
       deallocate(Reff_DCOMP_Qf)
       deallocate(DCOMP_Quality_Flag)
+      deallocate(DCOMP_Quality_Flag_1)
+      deallocate(DCOMP_Quality_Flag_2)
+      deallocate(DCOMP_Quality_Flag_3)
       deallocate(DCOMP_Info_Flag)
       deallocate(Cloud_063um_Albedo)
       deallocate(Cloud_063um_Spherical_Albedo)

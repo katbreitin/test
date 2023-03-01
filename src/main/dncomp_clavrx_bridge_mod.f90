@@ -69,6 +69,8 @@ module dncomp_clavrx_bridge_mod
   , tau_dcomp_qf, reff_dcomp_qf &
   , tau_dcomp_cost , reff_dcomp_cost &
   , dcomp_info_flag, dcomp_quality_flag &
+  , dcomp_quality_flag_1, dcomp_quality_flag_2 &
+  , dcomp_quality_flag_3 &
   , cloud_063um_transmission_solar &
   , cloud_063um_transmission_view &
   , cloud_063um_spherical_albedo &
@@ -355,15 +357,18 @@ contains
         case (1)
           tau_dcomp_1 (1:dim_1,1:dim_2)   = dncomp_output % cod % d(1:dim_1,1:dim_2)
           reff_dcomp_1  (1:dim_1,1:dim_2) = dncomp_output % cps % d(1:dim_1,1:dim_2)
+          dcomp_quality_flag_1(1:dim_1,1:dim_2) = dncomp_output % quality % d(1:dim_1,1:dim_2)
 
         case(2)
 
           tau_dcomp_2 (1:dim_1,1:dim_2)   = dncomp_output % cod % d(1:dim_1,1:dim_2)
           reff_dcomp_2  (1:dim_1,1:dim_2) = dncomp_output % cps % d(1:dim_1,1:dim_2)
+          dcomp_quality_flag_2(1:dim_1,1:dim_2) = dncomp_output % quality % d(1:dim_1,1:dim_2)
 
         case(3)
           tau_dcomp_3 (1:dim_1,1:dim_2)   = dncomp_output % cod % d(1:dim_1,1:dim_2)
           reff_dcomp_3  (1:dim_1,1:dim_2) = dncomp_output % cps % d(1:dim_1,1:dim_2)
+          dcomp_quality_flag_3(1:dim_1,1:dim_2) = dncomp_output % quality % d(1:dim_1,1:dim_2)
 
         end select
 

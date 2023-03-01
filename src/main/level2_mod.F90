@@ -2444,6 +2444,57 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Units = "none"
             if (allocated(DCOMP_Quality_Flag)) Sds_Info(Var_Idx)%Sds_Data_2d_I1 => DCOMP_Quality_Flag
 
+         case("dcomp_quality_1")
+            Sds_Info(Var_Idx)%Standard_Name =  "dcomp_quality_flags_packed"
+            Sds_Info(Var_Idx)%Scaling_Type =  0_int1
+            Sds_Info(Var_Idx)%Input_Data_Type_HDF =  DFNT_INT8
+            Sds_Info(Var_Idx)%Level2_Data_Type_HDF =  DFNT_INT8
+            Sds_Info(Var_Idx)%Level2_Data_Type_NETCDF = NF90_BYTE
+            Sds_Info(Var_Idx)%Long_Name = "quality flags for Mode 1 DCOMP products "// &
+                               "1:Processed (0=no,1=yes) "// &
+                               "2:valid COD retrieval (0=yes,1=no) "// &
+                               "3:valid REF retrieval (0=yes,1=no) "// &
+                               "4:degraded COD retrieval (0=no,1=degraded) "// &
+                               "5:degraded REF retrieval (0=no,1=degraded) "// &
+                               "6:convergency (0=no,1=yes) "// &
+                               "7:glint (0=no,1=yes)"
+            Sds_Info(Var_Idx)%Units = "none"
+            if (allocated(DCOMP_Quality_Flag_1)) Sds_Info(Var_Idx)%Sds_Data_2d_I1 => DCOMP_Quality_Flag_1
+
+         case("dcomp_quality_2")
+            Sds_Info(Var_Idx)%Standard_Name =  "dcomp_quality_flags_packed"
+            Sds_Info(Var_Idx)%Scaling_Type =  0_int1
+            Sds_Info(Var_Idx)%Input_Data_Type_HDF =  DFNT_INT8
+            Sds_Info(Var_Idx)%Level2_Data_Type_HDF =  DFNT_INT8
+            Sds_Info(Var_Idx)%Level2_Data_Type_NETCDF = NF90_BYTE
+            Sds_Info(Var_Idx)%Long_Name = "quality flags for Mode 2 DCOMP products "// &
+                               "1:Processed (0=no,1=yes) "// &
+                               "2:valid COD retrieval (0=yes,1=no) "// &
+                               "3:valid REF retrieval (0=yes,1=no) "// &
+                               "4:degraded COD retrieval (0=no,1=degraded) "// &
+                               "5:degraded REF retrieval (0=no,1=degraded) "// &
+                               "6:convergency (0=no,1=yes) "// &
+                               "7:glint (0=no,1=yes)"
+            Sds_Info(Var_Idx)%Units = "none"
+            if (allocated(DCOMP_Quality_Flag_2)) Sds_Info(Var_Idx)%Sds_Data_2d_I1 => DCOMP_Quality_Flag_2
+
+         case("dcomp_quality_3")
+            Sds_Info(Var_Idx)%Standard_Name =  "dcomp_quality_flags_packed"
+            Sds_Info(Var_Idx)%Scaling_Type =  0_int1
+            Sds_Info(Var_Idx)%Input_Data_Type_HDF =  DFNT_INT8
+            Sds_Info(Var_Idx)%Level2_Data_Type_HDF =  DFNT_INT8
+            Sds_Info(Var_Idx)%Level2_Data_Type_NETCDF = NF90_BYTE
+            Sds_Info(Var_Idx)%Long_Name = "quality flags for Mode 3 DCOMP products "// &
+                               "1:Processed (0=no,1=yes) "// &
+                               "2:valid COD retrieval (0=yes,1=no) "// &
+                               "3:valid REF retrieval (0=yes,1=no) "// &
+                               "4:degraded COD retrieval (0=no,1=degraded) "// &
+                               "5:degraded REF retrieval (0=no,1=degraded) "// &
+                               "6:convergency (0=no,1=yes) "// &
+                               "7:glint (0=no,1=yes)"
+            Sds_Info(Var_Idx)%Units = "none"
+            if (allocated(DCOMP_Quality_Flag_3)) Sds_Info(Var_Idx)%Sds_Data_2d_I1 => DCOMP_Quality_Flag_3
+
          case("dcomp_info")
             Sds_Info(Var_Idx)%Standard_Name = "dcomp_information_flags_packed"
             Sds_Info(Var_Idx)%Scaling_Type =  0_int1
