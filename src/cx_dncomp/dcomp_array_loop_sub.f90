@@ -188,7 +188,7 @@ subroutine dcomp_array_loop ( input, output , debug_mode_user)
   quality_flag  = ibset ( quality_flag , 2)
   quality_flag  = ibset ( quality_flag , 3)
   quality_flag  = ibset ( quality_flag , 4)
-  quality_flag  = ibset ( quality_flag , 5)
+  quality_flag  = ibclr ( quality_flag , 5)
   quality_flag  = ibclr ( quality_flag , 6)
   quality_flag  = ibclr ( quality_flag , 7)
 
@@ -418,9 +418,6 @@ subroutine dcomp_array_loop ( input, output , debug_mode_user)
         quality_flag (elem_idx,line_idx) = ibclr ( quality_flag(elem_idx,line_idx) , 3)
         ! - initial DCOMP_QF_REF_DEGRADED B4
         quality_flag (elem_idx,line_idx) = ibclr ( quality_flag(elem_idx,line_idx) , 4)
-        ! --DCOMP_QF_REF_CONVERGENCY B5
-        quality_flag (elem_idx,line_idx) = ibclr ( quality_flag(elem_idx,line_idx) , 5)
-
       end if
 
     end do elem_loop

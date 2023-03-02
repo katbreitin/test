@@ -2438,9 +2438,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
                                "2:valid COD retrieval (0=yes,1=no) "// &
                                "3:valid REF retrieval (0=yes,1=no) "// &
                                "4:degraded COD retrieval (0=no,1=degraded) "// &
-                               "5:degraded REF retrieval (0=no,1=degraded) "// &
-                               "6:convergency (0=no,1=yes) "// &
-                               "7:glint (0=no,1=yes)"
+                               "5:degraded REF retrieval (0=no,1=degraded) "
             Sds_Info(Var_Idx)%Units = "none"
             if (allocated(DCOMP_Quality_Flag)) Sds_Info(Var_Idx)%Sds_Data_2d_I1 => DCOMP_Quality_Flag
 
@@ -2455,9 +2453,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
                                "2:valid COD retrieval (0=yes,1=no) "// &
                                "3:valid REF retrieval (0=yes,1=no) "// &
                                "4:degraded COD retrieval (0=no,1=degraded) "// &
-                               "5:degraded REF retrieval (0=no,1=degraded) "// &
-                               "6:convergency (0=no,1=yes) "// &
-                               "7:glint (0=no,1=yes)"
+                               "5:degraded REF retrieval (0=no,1=degraded) "
             Sds_Info(Var_Idx)%Units = "none"
             if (allocated(DCOMP_Quality_Flag_1)) Sds_Info(Var_Idx)%Sds_Data_2d_I1 => DCOMP_Quality_Flag_1
 
@@ -2472,9 +2468,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
                                "2:valid COD retrieval (0=yes,1=no) "// &
                                "3:valid REF retrieval (0=yes,1=no) "// &
                                "4:degraded COD retrieval (0=no,1=degraded) "// &
-                               "5:degraded REF retrieval (0=no,1=degraded) "// &
-                               "6:convergency (0=no,1=yes) "// &
-                               "7:glint (0=no,1=yes)"
+                               "5:degraded REF retrieval (0=no,1=degraded) "
             Sds_Info(Var_Idx)%Units = "none"
             if (allocated(DCOMP_Quality_Flag_2)) Sds_Info(Var_Idx)%Sds_Data_2d_I1 => DCOMP_Quality_Flag_2
 
@@ -2489,9 +2483,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
                                "2:valid COD retrieval (0=yes,1=no) "// &
                                "3:valid REF retrieval (0=yes,1=no) "// &
                                "4:degraded COD retrieval (0=no,1=degraded) "// &
-                               "5:degraded REF retrieval (0=no,1=degraded) "// &
-                               "6:convergency (0=no,1=yes) "// &
-                               "7:glint (0=no,1=yes)"
+                               "5:degraded REF retrieval (0=no,1=degraded) "
             Sds_Info(Var_Idx)%Units = "none"
             if (allocated(DCOMP_Quality_Flag_3)) Sds_Info(Var_Idx)%Sds_Data_2d_I1 => DCOMP_Quality_Flag_3
 
