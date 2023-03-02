@@ -7,7 +7,7 @@ module dcomp_retrieval_mod
 
     private
     public :: dcomp_algorithm
-   
+
     type , public :: dcomp_output_structure
         logical :: statusOK
         real :: cod
@@ -39,7 +39,7 @@ contains
         , rel_azi &
         , cld_temp &
         , cld_phase &
-       
+
         , rad_abv_cld &
         , rad_clear_toc  &
         , sensor &
@@ -47,22 +47,23 @@ contains
         , dcomp_mode &
         , ancil_path  &
         , debug_in )
-   
-                     
+
+
         use dcomp_math_tools_mod, only: &
             findinv , debug_mode
-      
+
         use dcomp_forward_mod, only: &
             pixel_vec &
             , dcomp_forward_computation &
-            , thick_cloud_cps
-      
+            , thick_cloud_cps &
+            , thin_cloud_mode_3
+
         implicit none
-      
+
         real, intent(in) :: obs_vec(:)
         real, intent(in) :: obs_u (:)
         real, intent(in) :: alb_sfc ( : )
-      
+
         real, intent(in) :: alb_sfc_u (:)
         real, intent(in) :: air_trans_ac (:)
         real, intent(in) :: state_apr ( 2 )
@@ -70,19 +71,19 @@ contains
         real, intent(in) :: sat_zen
         real, intent(in) :: rel_azi
         real, intent(in) :: cld_temp
-      
+
         logical, intent(in) :: cld_phase
-       
+
         real, intent(in) :: rad_abv_cld
         real, intent(in) :: rad_clear_toc
         character ( len = * ) , intent ( in ) :: sensor
         integer , intent(in), optional :: dcomp_mode
         integer , intent(in), optional :: debug_in
-      
+
         character (len = 1024 ), intent ( in ) , optional :: ancil_path
-      
+
         type ( dcomp_output_structure ) , intent ( out ) :: output_str
-      
+
         real :: cod , cps , codu , cpsu
         real :: S_a ( 2, 2 ), S_a_inv( 2, 2 )
         real :: S_y ( 2, 2 ), S_y_inv( 2, 2 )
@@ -98,7 +99,7 @@ contains
         real :: cld_trans_sol(2)
         real :: cld_trans_sat(2)
         real :: cld_sph_alb(2)
-      
+
         integer :: iteration_idx
         integer :: errorflag
         real :: conv_test
@@ -106,18 +107,18 @@ contains
         real , parameter :: MISSING_REAL4_EM = -999.
         integer :: algo_mode
         type ( pixel_vec ) :: pxl
-      
+
         real :: max_step_size
         integer , dimension(2) :: channels
         real :: cld_albedo_vis
         character ( len=1024) :: dcomp_ancil_path
         real :: conv_test_criteria
         real :: rfl_vis_max
-        
+
         real :: sfc_albedo(2)
-       
+
         !     --   executable
-      
+
         ! - initialize output
         output_str % statusOK = .false.
         output_str % cod  = -999.
@@ -147,10 +148,10 @@ contains
         else
             dcomp_ancil_path = '/data/Ancil_Data/clavrx_ancil_data/'
         end if
-      
+
         algo_mode = 3
         if  ( present ( dcomp_mode )) algo_mode = dcomp_mode
-      
+
         select case ( algo_mode )
             case ( 1 )
                 channels = [ 1 , 6 ]
@@ -161,29 +162,29 @@ contains
             case ( 4) ! --   snow
                 channels = [ 6 ,20 ]
             case default
-           
+
                 stop 'this mode is not set stop'
         end select
-        
-        
+
+
         sfc_albedo(1) = alb_sfc(1)    ! White sky
         sfc_albedo(2) = alb_sfc(2)
-        
-        debug_mode = 4
+
+        debug_mode = 5
         if ( present ( debug_in )) debug_mode = debug_in
-       
+
         cod  = missing_real4_em
         cps  = missing_real4_em
         codu = missing_real4_em
         cpsu = missing_real4_em
-      
+
         S_a = 0.0
         S_a(1,1)  =  state_apr(1) ** 2
         S_a(1,1)  = 0.8 ** 2
         S_a(2,2) =  0.65 ** 2
-      
+
         call findinv ( S_a , S_a_inv , 2 , errorflag)
-      
+
         ! - observation error cov
         obs_crl = 0.7
         S_m = 0.
@@ -194,18 +195,18 @@ contains
 
         ! = forward model components vector
         S_b = 0.
-      
+
         S_b(1,1) = ( alb_sfc_u(1) ) ** 2
         S_b(2,2) = ( alb_sfc_u(2) ) ** 2
         S_b(3,3) =  1.
         S_b(4,4) =  1.
         S_b(5,5) =  1.
-      
+
         state_vec = state_apr
-      
+
         iteration_idx = 0
         conv_test_criteria = 0.08
-       
+
         if (debug_mode > 4 ) then
             print *, "<--- begin new retrieval for pixel = "
             print *, "cloud type, phase = ", cld_phase
@@ -221,13 +222,13 @@ contains
         end if
 
         Retrieval_Loop : do
-         
+
             iteration_Idx = iteration_Idx + 1
-            
+
             ! - loose criteria after some iterations
             if ( iteration_idx .gt. 10 ) conv_test_criteria = 0.5
             if ( algo_mode .eq. 4 .and. iteration_idx .gt. 10 ) conv_test_criteria = 1.0
-            
+
             call  dcomp_forward_computation  ( &
                 state_vec  , pxl &
                 , trim ( sensor ) , channels , sfc_albedo  &
@@ -273,7 +274,7 @@ contains
                 &  (matmul( transpose ( kernel ), &
                 &   matmul ( S_y_inv , ( obs_vec - obs_fwd ) ) ) +  &
                 &   matmul ( S_a_inv , state_apr - state_vec ) ) )
-            
+
             ! - check for convergence
             Conv_Test = abs ( sum (delta_X * matmul ( S_x_inv , Delta_X ) ) )
 
@@ -288,7 +289,7 @@ contains
                 print*, 'conv test = ', conv_test
                 print*, 'sensor: ', sensor
             end if
-      
+
             ! - control step size
             max_step_size = 0.5
             delta_dstnc = sqrt ( sum ( delta_x ** 2 ) )
@@ -304,7 +305,7 @@ contains
             state_Vec = state_Vec + delta_x
 
             if ( conv_test < conv_test_criteria  ) then
-   
+
                 call  dcomp_forward_computation  ( &
                     state_vec &
                     , pxl &
@@ -320,8 +321,8 @@ contains
                     , lut_path = ancil_path &
                     , cld_albedo_vis = cld_albedo_vis &
                     , rfl_vis_max =  rfl_vis_max)
-                
-                
+
+
                   if ( debug_mode > 4 ) then
                 print*
                 print*,'iter last = ',iteration_idx
@@ -329,18 +330,18 @@ contains
                 print*, 'k = ',kernel
                 print*, 'Sx = ',S_x
                 print*,'delta x =', delta_x
-                print*, ' new x =', state_vec 
+                print*, ' new x =', state_vec
                 print*, 'conv test = ', conv_test
                 print*, 'sensor: ', sensor
             end if
-                
+
                 output_str % statusOK = .true.
                 output_str % cod  = 10 ** state_vec(1)
                 output_str % codu = sqrt ( S_x ( 1, 1 ) )
                 state_vec(2) = min(state_vec(2),2.2)
                 output_str % cps  = 10 ** state_vec(2)
                 output_str % cpsu = sqrt ( S_x ( 2, 2 ) )
-            
+
                 output_str % cloud_alb_vis = cld_albedo_vis
                 output_str % cloud_alb_vis_u = -999.
                 output_str % cloud_trans_sol_vis = cld_trans_sol(1)
@@ -350,13 +351,13 @@ contains
                 output_str % cloud_sph_alb_vis = cld_sph_alb(1)
                 output_str % cloud_sph_alb_vis_u  = -999.
                 output_str % refl_vis_max = rfl_vis_max
-      
+
                 if ( debug_mode > 4 ) then
                     print*,' y:                   ', obs_vec(1:2)
                     print*,'fwd of solution       ', obs_fwd
                     print*,'max rfl: ', rfl_vis_max
                 end if
-            
+
                 if ( state_vec(1) > 2.2  ) then
                     state_vec(2) = thick_cloud_cps ( obs_vec(2) , channels(2), pxl, dcomp_mode )
                     state_vec(2) = min(state_vec(2),2.2)
@@ -371,15 +372,15 @@ contains
                     output_str % cloud_trans_sat_vis_u = -999.
                     exit
                 end if
-                
-                
-            
-            
-            
+
+
+
+
+
                 exit retrieval_loop
 
             end if
-         
+
             if ( state_vec(1) > 2.0 .and. iteration_idx > 6 ) then
                 state_vec(2) = thick_cloud_cps ( obs_vec(2) , channels(2), pxl, dcomp_mode )
                 state_vec(2) = min(state_vec(2),2.2)
@@ -388,10 +389,21 @@ contains
                 output_str % codu = 1.0
                 output_str % cps = 10 ** state_vec(2)
                 output_str % cpsu = 1.0
-            
+
                 exit
             end if
- 
+
+          if ( iteration_idx > 20 .and. algo_mode .eq. 3 .and. obs_vec(1) .lt. 0.15 ) then
+                state_vec(1) = thin_cloud_mode_3(obs_vec(1),pxl)
+                output_str % statusOK = .true.
+                output_str % cod = 10**state_vec(1)
+                output_str % codu = 1.0
+                output_str % cps = 10 ** state_apr(2)
+                output_str % cpsu = 1.0
+
+          end if
+
+
 #ifdef NOMISSINGDCOMP
             if ( iteration_idx > 20 )  then
 
@@ -411,9 +423,9 @@ contains
 #else
             if ( iteration_idx > 20 )  exit retrieval_loop
 #endif
-                  
+
         end do Retrieval_Loop
-      
+
     end subroutine dcomp_algorithm
-   
+
 end module dcomp_retrieval_mod

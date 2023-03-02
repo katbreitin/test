@@ -87,6 +87,7 @@ module dcomp_lut_mod
       procedure , private :: set_filename => lut__set_filename
       procedure :: clear_lut_memory => lut__clear_lut_memory
       procedure :: populate_all_at_once => lut__populate_all_at_once
+      procedure :: rfl_for_given_cps => lut_data__rfl_for_given_cps
 
    end type lut_type
 
@@ -579,8 +580,6 @@ contains
       type (lut_data_type), pointer :: data_loc => null()
 
       data_loc => self % channel ( idx_chn ) % phase ( idx_phase)
-
-
       rfl = data_loc%cld_refl( :,29,self%pos_sol,self%pos_sat,self%pos_azi)
 
       if ( data_loc % has_ems ) then
@@ -589,7 +588,25 @@ contains
 
 
    end subroutine lut_data__thick_cloud_rfl
+   ! ----------------------------------------------------------------
+   !
+   ! ----------------------------------------------------------------
+   subroutine lut_data__rfl_for_given_cps ( self ,  idx_phase, cps_idx, rfl)
+      class ( lut_type ) , target :: self
 
+      integer , intent(in) :: idx_phase
+      integer, intent(in) :: cps_idx
+      integer  :: idx_chn = 1
+      real, intent(out) :: rfl(29)
+
+
+      type (lut_data_type), pointer :: data_loc => null()
+
+      data_loc => self % channel ( idx_chn ) % phase ( idx_phase)
+      rfl = data_loc%cld_refl( cps_idx,:,self%pos_sol,self%pos_sat,self%pos_azi)
+
+
+   end subroutine lut_data__rfl_for_given_cps
    ! ----------------------------------------------------------------
    !
    ! ----------------------------------------------------------------
