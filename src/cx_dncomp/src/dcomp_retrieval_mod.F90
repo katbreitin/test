@@ -393,7 +393,7 @@ contains
                 exit
             end if
 
-          if ( iteration_idx > 20 .and. algo_mode .eq. 3 .and. obs_vec(1) .lt. 0.15 ) then
+          if ( iteration_idx > 20 .and. algo_mode .eq. 3 .and. obs_vec(1) .lt. 0.35 ) then
                 state_vec(1) = thin_cloud_mode_3(obs_vec(1),pxl)
                 output_str % statusOK = .true.
                 output_str % cod = 10**state_vec(1)
