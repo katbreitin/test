@@ -1,7 +1,7 @@
-! $Id: muri_lut_mod.f90 2424 2017-12-18 14:30:36Z awalther $
+! 
 !
 !     2019 Feb 6 : fixed scalong of aot_550nm with factor 10
-
+!
 module muri_lut_mod
    use cx_sds_type_definitions_mod, only:
 
