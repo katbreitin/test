@@ -66,12 +66,12 @@ subroutine dcomp_array_loop ( input, output , debug_mode_user)
   real :: rad_clear_sky_toa_ch20 = -999.
   real :: rad_clear_sky_toc_ch20 = -999.
 
-  real , allocatable :: air_mass_array (:,:)
+  real, allocatable :: air_mass_array (:,:)
 
-  logical  , allocatable :: cloud_array(:,:)
-  logical  , allocatable :: obs_array(:,:)
-  logical  , allocatable :: obs_and_acha_array(:,:)
-  logical  , allocatable :: water_phase_array(:,:)
+  logical, allocatable :: cloud_array(:,:)
+  logical, allocatable :: obs_array(:,:)
+  logical, allocatable :: obs_and_acha_array(:,:)
+  logical, allocatable :: water_phase_array(:,:)
 
   integer ( i2 )  , allocatable :: info_flag ( :,:)
   integer ( i2 )  , allocatable :: quality_flag ( :,:)

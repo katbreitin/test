@@ -126,21 +126,24 @@ contains
          case('Meteosat-11')
             solar = 5.4450759
             ew = 370.55274
-         case('GOES-16') ! updated AW 14 Feb 2018
-            solar = 1.709
-            ew = 116.413
-         case('GOES-17') !  faked from goes-16 AW 28 Aug 2018
-            solar = 1.709
-            ew = 116.413
-        case('GOES-18') !  faked from goes-16 AW 16 Aug 2022
-             solar = 1.709
-             ew = 116.413
+         case('GOES-16') ! updated AW 28 Feb 2023
+            solar = 1.706
+            ew = 116.189
+         case('GOES-17') ! updated AW 28 Feb 2023
+            solar = 1.851
+            ew = 125.740
+        case('GOES-18') ! updated AW 28 Feb 2023
+             solar = 1.8537229
+             ew = 126.98898
          case('COMS-1')
             solar = 4.8461549
             ew = 306.29122
-         case('AHI')! faked
-            solar = 4.8461549
-            ew = 306.29122
+          case('AHI')! faked
+             solar = 1.893
+             ew = 128.488
+      ! case('AHI')! faked
+      !    solar = 4.8461549
+        !    ew = 306.29122
          case('FY3D')
             solar = 2.0019216
             ew = 130.67588
@@ -333,10 +336,10 @@ contains
                nu_20 = 2570.97
                a1_20 = -0.45401969
                a2_20 = 1.0004997
-             case ('GOES-18') ! faked initially from GOES-16 on 16 Aug 2022 AW
-                nu_20 = 2570.97
-                a1_20 = -0.45401969
-                a2_20 = 1.0004997
+             case ('GOES-18') ! updated from G18 instr file 28 Feb 2023 AW
+                nu_20 = 2563.11341352
+                a1_20 = -0.46601857
+                a2_20 = 1.00054377
             case('COMS-1')
                nu_20 = 2675.0265
                a1_20 = -2.2829416
