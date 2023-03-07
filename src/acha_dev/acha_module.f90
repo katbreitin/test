@@ -51,6 +51,7 @@ module AWG_CLOUD_HEIGHT
 !  067_110_133
 !  085_110_120
 !  110_120_133
+!  062_110_120_133
 !  067_085_110_120
 !  085_110_120_133
 !  062_085_110_120_133 - stw
@@ -134,7 +135,7 @@ module AWG_CLOUD_HEIGHT
   integer(kind=int4), private, PARAMETER:: MISSING_VALUE_integer4 = -999
   type(ACHA_SYMBOL_STRUCT), private :: Symbol
 
-  integer, public, parameter:: Num_ACHA_Modes = 20
+  integer, public, parameter:: Num_ACHA_Modes = 21
   integer, public, parameter:: ACHA_Mode_Max_Length = 31
   character(len=ACHA_Mode_Max_Length), dimension(Num_ACHA_Modes), public, parameter:: ACHA_Mode_Values = &
      (/'off                            ', &
@@ -150,6 +151,7 @@ module AWG_CLOUD_HEIGHT
        '067_110_133                    ', &
        '085_110_120                    ', &
        '110_120_133                    ', &
+       '062_110_120_133                ', &
        '067_085_110_120                ', &
        '085_110_120_133                ', &
        '062_085_110_120_133            ', &
@@ -310,7 +312,7 @@ module AWG_CLOUD_HEIGHT
   integer:: Iter_Idx
   integer:: ierror
 
-  real:: Convergence_Criteria
+  real:: Convergence_Criteria_Full
   real:: Convergence_Criteria_Simple
 
   real:: Tsfc_Est
@@ -373,6 +375,7 @@ module AWG_CLOUD_HEIGHT
   logical:: Clip_Output_Flag
   logical :: Singular_Warning_First_Time 
   logical :: Prior_Success_Flag
+  logical :: Run_Full_Ret
   
   !--- indices for single pixel diagnostic dump
   integer:: Elem_Abs_Idx 
@@ -531,9 +534,10 @@ module AWG_CLOUD_HEIGHT
   allocate(Sx_Simple(Num_Param_Simple,Num_Param_Simple))
   allocate(AKM_Simple(Num_Param_Simple,Num_Param_Simple))
 
-  !--- set convergence criterion
-  Convergence_Criteria = (Num_Param - 1.0) / 5.0
+  !--- set convergence criterion  (empirical 1.5 term)
+  Convergence_Criteria_Full = (Num_Param - 1.0) / 5.0
   Convergence_Criteria_Simple = (Num_Param_Simple - 1.0) / 5.0
+
 
   !--- initialize output
   Output%Tc =  MISSING_VALUE_REAL4
@@ -627,7 +631,7 @@ module AWG_CLOUD_HEIGHT
   ! For Testing, allow a cloud to be specified (from acha_parameters.inc)
   !--------------------------------------------------------------------------
   if (Cloud_Type_Forced /= -1) then 
-     Cloud_Type_Temp = Cloud_Type_Forced
+     Cloud_Type_Temp = int(Cloud_Type_Forced,kind=int4)
   endif
 
    !--------------------------------------------------------------------------
@@ -682,7 +686,7 @@ module AWG_CLOUD_HEIGHT
     if (Bad_Input_Flag) then 
           Output%Packed_Qf(Elem_Idx,Line_Idx) =  0_int1
           Output%Packed_Meta_Data(Elem_Idx,Line_Idx) =  0_int1
-          Output%Qf(Elem_Idx,Line_Idx) = CTH_DQF_BAD_RETREVIAL
+          Output%Qf(Elem_Idx,Line_Idx) = int(CTH_DQF_BAD_RETREVIAL,kind=int1)
           cycle
     endif
 
@@ -702,7 +706,7 @@ module AWG_CLOUD_HEIGHT
         Input%Viewing_Zenith_Angle_Idx_RTM(Elem_Idx,Line_Idx) <= 0) then 
           Output%Packed_Qf(Elem_Idx,Line_Idx) =  0_int1
           Output%Packed_Meta_Data(Elem_Idx,Line_Idx) =  0_int1
-          Output%Qf(Elem_Idx,Line_Idx) = CTH_DQF_BAD_RETREVIAL
+          Output%Qf(Elem_Idx,Line_Idx) = int(CTH_DQF_BAD_RETREVIAL,kind=int1)
          cycle 
     endif
 
@@ -715,7 +719,7 @@ module AWG_CLOUD_HEIGHT
     if (RTM_NWP_Error_Flag /= 0) then 
         Output%Packed_Qf(Elem_Idx,Line_Idx) =  0_int1
         Output%Packed_Meta_Data(Elem_Idx,Line_Idx) =  0_int1
-        Output%Qf(Elem_Idx,Line_Idx) = CTH_DQF_BAD_RETREVIAL
+        Output%Qf(Elem_Idx,Line_Idx) = int(CTH_DQF_BAD_RETREVIAL,kind=int1)
         cycle
     endif
 
@@ -810,8 +814,8 @@ module AWG_CLOUD_HEIGHT
 
    !--- logic for unmasked or untyped pixels (Output%Ec)
    if (Input%Process_Undetected_Cloud_Flag == Symbol%YES) then
-         if (Input%Tc_Opaque(Elem_Idx,Line_Idx) < 260.0 .and.  &
-             Input%Tc_Opaque(Elem_Idx,Line_Idx) /= MISSING_VALUE_REAL4) then
+         if ((Input%Tc_Opaque(Elem_Idx,Line_Idx) .ltr. 260.0) .and.  &
+             (Input%Tc_Opaque(Elem_Idx,Line_Idx) .ner. MISSING_VALUE_REAL4)) then
              Cloud_Type = Symbol%CIRRUS_TYPE
          else
              Cloud_Type = Symbol%FOG_TYPE
@@ -931,20 +935,20 @@ Fail_Flag_Full(Elem_Idx,Line_Idx) = Symbol%NO
      write(unit=Lun_Iter_Dump,fmt=*) "P Tropopause = ", P_Tropo
  endif
 
- !------------------------------------------------------------------------------------------
- !  Call 3-parameter (simple) retrieval
- !------------------------------------------------------------------------------------------
- x_Ap_Simple = x_Ap(1:3)
- Sa_Simple = Sa(1:3,1:3)
- Singular_Flag =  INVERT_MATRIX(Sa_Simple, Sa_Inv_Simple, Num_Param_Simple)
- if (Singular_Flag == 1) print *, "Cloud Height warning ==> Singular Sa Simple in ACHA", Sa(1,1),Sa(2,2),Sa(3,3)
+    !------------------------------------------------------------------------------------------
+    !  Call 3-parameter (simple) retrieval
+    !------------------------------------------------------------------------------------------
+    x_Ap_Simple = x_Ap(1:3)
+    Sa_Simple = Sa(1:3,1:3)
+    Singular_Flag =  INVERT_MATRIX(Sa_Simple, Sa_Inv_Simple, Num_Param_Simple)
+    if (Singular_Flag == 1) print *, "Cloud Height warning ==> Singular Sa Simple in ACHA", Sa(1,1),Sa(2,2),Sa(3,3)
 
 
-if (Dump_Diag) then
+    if (Dump_Diag) then
      write(unit=Lun_Iter_Dump,fmt=*) "========================================================"
      write(unit=Lun_Iter_Dump,fmt=*) "Call to 3-Parameter Retrieval"
      write(unit=Lun_Iter_Dump,fmt=*) "========================================================"
-endif
+    endif
     Start_Time_Point_Hours = COMPUTE_TIME_HOURS_ACHA()
 
     call FULL_ACHA_RETRIEVAL(&
@@ -1013,58 +1017,65 @@ endif
          AKM(5,5) = 0.0
          Fail_Flag(Elem_Idx,Line_Idx) = Fail_Flag_Simple(Elem_Idx,Line_Idx)
 
+         !--- Save the OE to the Output Structure if Full Retrieval Converged
+         if (Fail_Flag_Simple(Elem_Idx,Line_Idx) == Symbol%NO) then 
+           call SAVE_X_2_OUTPUT(Elem_Idx,Line_Idx,Symbol,Cloud_Type,Fail_Flag(Elem_Idx,Line_Idx), &
+                                x,x_ap,Sa,Sx,AKM,Meta_Data_Flags,Output)
+         endif
+
          End_Time_Point_Hours = COMPUTE_TIME_HOURS_ACHA()
 
          First_Full_Ret_Time_Sum = First_Full_Ret_Time_Sum + (End_Time_Point_Hours - Start_Time_Point_Hours)
 
-         !---- if a full retrieval is wanted but simple retrieval failed, skip
-         if (FULL_RETRIEVAL .and. Fail_Flag_Simple(Elem_Idx,Line_Idx) == symbol%YES) then
-           cycle
-         endif
+         !--- decide if to do a full retrieval
+         Run_Full_Ret = .false.
 
-         Start_Time_Point_Hours = COMPUTE_TIME_HOURS_ACHA()
+         if (FULL_RETRIEVAL)  then 
 
-         !---- if a full retrieval is wanted but simple retrieval worked, continue
-         if (FULL_RETRIEVAL .and. Fail_Flag_Simple(Elem_Idx,Line_Idx) == symbol%NO) then
-
-         ! MULTI_LAYER_LOGIC_FLAG
-         ! 0 - (baseline) just use the multilayer id in cloud type
-         ! 1 - treat all multilayer like cirrus
-         ! 2 - assume all cirrus are multilayer and let acha decide
-
-         if (MULTI_LAYER_LOGIC_FLAG == 1) then
-            if (Cloud_Type == Symbol%Overlap_Type) Cloud_Type = Symbol%Cirrus_Type
-         endif
+            if (MULTI_LAYER_LOGIC_FLAG == 1) then
+               if (Cloud_Type == Symbol%Overlap_Type) Cloud_Type = Symbol%Cirrus_Type
+             endif
 
          if (MULTI_LAYER_LOGIC_FLAG == 2) then
             if (Cloud_Type == Symbol%Cirrus_Type) Cloud_Type = Symbol%Overlap_Type
          endif
 
-         if (Cloud_Type == symbol%Overlap_Type .or. Input%Cloud_Phase_Uncertainty(Elem_Idx,Line_Idx) >= 0.10)  then
-         !if (Cloud_Type == symbol%Overlap_Type) then
+         if (Cloud_Type == Symbol%Overlap_Type) Run_Full_Ret = .true.
+         if (Input%Cloud_Phase_Uncertainty(Elem_Idx,Line_Idx) >= 0.10) Run_Full_Ret = .true.
+         if (Fail_Flag_Simple(Elem_Idx,Line_Idx) == symbol%YES)  then 
+                 !print *, "3-param failed "
+                 Run_Full_Ret = .true.
+         endif
 
-          !---  use simple retrieval as first guess for full retrieval
-          if (x(1) /= MISSING_VALUE_REAL4) x_ap(1) = x(1)
-          if (x(2) /= MISSING_VALUE_REAL4) x_ap(2) = x(2)
-          if (x(3) /= MISSING_VALUE_REAL4) x_ap(3) = x(3)
-          if (Sx(1,1) /= MISSING_VALUE_REAL4) Sa(1,1) = max(Tc_Ap_Uncer_Min**2,1.0*Sx(1,1))
-          if (Sx(2,2) /= MISSING_VALUE_REAL4) Sa(2,2) = max(Ec_Ap_Uncer_Min**2,1.0*Sx(2,2))
-          if (Sx(3,3) /= MISSING_VALUE_REAL4) Sa(3,3) = max(Beta_Ap_Uncer_Min**2,1.0*Sx(3,3))
-          Singular_Flag =  INVERT_MATRIX(Sa, Sa_Inv, Num_Param)
-          if (Singular_Flag == 1) print *, "Cloud Height warning ==> Singular Sa in ACHA", Sa(1,1),Sa(2,2),Sa(3,3),Sa(4,4),Sa(5,5)
+         endif
+         !---- end decide if to do a full retrieval
 
-          if (Dump_Diag) then
-             write(unit=Lun_Iter_Dump,fmt=*) "========================================================"
-             write(unit=Lun_Iter_Dump,fmt=*) "Call to 5-Parameter Retrieval"
-             write(unit=Lun_Iter_Dump,fmt=*) "========================================================"
-          endif
+         Start_Time_Point_Hours = COMPUTE_TIME_HOURS_ACHA()
 
-          !--- call retrieval
-          call FULL_ACHA_RETRIEVAL(&
+       if (Run_Full_Ret) then 
+
+         !---  use simple retrieval as first guess for full retrieval
+         if (x(1) .ner. MISSING_VALUE_REAL4) x_ap(1) = x(1)
+         if (x(2) .ner. MISSING_VALUE_REAL4) x_ap(2) = x(2)
+         if (x(3) .ner. MISSING_VALUE_REAL4) x_ap(3) = x(3)
+         if (Sx(1,1) .ner. MISSING_VALUE_REAL4) Sa(1,1) = max(Tc_Ap_Uncer_Min**2,1.0*Sx(1,1))
+         if (Sx(2,2) .ner. MISSING_VALUE_REAL4) Sa(2,2) = max(Ec_Ap_Uncer_Min**2,1.0*Sx(2,2))
+         if (Sx(3,3) .ner. MISSING_VALUE_REAL4) Sa(3,3) = max(Beta_Ap_Uncer_Min**2,1.0*Sx(3,3))
+         Singular_Flag =  INVERT_MATRIX(Sa, Sa_Inv, Num_Param)
+         if (Singular_Flag == 1) print *, "Cloud Height warning ==> Singular Sa in ACHA", Sa(1,1),Sa(2,2),Sa(3,3),Sa(4,4),Sa(5,5)
+
+         if (Dump_Diag) then
+            write(unit=Lun_Iter_Dump,fmt=*) "========================================================"
+            write(unit=Lun_Iter_Dump,fmt=*) "Call to 5-Parameter Retrieval"
+            write(unit=Lun_Iter_Dump,fmt=*) "========================================================"
+         endif
+
+         !--- call retrieval
+         call FULL_ACHA_RETRIEVAL(&
                Input,Acha_Mode_Flag, Symbol, &
                Num_Obs,Num_Param,y,y_variance,f,x_Ap,Sa_Inv,x,Sx,AKM,&
                Output%Conv_Test(Elem_Idx,Line_Idx),Output%Cost(Elem_Idx,Line_Idx), &
-               Output%Goodness(Elem_Idx,Line_Idx),Convergence_Criteria, &
+               Output%Goodness(Elem_Idx,Line_Idx),Convergence_Criteria_Full, &
                ACHA_RTM_NWP%Z_Prof,Tsfc_Est,T_Tropo,Z_Tropo,P_Tropo, Cloud_Type, &
                Input%Cosine_Zenith_Angle(Elem_Idx,Line_Idx), &
                Output%Zc_Base(Elem_Idx,Line_Idx), &
@@ -1109,11 +1120,10 @@ endif
                Fail_Flag_Full(Elem_Idx,Line_Idx), &
                Dump_Diag, &
                Lun_Iter_Dump)
-         endif
 
-         Fail_Flag(Elem_Idx,Line_Idx) = Fail_Flag_Full(Elem_Idx,Line_Idx)
+               Fail_Flag(Elem_Idx,Line_Idx) = Fail_Flag_Full(Elem_Idx,Line_Idx)
 
-      endif
+           endif
 
       End_Time_Point_Hours = COMPUTE_TIME_HOURS_ACHA()
 
@@ -1131,18 +1141,23 @@ endif
           write(unit=Lun_Iter_Dump,fmt=*) "Fail_Flag = ", Fail_Flag(Elem_Idx,Line_Idx)
       endif
 
-       !--- Save the OE to the Output Structure
-       call SAVE_X_2_OUTPUT(Elem_Idx,Line_Idx,Symbol,Cloud_Type,Fail_Flag(Elem_Idx,Line_Idx), &
-                       x,x_ap,Sa,Sx,AKM,Meta_Data_Flags,Output)
+      !--- Save the OE to the Output Structure if Full Retrieval Converged
+      if (Fail_Flag_Full(Elem_Idx,Line_Idx) == Symbol%NO) then 
+           call SAVE_X_2_OUTPUT(Elem_Idx,Line_Idx,Symbol,Cloud_Type,Fail_Flag(Elem_Idx,Line_Idx), &
+                                x,x_ap,Sa,Sx,AKM,Meta_Data_Flags,Output)
+      endif
 
-     ! if (Fail_Flag(Elem_Idx,Line_Idx) == symbol%YES) then 
-     !         print *, Fail_Flag_Simple(ELem_Idx,Line_Idx), Fail_Flag_Full(Elem_Idx,Line_Idx)
-     !         write(unit=6,fmt="(20F6.1)") x, y, f-y
-     !         print *, Output%Conv_Test(Elem_Idx,Line_Idx),Output%Cost(Elem_Idx,Line_Idx),&
-     !         Output%Goodness(Elem_Idx,Line_Idx),Convergence_Criteria
-     !         print *
-     !         stop
-     ! endif
+!     if (Fail_Flag(Elem_Idx,Line_Idx) == symbol%YES) then 
+!              print *, Fail_Flag_Simple(ELem_Idx,Line_Idx), Fail_Flag_Full(Elem_Idx,Line_Idx)
+!              print *, 'x = ',x
+!              print *, 'y = ',y
+!              print *, 'f = ',f
+!              print *, 'f-y = ',f-y
+               !write(unit=6,fmt="(20F6.1)") x, y, f-y
+!              print *, Output%Conv_Test(Elem_Idx,Line_Idx),Output%Cost(Elem_Idx,Line_Idx),&
+!              Output%Goodness(Elem_Idx,Line_Idx),Convergence_Criteria_Full
+!              print *
+!      endif
 
        !--- null profile pointers each time 
        call NULL_PIX_POINTERS(Input, ACHA_RTM_NWP)
@@ -2188,6 +2203,15 @@ subroutine COMPUTE_Y(Acha_Mode_Flag,Input,Element_Idx_Min, Line_Idx_Min, Elem_Id
        y_variance(1) = Bt_110um_Std**2 + Bt_110um_Noise**2
        y_variance(2) = Btd_110um_067um_Std**2 + Btd_110um_067um_Noise**2
        y_variance(3) = Btd_110um_085um_Std**2 + Btd_110um_085um_Noise**2
+      case("062_110_120_133")
+       y(1) =  Input%Bt_110um(Elem_Idx,Line_Idx)
+       y(2) =  Input%Bt_110um(Elem_Idx,Line_Idx) -  Input%Bt_062um(Elem_Idx,Line_Idx)
+       y(3) =  Input%Bt_110um(Elem_Idx,Line_Idx) -  Input%Bt_120um(Elem_Idx,Line_Idx)
+       y(4) =  Input%Bt_110um(Elem_Idx,Line_Idx) -  Input%Bt_133um(Elem_Idx,Line_Idx)
+       y_variance(1) = Bt_110um_Std**2 + Bt_110um_Noise**2
+       y_variance(2) = Btd_110um_062um_Std**2 + Btd_110um_062um_Noise**2
+       y_variance(3) = Btd_110um_120um_Std**2 + Btd_110um_120um_Noise**2
+       y_variance(4) = Btd_110um_133um_Std**2 + Btd_110um_133um_Noise**2
       case("085_110_120_133")
        y(1) =  Input%Bt_110um(Elem_Idx,Line_Idx)
        y(2) =  Input%Bt_110um(Elem_Idx,Line_Idx) -  Input%Bt_085um(Elem_Idx,Line_Idx)
@@ -2415,7 +2439,7 @@ subroutine COMPUTE_HEIGHT_FROM_LAPSE_RATE(ACHA_RTM_NWP, &
 
        !--- Some negative cloud heights are observed because of bad height
        !--- NWP profiles.
-       if (Zc < 0) then
+       if (Zc .ltr. 0.0) then
           Zc = ZC_FLOOR
        endif
 
@@ -2984,6 +3008,8 @@ subroutine CONVERT_TC_TO_PC_AND_ZC(Input,Symbol_In,Cloud_Type,Output)
   type(acha_rtm_nwp_struct) :: ACHA_RTM_NWP
   integer:: Elem_Idx, Line_Idx,Dummy_Flag
   real:: T_Tropo, Z_Tropo, P_Tropo
+  real:: Pc_Temp, Tc_Temp
+  real, parameter:: Tc_Diff_Thresh = 5.0
   integer:: Lev_Idx,Ierror,NWP_Profile_Inversion_Flag
   integer:: RTM_NWP_Error_Flag
 
@@ -3057,36 +3083,10 @@ subroutine CONVERT_TC_TO_PC_AND_ZC(Input,Symbol_In,Cloud_Type,Output)
 
     endif
 
-!   if (Elem_Idx == 140 .and. Line_Idx == 100) then
-!      write(unit=6,fmt=*) "BOTTOM_UP = ", BOTTOM_UP
-!      write(unit=6,fmt=*) "Profile Interp Zc = ", Output%Zc(Elem_Idx,Line_Idx)
-!   endif
-
     !--- Eff for  low clouds over water, force fixed lapse rate estimate of height
     if ((USE_LAPSE_RATE_WATER_FLAG .and. Input%Surface_Type(Elem_Idx,Line_Idx) == Symbol%WATER_SFC .or. &
-         USE_LAPSE_RATE_LAND_FLAG .and. Input%Surface_Type(Elem_Idx,Line_Idx) /= Symbol%WATER_SFC) .and. &
+         USE_LAPSE_RATE_LAND_FLAG  .and. Input%Surface_Type(Elem_Idx,Line_Idx) /= Symbol%WATER_SFC) .and. &
          Input%Snow_Class(Elem_Idx,Line_Idx) == Symbol%NO_SNOW) then
-
-       call COMPUTE_HEIGHT_FROM_LAPSE_RATE(ACHA_RTM_NWP, &
-                                     Input%Snow_Class(Elem_Idx,Line_Idx), &
-                                     Input%Surface_Type(Elem_Idx,Line_Idx), &
-                                     Cloud_Type(Elem_Idx,Line_Idx), &
-                                     Input%Surface_Temperature(Elem_Idx,Line_Idx), &
-                                     Input%Surface_Elevation(Elem_Idx,Line_Idx), &
-                                     MAX_DELTA_T_INVERSION, &
-                                     Output%Tc_Eff(Elem_Idx,Line_Idx), &
-                                     Output%Zc_Eff(Elem_Idx,Line_Idx), &
-                                     Output%Pc_Eff(Elem_Idx,Line_Idx), &
-                                     Output%Inversion_Flag(Elem_Idx,Line_Idx))
-    endif
-
-    !---  for low clouds over water, force fixed lapse rate estimate of height
-!   if (Elem_Idx == 140 .and. Line_Idx == 100) then
-!      write(unit=6,fmt=*) "Lapse Rate Flags = ", USE_LAPSE_RATE_WATER_FLAG,  &
-!                                                             USE_LAPSE_RATE_LAND_FLAG 
-!   endif
-    if ((USE_LAPSE_RATE_WATER_FLAG .and. Input%Surface_Type(Elem_Idx,Line_Idx) == Symbol%WATER_SFC) .or. &
-        (USE_LAPSE_RATE_LAND_FLAG .and. Input%Surface_Type(Elem_Idx,Line_Idx) /= Symbol%WATER_SFC)) then
 
        call COMPUTE_HEIGHT_FROM_LAPSE_RATE(ACHA_RTM_NWP, &
                                      Input%Snow_Class(Elem_Idx,Line_Idx), &
@@ -3099,11 +3099,46 @@ subroutine CONVERT_TC_TO_PC_AND_ZC(Input,Symbol_In,Cloud_Type,Output)
                                      Output%Zc(Elem_Idx,Line_Idx), &
                                      Output%Pc(Elem_Idx,Line_Idx), &
                                      Output%Inversion_Flag(Elem_Idx,Line_Idx))
-!   if (Elem_Idx == 140 .and. Line_Idx == 100) then
-!      write(unit=6,fmt=*) "Lapse Rate Zc = ", Output%Zc(Elem_Idx,Line_Idx)
-!   endif
+
+       call COMPUTE_HEIGHT_FROM_LAPSE_RATE(ACHA_RTM_NWP, &
+                                     Input%Snow_Class(Elem_Idx,Line_Idx), &
+                                     Input%Surface_Type(Elem_Idx,Line_Idx), &
+                                     Cloud_Type(Elem_Idx,Line_Idx), &
+                                     Input%Surface_Temperature(Elem_Idx,Line_Idx), &
+                                     Input%Surface_Elevation(Elem_Idx,Line_Idx), &
+                                     MAX_DELTA_T_INVERSION, &
+                                     Output%Tc_Eff(Elem_Idx,Line_Idx), &
+                                     Output%Zc_Eff(Elem_Idx,Line_Idx), &
+                                     Output%Pc_Eff(Elem_Idx,Line_Idx), &
+                                     Output%Inversion_Flag(Elem_Idx,Line_Idx))
+
+       call COMPUTE_HEIGHT_FROM_LAPSE_RATE(ACHA_RTM_NWP, &
+                                     Input%Snow_Class(Elem_Idx,Line_Idx), &
+                                     Input%Surface_Type(Elem_Idx,Line_Idx), &
+                                     Cloud_Type(Elem_Idx,Line_Idx), &
+                                     Input%Surface_Temperature(Elem_Idx,Line_Idx), &
+                                     Input%Surface_Elevation(Elem_Idx,Line_Idx), &
+                                     MAX_DELTA_T_INVERSION, &
+                                     Output%Lower_Tc(Elem_Idx,Line_Idx), &
+                                     Output%Lower_Zc(Elem_Idx,Line_Idx), &
+                                     Output%Lower_Pc(Elem_Idx,Line_Idx), &
+                                     Output%Inversion_Flag(Elem_Idx,Line_Idx))
 
     endif
+
+    !--- use LCL for water clouds
+!   if (Cloud_Type(Elem_Idx,Line_Idx) == Symbol%WATER_TYPE .or. &
+!       Cloud_Type(Elem_Idx,Line_Idx) == Symbol%FOG_TYPE) then 
+
+!      call KNOWING_Z_COMPUTE_T_P(ACHA_RTM_NWP,Pc_Temp,Tc_Temp,Input%LCL_Height(Elem_Idx,Line_idx),Lev_Idx)
+
+!      !print *, "test ", Cloud_Type(Elem_Idx,Line_Idx), Input%LCL_Height(Elem_Idx,Line_idx), Pc_Temp,Tc_Temp, Output%Tc(Elem_Idx,Line_Idx)
+!      if (abs(Output%Tc(Elem_Idx,Line_Idx) - Tc_Temp) < Tc_Diff_Thresh) then
+!          Output%Zc(Elem_Idx,Line_Idx) = Input%LCL_Height(Elem_Idx,Line_idx)
+!          Output%Pc(Elem_Idx,Line_Idx) = Pc_Temp
+!      !   print *, "LCL used"
+!      endif
+!   endif
 
     !--  If Lower Cloud is placed at surface - assume this single layer
     if (MULTI_LAYER_LOGIC_FLAG == 0 .or. MULTI_LAYER_LOGIC_FLAG == 2) then   !??????????
@@ -3186,16 +3221,16 @@ subroutine SAVE_X_2_OUTPUT(Elem_Idx,Line_Idx,Symbol,Cloud_Type,Fail_Flag,x,x_ap,
      !-----------------------------------------------------------------------------
      do Param_Idx = 1,Num_Param    !loop over parameters
         if (Sx(Param_Idx,Param_Idx) < 0.111*Sa(Param_Idx,Param_Idx) ) THEN
-             Output%OE_Qf(Param_Idx,Elem_Idx,Line_Idx) = CTH_PARAM_1_3_APRIORI_RETREVIAL
+             Output%OE_Qf(Param_Idx,Elem_Idx,Line_Idx) = int(CTH_PARAM_1_3_APRIORI_RETREVIAL,kind=int1)
         elseif (Sx(Param_Idx,Param_Idx) < 0.444*Sa(Param_Idx,Param_Idx)) THEN
-             Output%OE_Qf(Param_Idx,Elem_Idx,Line_Idx) = CTH_PARAM_2_3_APRIORI_RETREVIAL
+             Output%OE_Qf(Param_Idx,Elem_Idx,Line_Idx) = int(CTH_PARAM_2_3_APRIORI_RETREVIAL,kind=int1)
         else
-             Output%OE_Qf(Param_Idx,Elem_Idx,Line_Idx) = CTH_PARAM_LOW_QUALITY_RETREVIAL
+             Output%OE_Qf(Param_Idx,Elem_Idx,Line_Idx) = int(CTH_PARAM_LOW_QUALITY_RETREVIAL,kind=int1)
         endif
 
         !--- set quality flag for a marginal retrieval
         if (Output%OE_Qf(Param_Idx,Elem_Idx,Line_Idx) == CTH_PARAM_LOW_QUALITY_RETREVIAL) then
-           Output%Qf(Elem_Idx,Line_Idx) = CTH_DQF_MARGINAL_RETREVIAL
+           Output%Qf(Elem_Idx,Line_Idx) = int(CTH_DQF_MARGINAL_RETREVIAL,kind=int1)
         endif
 
      enddo
@@ -3217,7 +3252,7 @@ subroutine SAVE_X_2_OUTPUT(Elem_Idx,Line_Idx,Symbol,Cloud_Type,Fail_Flag,x,x_ap,
       Output%Ice_Probability(Elem_Idx,Line_Idx) = x_Ap(5)
    endif
 
-   Output%Qf(Elem_Idx,Line_Idx) = CTH_DQF_RETREVIAL_ATTEMPTED
+   Output%Qf(Elem_Idx,Line_Idx) = int(CTH_DQF_RETREVIAL_ATTEMPTED,kind=int1)
 
   endif
 

@@ -285,9 +285,9 @@ module ACHA_PRIOR_MODULE
        call EYRE_MENZEL(Input,Symbol,Pc_EM,Tc_EM,Zc_EM,Ec_EM,N_EM,Res_EM,N_Std_EM,CV_EM,Ec_Res_EM)
     endif
 
-    Diag%Array_1 = Tc_EM
-    Diag%Array_2 = Pc_EM
-    Diag%Array_3 = Ec_EM
+    !Diag%Array_1 = Tc_EM
+    !Diag%Array_2 = Pc_EM
+    !Diag%Array_3 = Ec_EM
 
     !--- use EM for ice clouds
     where(Pc_EM /= MISSING_VALUE_REAL4 .and. &
