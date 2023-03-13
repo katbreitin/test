@@ -23,6 +23,13 @@ module univ_fp_comparison_mod
 !    .NEfp.  :  replaces '.ne.' or '/='
 !    .GEfp.  :  replaces '.ge.' or '>='
 !    .LEfp.  :  replaces '.le.' or '<='
+!
+!  Usage Example:
+!
+!  use univ_fp_comparison_mod, only: operator(.EQfp.), operator(.GEfp.)
+!
+!  if (c .EQfp. d) then
+!     if (f .GEfp. e) then
   
 implicit none
 
