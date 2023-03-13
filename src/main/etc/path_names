@@ -108,6 +108,7 @@ timer_mod.F90
 tracer.F90
 user_options.F90
 univ_sys_interface.c
+univ_fp_comparison.f90
 viewing_geometry_mod.f90
 viirs_clavrx_bridge.f90
 viirs_nasa_hres_read_mod.f90

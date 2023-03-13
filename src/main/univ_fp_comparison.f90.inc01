@@ -1,0 +1,242 @@
+!------------------------------------------------------------------------------
+! CLAVR-x (CLouds from AVHRR - eXtended) PROCESSING SOFTWARE
+!
+! COPYRIGHT
+! THIS SOFTWARE AND ITS DOCUMENTATION ARE CONSIDERED TO BE IN THE PUBLIC
+! DOMAIN AND THUS ARE AVAILABLE FOR UNRESTRICTED PUBLIC USE. THEY ARE
+! FURNISHED "AS IS." THE AUTHORS, THE UNITED STATES GOVERNMENT, ITS
+! INSTRUMENTALITIES, OFFICERS, EMPLOYEES, AND AGENTS MAKE NO WARRANTY,
+! EXPRESS OR IMPLIED, AS TO THE USEFULNESS OF THE SOFTWARE AND
+! DOCUMENTATION FOR ANY PURPOSE. THEY ASSUME NO RESPONSIBILITY (1) FOR
+! THE USE OF THE SOFTWARE AND DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL
+! SUPPORT TO USERS.
+!------------------------------------------------------------------------------
+
+
+!```````````````````````````````````````````````````````````````````
+pure function eq_fp_f4_0d(A, B)  result(is_equal_to)
+
+!+ Tests for equality between two given scalar 4-byte floating-point
+!   values.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical :: is_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_equal_to = ( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function eq_fp_f4_0d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ne_fp_f4_0d(A, B)  result(is_notequal_to)
+
+!+ Tests for inequality between two given scalar 4-byte floating-point
+!   values.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical :: is_notequal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_notequal_to = .not.( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function ne_fp_f4_0d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ge_fp_f4_0d(A, B)  result(is_greater_than_or_equal_to)
+
+!+ Tests whether the first of two given scalar 4-byte floating-point
+!   values is greater than or equal to the other.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f4) :: sp
+
+logical :: is_greater_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_greater_than_or_equal_to = ( (A-B >= sp) .or. (abs(A-B) < sp) )
+
+end function ge_fp_f4_0d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function le_fp_f4_0d(A, B)  result(is_less_than_or_equal_to)
+
+!+ Tests whether the first of two given scalar 4-byte floating-point
+!   values is less than or equal to the other.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f4) :: sp
+
+logical :: is_less_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_less_than_or_equal_to = ( (B-A >= sp) .or. (abs(A-B) < sp) )
+
+end function le_fp_f4_0d
+
+
+!------------------------------------------------------------------------------
+! CLAVR-x (CLouds from AVHRR - eXtended) PROCESSING SOFTWARE
+!
+! COPYRIGHT
+! THIS SOFTWARE AND ITS DOCUMENTATION ARE CONSIDERED TO BE IN THE PUBLIC
+! DOMAIN AND THUS ARE AVAILABLE FOR UNRESTRICTED PUBLIC USE. THEY ARE
+! FURNISHED "AS IS." THE AUTHORS, THE UNITED STATES GOVERNMENT, ITS
+! INSTRUMENTALITIES, OFFICERS, EMPLOYEES, AND AGENTS MAKE NO WARRANTY,
+! EXPRESS OR IMPLIED, AS TO THE USEFULNESS OF THE SOFTWARE AND
+! DOCUMENTATION FOR ANY PURPOSE. THEY ASSUME NO RESPONSIBILITY (1) FOR
+! THE USE OF THE SOFTWARE AND DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL
+! SUPPORT TO USERS.
+!------------------------------------------------------------------------------
+
+
+!```````````````````````````````````````````````````````````````````
+pure function eq_fp_f8_0d(A, B)  result(is_equal_to)
+
+!+ Tests for equality between two given scalar 8-byte floating-point
+!   values.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical :: is_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_equal_to = ( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function eq_fp_f8_0d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ne_fp_f8_0d(A, B)  result(is_notequal_to)
+
+!+ Tests for inequality between two given scalar 8-byte floating-point
+!   values.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical :: is_notequal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_notequal_to = .not.( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function ne_fp_f8_0d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ge_fp_f8_0d(A, B)  result(is_greater_than_or_equal_to)
+
+!+ Tests whether the first of two given scalar 8-byte floating-point
+!   values is greater than or equal to the other.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f8) :: sp
+
+logical :: is_greater_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_greater_than_or_equal_to = ( (A-B >= sp) .or. (abs(A-B) < sp) )
+
+end function ge_fp_f8_0d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function le_fp_f8_0d(A, B)  result(is_less_than_or_equal_to)
+
+!+ Tests whether the first of two given scalar 8-byte floating-point
+!   values is less than or equal to the other.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f8) :: sp
+
+logical :: is_less_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_less_than_or_equal_to = ( (B-A >= sp) .or. (abs(A-B) < sp) )
+
+end function le_fp_f8_0d
+
+

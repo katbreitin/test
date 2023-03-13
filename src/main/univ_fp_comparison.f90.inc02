@@ -1,0 +1,1806 @@
+!------------------------------------------------------------------------------
+! CLAVR-x (CLouds from AVHRR - eXtended) PROCESSING SOFTWARE
+!
+! COPYRIGHT
+! THIS SOFTWARE AND ITS DOCUMENTATION ARE CONSIDERED TO BE IN THE PUBLIC
+! DOMAIN AND THUS ARE AVAILABLE FOR UNRESTRICTED PUBLIC USE. THEY ARE
+! FURNISHED "AS IS." THE AUTHORS, THE UNITED STATES GOVERNMENT, ITS
+! INSTRUMENTALITIES, OFFICERS, EMPLOYEES, AND AGENTS MAKE NO WARRANTY,
+! EXPRESS OR IMPLIED, AS TO THE USEFULNESS OF THE SOFTWARE AND
+! DOCUMENTATION FOR ANY PURPOSE. THEY ASSUME NO RESPONSIBILITY (1) FOR
+! THE USE OF THE SOFTWARE AND DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL
+! SUPPORT TO USERS.
+!------------------------------------------------------------------------------
+
+
+!```````````````````````````````````````````````````````````````````
+pure function eq_fp_f4_1d(A, B)  result(is_equal_to)
+
+!+ Tests for element-wise equality between the values of two given
+!   4-byte floating-point, 1-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1)) ::  &
+     is_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_equal_to = ( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function eq_fp_f4_1d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ne_fp_f4_1d(A, B)  result(is_notequal_to)
+
+!+ Tests for element-wise inequality between the values of two given
+!   4-byte floating-point, 1-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1)) ::  &
+     is_notequal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_notequal_to = .not.( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function ne_fp_f4_1d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ge_fp_f4_1d(A, B)  result(is_greater_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   4-byte floating-point, 1-dimensional arrays of the same shape and size
+!   are greater than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f4), dimension(size(A, 1)) ::  &
+     sp
+
+logical, dimension(size(A, 1)) ::  &
+     is_greater_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_greater_than_or_equal_to = ( (A-B >= sp) .or. (abs(A-B) < sp) )
+
+end function ge_fp_f4_1d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function le_fp_f4_1d(A, B)  result(is_less_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   4-byte floating-point, 1-dimensional arrays of the same shape and size
+!   are less than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f4), dimension(size(A, 1)) ::  &
+     sp
+
+logical, dimension(size(A, 1)) ::  &
+     is_less_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_less_than_or_equal_to = ( (B-A >= sp) .or. (abs(A-B) < sp) )
+
+end function le_fp_f4_1d
+
+
+!------------------------------------------------------------------------------
+! CLAVR-x (CLouds from AVHRR - eXtended) PROCESSING SOFTWARE
+!
+! COPYRIGHT
+! THIS SOFTWARE AND ITS DOCUMENTATION ARE CONSIDERED TO BE IN THE PUBLIC
+! DOMAIN AND THUS ARE AVAILABLE FOR UNRESTRICTED PUBLIC USE. THEY ARE
+! FURNISHED "AS IS." THE AUTHORS, THE UNITED STATES GOVERNMENT, ITS
+! INSTRUMENTALITIES, OFFICERS, EMPLOYEES, AND AGENTS MAKE NO WARRANTY,
+! EXPRESS OR IMPLIED, AS TO THE USEFULNESS OF THE SOFTWARE AND
+! DOCUMENTATION FOR ANY PURPOSE. THEY ASSUME NO RESPONSIBILITY (1) FOR
+! THE USE OF THE SOFTWARE AND DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL
+! SUPPORT TO USERS.
+!------------------------------------------------------------------------------
+
+
+!```````````````````````````````````````````````````````````````````
+pure function eq_fp_f4_2d(A, B)  result(is_equal_to)
+
+!+ Tests for element-wise equality between the values of two given
+!   4-byte floating-point, 2-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2)) ::  &
+     is_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_equal_to = ( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function eq_fp_f4_2d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ne_fp_f4_2d(A, B)  result(is_notequal_to)
+
+!+ Tests for element-wise inequality between the values of two given
+!   4-byte floating-point, 2-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2)) ::  &
+     is_notequal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_notequal_to = .not.( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function ne_fp_f4_2d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ge_fp_f4_2d(A, B)  result(is_greater_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   4-byte floating-point, 2-dimensional arrays of the same shape and size
+!   are greater than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f4), dimension(size(A, 1), size(A, 2)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2)) ::  &
+     is_greater_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_greater_than_or_equal_to = ( (A-B >= sp) .or. (abs(A-B) < sp) )
+
+end function ge_fp_f4_2d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function le_fp_f4_2d(A, B)  result(is_less_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   4-byte floating-point, 2-dimensional arrays of the same shape and size
+!   are less than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f4), dimension(size(A, 1), size(A, 2)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2)) ::  &
+     is_less_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_less_than_or_equal_to = ( (B-A >= sp) .or. (abs(A-B) < sp) )
+
+end function le_fp_f4_2d
+
+
+!------------------------------------------------------------------------------
+! CLAVR-x (CLouds from AVHRR - eXtended) PROCESSING SOFTWARE
+!
+! COPYRIGHT
+! THIS SOFTWARE AND ITS DOCUMENTATION ARE CONSIDERED TO BE IN THE PUBLIC
+! DOMAIN AND THUS ARE AVAILABLE FOR UNRESTRICTED PUBLIC USE. THEY ARE
+! FURNISHED "AS IS." THE AUTHORS, THE UNITED STATES GOVERNMENT, ITS
+! INSTRUMENTALITIES, OFFICERS, EMPLOYEES, AND AGENTS MAKE NO WARRANTY,
+! EXPRESS OR IMPLIED, AS TO THE USEFULNESS OF THE SOFTWARE AND
+! DOCUMENTATION FOR ANY PURPOSE. THEY ASSUME NO RESPONSIBILITY (1) FOR
+! THE USE OF THE SOFTWARE AND DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL
+! SUPPORT TO USERS.
+!------------------------------------------------------------------------------
+
+
+!```````````````````````````````````````````````````````````````````
+pure function eq_fp_f4_3d(A, B)  result(is_equal_to)
+
+!+ Tests for element-wise equality between the values of two given
+!   4-byte floating-point, 3-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3)) ::  &
+     is_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_equal_to = ( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function eq_fp_f4_3d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ne_fp_f4_3d(A, B)  result(is_notequal_to)
+
+!+ Tests for element-wise inequality between the values of two given
+!   4-byte floating-point, 3-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3)) ::  &
+     is_notequal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_notequal_to = .not.( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function ne_fp_f4_3d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ge_fp_f4_3d(A, B)  result(is_greater_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   4-byte floating-point, 3-dimensional arrays of the same shape and size
+!   are greater than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f4), dimension(size(A, 1), size(A, 2), size(A, 3)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3)) ::  &
+     is_greater_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_greater_than_or_equal_to = ( (A-B >= sp) .or. (abs(A-B) < sp) )
+
+end function ge_fp_f4_3d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function le_fp_f4_3d(A, B)  result(is_less_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   4-byte floating-point, 3-dimensional arrays of the same shape and size
+!   are less than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f4), dimension(size(A, 1), size(A, 2), size(A, 3)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3)) ::  &
+     is_less_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_less_than_or_equal_to = ( (B-A >= sp) .or. (abs(A-B) < sp) )
+
+end function le_fp_f4_3d
+
+
+!------------------------------------------------------------------------------
+! CLAVR-x (CLouds from AVHRR - eXtended) PROCESSING SOFTWARE
+!
+! COPYRIGHT
+! THIS SOFTWARE AND ITS DOCUMENTATION ARE CONSIDERED TO BE IN THE PUBLIC
+! DOMAIN AND THUS ARE AVAILABLE FOR UNRESTRICTED PUBLIC USE. THEY ARE
+! FURNISHED "AS IS." THE AUTHORS, THE UNITED STATES GOVERNMENT, ITS
+! INSTRUMENTALITIES, OFFICERS, EMPLOYEES, AND AGENTS MAKE NO WARRANTY,
+! EXPRESS OR IMPLIED, AS TO THE USEFULNESS OF THE SOFTWARE AND
+! DOCUMENTATION FOR ANY PURPOSE. THEY ASSUME NO RESPONSIBILITY (1) FOR
+! THE USE OF THE SOFTWARE AND DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL
+! SUPPORT TO USERS.
+!------------------------------------------------------------------------------
+
+
+!```````````````````````````````````````````````````````````````````
+pure function eq_fp_f4_4d(A, B)  result(is_equal_to)
+
+!+ Tests for element-wise equality between the values of two given
+!   4-byte floating-point, 4-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4)) ::  &
+     is_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_equal_to = ( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function eq_fp_f4_4d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ne_fp_f4_4d(A, B)  result(is_notequal_to)
+
+!+ Tests for element-wise inequality between the values of two given
+!   4-byte floating-point, 4-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4)) ::  &
+     is_notequal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_notequal_to = .not.( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function ne_fp_f4_4d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ge_fp_f4_4d(A, B)  result(is_greater_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   4-byte floating-point, 4-dimensional arrays of the same shape and size
+!   are greater than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f4), dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4)) ::  &
+     is_greater_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_greater_than_or_equal_to = ( (A-B >= sp) .or. (abs(A-B) < sp) )
+
+end function ge_fp_f4_4d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function le_fp_f4_4d(A, B)  result(is_less_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   4-byte floating-point, 4-dimensional arrays of the same shape and size
+!   are less than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f4), dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4)) ::  &
+     is_less_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_less_than_or_equal_to = ( (B-A >= sp) .or. (abs(A-B) < sp) )
+
+end function le_fp_f4_4d
+
+
+!------------------------------------------------------------------------------
+! CLAVR-x (CLouds from AVHRR - eXtended) PROCESSING SOFTWARE
+!
+! COPYRIGHT
+! THIS SOFTWARE AND ITS DOCUMENTATION ARE CONSIDERED TO BE IN THE PUBLIC
+! DOMAIN AND THUS ARE AVAILABLE FOR UNRESTRICTED PUBLIC USE. THEY ARE
+! FURNISHED "AS IS." THE AUTHORS, THE UNITED STATES GOVERNMENT, ITS
+! INSTRUMENTALITIES, OFFICERS, EMPLOYEES, AND AGENTS MAKE NO WARRANTY,
+! EXPRESS OR IMPLIED, AS TO THE USEFULNESS OF THE SOFTWARE AND
+! DOCUMENTATION FOR ANY PURPOSE. THEY ASSUME NO RESPONSIBILITY (1) FOR
+! THE USE OF THE SOFTWARE AND DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL
+! SUPPORT TO USERS.
+!------------------------------------------------------------------------------
+
+
+!```````````````````````````````````````````````````````````````````
+pure function eq_fp_f4_5d(A, B)  result(is_equal_to)
+
+!+ Tests for element-wise equality between the values of two given
+!   4-byte floating-point, 5-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5)) ::  &
+     is_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_equal_to = ( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function eq_fp_f4_5d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ne_fp_f4_5d(A, B)  result(is_notequal_to)
+
+!+ Tests for element-wise inequality between the values of two given
+!   4-byte floating-point, 5-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5)) ::  &
+     is_notequal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_notequal_to = .not.( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function ne_fp_f4_5d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ge_fp_f4_5d(A, B)  result(is_greater_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   4-byte floating-point, 5-dimensional arrays of the same shape and size
+!   are greater than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f4), dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5)) ::  &
+     is_greater_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_greater_than_or_equal_to = ( (A-B >= sp) .or. (abs(A-B) < sp) )
+
+end function ge_fp_f4_5d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function le_fp_f4_5d(A, B)  result(is_less_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   4-byte floating-point, 5-dimensional arrays of the same shape and size
+!   are less than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f4), dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5)) ::  &
+     is_less_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_less_than_or_equal_to = ( (B-A >= sp) .or. (abs(A-B) < sp) )
+
+end function le_fp_f4_5d
+
+
+!------------------------------------------------------------------------------
+! CLAVR-x (CLouds from AVHRR - eXtended) PROCESSING SOFTWARE
+!
+! COPYRIGHT
+! THIS SOFTWARE AND ITS DOCUMENTATION ARE CONSIDERED TO BE IN THE PUBLIC
+! DOMAIN AND THUS ARE AVAILABLE FOR UNRESTRICTED PUBLIC USE. THEY ARE
+! FURNISHED "AS IS." THE AUTHORS, THE UNITED STATES GOVERNMENT, ITS
+! INSTRUMENTALITIES, OFFICERS, EMPLOYEES, AND AGENTS MAKE NO WARRANTY,
+! EXPRESS OR IMPLIED, AS TO THE USEFULNESS OF THE SOFTWARE AND
+! DOCUMENTATION FOR ANY PURPOSE. THEY ASSUME NO RESPONSIBILITY (1) FOR
+! THE USE OF THE SOFTWARE AND DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL
+! SUPPORT TO USERS.
+!------------------------------------------------------------------------------
+
+
+!```````````````````````````````````````````````````````````````````
+pure function eq_fp_f4_6d(A, B)  result(is_equal_to)
+
+!+ Tests for element-wise equality between the values of two given
+!   4-byte floating-point, 6-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6)) ::  &
+     is_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_equal_to = ( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function eq_fp_f4_6d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ne_fp_f4_6d(A, B)  result(is_notequal_to)
+
+!+ Tests for element-wise inequality between the values of two given
+!   4-byte floating-point, 6-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6)) ::  &
+     is_notequal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_notequal_to = .not.( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function ne_fp_f4_6d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ge_fp_f4_6d(A, B)  result(is_greater_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   4-byte floating-point, 6-dimensional arrays of the same shape and size
+!   are greater than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f4), dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6)) ::  &
+     is_greater_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_greater_than_or_equal_to = ( (A-B >= sp) .or. (abs(A-B) < sp) )
+
+end function ge_fp_f4_6d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function le_fp_f4_6d(A, B)  result(is_less_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   4-byte floating-point, 6-dimensional arrays of the same shape and size
+!   are less than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f4), dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6)) ::  &
+     is_less_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_less_than_or_equal_to = ( (B-A >= sp) .or. (abs(A-B) < sp) )
+
+end function le_fp_f4_6d
+
+
+!------------------------------------------------------------------------------
+! CLAVR-x (CLouds from AVHRR - eXtended) PROCESSING SOFTWARE
+!
+! COPYRIGHT
+! THIS SOFTWARE AND ITS DOCUMENTATION ARE CONSIDERED TO BE IN THE PUBLIC
+! DOMAIN AND THUS ARE AVAILABLE FOR UNRESTRICTED PUBLIC USE. THEY ARE
+! FURNISHED "AS IS." THE AUTHORS, THE UNITED STATES GOVERNMENT, ITS
+! INSTRUMENTALITIES, OFFICERS, EMPLOYEES, AND AGENTS MAKE NO WARRANTY,
+! EXPRESS OR IMPLIED, AS TO THE USEFULNESS OF THE SOFTWARE AND
+! DOCUMENTATION FOR ANY PURPOSE. THEY ASSUME NO RESPONSIBILITY (1) FOR
+! THE USE OF THE SOFTWARE AND DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL
+! SUPPORT TO USERS.
+!------------------------------------------------------------------------------
+
+
+!```````````````````````````````````````````````````````````````````
+pure function eq_fp_f4_7d(A, B)  result(is_equal_to)
+
+!+ Tests for element-wise equality between the values of two given
+!   4-byte floating-point, 7-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:,:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6), size(A, 7)) ::  &
+     is_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_equal_to = ( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function eq_fp_f4_7d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ne_fp_f4_7d(A, B)  result(is_notequal_to)
+
+!+ Tests for element-wise inequality between the values of two given
+!   4-byte floating-point, 7-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:,:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6), size(A, 7)) ::  &
+     is_notequal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_notequal_to = .not.( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function ne_fp_f4_7d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ge_fp_f4_7d(A, B)  result(is_greater_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   4-byte floating-point, 7-dimensional arrays of the same shape and size
+!   are greater than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:,:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f4), dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6), size(A, 7)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6), size(A, 7)) ::  &
+     is_greater_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_greater_than_or_equal_to = ( (A-B >= sp) .or. (abs(A-B) < sp) )
+
+end function ge_fp_f4_7d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function le_fp_f4_7d(A, B)  result(is_less_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   4-byte floating-point, 7-dimensional arrays of the same shape and size
+!   are less than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f4
+
+implicit none
+
+!=== Argument declarations:
+
+real(f4), dimension(:,:,:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f4), dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6), size(A, 7)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6), size(A, 7)) ::  &
+     is_less_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_less_than_or_equal_to = ( (B-A >= sp) .or. (abs(A-B) < sp) )
+
+end function le_fp_f4_7d
+
+
+!------------------------------------------------------------------------------
+! CLAVR-x (CLouds from AVHRR - eXtended) PROCESSING SOFTWARE
+!
+! COPYRIGHT
+! THIS SOFTWARE AND ITS DOCUMENTATION ARE CONSIDERED TO BE IN THE PUBLIC
+! DOMAIN AND THUS ARE AVAILABLE FOR UNRESTRICTED PUBLIC USE. THEY ARE
+! FURNISHED "AS IS." THE AUTHORS, THE UNITED STATES GOVERNMENT, ITS
+! INSTRUMENTALITIES, OFFICERS, EMPLOYEES, AND AGENTS MAKE NO WARRANTY,
+! EXPRESS OR IMPLIED, AS TO THE USEFULNESS OF THE SOFTWARE AND
+! DOCUMENTATION FOR ANY PURPOSE. THEY ASSUME NO RESPONSIBILITY (1) FOR
+! THE USE OF THE SOFTWARE AND DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL
+! SUPPORT TO USERS.
+!------------------------------------------------------------------------------
+
+
+!```````````````````````````````````````````````````````````````````
+pure function eq_fp_f8_1d(A, B)  result(is_equal_to)
+
+!+ Tests for element-wise equality between the values of two given
+!   8-byte floating-point, 1-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1)) ::  &
+     is_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_equal_to = ( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function eq_fp_f8_1d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ne_fp_f8_1d(A, B)  result(is_notequal_to)
+
+!+ Tests for element-wise inequality between the values of two given
+!   8-byte floating-point, 1-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1)) ::  &
+     is_notequal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_notequal_to = .not.( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function ne_fp_f8_1d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ge_fp_f8_1d(A, B)  result(is_greater_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   8-byte floating-point, 1-dimensional arrays of the same shape and size
+!   are greater than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f8), dimension(size(A, 1)) ::  &
+     sp
+
+logical, dimension(size(A, 1)) ::  &
+     is_greater_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_greater_than_or_equal_to = ( (A-B >= sp) .or. (abs(A-B) < sp) )
+
+end function ge_fp_f8_1d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function le_fp_f8_1d(A, B)  result(is_less_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   8-byte floating-point, 1-dimensional arrays of the same shape and size
+!   are less than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f8), dimension(size(A, 1)) ::  &
+     sp
+
+logical, dimension(size(A, 1)) ::  &
+     is_less_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_less_than_or_equal_to = ( (B-A >= sp) .or. (abs(A-B) < sp) )
+
+end function le_fp_f8_1d
+
+
+!------------------------------------------------------------------------------
+! CLAVR-x (CLouds from AVHRR - eXtended) PROCESSING SOFTWARE
+!
+! COPYRIGHT
+! THIS SOFTWARE AND ITS DOCUMENTATION ARE CONSIDERED TO BE IN THE PUBLIC
+! DOMAIN AND THUS ARE AVAILABLE FOR UNRESTRICTED PUBLIC USE. THEY ARE
+! FURNISHED "AS IS." THE AUTHORS, THE UNITED STATES GOVERNMENT, ITS
+! INSTRUMENTALITIES, OFFICERS, EMPLOYEES, AND AGENTS MAKE NO WARRANTY,
+! EXPRESS OR IMPLIED, AS TO THE USEFULNESS OF THE SOFTWARE AND
+! DOCUMENTATION FOR ANY PURPOSE. THEY ASSUME NO RESPONSIBILITY (1) FOR
+! THE USE OF THE SOFTWARE AND DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL
+! SUPPORT TO USERS.
+!------------------------------------------------------------------------------
+
+
+!```````````````````````````````````````````````````````````````````
+pure function eq_fp_f8_2d(A, B)  result(is_equal_to)
+
+!+ Tests for element-wise equality between the values of two given
+!   8-byte floating-point, 2-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2)) ::  &
+     is_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_equal_to = ( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function eq_fp_f8_2d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ne_fp_f8_2d(A, B)  result(is_notequal_to)
+
+!+ Tests for element-wise inequality between the values of two given
+!   8-byte floating-point, 2-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2)) ::  &
+     is_notequal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_notequal_to = .not.( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function ne_fp_f8_2d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ge_fp_f8_2d(A, B)  result(is_greater_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   8-byte floating-point, 2-dimensional arrays of the same shape and size
+!   are greater than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f8), dimension(size(A, 1), size(A, 2)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2)) ::  &
+     is_greater_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_greater_than_or_equal_to = ( (A-B >= sp) .or. (abs(A-B) < sp) )
+
+end function ge_fp_f8_2d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function le_fp_f8_2d(A, B)  result(is_less_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   8-byte floating-point, 2-dimensional arrays of the same shape and size
+!   are less than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f8), dimension(size(A, 1), size(A, 2)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2)) ::  &
+     is_less_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_less_than_or_equal_to = ( (B-A >= sp) .or. (abs(A-B) < sp) )
+
+end function le_fp_f8_2d
+
+
+!------------------------------------------------------------------------------
+! CLAVR-x (CLouds from AVHRR - eXtended) PROCESSING SOFTWARE
+!
+! COPYRIGHT
+! THIS SOFTWARE AND ITS DOCUMENTATION ARE CONSIDERED TO BE IN THE PUBLIC
+! DOMAIN AND THUS ARE AVAILABLE FOR UNRESTRICTED PUBLIC USE. THEY ARE
+! FURNISHED "AS IS." THE AUTHORS, THE UNITED STATES GOVERNMENT, ITS
+! INSTRUMENTALITIES, OFFICERS, EMPLOYEES, AND AGENTS MAKE NO WARRANTY,
+! EXPRESS OR IMPLIED, AS TO THE USEFULNESS OF THE SOFTWARE AND
+! DOCUMENTATION FOR ANY PURPOSE. THEY ASSUME NO RESPONSIBILITY (1) FOR
+! THE USE OF THE SOFTWARE AND DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL
+! SUPPORT TO USERS.
+!------------------------------------------------------------------------------
+
+
+!```````````````````````````````````````````````````````````````````
+pure function eq_fp_f8_3d(A, B)  result(is_equal_to)
+
+!+ Tests for element-wise equality between the values of two given
+!   8-byte floating-point, 3-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3)) ::  &
+     is_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_equal_to = ( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function eq_fp_f8_3d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ne_fp_f8_3d(A, B)  result(is_notequal_to)
+
+!+ Tests for element-wise inequality between the values of two given
+!   8-byte floating-point, 3-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3)) ::  &
+     is_notequal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_notequal_to = .not.( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function ne_fp_f8_3d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ge_fp_f8_3d(A, B)  result(is_greater_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   8-byte floating-point, 3-dimensional arrays of the same shape and size
+!   are greater than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f8), dimension(size(A, 1), size(A, 2), size(A, 3)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3)) ::  &
+     is_greater_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_greater_than_or_equal_to = ( (A-B >= sp) .or. (abs(A-B) < sp) )
+
+end function ge_fp_f8_3d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function le_fp_f8_3d(A, B)  result(is_less_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   8-byte floating-point, 3-dimensional arrays of the same shape and size
+!   are less than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f8), dimension(size(A, 1), size(A, 2), size(A, 3)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3)) ::  &
+     is_less_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_less_than_or_equal_to = ( (B-A >= sp) .or. (abs(A-B) < sp) )
+
+end function le_fp_f8_3d
+
+
+!------------------------------------------------------------------------------
+! CLAVR-x (CLouds from AVHRR - eXtended) PROCESSING SOFTWARE
+!
+! COPYRIGHT
+! THIS SOFTWARE AND ITS DOCUMENTATION ARE CONSIDERED TO BE IN THE PUBLIC
+! DOMAIN AND THUS ARE AVAILABLE FOR UNRESTRICTED PUBLIC USE. THEY ARE
+! FURNISHED "AS IS." THE AUTHORS, THE UNITED STATES GOVERNMENT, ITS
+! INSTRUMENTALITIES, OFFICERS, EMPLOYEES, AND AGENTS MAKE NO WARRANTY,
+! EXPRESS OR IMPLIED, AS TO THE USEFULNESS OF THE SOFTWARE AND
+! DOCUMENTATION FOR ANY PURPOSE. THEY ASSUME NO RESPONSIBILITY (1) FOR
+! THE USE OF THE SOFTWARE AND DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL
+! SUPPORT TO USERS.
+!------------------------------------------------------------------------------
+
+
+!```````````````````````````````````````````````````````````````````
+pure function eq_fp_f8_4d(A, B)  result(is_equal_to)
+
+!+ Tests for element-wise equality between the values of two given
+!   8-byte floating-point, 4-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4)) ::  &
+     is_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_equal_to = ( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function eq_fp_f8_4d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ne_fp_f8_4d(A, B)  result(is_notequal_to)
+
+!+ Tests for element-wise inequality between the values of two given
+!   8-byte floating-point, 4-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4)) ::  &
+     is_notequal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_notequal_to = .not.( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function ne_fp_f8_4d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ge_fp_f8_4d(A, B)  result(is_greater_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   8-byte floating-point, 4-dimensional arrays of the same shape and size
+!   are greater than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f8), dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4)) ::  &
+     is_greater_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_greater_than_or_equal_to = ( (A-B >= sp) .or. (abs(A-B) < sp) )
+
+end function ge_fp_f8_4d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function le_fp_f8_4d(A, B)  result(is_less_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   8-byte floating-point, 4-dimensional arrays of the same shape and size
+!   are less than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f8), dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4)) ::  &
+     is_less_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_less_than_or_equal_to = ( (B-A >= sp) .or. (abs(A-B) < sp) )
+
+end function le_fp_f8_4d
+
+
+!------------------------------------------------------------------------------
+! CLAVR-x (CLouds from AVHRR - eXtended) PROCESSING SOFTWARE
+!
+! COPYRIGHT
+! THIS SOFTWARE AND ITS DOCUMENTATION ARE CONSIDERED TO BE IN THE PUBLIC
+! DOMAIN AND THUS ARE AVAILABLE FOR UNRESTRICTED PUBLIC USE. THEY ARE
+! FURNISHED "AS IS." THE AUTHORS, THE UNITED STATES GOVERNMENT, ITS
+! INSTRUMENTALITIES, OFFICERS, EMPLOYEES, AND AGENTS MAKE NO WARRANTY,
+! EXPRESS OR IMPLIED, AS TO THE USEFULNESS OF THE SOFTWARE AND
+! DOCUMENTATION FOR ANY PURPOSE. THEY ASSUME NO RESPONSIBILITY (1) FOR
+! THE USE OF THE SOFTWARE AND DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL
+! SUPPORT TO USERS.
+!------------------------------------------------------------------------------
+
+
+!```````````````````````````````````````````````````````````````````
+pure function eq_fp_f8_5d(A, B)  result(is_equal_to)
+
+!+ Tests for element-wise equality between the values of two given
+!   8-byte floating-point, 5-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5)) ::  &
+     is_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_equal_to = ( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function eq_fp_f8_5d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ne_fp_f8_5d(A, B)  result(is_notequal_to)
+
+!+ Tests for element-wise inequality between the values of two given
+!   8-byte floating-point, 5-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5)) ::  &
+     is_notequal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_notequal_to = .not.( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function ne_fp_f8_5d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ge_fp_f8_5d(A, B)  result(is_greater_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   8-byte floating-point, 5-dimensional arrays of the same shape and size
+!   are greater than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f8), dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5)) ::  &
+     is_greater_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_greater_than_or_equal_to = ( (A-B >= sp) .or. (abs(A-B) < sp) )
+
+end function ge_fp_f8_5d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function le_fp_f8_5d(A, B)  result(is_less_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   8-byte floating-point, 5-dimensional arrays of the same shape and size
+!   are less than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f8), dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5)) ::  &
+     is_less_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_less_than_or_equal_to = ( (B-A >= sp) .or. (abs(A-B) < sp) )
+
+end function le_fp_f8_5d
+
+
+!------------------------------------------------------------------------------
+! CLAVR-x (CLouds from AVHRR - eXtended) PROCESSING SOFTWARE
+!
+! COPYRIGHT
+! THIS SOFTWARE AND ITS DOCUMENTATION ARE CONSIDERED TO BE IN THE PUBLIC
+! DOMAIN AND THUS ARE AVAILABLE FOR UNRESTRICTED PUBLIC USE. THEY ARE
+! FURNISHED "AS IS." THE AUTHORS, THE UNITED STATES GOVERNMENT, ITS
+! INSTRUMENTALITIES, OFFICERS, EMPLOYEES, AND AGENTS MAKE NO WARRANTY,
+! EXPRESS OR IMPLIED, AS TO THE USEFULNESS OF THE SOFTWARE AND
+! DOCUMENTATION FOR ANY PURPOSE. THEY ASSUME NO RESPONSIBILITY (1) FOR
+! THE USE OF THE SOFTWARE AND DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL
+! SUPPORT TO USERS.
+!------------------------------------------------------------------------------
+
+
+!```````````````````````````````````````````````````````````````````
+pure function eq_fp_f8_6d(A, B)  result(is_equal_to)
+
+!+ Tests for element-wise equality between the values of two given
+!   8-byte floating-point, 6-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6)) ::  &
+     is_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_equal_to = ( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function eq_fp_f8_6d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ne_fp_f8_6d(A, B)  result(is_notequal_to)
+
+!+ Tests for element-wise inequality between the values of two given
+!   8-byte floating-point, 6-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6)) ::  &
+     is_notequal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_notequal_to = .not.( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function ne_fp_f8_6d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ge_fp_f8_6d(A, B)  result(is_greater_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   8-byte floating-point, 6-dimensional arrays of the same shape and size
+!   are greater than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f8), dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6)) ::  &
+     is_greater_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_greater_than_or_equal_to = ( (A-B >= sp) .or. (abs(A-B) < sp) )
+
+end function ge_fp_f8_6d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function le_fp_f8_6d(A, B)  result(is_less_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   8-byte floating-point, 6-dimensional arrays of the same shape and size
+!   are less than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f8), dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6)) ::  &
+     is_less_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_less_than_or_equal_to = ( (B-A >= sp) .or. (abs(A-B) < sp) )
+
+end function le_fp_f8_6d
+
+
+!------------------------------------------------------------------------------
+! CLAVR-x (CLouds from AVHRR - eXtended) PROCESSING SOFTWARE
+!
+! COPYRIGHT
+! THIS SOFTWARE AND ITS DOCUMENTATION ARE CONSIDERED TO BE IN THE PUBLIC
+! DOMAIN AND THUS ARE AVAILABLE FOR UNRESTRICTED PUBLIC USE. THEY ARE
+! FURNISHED "AS IS." THE AUTHORS, THE UNITED STATES GOVERNMENT, ITS
+! INSTRUMENTALITIES, OFFICERS, EMPLOYEES, AND AGENTS MAKE NO WARRANTY,
+! EXPRESS OR IMPLIED, AS TO THE USEFULNESS OF THE SOFTWARE AND
+! DOCUMENTATION FOR ANY PURPOSE. THEY ASSUME NO RESPONSIBILITY (1) FOR
+! THE USE OF THE SOFTWARE AND DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL
+! SUPPORT TO USERS.
+!------------------------------------------------------------------------------
+
+
+!```````````````````````````````````````````````````````````````````
+pure function eq_fp_f8_7d(A, B)  result(is_equal_to)
+
+!+ Tests for element-wise equality between the values of two given
+!   8-byte floating-point, 7-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:,:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6), size(A, 7)) ::  &
+     is_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_equal_to = ( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function eq_fp_f8_7d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ne_fp_f8_7d(A, B)  result(is_notequal_to)
+
+!+ Tests for element-wise inequality between the values of two given
+!   8-byte floating-point, 7-dimensional arrays of the same shape and size.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:,:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6), size(A, 7)) ::  &
+     is_notequal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_notequal_to = .not.( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function ne_fp_f8_7d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ge_fp_f8_7d(A, B)  result(is_greater_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   8-byte floating-point, 7-dimensional arrays of the same shape and size
+!   are greater than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:,:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f8), dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6), size(A, 7)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6), size(A, 7)) ::  &
+     is_greater_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_greater_than_or_equal_to = ( (A-B >= sp) .or. (abs(A-B) < sp) )
+
+end function ge_fp_f8_7d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function le_fp_f8_7d(A, B)  result(is_less_than_or_equal_to)
+
+!+ Tests element-wise whether the values of the first of two given
+!   8-byte floating-point, 7-dimensional arrays of the same shape and size
+!   are less than or equal to the values of the other array.
+
+use univ_kind_defs_mod, only: f8
+
+implicit none
+
+!=== Argument declarations:
+
+real(f8), dimension(:,:,:,:,:,:,:), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(f8), dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6), size(A, 7)) ::  &
+     sp
+
+logical, dimension(size(A, 1), size(A, 2), size(A, 3), size(A, 4), size(a, 5), size(A, 6), size(A, 7)) ::  &
+     is_less_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_less_than_or_equal_to = ( (B-A >= sp) .or. (abs(A-B) < sp) )
+
+end function le_fp_f8_7d
+
+
