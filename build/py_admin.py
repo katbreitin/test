@@ -173,7 +173,27 @@ def extend_composite_pnf(anchor_path, pnf_fpath, sdwe_fpath, pnf_pfx,
                                   # Read a list of source code files:
                                 sub_pnf_f_line_list = sub_pnf_f.readlines()
                             for pnf_line in sub_pnf_f_line_list:
-                                if "%EXE" in pnf_line: # Executable source code
+                                if "%EXE+LIB" in pnf_line: # Exe code, needs lib
+                                    exe_part, src_part = \
+                                                pnf_line.partition("%:")[::2]
+                                    tmp_str = re.split("[\(\)]", exe_part)[1]
+                                    tmp_str_l = tmp_str.split('+')
+                                    exe_name = tmp_str_l[0].strip()
+                                    lib_name = tmp_str_l[1].strip()
+                                      # Write to a separate file, with the
+                                      #  executable name as the filename's
+                                      #  suffix:
+                                    exe_pnf_fpath = pnf_fpath+'.'+exe_name
+                                    line_to_write = os.path.join(sub_pnf_path,
+                                                         src_part.strip())+'\n'
+                                    with open(exe_pnf_fpath, "wt") as exe_pnf_f:
+                                        exe_pnf_f.write(line_to_write)
+                                    if lib_name in available_ext_libs:
+                                        line_to_append = \
+                                                    os.path.join(sub_pnf_path,
+                                                         src_part.strip())+'\n'
+                                        pnf_f.write(line_to_append)
+                                elif "%EXE" in pnf_line: # Executable src code
                                     exe_part, src_part = \
                                                 pnf_line.partition("%:")[::2]
                                     exe_name = re.split("[\(\)]", exe_part)[1]
