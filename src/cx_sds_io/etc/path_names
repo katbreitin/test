@@ -1,3 +1,4 @@
+%EXE(cx_sds_test)%:src/cx_sds_test.f90
 src/cx_h5_read_mod.f90
 src/cx_hdf_read_mod.f90
 src/cx_hdf_write_mod.f90

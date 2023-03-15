@@ -1,3 +1,4 @@
+%EXE(muri_one_pixel_run)%:src/muri_one_pixel_run.f90
 src/aw_lib_array.f90
 src/lib_array.f90
 src/muri_array_loop_sub.f90

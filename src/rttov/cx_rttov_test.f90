@@ -26,7 +26,7 @@ IMPLICIT NONE
    real  :: taut (N_PROFILE) , taut_rttov (N_PROFILE) 
    real  :: tautx  (N_PROFILE,n_ppp) , taut_rttovx  (N_PROFILE,n_ppp)
    character (len =40 ) :: sensor_list(4)
-   integer :: ii, jj,kk
+   integer :: ii, jj,kk, WMO_ID
    integer:: channels_to_check (24)
    
   character(len=2) :: ii_str, kk_str
@@ -41,7 +41,7 @@ IMPLICIT NONE
    ozmr = 4.*ostd 
    theta = 0.
    sensor='MODIS-AQUA'
-   
+   WMO_ID = 784
    
    
    pstdx = spread(pstd,2,N_PPP)
@@ -62,6 +62,7 @@ IMPLICIT NONE
             & ,ozmrx & 
             & ,thetax  &
             & ,sensor &
+            & ,WMO_ID &
             & ,ii &
             & ,taut_rttovx &
             & , use_modis_channel_equivalent ) 

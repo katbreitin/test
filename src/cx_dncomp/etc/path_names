@@ -1,3 +1,4 @@
+%EXE(dcomp_one_pixel_run)%:src/dcomp_one_pixel_run_program.f90
 src/dcomp_array_loop_sub.f90
 src/dcomp_forward_mod.f90
 src/dcomp_lut_mod.f90

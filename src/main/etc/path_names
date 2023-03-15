@@ -1,4 +1,6 @@
 %EXE(clavrxorb)%:process_clavrx.F90
+%EXE(comp_asc_des_level2b)%:comp_asc_des_level2b.f90
+%EXE(drive_subset_level2b)%:drive_subset_level2b.f90
 %LIB(libHim_Fortran)%:ahi_hsd_reader.f90
 abi_mod.f90
 ahi_clavrx_bridge.f90
