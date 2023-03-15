@@ -21,7 +21,6 @@ clavrx_static_nav_module.F90
 cleanup.f90
 clone.c
 cloud_height_routines.f90
-Compare_Float_Numbers.f90
 coms_mod.f90
 constants_mod.f90
 %AUXFLAGS(1)%:conver.f90

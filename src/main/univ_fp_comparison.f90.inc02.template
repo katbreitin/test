@@ -125,3 +125,123 @@ sp = spacing(max(abs(A), abs(B)))
 is_less_than_or_equal_to = ( (B-A >= sp) .or. (abs(A-B) < sp) )
 
 end function le_fp_${kind_idx_n}_${dim_n}
+
+
+!```````````````````````````````````````````````````````````````````
+pure function eq_fp_${kind_idx_n}_${dim_n}_0d(A, B)  result(is_equal_to)
+
+!+ Tests for element-wise equality between the values of a given
+!   ${kind_desc}, ${dim_desc} array 'A' and a
+!   ${kind_desc} scalar value 'B'.
+
+use univ_kind_defs_mod, only: ${kind_idx_use}
+
+implicit none
+
+!=== Argument declarations:
+
+real(${kind_idx_dec}), dimension${dim_rank_dec}, intent(IN) :: A
+real(${kind_idx_dec}), intent(IN) :: B
+
+!== Local declarations:
+
+logical, dimension${dim_alloc} ::  &
+     is_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_equal_to = ( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function eq_fp_${kind_idx_n}_${dim_n}_0d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ne_fp_${kind_idx_n}_${dim_n}_0d(A, B)  result(is_notequal_to)
+
+!+ Tests for element-wise inequality between the values of a given
+!   ${kind_desc}, ${dim_desc} array 'A' and a
+!   ${kind_desc} scalar value 'B'.
+
+use univ_kind_defs_mod, only: ${kind_idx_use}
+
+implicit none
+
+!=== Argument declarations:
+
+real(${kind_idx_dec}), dimension${dim_rank_dec}, intent(IN) :: A
+real(${kind_idx_dec}), intent(IN) :: B
+
+!== Local declarations:
+
+logical, dimension${dim_alloc} ::  &
+     is_notequal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_notequal_to = .not.( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function ne_fp_${kind_idx_n}_${dim_n}_0d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ge_fp_${kind_idx_n}_${dim_n}_0d(A, B)  result(is_greater_than_or_equal_to)
+
+!+ Tests element-wise whether the values of a given
+!   ${kind_desc}, ${dim_desc} array 'A' are greater than or
+!   equal to ${kind_desc} scalar value 'B'.
+
+use univ_kind_defs_mod, only: ${kind_idx_use}
+
+implicit none
+
+!=== Argument declarations:
+
+real(${kind_idx_dec}), dimension${dim_rank_dec}, intent(IN) :: A
+real(${kind_idx_dec}), intent(IN) :: B
+
+!== Local declarations:
+
+real(${kind_idx_dec}), dimension${dim_alloc} ::  &
+     sp
+
+logical, dimension${dim_alloc} ::  &
+     is_greater_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_greater_than_or_equal_to = ( (A-B >= sp) .or. (abs(A-B) < sp) )
+
+end function ge_fp_${kind_idx_n}_${dim_n}_0d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function le_fp_${kind_idx_n}_${dim_n}_0d(A, B)  result(is_less_than_or_equal_to)
+
+!+ Tests element-wise whether the values of a given
+!   ${kind_desc}, ${dim_desc} array 'A' are less than or
+!   equal to ${kind_desc} scalar value 'B'.
+
+use univ_kind_defs_mod, only: ${kind_idx_use}
+
+implicit none
+
+!=== Argument declarations:
+
+real(${kind_idx_dec}), dimension${dim_rank_dec}, intent(IN) :: A
+real(${kind_idx_dec}), intent(IN) :: B
+
+!== Local declarations:
+
+real(${kind_idx_dec}), dimension${dim_alloc} ::  &
+     sp
+
+logical, dimension${dim_alloc} ::  &
+     is_less_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_less_than_or_equal_to = ( (B-A >= sp) .or. (abs(A-B) < sp) )
+
+end function le_fp_${kind_idx_n}_${dim_n}_0d
