@@ -1,6 +1,0 @@
-/DATA/clavrx_ancil_data/static/luts/dcomp_lut/VIIRS_ch5_ref_lut_ice_cld.nc
-/Users/awalther/DATA/Ancil_Data/clavrx_ancil_data/static/luts/cld/VIIRS_ch10_ref_lut_wat_cld.hdf
-/Users/awalther/ALGO/SDS_READER/test/highres_external_gzip_nc4/VNP02MOD.A2020118.0000.001.2020118052345.uwssec.highres.nc
-/Users/awalther/ALGO/SDS_READER/test/highres_external_gzip_nc4/VNP03IMG.A2020118.0000.001.2020118052417.uwssec.nc
-/DATA/clavrx_fusion/files/NSS.GHRR.NK.D21342.S0728.E0921.B2260405.WI.fusion.nc
-/Users/awalther/_DATA/Satellite_Input/viirs/2018/SVM16_j01_d20180408_t0033592_e0035219_b01996_c20200326205618165752_noac_ops.h5
