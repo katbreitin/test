@@ -99,8 +99,6 @@ use univ_kind_defs_mod, only: i1
 
  use univ_fp_comparison_mod, only: operator(.EQfp.)
 
- use CX_REAL_BOOLEAN_MOD
-
 !use RT_UTILITIES_MOD, only: COMPUTE_CLEAR_SKY_SCATTER
 
  implicit none

@@ -13,7 +13,6 @@ module SIMPLE_COD_138um_MOD
    use NUMERICAL_ROUTINES_MOD
    use FILE_UTILS, only: get_lun
    use SURFACE_PROPERTIES_MOD
-   use CX_REAL_BOOLEAN_MOD
 
    implicit none
    private

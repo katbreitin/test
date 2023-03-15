@@ -33,7 +33,7 @@ module dnb_retrievals_mod
    use FILE_UTILS, only: file_test
    use univ_kind_defs_mod, only: f4, i2_B, in, f8, i4_B
 
-   use CX_REAL_BOOLEAN_MOD
+   use univ_fp_comparison_mod, only: operator(.EQfp.), operator(.GEfp.)
 
    implicit none
    private
@@ -360,7 +360,7 @@ contains
       real , intent(inout) :: rfl_lunar(:,:)
       real, parameter :: Dnb_Coef(3) = [-0.118767,0.962452,-0.000144502]
 
-      where( rfl_lunar .GER. 0.00)
+      where( rfl_lunar .GEfp. 0.00)
          rfl_lunar = Dnb_Coef(1) + &
                             Dnb_Coef(2) * rfl_lunar + &
                             Dnb_Coef(3) * rfl_lunar **2
@@ -393,9 +393,9 @@ contains
             end if
          end do
 
-         if (x .EQR. xx(1)) then
+         if (x .EQfp. xx(1)) then
             index_in_vector =1
-         else if (x .EQR. xx(n)) then
+         else if (x .EQfp. xx(n)) then
             index_in_vector = n-1
          else
             index_in_vector = jl

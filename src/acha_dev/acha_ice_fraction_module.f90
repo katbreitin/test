@@ -5,7 +5,7 @@ module ACHA_ICE_FRACTION_MODULE
            real4, int1, int4, real8, dtor, &
            acha_output_struct,ACHA_SYMBOL_STRUCT, &
            MISSING_VALUE_REAL4
- use CX_REAL_BOOLEAN_MOD
+ use univ_fp_comparison_mod, only: operator(.EQfp.)
 
  implicit none
 
@@ -41,7 +41,7 @@ subroutine COMPUTE_ICE_FRACTION_FROM_LUT1D(Topa, Ice_Fraction, Ice_Fraction_Unce
 
    Ice_Fraction = MISSING_VALUE_REAL4
    Ice_Fraction_Uncertainty = MISSING_VALUE_REAL4
-   if (Topa .eqr. MISSING_VALUE_REAL4) return
+   if (Topa .EQfp. MISSING_VALUE_REAL4) return
 
    Topa_Idx = int((Topa - Topa_Min_Lut) / Topa_Bin_Lut) 
    Topa_Idx = min(max(1,Topa_Idx),Ntopa_Lut)

@@ -48,7 +48,7 @@ use HDF
 use NWP_COMMON_MOD
 use SORT_MODULE
 use NUMERICAL_ROUTINES_MOD
-use CX_REAL_BOOLEAN_MOD
+use univ_fp_comparison_mod, only: operator(.NEfp.), operator(.GEfp.)
 
 implicit none
 
@@ -341,21 +341,21 @@ nwp%p_trop = ncep_p_trop
 
 !---- compute wind speed
 nwp%wnd_spd_10m = missing_value_real4
-where((nwp%u_wnd_10m .NER. missing_ncep) .and. (nwp%v_wnd_10m .NER. missing_ncep))
+where((nwp%u_wnd_10m .NEfp. missing_ncep) .and. (nwp%v_wnd_10m .NEfp. missing_ncep))
  nwp%wnd_spd_10m = sqrt(nwp%u_wnd_10m**2 + nwp%v_wnd_10m**2)
 end where
 
 !---- compute wind direction
 nwp%wnd_dir_10m = missing_value_real4
-where((nwp%wnd_spd_10m .GER. 0.0) .and. (nwp%v_wnd_10m .NER. missing_ncep))
+where((nwp%wnd_spd_10m .GEfp. 0.0) .and. (nwp%v_wnd_10m .NEfp. missing_ncep))
  nwp%wnd_dir_10m = acos(-1.0*nwp%v_wnd_10m/nwp%wnd_spd_10m) / dtor     !in degrees  (0 to 180)
 end where
-where((nwp%u_wnd_10m .GER. 0.0 ) .and. (nwp%u_wnd_10m .NER. missing_ncep))
+where((nwp%u_wnd_10m .GEfp. 0.0 ) .and. (nwp%u_wnd_10m .NEfp. missing_ncep))
  nwp%wnd_dir_10m = 360.0 - nwp%wnd_dir_10m
 end where
 
 ! convert z_prof_nwp to km
-where (NWP%z_prof .NER. missing_nwp) NWP%z_prof= NWP%z_prof/1000.0_real4
+where (NWP%z_prof .NEfp. missing_nwp) NWP%z_prof= NWP%z_prof/1000.0_real4
 
 
 !--- deallocate temp arrays

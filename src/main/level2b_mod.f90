@@ -27,7 +27,8 @@
 !--------------------------------------------------------------------------------------
 module LEVEL2B_MOD
  use CONSTANTS_MOD
- use CX_REAL_BOOLEAN_MOD
+ use univ_fp_comparison_mod, only: operator(.EQfp.), operator(.NEfp.),  &
+      operator(.GEfp.), operator(.LEfp.)
  use HDF
  use LEVEL2_MOD
  use FILE_UTILS,only: get_lun
@@ -225,7 +226,7 @@ Min_Dist_Grid = big_number
 do Ielem = 1, nx
   do Iline = 1, ny
        
-    if ((Lat_Input(Ielem,Iline) .ger. Lat_South) .and. (Lat_Input(Ielem,Iline) .ler. Lat_North)) then
+    if ((Lat_Input(Ielem,Iline) .GEfp. Lat_South) .and. (Lat_Input(Ielem,Iline) .LEfp. Lat_North)) then
 
       Lon_Input_abs = Lon_Input(Ielem,Iline)
       if (Lon_Input_abs < 0.0) Lon_Input_abs = Lon_Input_abs + 360.0
@@ -296,7 +297,7 @@ do Ielem = 1, nx
 
           if (xdist < Min_Dist_Grid(Ilon,Ilat)) then  !check for pixels that are closer 
 
-            if (Gap_Pixel_Mask_Input(ielem,iline) .ner. real(sym%YES)) then
+            if (Gap_Pixel_Mask_Input(ielem,iline) .NEfp. real(sym%YES)) then
               Ielem_Output(Ilon,Ilat)  = Ielem
               Iline_Output(Ilon,Ilat)  = Iline
               Min_Dist_Grid(Ilon,Ilat) = xdist
@@ -311,8 +312,8 @@ do Ielem = 1, nx
                   if ((Ilon_1 == Ilon) .and. (Ilat_1 == Ilat)) cycle
                   !-- fill in values for all grid points within pixel footprint
                   !-- ignore those already set previously
-                  if ((Min_Dist_Grid(Ilon_1,Ilat_1) .eqr. big_number) .and.  &
-                      (Gap_Pixel_Mask_Input(Ielem,Iline) .ner. real(sym%YES))) then
+                  if ((Min_Dist_Grid(Ilon_1,Ilat_1) .EQfp. big_number) .and.  &
+                      (Gap_Pixel_Mask_Input(Ielem,Iline) .NEfp. real(sym%YES))) then
                     Ielem_Output(Ilon_1,Ilat_1)  = Ielem
                     Iline_Output(Ilon_1,Ilat_1)  = Iline
                   endif
@@ -923,7 +924,7 @@ subroutine DEFINE_SDS_RANK3(Sd_Id,            &
            Unscaled_Data = Sds%Scale_Factor * real(Scaled_Data) + Sds%Add_Offset
         endif
 
-        where (Scaled_Data .eqr. Sds%Fill_Value)
+        where (Scaled_Data .EQfp. Sds%Fill_Value)
          Unscaled_Data = Missing_Value_Real4
         endwhere
 
@@ -954,7 +955,7 @@ subroutine DEFINE_SDS_RANK3(Sd_Id,            &
            Unscaled_Data = Sds%Scale_Factor * real(Scaled_Data) + Sds%Add_Offset
         endif
 
-        where (Scaled_Data .eqr. Sds%Fill_Value)
+        where (Scaled_Data .EQfp. Sds%Fill_Value)
          Unscaled_Data = Missing_Value_Real4
         endwhere
 
@@ -986,7 +987,7 @@ subroutine DEFINE_SDS_RANK3(Sd_Id,            &
         endif
 
         !--- handle missing
-        where (Scaled_Data .eqr. real(Sds%Fill_Value))
+        where (Scaled_Data .EQfp. real(Sds%Fill_Value))
          Unscaled_Data = Sds%Unscaled_Missing
         endwhere
         
@@ -1021,7 +1022,7 @@ subroutine DEFINE_SDS_RANK3(Sd_Id,            &
         endif
 
         !--- set scaled missing values
-        where (Unscaled_Data .eqr. Sds%Unscaled_Missing)
+        where (Unscaled_Data .EQfp. Sds%Unscaled_Missing)
          Scaled_Data = Sds%Fill_Value
         endwhere
 
@@ -1056,7 +1057,7 @@ subroutine DEFINE_SDS_RANK3(Sd_Id,            &
         endif
 
         !--- set scaled missing values
-        where (Unscaled_Data .eqr. Sds%Unscaled_Missing)
+        where (Unscaled_Data .EQfp. Sds%Unscaled_Missing)
          Scaled_Data = Sds%Fill_Value
         endwhere
 
@@ -1092,7 +1093,7 @@ subroutine DEFINE_SDS_RANK3(Sd_Id,            &
         endif
 
         !--- set scaled missing values
-        where (Unscaled_Data .eqr. real(Sds%Unscaled_Missing))
+        where (Unscaled_Data .EQfp. real(Sds%Unscaled_Missing))
          Scaled_Data = Sds%Fill_Value
         endwhere
 
@@ -1946,7 +1947,7 @@ subroutine WRITE_SCALING_ATTRIBUTES(Sds,Istatus_Sum)
      endif
 
      !--- write out fill value for all but packed variables
-     if (Sds%Unscaled_Missing .ner. No_Attribute_Missing_Value) then
+     if (Sds%Unscaled_Missing .NEfp. No_Attribute_Missing_Value) then
          if (Sds%Data_Type_HDF == DFNT_INT8) then
            Istatus_Sum = sfsnatt(Sds%Id_Output, "_FillValue", Sds%Data_Type_HDF, 1, int(Sds%Fill_Value,kind=int1)) + Istatus_Sum
          elseif (Sds%Data_Type_HDF == DFNT_INT16) then

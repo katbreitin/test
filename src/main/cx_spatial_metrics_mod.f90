@@ -32,7 +32,7 @@ module CX_SPATIAL_METRICS_MOD
  use CONSTANTS_MOD
  use PIXEL_COMMON_MOD
  use NUMERICAL_ROUTINES_MOD, only: Covariance
- use CX_REAL_BOOLEAN_MOD
+ use univ_fp_comparison_mod, only: operator(.EQfp.)
  use ACHA_CLAVRX_BRIDGE,only: &
      AWG_CLOUD_HEIGHT_BRIDGE, &
      LOCAL_LINEAR_RADIATIVE_CENTER
@@ -401,7 +401,7 @@ subroutine COMPUTE_NxN_METRICS(N,Bad_Mask,Z,Z_Min,Z_Max,Z_Mean,Z_Std)
   element_loop: do i = 1, Nx
 
      !--- initial checks for this pixel
-     if (Bad_Mask(i,j) == sym%YES .or. (Z(i,j) .eqr. Missing_Value_Real4)) then
+     if (Bad_Mask(i,j) == sym%YES .or. (Z(i,j) .EQfp. Missing_Value_Real4)) then
          cycle
      endif
 
@@ -425,18 +425,18 @@ subroutine COMPUTE_NxN_METRICS(N,Bad_Mask,Z,Z_Min,Z_Max,Z_Mean,Z_Std)
           cycle
         endif
 
-        if (Z(ii,jj) .eqr. Missing_Value_Real4) then
+        if (Z(ii,jj) .EQfp. Missing_Value_Real4) then
           cycle
         endif
 
         N_Good = N_Good + 1
         sum_Temp = Sum_Temp + Z(ii,jj)
 
-        if (Z(ii,jj) .ltr. Min_Temp) then
+        if (Z(ii,jj) < Min_Temp) then
            Min_Temp = z(ii,jj)
         endif
 
-        if (z(ii,jj) .gtr. Max_Temp) then
+        if (z(ii,jj) > Max_Temp) then
            Max_Temp  = z(ii,jj)
         endif
 
@@ -455,7 +455,7 @@ subroutine COMPUTE_NxN_METRICS(N,Bad_Mask,Z,Z_Min,Z_Max,Z_Mean,Z_Std)
               cycle
             endif
 
-            if (Z(ii,jj) .eqr. Missing_Value_Real4) then
+            if (Z(ii,jj) .EQfp. Missing_Value_Real4) then
               cycle
             endif
 
@@ -469,7 +469,7 @@ subroutine COMPUTE_NxN_METRICS(N,Bad_Mask,Z,Z_Min,Z_Max,Z_Mean,Z_Std)
        Z_Max(i,j) = Max_Temp
      endif
 
-     if (Max_Temp .eqr. Missing_Value_Real4) print *, "Missing Max = ", N_Good, Max_Temp
+     if (Max_Temp .EQfp. Missing_Value_Real4) print *, "Missing Max = ", N_Good, Max_Temp
 
  end do element_loop
 

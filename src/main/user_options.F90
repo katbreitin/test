@@ -45,7 +45,7 @@
 !--------------------------------------------------------------------------------------
 module USER_OPTIONS
 
-   use CX_REAL_BOOLEAN_MOD
+   use univ_fp_comparison_mod, only: operator(.EQfp.)
 
    use PIXEL_COMMON_MOD, only: &
         Sensor &
@@ -616,14 +616,14 @@ contains
            call getarg(i+1,junk)
            back = .true.
            int_temp = scan(junk,temp_string, back)
-           if(int_temp .gtr. 0.0) read(junk,'(f6.3)') Nav%Lat_South_Limit
-           if(int_temp .eqr. 0.0) read(junk,'(f6.0)') Nav%Lat_North_Limit
+           if(int_temp > 0.0) read(junk,'(f6.3)') Nav%Lat_South_Limit
+           if(int_temp .EQfp. 0.0) read(junk,'(f6.0)') Nav%Lat_North_Limit
         elseif(trim(fargv) == "-lat_north_limit") then
           call getarg(i+1,junk)
            back = .true.
           int_temp = scan(junk,temp_string, back)
-          if(int_temp .gtr. 0.0) read(junk,'(f6.3)') Nav%Lat_North_Limit
-          if(int_temp .eqr. 0.0) read(junk,'(f6.0)') Nav%Lat_North_Limit
+          if(int_temp > 0.0) read(junk,'(f6.3)') Nav%Lat_North_Limit
+          if(int_temp .EQfp. 0.0) read(junk,'(f6.0)') Nav%Lat_North_Limit
 
         !Change ancillary data directory
         elseif(trim(fargv) == "-ancil_data_dir") then
@@ -660,8 +660,8 @@ contains
           call getarg(i+1,junk)
           int_temp = scan(junk,temp_string, back)
           back = .true.
-          if(int_temp .gtr. 0.0) read(junk,'(f6.3)') Geo%Solzen_Min_Limit
-          if(int_temp .eqr. 0.0) read(junk,'(f6.0)') Geo%Solzen_Min_Limit
+          if(int_temp > 0.0) read(junk,'(f6.3)') Geo%Solzen_Min_Limit
+          if(int_temp .EQfp. 0.0) read(junk,'(f6.0)') Geo%Solzen_Min_Limit
 
         !Change dcomp mode
          elseif(trim(fargv) == "-DCOMP_Mode") then
@@ -672,8 +672,8 @@ contains
            call getarg(i+1,junk)
            back = .true.
            int_temp = scan(junk,temp_string, back)
-           if(int_temp .gtr. 0.0) read(junk,'(f6.3)') Geo%Solzen_Max_Limit
-           if(int_temp .eqr. 0.0) read(junk,'(f6.0)') Geo%Solzen_Max_Limit
+           if(int_temp > 0.0) read(junk,'(f6.3)') Geo%Solzen_Max_Limit
+           if(int_temp .EQfp. 0.0) read(junk,'(f6.0)') Geo%Solzen_Max_Limit
 
         elseif (trim(fargv) == "-file_list") then
            call getarg(i+1,File_List)

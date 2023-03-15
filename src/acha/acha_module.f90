@@ -91,7 +91,8 @@ module AWG_CLOUD_HEIGHT
   use ACHA_LHP_MOD
   use ACHA_MICROPHYSICAL_MODULE
   use ACHA_ICE_FRACTION_MODULE
-  use CX_REAL_BOOLEAN_MOD
+  use univ_fp_comparison_mod, only: operator(.EQfp.), operator(.NEfp.),  &
+       operator(.GEfp.)
   use KDTREE2_MODULE
 
   implicit none
@@ -1621,7 +1622,7 @@ subroutine COMPUTE_APRIORI_BASED_ON_PHASE_ETROPO( &
 
   Ec_Ap_Uncer = 1.0 !Ec_Ap_Uncer_Cirrus
 
-  if (Ice_Prob_Ap .gtr. 0.5) then
+  if (Ice_Prob_Ap > 0.5) then
     Ec_Ap = Emiss_110um_Tropo
     Beta_Ap = Beta_Ap_Ice
     Beta_Ap_Uncer = Beta_Ap_Uncer_Ice
@@ -1850,11 +1851,11 @@ end subroutine  DETERMINE_ACHA_MODE_BASED_ON_CHANNELS
    endif
 
    !--- assume inversion streches to surface if lowest level is the surface level
-   if ((Base_Lev_Idx == Sfc_Level) .and. (Sfc_Height .ner. MISSING_VALUE_REAL4)) then
+   if ((Base_Lev_Idx == Sfc_Level) .and. (Sfc_Height .NEfp. MISSING_VALUE_REAL4)) then
     Inversion_Base_Height = Sfc_Height
    endif
 
-   if ((Base_Lev_Idx == Sfc_Level) .and.  (Sfc_Air_Temp .ner. MISSING_VALUE_REAL4)) then
+   if ((Base_Lev_Idx == Sfc_Level) .and.  (Sfc_Air_Temp .NEfp. MISSING_VALUE_REAL4)) then
           Inversion_Base_Temperature = Sfc_Air_Temp
    endif
 
@@ -3184,7 +3185,7 @@ subroutine COMPUTE_HEIGHT_FROM_LAPSE_RATE(ACHA_RTM_NWP, &
 
  Inversion_Flag = 0_int1
 
- if (Tc .eqr. MISSING_VALUE_REAL4) return
+ if (Tc .EQfp. MISSING_VALUE_REAL4) return
 
  !--- New prefered method is to take out the Snow_Class check.
  if ((Cloud_Type == Symbol%WATER_TYPE) .or. &
@@ -3304,27 +3305,27 @@ subroutine DETERMINE_ACHA_CLOUD_TYPE(Input,Fail_Flag,Symbol,Output)
    where (Output%Ice_Probability >= 0.50)
       Output%Cloud_Type = Symbol%OPAQUE_ICE_TYPE
    endwhere
-   where (Output%Cloud_Type == Symbol%OPAQUE_ICE_TYPE .and. (Output%Ec .ltr. 0.8))
+   where (Output%Cloud_Type == Symbol%OPAQUE_ICE_TYPE .and. (Output%Ec < 0.8))
       Output%Cloud_Type = Symbol%CIRRUS_TYPE
    endwhere
-   where (Output%Cloud_Type == Symbol%OPAQUE_ICE_TYPE .and. (abs(Output%Tc-Input%Tropopause_Temperature) .ltr. 5.0))
+   where (Output%Cloud_Type == Symbol%OPAQUE_ICE_TYPE .and. (abs(Output%Tc-Input%Tropopause_Temperature) < 5.0))
       Output%Cloud_Type = Symbol%OVERSHOOTING_TYPE
    endwhere
-   where (Output%Cloud_Type == Symbol%CIRRUS_TYPE .and. (Output%Lower_Tc .ner. MISSING_VALUE_REAL4))
+   where (Output%Cloud_Type == Symbol%CIRRUS_TYPE .and. (Output%Lower_Tc .NEfp. MISSING_VALUE_REAL4))
       Output%Cloud_Type = Symbol%OVERLAP_TYPE
    endwhere
-   where (Output%Cloud_Type == Symbol%WATER_TYPE .and. (Output%Tc .ltr. 273.15))
+   where (Output%Cloud_Type == Symbol%WATER_TYPE .and. (Output%Tc < 273.15))
       Output%Cloud_Type = Symbol%SUPERCOOLED_TYPE
    endwhere
-   where (Output%Cloud_Type == Symbol%WATER_TYPE .and. (abs(Output%Tc-Input%Surface_Temperature) .ltr. 5.0))
+   where (Output%Cloud_Type == Symbol%WATER_TYPE .and. (abs(Output%Tc-Input%Surface_Temperature) < 5.0))
       Output%Cloud_Type = Symbol%FOG_TYPE
    endwhere
    !--- if Lower Tc is close to surface, assume it is not a lower cloud layer
-   where (Output%Cloud_Type == Symbol%OVERLAP_TYPE .and. (abs(Output%Lower_Tc-Input%Surface_Temperature) .ltr. 5.0))
+   where (Output%Cloud_Type == Symbol%OVERLAP_TYPE .and. (abs(Output%Lower_Tc-Input%Surface_Temperature) < 5.0))
       Output%Cloud_Type = Symbol%CIRRUS_TYPE
    endwhere
    !--- if Lower Tc is so uncertain, consider it single layer (AKM(3))
-   where (Output%Cloud_Type == Symbol%OVERLAP_TYPE .and. (abs(Output%Lower_Tc-Input%Surface_Temperature) .ltr. 5.0))
+   where (Output%Cloud_Type == Symbol%OVERLAP_TYPE .and. (abs(Output%Lower_Tc-Input%Surface_Temperature) < 5.0))
       Output%Cloud_Type = Symbol%CIRRUS_TYPE
    endwhere
 
@@ -3676,7 +3677,7 @@ subroutine COMPUTE_PHASE(Symbol, &
 
    Cloud_Phase = Symbol%UNKNOWN_PHASE
 
-   if (Ice_Probability_Ap .ger. 0.5) then
+   if (Ice_Probability_Ap .GEfp. 0.5) then
        Cloud_Phase = Symbol%ICE_PHASE
    else
        Cloud_Phase = Symbol%WATER_PHASE

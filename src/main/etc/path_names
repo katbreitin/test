@@ -38,7 +38,6 @@ cx_nucaps_mod.f90
 cx_nwp_rtm_mod.f90
 cx_read_ahi_mod.f90
 cx_readh5dataset.f90
-cx_real_boolean_mod.f90
 cx_rtm_mod.F90
 cx_science_tools_mod.f90
 cx_sea_ir_emiss_mod.f90

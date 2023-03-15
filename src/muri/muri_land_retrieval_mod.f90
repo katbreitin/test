@@ -12,8 +12,7 @@ module muri_land_retrieval_mod
   use lib_array, only:interp1d
   use aw_lib_array, only: interp3d
 
- use CX_REAL_BOOLEAN_MOD
-
+  use univ_fp_comparison_mod, only: operator(.EQfp.)
 
   implicit none
 
@@ -614,7 +613,7 @@ contains
           T_NL9(ITAU,IWAV,ISIZE) = EXP(T1)
           SBAR_NL9(ITAU,IWAV,ISIZE) = EXP(Z1)
           OPTH_NL9(ITAU,IWAV,ISIZE) = EXP(V1)
-          IF (V1 .EQR. 0.) THEN
+          IF (V1 .EQfp. 0.) THEN
             OPTH_NL9(ITAU,IWAV,ISIZE) = V1
           ENDIF
 

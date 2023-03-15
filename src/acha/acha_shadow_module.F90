@@ -26,7 +26,8 @@
 !--------------------------------------------------------------------------------------
 module ACHA_SHADOW
 
- use CX_REAL_BOOLEAN_MOD
+ use univ_fp_comparison_mod, only: operator(.EQfp.), operator(.NEfp.)
+
  implicit none
 
 
@@ -179,30 +180,30 @@ subroutine CLOUD_SHADOW_RETR (  &
       jj = ( diff_Lat - ii * delta_Lat_ii) / delta_Lat_jj
 
       ! special cases
-      if  ((delta_Lat_ii .eqr. 0.0) .and. &
-           (delta_Lat_jj .ner. 0.0) .and. &
-           (delta_lon_ii .ner. 0.0)) then
+      if  ((delta_Lat_ii .EQfp. 0.0) .and. &
+           (delta_Lat_jj .NEfp. 0.0) .and. &
+           (delta_lon_ii .NEfp. 0.0)) then
          jj = diff_lat/delta_Lat_jj
          ii = (diff_lon - jj * delta_lon_jj) / delta_lon_ii
       end if
 
-      if  ((delta_Lat_jj .eqr. 0.0) .and. &
-           (delta_Lat_ii .ner. 0.0) .and. &
-           (delta_lon_jj .ner. 0.0)) then
+      if  ((delta_Lat_jj .EQfp. 0.0) .and. &
+           (delta_Lat_ii .NEfp. 0.0) .and. &
+           (delta_lon_jj .NEfp. 0.0)) then
          ii = diff_lat/delta_Lat_ii
          jj = (diff_lon - ii * delta_lon_ii) / delta_lon_jj
       end if
 
-      if  ((delta_Lon_ii .eqr. 0.0) .and. &
-           (delta_Lon_jj .ner. 0.0) .and. &
-           (delta_lat_ii .ner. 0.0)) then
+      if  ((delta_Lon_ii .EQfp. 0.0) .and. &
+           (delta_Lon_jj .NEfp. 0.0) .and. &
+           (delta_lat_ii .NEfp. 0.0)) then
          jj = diff_lon/delta_Lon_jj
          ii = (diff_lat - jj * delta_lat_jj) / delta_lat_ii
       end if
 
-      if  ((delta_Lon_jj .eqr. 0.0) .and. &
-           (delta_Lon_ii .ner. 0.0) .and. &
-           (delta_lat_jj .ner. 0.0)) then
+      if  ((delta_Lon_jj .EQfp. 0.0) .and. &
+           (delta_Lon_ii .NEfp. 0.0) .and. &
+           (delta_lat_jj .NEfp. 0.0)) then
          ii = diff_lon/delta_Lon_ii
          jj = (diff_lat - ii * delta_lat_ii) / delta_lat_jj
       end if

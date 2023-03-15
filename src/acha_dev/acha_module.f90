@@ -92,7 +92,8 @@ module AWG_CLOUD_HEIGHT
   use ACHA_LHP_MOD
   use ACHA_MICROPHYSICAL_MODULE
   use ACHA_ICE_FRACTION_MODULE
-  use CX_REAL_BOOLEAN_MOD
+  use univ_fp_comparison_mod, only: operator(.EQfp.), operator(.NEfp.),  &
+       operator(.GEfp.)
   use KDTREE2_MODULE
 
   implicit none
@@ -814,8 +815,8 @@ module AWG_CLOUD_HEIGHT
 
    !--- logic for unmasked or untyped pixels (Output%Ec)
    if (Input%Process_Undetected_Cloud_Flag == Symbol%YES) then
-         if ((Input%Tc_Opaque(Elem_Idx,Line_Idx) .ltr. 260.0) .and.  &
-             (Input%Tc_Opaque(Elem_Idx,Line_Idx) .ner. MISSING_VALUE_REAL4)) then
+         if ((Input%Tc_Opaque(Elem_Idx,Line_Idx) < 260.0) .and.  &
+             (Input%Tc_Opaque(Elem_Idx,Line_Idx) .NEfp. MISSING_VALUE_REAL4)) then
              Cloud_Type = Symbol%CIRRUS_TYPE
          else
              Cloud_Type = Symbol%FOG_TYPE
@@ -1055,12 +1056,12 @@ Fail_Flag_Full(Elem_Idx,Line_Idx) = Symbol%NO
        if (Run_Full_Ret) then 
 
          !---  use simple retrieval as first guess for full retrieval
-         if (x(1) .ner. MISSING_VALUE_REAL4) x_ap(1) = x(1)
-         if (x(2) .ner. MISSING_VALUE_REAL4) x_ap(2) = x(2)
-         if (x(3) .ner. MISSING_VALUE_REAL4) x_ap(3) = x(3)
-         if (Sx(1,1) .ner. MISSING_VALUE_REAL4) Sa(1,1) = max(Tc_Ap_Uncer_Min**2,1.0*Sx(1,1))
-         if (Sx(2,2) .ner. MISSING_VALUE_REAL4) Sa(2,2) = max(Ec_Ap_Uncer_Min**2,1.0*Sx(2,2))
-         if (Sx(3,3) .ner. MISSING_VALUE_REAL4) Sa(3,3) = max(Beta_Ap_Uncer_Min**2,1.0*Sx(3,3))
+         if (x(1) .NEfp. MISSING_VALUE_REAL4) x_ap(1) = x(1)
+         if (x(2) .NEfp. MISSING_VALUE_REAL4) x_ap(2) = x(2)
+         if (x(3) .NEfp. MISSING_VALUE_REAL4) x_ap(3) = x(3)
+         if (Sx(1,1) .NEfp. MISSING_VALUE_REAL4) Sa(1,1) = max(Tc_Ap_Uncer_Min**2,1.0*Sx(1,1))
+         if (Sx(2,2) .NEfp. MISSING_VALUE_REAL4) Sa(2,2) = max(Ec_Ap_Uncer_Min**2,1.0*Sx(2,2))
+         if (Sx(3,3) .NEfp. MISSING_VALUE_REAL4) Sa(3,3) = max(Beta_Ap_Uncer_Min**2,1.0*Sx(3,3))
          Singular_Flag =  INVERT_MATRIX(Sa, Sa_Inv, Num_Param)
          if (Singular_Flag == 1) print *, "Cloud Height warning ==> Singular Sa in ACHA", Sa(1,1),Sa(2,2),Sa(3,3),Sa(4,4),Sa(5,5)
 
@@ -1447,11 +1448,11 @@ end subroutine  DETERMINE_ACHA_MODE_BASED_ON_CHANNELS
    endif
 
    !--- assume inversion streches to surface if lowest level is the surface level
-   if ((Base_Lev_Idx == Sfc_Level) .and. (Sfc_Height .ner. MISSING_VALUE_REAL4)) then
+   if ((Base_Lev_Idx == Sfc_Level) .and. (Sfc_Height .NEfp. MISSING_VALUE_REAL4)) then
     Inversion_Base_Height = Sfc_Height
    endif
 
-   if ((Base_Lev_Idx == Sfc_Level) .and.  (Sfc_Air_Temp .ner. MISSING_VALUE_REAL4)) then
+   if ((Base_Lev_Idx == Sfc_Level) .and.  (Sfc_Air_Temp .NEfp. MISSING_VALUE_REAL4)) then
           Inversion_Base_Temperature = Sfc_Air_Temp
    endif
 
@@ -2412,7 +2413,7 @@ subroutine COMPUTE_HEIGHT_FROM_LAPSE_RATE(ACHA_RTM_NWP, &
 
  Inversion_Flag = 0_int1
 
- if (Tc .eqr. MISSING_VALUE_REAL4) return
+ if (Tc .EQfp. MISSING_VALUE_REAL4) return
 
  !--- New prefered method is to take out the Snow_Class check.
  if ((Cloud_Type == Symbol%WATER_TYPE) .or. &
@@ -2439,7 +2440,7 @@ subroutine COMPUTE_HEIGHT_FROM_LAPSE_RATE(ACHA_RTM_NWP, &
 
        !--- Some negative cloud heights are observed because of bad height
        !--- NWP profiles.
-       if (Zc .ltr. 0.0) then
+       if (Zc < 0.0) then
           Zc = ZC_FLOOR
        endif
 
@@ -2536,33 +2537,33 @@ subroutine DETERMINE_ACHA_CLOUD_TYPE(Input,Fail_Flag,Symbol,Output)
    where (Output%Ice_Probability >= 0.50)
       Output%Cloud_Type = Symbol%OPAQUE_ICE_TYPE
    endwhere
-   where (Output%Cloud_Type == Symbol%OPAQUE_ICE_TYPE .and. (Output%Ec .ltr. 0.8))
+   where (Output%Cloud_Type == Symbol%OPAQUE_ICE_TYPE .and. (Output%Ec < 0.8))
       Output%Cloud_Type = Symbol%CIRRUS_TYPE
    endwhere
-   where (Output%Cloud_Type == Symbol%OPAQUE_ICE_TYPE .and. (abs(Output%Tc-Input%Tropopause_Temperature) .ltr. 5.0))
+   where (Output%Cloud_Type == Symbol%OPAQUE_ICE_TYPE .and. (abs(Output%Tc-Input%Tropopause_Temperature) < 5.0))
       Output%Cloud_Type = Symbol%OVERSHOOTING_TYPE
    endwhere
-   where (Output%Cloud_Type == Symbol%CIRRUS_TYPE .and. (Output%Lower_Tc .ner. MISSING_VALUE_REAL4) .and. &
+   where (Output%Cloud_Type == Symbol%CIRRUS_TYPE .and. (Output%Lower_Tc .NEfp. MISSING_VALUE_REAL4) .and. &
           MULTI_LAYER_LOGIC_FLAG /= 1)
       Output%Cloud_Type = Symbol%OVERLAP_TYPE
    endwhere
-   where (Output%Cloud_Type == Symbol%WATER_TYPE .and. (Output%Tc .ltr. 273.15))
+   where (Output%Cloud_Type == Symbol%WATER_TYPE .and. (Output%Tc < 273.15))
       Output%Cloud_Type = Symbol%SUPERCOOLED_TYPE
    endwhere
-   where (Output%Cloud_Type == Symbol%WATER_TYPE .and. (abs(Output%Tc-Input%Surface_Temperature) .ltr. 5.0))
+   where (Output%Cloud_Type == Symbol%WATER_TYPE .and. (abs(Output%Tc-Input%Surface_Temperature) < 5.0))
       Output%Cloud_Type = Symbol%FOG_TYPE
    endwhere
    !--- if Lower Tc is close to surface, assume it is not a lower cloud layer
-   where (Output%Cloud_Type == Symbol%OVERLAP_TYPE .and. (abs(Output%Lower_Tc-Input%Surface_Temperature) .ltr. 5.0))
+   where (Output%Cloud_Type == Symbol%OVERLAP_TYPE .and. (abs(Output%Lower_Tc-Input%Surface_Temperature) < 5.0))
       Output%Cloud_Type = Symbol%CIRRUS_TYPE
    endwhere
    !--- if Lower Tc is so uncertain, consider it single layer (AKM(3))
-   where (Output%Cloud_Type == Symbol%OVERLAP_TYPE .and. (abs(Output%Lower_Tc-Input%Surface_Temperature) .ltr. 5.0))
+   where (Output%Cloud_Type == Symbol%OVERLAP_TYPE .and. (abs(Output%Lower_Tc-Input%Surface_Temperature) < 5.0))
       Output%Cloud_Type = Symbol%CIRRUS_TYPE
    endwhere
 
    !--- homogenous freezing point of water
-   where (Output%Cloud_Type == Symbol%SUPERCOOLED_TYPE .and. (Output%Tc .ltr. 233.0))
+   where (Output%Cloud_Type == Symbol%SUPERCOOLED_TYPE .and. (Output%Tc < 233.0))
       Output%Cloud_Type = Symbol%OPAQUE_ICE_TYPE
    endwhere
 
@@ -2920,7 +2921,7 @@ subroutine COMPUTE_PHASE(Symbol, &
 
    Cloud_Phase = Symbol%UNKNOWN_PHASE
 
-   if (Ice_Probability_Ap .ger. 0.5) then
+   if (Ice_Probability_Ap .GEfp. 0.5) then
        Cloud_Phase = Symbol%ICE_PHASE
    else
        Cloud_Phase = Symbol%WATER_PHASE

@@ -11,7 +11,8 @@ module muri_land_lut_mod
 
   use lib_array, only: interp1d
   use aw_lib_array, only: interp3d
-  use CX_REAL_BOOLEAN_MOD
+  use univ_fp_comparison_mod, only: operator(.EQfp.)
+
   implicit none
 
   integer, parameter :: N_BANDS = 3
@@ -451,9 +452,9 @@ contains
         ju = jm
       end if
     end do
-    if (x .EQR. xx(1)) then
+    if (x .EQfp. xx(1)) then
       j=1
-    else if (x .EQR. xx(n)) then
+    else if (x .EQfp. xx(n)) then
       j = n - 1
     else
       j = jl

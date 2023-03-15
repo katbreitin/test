@@ -3,8 +3,6 @@ module ACHA_FULL_RETRIEVAL_MOD
 !----------------------------------------------------------------------
 !
 !----------------------------------------------------------------------
-  use CX_REAL_BOOLEAN_MOD
-
   use ACHA_SERVICES_MOD, only : &
            real4, int1, int4, real8, dtor, acha_rtm_nwp_struct, &
            acha_input_struct

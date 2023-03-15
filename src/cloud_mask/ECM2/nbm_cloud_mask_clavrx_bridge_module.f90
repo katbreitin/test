@@ -76,7 +76,8 @@ module ECM2_CLOUD_MASK_CLAVRX_BRIDGE
        Cloud_Mask_Version, & 
        Cloud_Mask_Lut_Version
 
-   use CX_real_BOOLEAN_MOD
+   use univ_fp_comparison_mod, only: operator(.EQfp.), operator(.NEfp.),  &
+        operator(.GEfp.), operator(.LEfp.)
        
    use ECM2_CLOUD_MASK_MODULE,only: &
       ecm2_cloud_mask_algorithm &
@@ -376,8 +377,8 @@ contains
          CLDMASK%Posterior_Cld_Probability_Uncer = 1.0 - CLDMASK%Posterior_Cld_Probability
    endwhere     
 
-   where((CLDMASK%Posterior_Cld_Probability .ner. MISSING_VALUE_real4) .and. &
-         (CLDMASK%Posterior_Cld_Probability .ltr. 0.50))
+   where((CLDMASK%Posterior_Cld_Probability .NEfp. MISSING_VALUE_real4) .and. &
+         (CLDMASK%Posterior_Cld_Probability < 0.50))
          CLDMASK%Posterior_Cld_Probability_Uncer = CLDMASK%Posterior_Cld_Probability
    endwhere     
 
@@ -406,22 +407,22 @@ contains
         Post_Prob_Water_Norm = CLDMASK%Posterior_Water_Probability(i,j) / CLDMASK%Posterior_Cld_Probability(i,j)
         Post_Prob_Ice_Norm = CLDMASK%Posterior_Ice_Probability(i,j) / CLDMASK%Posterior_Cld_Probability(i,j)
         Cld_Phase(i,j)= sym%CLEAR_PHASE
-        if (CLDMASK%Posterior_Cld_Probability(i,j) .ger. 0.50) then
+        if (CLDMASK%Posterior_Cld_Probability(i,j) .GEfp. 0.50) then
           Cld_Phase(i,j) = sym%WATER_PHASE
           Cld_Phase_Uncertainty(i,j) = (1.0 - Post_Prob_Water_Norm) / CLDMASK%Posterior_Cld_Probability(i,j)
-          if (Post_Prob_Ice_Norm .gtr. Post_Prob_Water_Norm) then 
+          if (Post_Prob_Ice_Norm > Post_Prob_Water_Norm) then 
             Cld_Phase(i,j) = sym%ICE_PHASE
             Cld_Phase_Uncertainty(i,j) = (1.0 - Post_Prob_Ice_Norm) / CLDMASK%Posterior_Cld_Probability(i,j)
           endif
-!         if (Post_Prob_Ice_Norm .gtr. 0.40) then 
+!         if (Post_Prob_Ice_Norm > 0.40) then 
 !           Cld_Phase(i,j) = sym%ICE_PHASE
 !           Cld_Phase_Uncertainty(i,j) = 1.0 - Post_Prob_Ice_Norm
 !         endif
-          if ((Cld_Phase(i,j) == sym%WATER_PHASE) .and. (Tc_Opaque_Cloud(i,j) .ltr. 273.0)) then
+          if ((Cld_Phase(i,j) == sym%WATER_PHASE) .and. (Tc_Opaque_Cloud(i,j) < 273.0)) then
             Cld_Phase(i,j) = sym%SUPERCOOLED_PHASE
           endif
           !--- prevent any water result colder than homogeneous freezing point  (consider 243)
-          if (Tc_Opaque_Cloud(i,j) .ltr. 233.0) then
+          if (Tc_Opaque_Cloud(i,j) < 233.0) then
             Cld_Phase(i,j) = sym%ICE_PHASE
           endif
         endif
@@ -435,7 +436,7 @@ contains
         !--- LRC Filter
         if ((i_LRC(i,j) > 0) .and. &
             (j_LRC(i,j) > 0) .and. &
-            (Cld_Phase_Uncertainty(i,j) .ger. CLD_PHASE_UNCER_LRC_THRESH)) then
+            (Cld_Phase_Uncertainty(i,j) .GEfp. CLD_PHASE_UNCER_LRC_THRESH)) then
 
             !--- this test prevents clear pixels from replacing cloudy pixels             
             if (Cld_Phase(i,j) > 0 .and. Cld_Phase(i_LRC(i,j),j_LRC(i,j)) > 0 .and. &
@@ -454,10 +455,10 @@ contains
    call UNCERTAIN_PHASE_FILTER(Cld_Phase,Cld_Phase_Uncertainty,5)
 
    !--- account for supercooled and water phase consistency
-   where((Cld_Phase == sym%SUPERCOOLED_PHASE) .and. (Tc_Opaque_Cloud .ger. 273.0))
+   where((Cld_Phase == sym%SUPERCOOLED_PHASE) .and. (Tc_Opaque_Cloud .GEfp. 273.0))
           Cld_Phase = sym%WATER_PHASE
    end where
-   where((Cld_Phase == sym%WATER_PHASE) .and. (Tc_Opaque_Cloud .ltr. 273.0))
+   where((Cld_Phase == sym%WATER_PHASE) .and. (Tc_Opaque_Cloud < 273.0))
           Cld_Phase = sym%SUPERCOOLED_PHASE
    end where
 
@@ -1099,8 +1100,8 @@ subroutine UNCERTAIN_PHASE_FILTER(Phase,Phase_Uncer, N)
 
      !--- if not uncertain, skip
      if (Phase(i,j) == CLEAR_PHASE) cycle
-     if (Phase_Uncer(i,j) .ler. Phase_Cert_Thresh) cycle
-     if (Phase_Uncer(i,j) .eqr. MISSING_VALUE_REAL4) cycle
+     if (Phase_Uncer(i,j) .LEfp. Phase_Cert_Thresh) cycle
+     if (Phase_Uncer(i,j) .EQfp. MISSING_VALUE_REAL4) cycle
 
      j1 = max(1, j - N)
      j2 = min(Ny,j + N)
@@ -1113,7 +1114,7 @@ subroutine UNCERTAIN_PHASE_FILTER(Phase,Phase_Uncer, N)
 
      !--- determine number of certain ice in subarray
      Mask = .false.
-     where((Phase_Sub == ICE_PHASE) .and. (Phase_Uncer_Sub .ler. Phase_Cert_Thresh))
+     where((Phase_Sub == ICE_PHASE) .and. (Phase_Uncer_Sub .LEfp. Phase_Cert_Thresh))
             Mask = .true.
      endwhere
      N_Cert_Ice = count(Mask)
@@ -1121,7 +1122,7 @@ subroutine UNCERTAIN_PHASE_FILTER(Phase,Phase_Uncer, N)
      !--- determine number of certain water in subarray
      Mask = .false.
      where((Phase_Sub == WATER_PHASE .or. Phase_Sub == SUPERCOOLED_PHASE) .and.  &
-           (Phase_Uncer_Sub .ler. Phase_Cert_Thresh))
+           (Phase_Uncer_Sub .LEfp. Phase_Cert_Thresh))
            Mask = .true.
      endwhere
      N_Cert_Water = count(Mask)
@@ -1145,7 +1146,7 @@ subroutine UNCERTAIN_PHASE_FILTER(Phase,Phase_Uncer, N)
 
      !--- apply filter
      if (Dominant_Cert_Phase > 0) then
-       where((Phase_Sub /= CLEAR_PHASE) .and. (Phase_Uncer_Sub .ler. Phase_Uncer_Thresh))
+       where((Phase_Sub /= CLEAR_PHASE) .and. (Phase_Uncer_Sub .LEfp. Phase_Uncer_Thresh))
               Phase_Sub = Dominant_Cert_Phase
        endwhere
      endif
@@ -1438,15 +1439,15 @@ end subroutine LHP_CHN_CHECK
         if (Cld_Phase == sym%SUPERCOOLED_PHASE) Cld_Type = sym%SUPERCOOLED_TYPE
         if (Cld_Phase == sym%WATER_PHASE) then
            Cld_Type = sym%WATER_TYPE
-           if ((Zopa .ner. Missing_Value_Real4) .and. (Zopa .ltr. 1000.0)) Cld_Type = sym%FOG_TYPE
-           if (Topa .ltr. 273.15) Cld_Type = sym%SUPERCOOLED_TYPE
+           if ((Zopa .NEfp. Missing_Value_Real4) .and. (Zopa < 1000.0)) Cld_Type = sym%FOG_TYPE
+           if (Topa < 273.15) Cld_Type = sym%SUPERCOOLED_TYPE
         endif 
         if (Cld_Phase == sym%ICE_PHASE) then
            Cld_Type = sym%CIRRUS_TYPE
            if (Sensor%Chan_On_Flag_Default(31) == sym%YES) then
-             if (Topa .ltr. 233.0) Cld_Type = sym%OPAQUE_ICE_TYPE
-             if (Etropo .gtr. 0.80) Cld_Type = sym%OPAQUE_ICE_TYPE
-             if (Etropo .gtr. 0.95) Cld_Type = sym%OVERSHOOTING_TYPE
+             if (Topa < 233.0) Cld_Type = sym%OPAQUE_ICE_TYPE
+             if (Etropo > 0.80) Cld_Type = sym%OPAQUE_ICE_TYPE
+             if (Etropo > 0.95) Cld_Type = sym%OVERSHOOTING_TYPE
            endif
         endif
 
@@ -1465,17 +1466,17 @@ end subroutine LHP_CHN_CHECK
 
         !overlap from uncertainty
 !       if ((Cld_Phase == sym%ICE_PHASE) .and. &
-!           (Cld_Phase_Uncer .ger. CLD_PHASE_UNCER_MULTI_THRESH)) then
+!           (Cld_Phase_Uncer .GEfp. CLD_PHASE_UNCER_MULTI_THRESH)) then
 !           Cld_Type = sym%OVERLAP_TYPE
 !       endif
 
         !overlap from uncertainty
         if ((Cld_Type == sym%CIRRUS_TYPE) .and. &
-            (Cld_Phase_Uncer .ger. CLD_PHASE_UNCER_MULTI_THRESH)) then
+            (Cld_Phase_Uncer .GEfp. CLD_PHASE_UNCER_MULTI_THRESH)) then
             Cld_Type = sym%OVERLAP_TYPE
         endif
         if ((Cld_Phase == sym%SUPERCOOLED_PHASE) .and. &
-            (Cld_Phase_Uncer .ger. CLD_PHASE_UNCER_MULTI_THRESH)) then
+            (Cld_Phase_Uncer .GEfp. CLD_PHASE_UNCER_MULTI_THRESH)) then
             Cld_Type = sym%MIXED_TYPE
         endif
 

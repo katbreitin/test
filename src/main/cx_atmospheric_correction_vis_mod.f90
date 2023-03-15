@@ -1,7 +1,7 @@
 module cx_atmospheric_correction_vis_mod
 
  use PIXEL_COMMON_MOD
- use CX_REAL_BOOLEAN_MOD 
+ use univ_fp_comparison_mod, only: operator(.EQfp.), operator(.NEfp.)
   use CLAVRX_MESSAGE_MOD, only: MESG, verb_lev
   use SURFACE_PROPERTIES_MOD, only: &
         ch1_sfc_alb_umd &
@@ -154,9 +154,9 @@ subroutine ATMOS_CORR(Line_Idx_Min,Num_Lines)
            Chan_Idx /= 7 .and. Chan_Idx /= 26 .and. Chan_Idx /= 44) cycle
 
        !--- check for valid data
-       if (Chan_Idx /= 44 .and. (ch(Chan_Idx)%Ref_Toa(Elem_Idx,Line_Idx) .EQR. Missing_Value_Real4)) cycle
+       if (Chan_Idx /= 44 .and. (ch(Chan_Idx)%Ref_Toa(Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4)) cycle
        if (Chan_Idx == 44) then
-         if (ch(Chan_Idx)%Ref_Lunar_Toa(Elem_Idx,Line_Idx) .EQR. Missing_Value_Real4) cycle
+         if (ch(Chan_Idx)%Ref_Lunar_Toa(Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4) cycle
        endif
 
        !--- set source angle
@@ -172,7 +172,7 @@ subroutine ATMOS_CORR(Line_Idx_Min,Num_Lines)
 
        !--- compute gas terms
        Tpw_Ac = NWP_PIX%Tpw(Elem_Idx,Line_Idx)
-       if (Zc_Opaque_Cloud(Elem_Idx,Line_Idx) .NER. MISSING_VALUE_REAL4) then
+       if (Zc_Opaque_Cloud(Elem_Idx,Line_Idx) .NEfp. MISSING_VALUE_REAL4) then
           Zc = max(0.0,Zc_Opaque_Cloud(Elem_Idx,Line_Idx))
           Tpw_Ac = Tpw_Ac * exp(-Zc/h_h2o)
        endif
@@ -185,7 +185,7 @@ subroutine ATMOS_CORR(Line_Idx_Min,Num_Lines)
 
        Tau_Ray = Solar_Rtm%Tau_Ray(Chan_Idx)
        Tau_Aer = Solar_Rtm%Tau_Aer(Chan_Idx)
-       if (Pc_Opaque_Cloud(Elem_Idx,Line_Idx) .NER. MISSING_VALUE_REAL4) then
+       if (Pc_Opaque_Cloud(Elem_Idx,Line_Idx) .NEfp. MISSING_VALUE_REAL4) then
           Pc = min(1000.0,max(0.0,Pc_Opaque_Cloud(Elem_Idx,Line_Idx)))
           Tau_Ray = Tau_Ray * Pc_Opaque_Cloud(Elem_Idx,Line_Idx) / P_Sfc
           Tau_Aer = Tau_Aer * (Pc_Opaque_Cloud(Elem_Idx,Line_Idx) / P_Sfc)**2
@@ -200,7 +200,7 @@ subroutine ATMOS_CORR(Line_Idx_Min,Num_Lines)
        select case (Chan_Idx)
 
        case(1)
-         if (ch(1)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) .NER. Missing_Value_Real4) then
+         if (ch(1)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) .NEfp. Missing_Value_Real4) then
               Albedo_View = ch(1)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) / 100.0
          else
               Albedo_View = Ch1_Sfc_Alb_Umd(Sfc%Sfc_Type(Elem_Idx,Line_Idx)) / 100.0
@@ -210,7 +210,7 @@ subroutine ATMOS_CORR(Line_Idx_Min,Num_Lines)
          endif
 
        case(2)
-         if (ch(2)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) .NER. Missing_Value_Real4) then
+         if (ch(2)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) .NEfp. Missing_Value_Real4) then
               Albedo_View = ch(2)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) / 100.0
          else
               Albedo_View = Ch2_Sfc_Alb_Umd(Sfc%Sfc_Type(Elem_Idx,Line_Idx)) / 100.0
@@ -220,7 +220,7 @@ subroutine ATMOS_CORR(Line_Idx_Min,Num_Lines)
          endif
 
        case(3)
-         if (ch(1)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) .NER. Missing_Value_Real4) then
+         if (ch(1)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) .NEfp. Missing_Value_Real4) then
               Albedo_View = ch(1)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) / 100.0
          else
               Albedo_View = Ch1_Sfc_Alb_Umd(Sfc%Sfc_Type(Elem_Idx,Line_Idx)) / 100.0
@@ -230,7 +230,7 @@ subroutine ATMOS_CORR(Line_Idx_Min,Num_Lines)
          endif
 
        case(4)
-         if (ch(1)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) .NER. Missing_Value_Real4) then
+         if (ch(1)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) .NEfp. Missing_Value_Real4) then
               Albedo_View = ch(1)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) / 100.0
          else
               Albedo_View = Ch1_Sfc_Alb_Umd(Sfc%Sfc_Type(Elem_Idx,Line_Idx)) / 100.0
@@ -240,7 +240,7 @@ subroutine ATMOS_CORR(Line_Idx_Min,Num_Lines)
          endif
 
        case(5)
-         if (ch(5)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) .NER. Missing_Value_Real4) then
+         if (ch(5)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) .NEfp. Missing_Value_Real4) then
               Albedo_View = ch(5)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) / 100.0
          else
               Albedo_View = Ch6_Sfc_Alb_Umd(Sfc%Sfc_Type(Elem_Idx,Line_Idx)) / 100.0 !Note there is no Ch5_Sfc_Alb_Umd
@@ -250,7 +250,7 @@ subroutine ATMOS_CORR(Line_Idx_Min,Num_Lines)
          endif
 
        case(6)
-         if (ch(6)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) .NER. Missing_Value_Real4) then
+         if (ch(6)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) .NEfp. Missing_Value_Real4) then
               Albedo_View = ch(6)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) / 100.0
          else
               Albedo_View = Ch6_Sfc_Alb_Umd(Sfc%Sfc_Type(Elem_Idx,Line_Idx)) / 100.0
@@ -260,7 +260,7 @@ subroutine ATMOS_CORR(Line_Idx_Min,Num_Lines)
          endif
 
        case(7)
-         if (ch(7)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) .NER. Missing_Value_Real4) then
+         if (ch(7)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) .NEfp. Missing_Value_Real4) then
               Albedo_View = ch(7)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) / 100.0
          else
               Albedo_View = Ch6_Sfc_Alb_Umd(Sfc%Sfc_Type(Elem_Idx,Line_Idx)) / 100.0   !Note there is no Ch7_Sfc_Alb_Umd
@@ -270,7 +270,7 @@ subroutine ATMOS_CORR(Line_Idx_Min,Num_Lines)
          endif
 
        case(26)
-         if (ch(1)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) .NER. Missing_Value_Real4) then
+         if (ch(1)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) .NEfp. Missing_Value_Real4) then
               Albedo_View = ch(1)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) / 100.0
          else
               Albedo_View = Ch1_Sfc_Alb_Umd(Sfc%Sfc_Type(Elem_Idx,Line_Idx)) / 100.0   !Note there is no Ch26_Sfc_Alb_Umd
@@ -280,8 +280,8 @@ subroutine ATMOS_CORR(Line_Idx_Min,Num_Lines)
          endif
 
        case(44)  !DNB - use mean of ch1 and ch2 for sfc reflectance
-         if ((ch(1)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) .NER. Missing_Value_Real4) &
-            .and. (ch(2)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) .NER. Missing_Value_Real4)) then
+         if ((ch(1)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) .NEfp. Missing_Value_Real4) &
+            .and. (ch(2)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx) .NEfp. Missing_Value_Real4)) then
               Albedo_View = 0.5*(ch(1)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx)+ch(2)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx)) / 100.0
          else
               Albedo_View = 0.5*(Ch1_Sfc_Alb_Umd(Sfc%Sfc_Type(Elem_Idx,Line_Idx)) + Ch2_Sfc_Alb_Umd(Sfc%Sfc_Type(Elem_Idx,Line_Idx))) / 100.0

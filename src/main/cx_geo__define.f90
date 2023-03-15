@@ -2,7 +2,7 @@ module cx_geo__define
 
   use VIEWING_GEOMETRY_MOD
   use class_time_date, only: date_type
-  use cx_real_boolean_mod
+  use univ_fp_comparison_mod, only: operator(.LEfp.)
   implicit none
   type :: geo_str
     logical :: is_set
@@ -55,7 +55,7 @@ contains
 
     do jj = 1 ,  ndims(2)
       do ii = 1 ,    ndims(1)
-        if ( lon(ii,jj) .LER.  -199. ) cycle
+        if ( lon(ii,jj) .LEfp.  -199. ) cycle
 
         this % is_space(ii,jj) = .false.
         call  possol ( day_of_year ,  hour_frac  , lon(ii,jj) &
