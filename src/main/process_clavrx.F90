@@ -1028,7 +1028,8 @@
          !--- planck for 11 and 12um sounder ch
          if (trim(Sensor%Sensor_Name) == 'AVHRR-IFF' .or. &
              trim(Sensor%Sensor_Name) == 'AVHRR-FUSION' .or. &
-             trim(Sensor%Sensor_Name) == 'VIIRS-IFF') then
+             trim(Sensor%Sensor_Name) == 'VIIRS-IFF' .or. &
+             Sensor%Fusion_Flag) then
             call POPULATE_PLANCK_TABLES_SOUNDER()
          endif
 

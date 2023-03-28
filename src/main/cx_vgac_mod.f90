@@ -498,7 +498,8 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
               !--- convert radiance to noaa units
               call CONVERT_RADIANCE (Sds_Data_2d, Planck_Nu_11um_Sndr, MISSING_VALUE_REAL4)
               !--- convert radiance to brightness temperature
-              call COMPUTE_BT_ARRAY(Bt_11um_Sounder,Sds_Data_2d, &
+              !--- but we need to use the proper coefficients
+              call COMPUTE_BT_ARRAY_SOUNDER(Bt_11um_Sounder,Sds_Data_2d, &
                                     CLAVRX_Ch_List(I_Fusion),MISSING_VALUE_REAL4)
            endif
 
@@ -510,7 +511,7 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
               !--- convert radiance to noaa units
               call CONVERT_RADIANCE (Sds_Data_2d, Planck_Nu_12um_Sndr, MISSING_VALUE_REAL4)
               !--- convert radiance to brightness temperature
-              call COMPUTE_BT_ARRAY(Bt_12um_Sounder,Sds_Data_2d, &
+              call COMPUTE_BT_ARRAY_SOUNDER(Bt_12um_Sounder,Sds_Data_2d, &
                                     CLAVRX_Ch_List(I_Fusion),MISSING_VALUE_REAL4)
            endif
 
