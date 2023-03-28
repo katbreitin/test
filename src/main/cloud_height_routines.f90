@@ -31,7 +31,7 @@ module CLOUD_HEIGHT_ROUTINES
   use RTM_COMMON_MOD
   use NUMERICAL_ROUTINES_MOD
   use CX_SCIENCE_TOOLS_MOD
-  use CX_REAL_BOOLEAN_MOD
+  use univ_fp_comparison_mod, only: operator(.NEfp.)
 
   implicit none
 
@@ -710,7 +710,7 @@ subroutine OPAQUE_CLOUD_HEIGHT(ABI_Use_104um_Flag)
 
           if (Solution_Found) then
             dRad  = Rad_BB_Cloud_Profile(Level_Idx) - Rad_BB_Cloud_Profile(Level_Idx-1)
-            if (dRad .ner. 0.00) then
+            if (dRad .NEfp. 0.00) then
               Slope = (P_Std_Rtm(Level_Idx) - P_Std_Rtm(Level_Idx-1)) / dRad 
               Pc_Opaque_Cloud(Elem_Idx,Line_Idx)  =  P_Std_Rtm(Level_Idx-1) + Slope * (Rad_Toa - Rad_BB_Cloud_Profile(Level_Idx-1))
               Slope = (Z_Prof(Level_Idx) - Z_Prof(Level_Idx-1)) / dRad 
@@ -1280,7 +1280,7 @@ subroutine EYRE_MENZEL(Num_Elem,Line_Idx_Min,Num_Lines, &
 
          delta_obs_clear = ch(i)%Rad_Toa(Elem_Idx,Line_Idx) - ch(i)%Rad_Toa_Clear(Elem_Idx,Line_Idx)
 
-         if (100.0*abs(delta_overcast_clear/ch(i)%Rad_Toa_Clear(Elem_Idx,Line_Idx)) .ltr. Rad_Ratio_Thresh) cycle
+         if (100.0*abs(delta_overcast_clear/ch(i)%Rad_Toa_Clear(Elem_Idx,Line_Idx)) < Rad_Ratio_Thresh) cycle
 
 !        if (i == 27 .and. Elem_Idx == 67 .and. Line_Idx == 170) then 
 !        print *, i, P_lev_Idx, P_Std_RTM(P_Lev_Idx), delta_obs_clear, delta_overcast_clear, &
@@ -1314,7 +1314,7 @@ subroutine EYRE_MENZEL(Num_Elem,Line_Idx_Min,Num_Lines, &
 
          delta_obs_clear = ch(i)%Rad_Toa(Elem_Idx,Line_Idx) - ch(i)%Rad_Toa_Clear(Elem_Idx,Line_Idx)
 
-         if (100.0*abs(delta_overcast_clear/ch(i)%Rad_Toa_Clear(Elem_Idx,Line_Idx)) .ltr. Rad_Ratio_Thresh) cycle
+         if (100.0*abs(delta_overcast_clear/ch(i)%Rad_Toa_Clear(Elem_Idx,Line_Idx)) < Rad_Ratio_Thresh) cycle
 
          numer_sum = numer_sum + delta_obs_clear**2 - (N**2)*(delta_overcast_clear)**2
          

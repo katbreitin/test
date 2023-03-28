@@ -57,7 +57,7 @@ use CONSTANTS_MOD, only: &
    , TWO_BYTE_MIN &
    , TWO_BYTE_MAX
 
-use CX_REAL_BOOLEAN_MOD
+use univ_fp_comparison_mod, only: operator(.EQfp.)
    
 use HDF, only: &
    DFNT_INT16 &
@@ -558,7 +558,7 @@ end subroutine READ_CLAVRX_HDF_GLOBAL_ATTRIBUTES
     endif
                                                                                                                                                           
     !--- set scaled missing values
-    where (temp_r4 .eqr. unscaled_missing) 
+    where (temp_r4 .EQfp. unscaled_missing)
          temp_i1 = MISSING_VALUE_INT1
     endwhere
 
@@ -595,7 +595,7 @@ end subroutine READ_CLAVRX_HDF_GLOBAL_ATTRIBUTES
    endif
 
    !--- set scaled missing values
-   where (temp_r4 .eqr. unscaled_missing)
+   where (temp_r4 .EQfp. unscaled_missing)
          temp_i1 = MISSING_VALUE_INT1
    endwhere
 
@@ -629,7 +629,7 @@ end subroutine READ_CLAVRX_HDF_GLOBAL_ATTRIBUTES
        temp_i1 = int(real(ONE_BYTE_MIN) + sqrt(scratch_r4) * real(ONE_BYTE_MAX - ONE_BYTE_MIN),kind=int1)
     endif
     !--- set scaled missing values
-    where (temp_r4 .eqr. unscaled_missing)
+    where (temp_r4 .EQfp. unscaled_missing)
          temp_i1 = MISSING_VALUE_INT1
     endwhere
  end subroutine SCALE_VECTOR_I1_RANK3
@@ -662,7 +662,7 @@ end subroutine READ_CLAVRX_HDF_GLOBAL_ATTRIBUTES
        temp_i2 = int(real(TWO_BYTE_MIN) + sqrt(scratch_r4) * real(TWO_BYTE_MAX - TWO_BYTE_MIN),kind=int2)
    endif
    !--- set scaled missing values
-   where (temp_r4 .eqr. unscaled_missing)
+   where (temp_r4 .EQfp. unscaled_missing)
          temp_i2 = MISSING_VALUE_INT2
    endwhere
  end subroutine SCALE_VECTOR_I2_RANK1
@@ -699,7 +699,7 @@ end subroutine READ_CLAVRX_HDF_GLOBAL_ATTRIBUTES
     endif
 
     !--- set scaled missing values
-    where (temp_r4 .eqr. unscaled_missing)
+    where (temp_r4 .EQfp. unscaled_missing)
          temp_i2 = MISSING_VALUE_INT2
     endwhere
 
@@ -735,7 +735,7 @@ end subroutine READ_CLAVRX_HDF_GLOBAL_ATTRIBUTES
     endif
 
     !--- set scaled missing values
-    where (temp_r4 .eqr. unscaled_missing)
+    where (temp_r4 .EQfp. unscaled_missing)
          temp_i2 = MISSING_VALUE_INT2
     endwhere
 
@@ -888,7 +888,7 @@ end subroutine READ_CLAVRX_HDF_GLOBAL_ATTRIBUTES
    if (Sds_Type == DFNT_INT8) then
     temp_i1 = int(sds_data,kind=int1)
     do i = 1,n
-      if (sds_data(i) .eqr. sds_missing) then
+      if (sds_data(i) .EQfp. sds_missing) then
         temp_i1(i) = MISSING_VALUE_INT1
       endif
     end do
@@ -1030,7 +1030,7 @@ subroutine WRITE_CLAVRX_HDF4_SDS_RANK2(Sd_Id,sds_data,Sds_Name,Sds_Type,scaled,s
     temp_i1 = int(sds_data,kind=int1)
     do i1 = 1, n1
       do i2 = 1, n2
-        if (sds_data(i1,i2) .eqr. sds_missing) then
+        if (sds_data(i1,i2) .EQfp. sds_missing) then
             temp_i1(i1,i2) = MISSING_VALUE_INT1
         endif
       enddo
@@ -1179,7 +1179,7 @@ subroutine WRITE_CLAVRX_HDF4_SDS_RANK3(Sd_Id,sds_data,Sds_Name,Sds_Type,scaled,s
     do i1 = 1, n1
      do i2 = 1, n2
        do i3 = 1, n3
-        if (sds_data(i1,i2,i3) .eqr. sds_missing) then
+        if (sds_data(i1,i2,i3) .EQfp. sds_missing) then
             temp_i1(i2,i2,i3) = MISSING_VALUE_INT1
         endif
        enddo
@@ -1341,7 +1341,7 @@ if (scaled > 0) then
 
 !--- set scaled missing values
     !where (sds_data == scaled_missing)
-    where (sds_data .eqr. real(scaled_missing))
+    where (sds_data .EQfp. real(scaled_missing))
          sds_data_temp = unscaled_missing
     endwhere
 
@@ -1641,7 +1641,7 @@ Unscaled_Sds_Data = Scaled_Sds_Data * Sds%Scale_Factor + Sds%Add_Offset
 
 !--- set scaled missing values (unless its a packed data set)
 if (Sds%Scaling_Type /= 0 .or. index(Sds%Sds_Name, 'packed') > 0) then
- where (Scaled_Sds_Data .eqr. Sds%Fill_Value)
+ where (Scaled_Sds_Data .EQfp. Sds%Fill_Value)
     Unscaled_Sds_Data = Sds%Actual_Missing
  endwhere
 endif
@@ -1828,7 +1828,7 @@ Unscaled_Sds_Data = Scaled_Sds_Data * Sds%Scale_Factor + Sds%Add_Offset
 
 !--- set scaled missing values (unless its a packed data set)
 if (Sds%Scaling_Type /= 0 .or. index(Sds%Sds_Name, 'packed') > 0) then
- where (Scaled_Sds_Data .eqr. Sds%Fill_Value)
+ where (Scaled_Sds_Data .EQfp. Sds%Fill_Value)
     Unscaled_Sds_Data = Sds%Actual_Missing
  endwhere
 endif
@@ -2014,7 +2014,7 @@ Unscaled_Sds_Data = Scaled_Sds_Data * Sds%Scale_Factor + Sds%Add_Offset
 
 !--- set scaled missing values (unless its a packed data set)
 if (Sds%Scaling_Type /= 0 .or. index(Sds%Sds_Name, 'packed') > 0) then
- where (Scaled_Sds_Data .eqr. Sds%Fill_Value)
+ where (Scaled_Sds_Data .EQfp. Sds%Fill_Value)
     Unscaled_Sds_Data = Sds%Actual_Missing
  endwhere
 endif

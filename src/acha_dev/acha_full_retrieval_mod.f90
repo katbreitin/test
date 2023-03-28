@@ -3,8 +3,6 @@ module ACHA_FULL_RETRIEVAL_MOD
 !----------------------------------------------------------------------
 !
 !----------------------------------------------------------------------
-  use CX_REAL_BOOLEAN_MOD
-
   use ACHA_SERVICES_MOD, only : &
            real4, int1, int4, real8, dtor, acha_rtm_nwp_struct, &
            acha_input_struct
@@ -86,6 +84,8 @@ module ACHA_FULL_RETRIEVAL_MOD
  real, intent(in):: Convergence_Criteria
  real, intent(in), dimension(:):: Hght_Prof
  real, intent(in):: Cos_Zen, Tsfc_Est,T_Tropo,Z_Tropo, P_Tropo
+
+ real:: Convergence_Criteria_Temp
  
  real, dimension(0:), intent(in):: Beta_110um_142um_Coef_Water
  real, dimension(0:), intent(in):: Beta_110um_139um_Coef_Water
@@ -241,6 +241,7 @@ Converged_Flag = Symbol%NO
 Fail_Flag =  Symbol%NO
 Delta_x_prev = MISSING_VALUE_REAL4
 nx = size(x)
+Convergence_Criteria_Temp = Convergence_Criteria
 
 !---- assign x to the first guess
 x = x_Ap
@@ -248,6 +249,9 @@ x = x_Ap
 Retrieval_Loop: do
 
   Iter_Idx = Iter_Idx + 1
+
+  !--- loosen convergence with each step to reduce fail rate
+  Convergence_Criteria_Temp = 1.05*Convergence_Criteria_Temp
 
   if (Dump_Diag) write(unit=Lun_Iter_Dump,fmt=*) "==> Iter_Idx = ", Iter_Idx
 
@@ -423,7 +427,7 @@ Retrieval_Loop: do
   ! call OE routine to advance the Iteration
   !--------------------------------------------------
   call OPTIMAL_ESTIMATION(Iter_Idx,Iter_Idx_Min,Iter_Idx_Max,Num_Param,Num_Obs, &
-                         Convergence_Criteria,Delta_X_Max, &
+                         Convergence_Criteria_Temp,Delta_X_Max, &
                          y,f,x,x_Ap,K,Sy,Sa_inv, &
                          Sx,AKM,Delta_x,Delta_x_prev, &
                          Conv_Test,Cost, Goodness, &
@@ -433,7 +437,7 @@ Retrieval_Loop: do
   if (Dump_Diag) then 
     write(unit=Lun_Iter_Dump,fmt=*) "Delta_X = ", Delta_X
     write(unit=Lun_Iter_Dump,fmt=*) "Conv_Test = ", Conv_Test
-    write(unit=Lun_Iter_Dump,fmt=*) "Conv_Crit = ", Convergence_Criteria
+    write(unit=Lun_Iter_Dump,fmt=*) "Conv_Crit = ", Convergence_Criteria_Temp
     write(unit=Lun_Iter_Dump,fmt=*) "Cost = ", Cost
     write(unit=Lun_Iter_Dump,fmt=*) "Goodness = ", Goodness
     write(unit=Lun_Iter_Dump,fmt=*) "Converged_Flag = ", Converged_Flag
@@ -948,6 +952,25 @@ subroutine COMPUTE_FORWARD_MODEL_AND_KERNEL( &
         K(3,3) = dBtd_110_085_dbeta
         if (nx > 3) K(3,4) = dBtd_110_085_dTs
         if (nx > 4) K(3,5) = dBtd_110_085_dalpha
+     case('062_110_120_133') !11,12,13.3,6.7
+        f(2) = f_Btd_110_062
+        f(3) = f_Btd_110_120
+        f(4) = f_Btd_110_133
+        K(2,1) = dBtd_110_062_dTc     
+        K(2,2) = dBtd_110_062_dec    
+        K(2,3) = dBtd_110_062_dbeta
+        if (nx > 3) K(2,4) = dBtd_110_062_dTs
+        if (nx > 4) K(2,5) = dBtd_110_062_dalpha
+        K(3,1) = dBtd_110_120_dTc     
+        K(3,2) = dBtd_110_120_dec    
+        K(3,3) = dBtd_110_120_dbeta
+        if (nx > 3) K(3,4) = dBtd_110_120_dTs
+        if (nx > 4) K(3,5) = dBtd_110_120_dalpha
+        K(4,1) = dBtd_110_133_dTc     
+        K(4,2) = dBtd_110_133_dec    
+        K(4,3) = dBtd_110_133_dbeta
+        if (nx > 3) K(4,4) = dBtd_110_133_dTs
+        if (nx > 4) K(4,5) = dBtd_110_133_dalpha
      case('085_110_120_133') !11,12,8.5,13.3
         f(2) = f_Btd_110_085
         f(3) = f_Btd_110_120
@@ -1179,6 +1202,11 @@ subroutine COMPUTE_FORWARD_MODEL_AND_KERNEL( &
        Emiss_Vector(1) = Emiss_110um
        Emiss_Vector(2) = Emiss_067um
        Emiss_Vector(3) = Emiss_085um
+     case('062_110_120_133')  
+       Emiss_Vector(1) = Emiss_110um
+       Emiss_Vector(2) = Emiss_062um
+       Emiss_Vector(3) = Emiss_120um
+       Emiss_Vector(4) = Emiss_133um
      case('085_110_120_133')  
        Emiss_Vector(1) = Emiss_110um
        Emiss_Vector(2) = Emiss_085um

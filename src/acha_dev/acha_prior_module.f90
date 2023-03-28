@@ -14,7 +14,6 @@ module ACHA_PRIOR_MODULE
            LOCATE, Acha_Diag_Struct, Acha_Dump_Struct, COUNTSUBSTRING, &
            ABI_Use_104um_Flag
 ! use TIMER_MOD
-  use CX_REAL_BOOLEAN_MOD
   use KDTREE2_MODULE
   use ACHA_NUM_MOD
 
@@ -285,9 +284,9 @@ module ACHA_PRIOR_MODULE
        call EYRE_MENZEL(Input,Symbol,Pc_EM,Tc_EM,Zc_EM,Ec_EM,N_EM,Res_EM,N_Std_EM,CV_EM,Ec_Res_EM)
     endif
 
-    Diag%Array_1 = Tc_EM
-    Diag%Array_2 = Pc_EM
-    Diag%Array_3 = Ec_EM
+    !Diag%Array_1 = Tc_EM
+    !Diag%Array_2 = Pc_EM
+    !Diag%Array_3 = Ec_EM
 
     !--- use EM for ice clouds
     where(Pc_EM /= MISSING_VALUE_REAL4 .and. &
@@ -975,7 +974,7 @@ subroutine COMPUTE_APRIORI_BASED_ON_PHASE_ETROPO( &
 
   Ec_Ap_Uncer = 1.0 !Ec_Ap_Uncer_Cirrus
 
-  if (Ice_Prob_Ap .gtr. 0.5) then
+  if (Ice_Prob_Ap > 0.5) then
     Ec_Ap = Emiss_110um_Tropo
     Beta_Ap = Beta_Ap_Ice
     Beta_Ap_Uncer = Beta_Ap_Uncer_Ice
@@ -1147,7 +1146,7 @@ subroutine EYRE_MENZEL(Input,Symbol,Pc_EM,Tc_EM,Zc_EM,Ec_EM,N_EM,Res_EM,N_Std_EM
          delta_obs_clear = (d_em % ch(Chan_Idx)%Obs_Rad - d_em % ch(Chan_Idx)%Clr_Rad)
 
          !--- remove channels without signal
-         if (100.0*abs(delta_overcast_clear/d_em % ch(Chan_Idx)%Clr_Rad) .ltr. Rad_Ratio_Thresh) cycle
+         if (100.0*abs(delta_overcast_clear/d_em % ch(Chan_Idx)%Clr_Rad) < Rad_Ratio_Thresh) cycle
 
          numer_sum = numer_sum + delta_obs_clear *  delta_overcast_clear
          denom_sum = denom_sum + delta_overcast_clear**2
@@ -1173,7 +1172,7 @@ subroutine EYRE_MENZEL(Input,Symbol,Pc_EM,Tc_EM,Zc_EM,Ec_EM,N_EM,Res_EM,N_Std_EM
          delta_obs_clear = (d_em % ch(Chan_Idx)%Obs_Rad - d_em % ch(Chan_Idx)%Clr_Rad)
 
          !--- remove channels without signal
-         if (100.0*abs(delta_overcast_clear/Clr_Rad) .ltr. Rad_Ratio_Thresh) cycle
+         if (100.0*abs(delta_overcast_clear/Clr_Rad) < Rad_Ratio_Thresh) cycle
 
          numer_sum = numer_sum + delta_obs_clear**2 - (N**2)*(delta_overcast_clear)**2
          denom_sum = denom_sum + abs(delta_obs_clear/delta_overcast_clear - N) !mean emiss diff

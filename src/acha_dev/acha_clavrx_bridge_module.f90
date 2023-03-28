@@ -31,7 +31,7 @@ module ACHA_CLAVRX_BRIDGE
  public :: AWG_CLOUD_HEIGHT_BRIDGE
  private:: SET_SYMBOL, SET_INPUT, SET_OUTPUT, NULL_INPUT, NULL_OUTPUT
  private:: SET_DIAG, NULL_DIAG, SET_DUMP
- private :: LHP_CHN_CHECK   !WCS3
+ private :: LHP_CHN_CHECK  
 
  !--------------------------------------------------------------------
  ! define structures that will be arguments to ACHA
@@ -75,6 +75,8 @@ module ACHA_CLAVRX_BRIDGE
    !-------------------------------------------
 
    if (First_Call) then
+           Start_Time_Point_Hours = 0.0
+           End_Time_Point_Hours = 0.0
            Time1 = 0.0
            Time2 = 0.0
            Time3 = 0.0
@@ -99,8 +101,8 @@ module ACHA_CLAVRX_BRIDGE
 
    !---- Construct ACHA apriori
    Start_Time_Point_Hours = COMPUTE_TIME_HOURS_ACHA()
-   !call ACHA_PRIOR(Input, Symbol, Output)
-   call ACHA_PRIOR(Input, Symbol, Output, Diag=Diag)
+   call ACHA_PRIOR(Input, Symbol, Output)
+   !call ACHA_PRIOR(Input, Symbol, Output, Diag=Diag)
    End_Time_Point_Hours = COMPUTE_TIME_HOURS_ACHA()
 
    Prior_Time = Prior_Time + (End_Time_Point_Hours - Start_Time_Point_Hours)
@@ -213,17 +215,17 @@ module ACHA_CLAVRX_BRIDGE
    call SET_ACHA_VERSION(Acha_Version)
   
    First_Call = .false.
-   if (Last_Call) then
-      Prior_Time =  60.0*60.0*(Prior_Time)
-      Comp_Time =  60.0*60.0*(Comp_Time)
-      Time1 =  60.0*60.0*(Time1)
-      Time2 =  60.0*60.0*(Time2)
-      Time3 =  60.0*60.0*(Time3)
-      print *, "ACHA Prior Time (sec) = ", Prior_Time
-      print *, "ACHA 3param Ret Time (sec) = ", Time1
-      print *, "ACHA 5param Ret Time (sec) = ", Time2
-      print *, "ACHA Comp Time (sec) = ", Comp_Time
-   endif
+!  if (Last_Call) then
+!     Prior_Time =  60.0*60.0*(Prior_Time)
+!     Comp_Time =  60.0*60.0*(Comp_Time)
+!     Time1 =  60.0*60.0*(Time1)
+!     Time2 =  60.0*60.0*(Time2)
+!     Time3 =  60.0*60.0*(Time3)
+!     print *, "ACHA Prior Time (sec) = ", Prior_Time
+!     print *, "ACHA 3param Ret Time (sec) = ", Time1
+!     print *, "ACHA 5param Ret Time (sec) = ", Time2
+!     print *, "ACHA Comp Time (sec) = ", Comp_Time
+!  endif
 
 
  end subroutine AWG_CLOUD_HEIGHT_BRIDGE
@@ -274,6 +276,7 @@ module ACHA_CLAVRX_BRIDGE
      Input%Tropopause_Height =>  null()
      Input%Tropopause_Pressure =>  null()
      Input%Surface_Pressure =>  null()
+     Input%LCL_Height =>  null()
      Input%Surface_Elevation =>  null()
      Input%Latitude =>  null()
      Input%Longitude =>  null()
@@ -583,6 +586,8 @@ module ACHA_CLAVRX_BRIDGE
    Input%Tropopause_Height =>  NWP_PIX%Ztropo
    Input%Tropopause_Pressure =>  NWP_PIX%Ptropo
    Input%Surface_Pressure =>  NWP_PIX%Psfc
+   !Input%LCL_Height =>  NWP_PIX%LCL_Height
+   Input%LCL_Height =>  NWP_PIX%CCL_Height
    Input%Surface_Elevation => Sfc%Zsfc
    Input%Latitude => Nav%Lat
    Input%Longitude => Nav%Lon

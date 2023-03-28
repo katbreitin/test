@@ -80,7 +80,7 @@ module CLAVRX_STATIC_NAV_MODULE
   use VIEWING_GEOMETRY_MOD, only: RELATIVE_AZIMUTH, SCATTERING_ANGLE, &
                                   GLINT_ANGLE, POSSOL
 
-  use CX_REAL_BOOLEAN_MOD
+  use univ_fp_comparison_mod, only: operator(.EQfp.), operator(.GEfp.)
 
 #ifdef LIBHIM
  ! HSD reader
@@ -339,8 +339,8 @@ module CLAVRX_STATIC_NAV_MODULE
         end if
       end do
       !--- check values use 0.01 as a threshold for difference
-      if ((abs(Geospatial_Lon_Center_Sn - Geospatial_Lon_Center_L1b) .gtr. 0.01) .or.  &
-          (abs(Geospatial_Lat_Center_Sn - Geospatial_Lat_Center_L1b) .gtr. 0.01)) then
+      if ((abs(Geospatial_Lon_Center_Sn - Geospatial_Lon_Center_L1b) > 0.01) .or.  &
+          (abs(Geospatial_Lat_Center_Sn - Geospatial_Lat_Center_L1b) > 0.01)) then
           call MESG( "STATIC NAV not consistent with Level-1b, stopping", level = verb_lev % ERROR )
           print*,Static_Nav_Full_File
           call CLOSE_NETCDF(ncid_static)
@@ -459,10 +459,10 @@ module CLAVRX_STATIC_NAV_MODULE
     Geo%Glintzen = glint_angle(Geo%Solzen, Geo%Satzen, Geo%Relaz)
 
     !--- ensure missing values
-    where((Geo%Solzen .eqr. MISSING_VALUE_REAL4) .or. &
-          (Geo%Solaz  .eqr. MISSING_VALUE_REAL4) .or. &
-          (Geo%Sataz  .eqr. MISSING_VALUE_REAL4) .or. &
-          (Geo%Satzen .eqr. MISSING_VALUE_REAL4))
+    where((Geo%Solzen .EQfp. MISSING_VALUE_REAL4) .or. &
+          (Geo%Solaz  .EQfp. MISSING_VALUE_REAL4) .or. &
+          (Geo%Sataz  .EQfp. MISSING_VALUE_REAL4) .or. &
+          (Geo%Satzen .EQfp. MISSING_VALUE_REAL4))
 
           Geo%Relaz = MISSING_VALUE_REAL4
           Geo%Scatangle = MISSING_VALUE_REAL4
@@ -738,10 +738,10 @@ end subroutine READ_LEVEL1B_FIXED_GRID_STATIC_NAV
     Geo%Glintzen = glint_angle(Geo%Solzen, Geo%Satzen, Geo%Relaz)
 
     !--- ensure missing values
-    where((Geo%Solzen .eqr. MISSING_VALUE_REAL4) .or. &
-          (Geo%Solaz  .eqr. MISSING_VALUE_REAL4) .or. &
-          (Geo%Sataz  .eqr. MISSING_VALUE_REAL4) .or. &
-          (Geo%Satzen .eqr. MISSING_VALUE_REAL4))
+    where((Geo%Solzen .EQfp. MISSING_VALUE_REAL4) .or. &
+          (Geo%Solaz  .EQfp. MISSING_VALUE_REAL4) .or. &
+          (Geo%Sataz  .EQfp. MISSING_VALUE_REAL4) .or. &
+          (Geo%Satzen .EQfp. MISSING_VALUE_REAL4))
 
           Geo%Relaz = MISSING_VALUE_REAL4
           Geo%Scatangle = MISSING_VALUE_REAL4
@@ -1368,7 +1368,7 @@ subroutine DETERMINE_BOUNDS_STATIC_NAV(Nav_File_Name, Nav_Flag,Lat_South, Lon_We
       !--------------------------------------------------------------
       ! determine indices of the subsetting region within the data    
       !--------------------------------------------------------------
-      if (Lon_East .ger. Lon_West) then
+      if (Lon_East .GEfp. Lon_West) then
         inside = Longitude_Fd .GT. Lon_West .and. &
           Longitude_Fd .LT. Lon_East .and. &
           Latitude_Fd .GT. Lat_South .and. &
@@ -1376,12 +1376,12 @@ subroutine DETERMINE_BOUNDS_STATIC_NAV(Nav_File_Name, Nav_Flag,Lat_South, Lon_We
 
       else
 
-        inside = (((Longitude_Fd .ltr. Lon_East) .and. &
-            (Longitude_Fd .ger. -180.0) )  .or. &
-            ((Longitude_Fd .gtr. Lon_West) .and. &
-             (Longitude_Fd .ltr. 180.0) )) .and. &
-            (Latitude_Fd .gtr. Lat_South)  .and. &
-            (Latitude_Fd .ltr. Lat_North)
+        inside = (((Longitude_Fd < Lon_East) .and. &
+            (Longitude_Fd .GEfp. -180.0) )  .or. &
+            ((Longitude_Fd > Lon_West) .and. &
+             (Longitude_Fd < 180.0) )) .and. &
+            (Latitude_Fd > Lat_South)  .and. &
+            (Latitude_Fd < Lat_North)
 
       endif
 

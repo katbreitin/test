@@ -29,7 +29,7 @@
 module HIRS_FUSION_MOD
    use CONSTANTS_MOD, only: MISSING_VALUE_REAL4
    use PIXEL_COMMON_MOD,only: AVHRR_Fusion_Flag, Image, Sensor, Ch
-   use CX_REAL_BOOLEAN_MOD
+   use univ_fp_comparison_mod, only: operator(.EQfp.), operator(.NEfp.)
       use cx_sds_io_mod,only: &
            cx_sds_finfo &
          , cx_sds_varinfo &
@@ -413,8 +413,8 @@ module HIRS_FUSION_MOD
 
       !--- replace 3.75 micron bt when off on AVHRR's
       if (allocated(ch(20)%Bt_Toa) .and. allocated(Bt_375um_Sounder)) then
-         where((ch(20)%Bt_Toa .eqr. MISSING_VALUE_REAL4) .and. &
-               (Bt_375um_Sounder .ner. MISSING_VALUE_REAL4))
+         where((ch(20)%Bt_Toa .EQfp. MISSING_VALUE_REAL4) .and. &
+               (Bt_375um_Sounder .NEfp. MISSING_VALUE_REAL4))
             ch(20)%Bt_Toa = Bt_375um_Sounder
             ch(20)%Source = 1
          endwhere

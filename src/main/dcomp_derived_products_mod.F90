@@ -85,13 +85,9 @@ MODULE DCOMP_DERIVED_PRODUCTS_MOD
    , Diag_Pix_Array_3
  
  use NWP_COMMON_MOD,only: NWP
- 
- use CX_REAL_BOOLEAN_MOD, only: &
-  operator(.ner.) &
-  , operator (.eqr.) &
-  , operator (.ger.) &
-  , operator (.gtr.) &
-  , operator (.ler.) 
+
+ use univ_fp_comparison_mod, only: operator(.EQfp.), operator(.NEfp.),  &
+      operator(.GEfp.), operator(.LEfp.)
 
  implicit none
  private
@@ -135,7 +131,7 @@ MODULE DCOMP_DERIVED_PRODUCTS_MOD
     !Refl_Retr = Refl_Clear + (Refl_Asym - Refl_Clear)*(1.0-exp(alpha*Cod_Retr))
  !   Cod_Sub = Missing_Value_Real4
 
- !   if (Refl_Retr .gtr. Refl_Clear) then
+ !   if (Refl_Retr > Refl_Clear) then
 
   !     RR = (Refl_Retr - Refl_Clear) / (Refl_Asym - Refl_Clear)
   !     alpha = (alog(1.0 - RR))/Cod_Retr
@@ -179,15 +175,15 @@ MODULE DCOMP_DERIVED_PRODUCTS_MOD
       do Line_Idx = 1, Image%Number_of_Lines_Per_Segment
 
         !-- check dcomp input
-        if (Tau_Dcomp(Elem_Idx,Line_Idx) .eqr. Missing_Value_Real4) cycle
-        if (ch(1)%Ref_Toa(Elem_Idx,Line_Idx) .eqr. Missing_Value_Real4) cycle
-        if (Refl_Asym_Dcomp(Elem_Idx,Line_Idx) .eqr. Missing_Value_Real4) cycle
+        if (Tau_Dcomp(Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4) cycle
+        if (ch(1)%Ref_Toa(Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4) cycle
+        if (Refl_Asym_Dcomp(Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4) cycle
 
         !-- convert refl_asym to % like all other reflectances
         ch1_Refl_Toa_Asym = 100.0*Refl_Asym_Dcomp(Elem_Idx,Line_Idx)
 
         !-- compute minimum cloud optical depth
-        if (ch(1)%Ref_Toa_Min_3x3(Elem_Idx,Line_Idx) .eqr. Missing_Value_Real4) cycle
+        if (ch(1)%Ref_Toa_Min_3x3(Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4) cycle
         !Diag_Pix_Array_1(Elem_Idx,Line_Idx) = &
         !                COD_APPROX(ch(1)%Ref_Toa_Clear(Elem_Idx,Line_Idx), & 
         !                           ch(1)%Ref_Toa(Elem_Idx,Line_Idx), & 
@@ -197,7 +193,7 @@ MODULE DCOMP_DERIVED_PRODUCTS_MOD
 
 
         !-- compute maximum cloud optical depth
-        if (ch(1)%Ref_Toa_Max_3x3(Elem_Idx,Line_Idx) .eqr. Missing_Value_Real4) cycle
+        if (ch(1)%Ref_Toa_Max_3x3(Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4) cycle
         !Diag_Pix_Array_2(Elem_Idx,Line_Idx) = &
         !                COD_APPROX(ch(1)%Ref_Toa_Clear(Elem_Idx,Line_Idx), & 
         !                           ch(1)%Ref_Toa(Elem_Idx,Line_Idx), & 
@@ -260,10 +256,10 @@ subroutine COMPUTE_CLOUD_WATER_PATH(jmin,jmax)
        Reff = Reff_Nlcomp(Elem_Idx,Line_Idx)
      endif
 
-     if (Tau .EQR. Missing_Value_Real4) cycle
-     if (Reff .EQR. Missing_Value_Real4) cycle
+     if (Tau .EQfp. Missing_Value_Real4) cycle
+     if (Reff .EQfp. Missing_Value_Real4) cycle
 
-     if (Tau .eqr. 0.0) then
+     if (Tau .EQfp. 0.0) then
         Cwp_Dcomp(Elem_Idx,Line_Idx) = 0.0
         Iwp_Dcomp(Elem_Idx,Line_Idx) = 0.0
         Lwp_Dcomp(Elem_Idx,Line_Idx) = 0.0
@@ -329,13 +325,13 @@ subroutine COMPUTE_CLOUD_WATER_PATH(jmin,jmax)
 
      Cloud_Geometrical_Thickness = ACHA%Zc(Elem_Idx,Line_Idx) - BASE%Zc_Base(Elem_Idx,Line_Idx)
      !--- skip if failed cloud boundares
-     if ((Cloud_Geometrical_Thickness .ler. 0.00) .or. (ACHA%Zc(Elem_Idx,Line_Idx) .ler. 0.00)) cycle
+     if ((Cloud_Geometrical_Thickness .LEfp. 0.00) .or. (ACHA%Zc(Elem_Idx,Line_Idx) .LEfp. 0.00)) cycle
 
      Ice_Layer_Fraction = 0.0
      Water_Layer_Fraction = 0.0
      Scwater_Layer_Fraction = 0.0
 
-     if (BASE%Zc_Base(Elem_Idx,Line_Idx) .ger. NWP%Upper_Limit_Water_Height(Lon_Nwp_Idx,Lat_Nwp_Idx)) then
+     if (BASE%Zc_Base(Elem_Idx,Line_Idx) .GEfp. NWP%Upper_Limit_Water_Height(Lon_Nwp_Idx,Lat_Nwp_Idx)) then
 
          Ice_Layer_Fraction  = 1.0
          Water_Layer_Fraction  = 0.0
@@ -348,7 +344,7 @@ subroutine COMPUTE_CLOUD_WATER_PATH(jmin,jmax)
 
      endif
 
-     if (Ice_Layer_Fraction .NER. 1.0) then
+     if (Ice_Layer_Fraction .NEfp. 1.0) then
 
          if (ACHA%Zc(Elem_Idx,Line_Idx) < NWP%Upper_Limit_Water_Height(Lon_Nwp_Idx,Lat_Nwp_Idx)) then
 
@@ -627,7 +623,7 @@ subroutine COMPUTE_PRECIPITATION(Line_Idx_Min,Num_Lines)
       endif
 
       !--- skip bad pixels
-      if (Reff_Pix .ler. 0.0) cycle
+      if (Reff_Pix .LEfp. 0.0) cycle
 
       !--- screen low water path clouds
       if (CWP_Pix < CWP_T) then
@@ -750,7 +746,7 @@ subroutine COMPUTE_PRECIPITATION_AHI(Line_Idx_Min,Num_Lines)
       endif
 
       !--- skip bad pixels
-      if (Reff_Pix .ler. 0.0) cycle
+      if (Reff_Pix .LEfp. 0.0) cycle
 
       !--- screen small particle size and water path for liquid water clouds
       if (Cld_Type(Elem_Idx,Line_Idx) == sym%FOG_TYPE .or. &
@@ -911,9 +907,9 @@ subroutine COMPUTE_DCOMP_INSOLATION(Line_Idx_Min,Num_Lines,Sun_Earth_Distance)
       if (Solar_Zenith_Angle > 70.0) cycle
 
       !--- skip if no nwp
-      if (NWP_Pix%Ozone(Elem_Idx,Line_Idx) .eqr. Missing_Value_Real4) cycle
-      if (NWP_Pix%Psfc(Elem_Idx,Line_Idx) .eqr. Missing_Value_Real4) cycle
-      if (NWP_Pix%Tpw(Elem_Idx,Line_Idx) .eqr. Missing_Value_Real4) cycle
+      if (NWP_Pix%Ozone(Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4) cycle
+      if (NWP_Pix%Psfc(Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4) cycle
+      if (NWP_Pix%Tpw(Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4) cycle
 
       !--- convert nwp as needed by Bird Routine
       O3cm = 0.001*NWP_Pix%Ozone(Elem_Idx,Line_Idx)   !atm-cm
@@ -1033,8 +1029,8 @@ subroutine ADJUST_DCOMP_LWP()
       end select   
 
       where(Cld_Type < 6 .and. Cld_Type > 1 .and.  &
-         (Tau_Dcomp .NER. MISSING_VALUE_REAL4) .and. &
-         (Reff_Dcomp .NER. MISSING_VALUE_REAL4))
+         (Tau_Dcomp .NEfp. MISSING_VALUE_REAL4) .and. &
+         (Reff_Dcomp .NEfp. MISSING_VALUE_REAL4))
 
          Reff_Dcomp_Fit = a + (b * Reff_Dcomp) + (c * Reff_Dcomp**2)
 
@@ -1045,12 +1041,12 @@ subroutine ADJUST_DCOMP_LWP()
    if (Dcomp_Mode == 9) then
 
       where(Cld_Type < 6 .and. Cld_Type > 1 .and.  &
-         (Tau_Dcomp_1 .NER. MISSING_VALUE_REAL4) .and.  &
-         (Tau_Dcomp_2 .NER. MISSING_VALUE_REAL4) .and.  &
-         (Tau_Dcomp_3 .NER. MISSING_VALUE_REAL4) .and.  &
-         (Reff_Dcomp_1 .NER. MISSING_VALUE_REAL4) .and. &
-         (Reff_Dcomp_2 .NER. MISSING_VALUE_REAL4) .and. &
-         (Reff_Dcomp_3 .NER. MISSING_VALUE_REAL4))
+         (Tau_Dcomp_1 .NEfp. MISSING_VALUE_REAL4) .and.  &
+         (Tau_Dcomp_2 .NEfp. MISSING_VALUE_REAL4) .and.  &
+         (Tau_Dcomp_3 .NEfp. MISSING_VALUE_REAL4) .and.  &
+         (Reff_Dcomp_1 .NEfp. MISSING_VALUE_REAL4) .and. &
+         (Reff_Dcomp_2 .NEfp. MISSING_VALUE_REAL4) .and. &
+         (Reff_Dcomp_3 .NEfp. MISSING_VALUE_REAL4))
 
          Reff_Dcomp_Fit = a_mode9 +  &
                     b_mode9 * Reff_Dcomp_2 + &
@@ -1066,7 +1062,7 @@ subroutine ADJUST_DCOMP_LWP()
    endif
 
 
-   where(Reff_Dcomp_Fit .NER. MISSING_VALUE_REAL4)
+   where(Reff_Dcomp_Fit .NEfp. MISSING_VALUE_REAL4)
 
          Cwp_Fit = 0.666 * Tau_Dcomp * Reff_Dcomp_Fit
 

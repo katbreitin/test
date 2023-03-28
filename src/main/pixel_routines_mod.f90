@@ -97,9 +97,7 @@ use univ_kind_defs_mod, only: i1
 
  use CLAVRX_MESSAGE_MOD, only: MESG, verb_lev
 
- use Compare_Float_Numbers
-
- use CX_REAL_BOOLEAN_MOD
+ use univ_fp_comparison_mod, only: operator(.EQfp.)
 
 !use RT_UTILITIES_MOD, only: COMPUTE_CLEAR_SKY_SCATTER
 
@@ -153,12 +151,12 @@ use univ_kind_defs_mod, only: i1
 
      Refl_Balance_Cloud_Fraction = Missing_Value_Real4
 
-     where(.not. (Refl_Clear .EqualTo. Missing_Value_Real4) .and.  &
-           .not. (Refl_Cloudy .EqualTo. Missing_Value_Real4) .and. &
-           .not. (Refl .EqualTo. Missing_Value_Real4) .and.        &
-           .not. (Solar_Zen .EqualTo. Missing_Value_Real4) .and.   &
-             ( Solar_Zen .LessThan. Solar_Zen_Max) .and.          &
-             (Refl_Cloudy .GreaterThan. Refl_Clear))
+     where(.not. (Refl_Clear .EQfp. Missing_Value_Real4) .and.  &
+           .not. (Refl_Cloudy .EQfp. Missing_Value_Real4) .and. &
+           .not. (Refl .EQfp. Missing_Value_Real4) .and.        &
+           .not. (Solar_Zen .EQfp. Missing_Value_Real4) .and.   &
+             ( Solar_Zen < Solar_Zen_Max) .and.          &
+             (Refl_Cloudy > Refl_Clear))
 
            Refl_Balance_Cloud_Fraction = (Refl - Refl_Clear) / &
                                          (Refl_Cloudy - Refl_Clear)
@@ -253,8 +251,8 @@ subroutine EXPAND_SPACE_MASK_FOR_USER_LIMITS(Seg_Idx, Space_Mask)
    logical, dimension(:,:), intent(inout):: Space_Mask
 
    !--- check for latitudinal bounds
-   where((Nav%Lat_1b .EqualTo. Missing_Value_Real4) .or. &
-        (Nav%Lon_1b .EqualTo. Missing_Value_Real4))
+   where((Nav%Lat_1b .EQfp. Missing_Value_Real4) .or. &
+        (Nav%Lon_1b .EQfp. Missing_Value_Real4))
         Space_Mask = .true.
    end where
 
@@ -287,9 +285,9 @@ subroutine EXPAND_SPACE_MASK_FOR_USER_LIMITS(Seg_Idx, Space_Mask)
       end where
 
       !--- Solzen limit
-      where ((Geo%Solzen .LessThan. Geo%Solzen_Min_Limit) .or. &
-         (Geo%Solzen .GreaterThan. Geo%Solzen_Max_Limit) .or. &
-         (Geo%Satzen .EqualTo. Missing_Value_Real4))
+      where ((Geo%Solzen < Geo%Solzen_Min_Limit) .or. &
+         (Geo%Solzen > Geo%Solzen_Max_Limit) .or. &
+         (Geo%Satzen .EQfp. Missing_Value_Real4))
               Space_Mask = .true.
       end where
 
@@ -468,7 +466,7 @@ subroutine SET_BAD_PIXEL_MASK(Bad_Pixel_Mask,ABI_Use_104um_Flag)
         endif
 
         !--- Bad Relazimuth
-        if (Geo%Relaz(Elem_Idx,Line_Idx) .EqualTo. Missing_Value_Real4) then
+        if (Geo%Relaz(Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4) then
            Bad_Pixel_Mask(Elem_Idx,Line_Idx) = sym%YES
            !print *, "Bad Relaz"
         endif
@@ -668,8 +666,8 @@ end subroutine QUALITY_CONTROL_ANCILLARY_DATA
    Geo%Cossolzen(:,j1:j2) = cos(Geo%Solzen(:,j1:j2)*dtor)
 
    Geo%Airmass(:,j1:j2) = 1.0
-   where(.not. (Geo%Solzen(:,j1:j2) .EqualTo. 0.0) &
-      .and. .not. (Geo%Coszen(:,j1:j2) .EqualTo. 0.0) )
+   where(.not. (Geo%Solzen(:,j1:j2) .EQfp. 0.0) &
+      .and. .not. (Geo%Coszen(:,j1:j2) .EQfp. 0.0) )
     Geo%Airmass(:,j1:j2) = 1.0/Geo%Cossolzen(:,j1:j2) + 1.0/Geo%Coszen(:,j1:j2)
    endwhere
 
@@ -691,8 +689,8 @@ end subroutine QUALITY_CONTROL_ANCILLARY_DATA
     if (Sensor%Chan_On_Flag_Default(20) == sym%YES &
          .and. Sensor%Chan_On_Flag_Default(31) == sym%YES) then
      Btd_Ch20_Ch31 = ch(20)%Bt_Toa - ch(31)%Bt_Toa
-     where((ch(20)%Bt_Toa .equalTo. Missing_Value_Real4) &
-         .or. (ch(31)%Bt_Toa .equalTo. Missing_Value_Real4))
+     where((ch(20)%Bt_Toa .EQfp. Missing_Value_Real4) &
+         .or. (ch(31)%Bt_Toa .EQfp. Missing_Value_Real4))
        Btd_Ch20_Ch31 = Missing_Value_Real4
      endwhere
     endif
@@ -701,8 +699,8 @@ end subroutine QUALITY_CONTROL_ANCILLARY_DATA
     if (Sensor%Chan_On_Flag_Default(20) == sym%YES &
         .and. Sensor%Chan_On_Flag_Default(38) == sym%YES) then
      Btd_Ch20_Ch38 = ch(20)%Bt_Toa - ch(38)%Bt_Toa
-     where((ch(20)%Bt_Toa .equalTo. Missing_Value_Real4) &
-          .or. (ch(38)%Bt_Toa .equalTo. Missing_Value_Real4))
+     where((ch(20)%Bt_Toa .EQfp. Missing_Value_Real4) &
+          .or. (ch(38)%Bt_Toa .EQfp. Missing_Value_Real4))
        Btd_Ch20_Ch38 = Missing_Value_Real4
      endwhere
     endif
@@ -712,8 +710,8 @@ end subroutine QUALITY_CONTROL_ANCILLARY_DATA
        .and. Sensor%Chan_On_Flag_Default(32) == sym%YES) then
 
       Btd_Ch20_Ch32 = ch(20)%Bt_Toa - ch(32)%Bt_Toa
-      where((ch(20)%Bt_Toa .EqualTo. Missing_Value_Real4) &
-        .or. (ch(32)%Bt_Toa .EqualTo. Missing_Value_Real4))
+      where((ch(20)%Bt_Toa .EQfp. Missing_Value_Real4) &
+        .or. (ch(32)%Bt_Toa .EQfp. Missing_Value_Real4))
             Btd_Ch20_Ch32 = Missing_Value_Real4
       end where
     end if
@@ -982,16 +980,16 @@ end subroutine COMPUTE_TSFC
        ! apply correction
        do Chan_Idx = 1,19
           if (Sensor%Chan_On_Flag_Default(Chan_Idx) == sym%YES) then
-            if (.not. (ch(Chan_Idx)%Ref_Toa(i,j) .EqualTo. Missing_Value_Real4)) then
+            if (.not. (ch(Chan_Idx)%Ref_Toa(i,j) .EQfp. Missing_Value_Real4)) then
              ch(Chan_Idx)%Ref_Toa(i,j) = ch(Chan_Idx)%Ref_Toa(i,j) * Factor
             endif
             if (allocated(ch(Chan_Idx)%Ref_Toa_Min_Sub)) then
-               if (.not. (ch(Chan_Idx)%Ref_Toa_Min_Sub(i,j) .EqualTo. Missing_Value_Real4)) then
+               if (.not. (ch(Chan_Idx)%Ref_Toa_Min_Sub(i,j) .EQfp. Missing_Value_Real4)) then
                   ch(Chan_Idx)%Ref_Toa_Min_Sub(i,j) = ch(Chan_Idx)%Ref_Toa_Min_Sub(i,j) * Factor
                endif
             endif
             if (allocated(ch(Chan_Idx)%Ref_Toa_Max_Sub)) then
-               if (.not. (ch(Chan_Idx)%Ref_Toa_Max_Sub(i,j) .EqualTo. Missing_Value_Real4)) then
+               if (.not. (ch(Chan_Idx)%Ref_Toa_Max_Sub(i,j) .EQfp. Missing_Value_Real4)) then
                   ch(Chan_Idx)%Ref_Toa_Max_Sub(i,j) = ch(Chan_Idx)%Ref_Toa_Max_Sub(i,j) * Factor
                endif
             endif
@@ -999,14 +997,14 @@ end subroutine COMPUTE_TSFC
        enddo
 
        if (Sensor%Chan_On_Flag_Default(26) == sym%YES) then
-          if (.not. (ch(26)%Ref_Toa(i,j) .EqualTo. Missing_Value_Real4)) then
+          if (.not. (ch(26)%Ref_Toa(i,j) .EQfp. Missing_Value_Real4)) then
             ch(26)%Ref_Toa(i,j) = ch(26)%Ref_Toa(i,j) * Factor
           endif
        endif
 
        !  normalize by sun angle the dark sky composite
        if ((Sensor%Chan_On_Flag_Default(1) == sym%YES)) then
-         if (.not. (Ref_Ch1_Dark_Composite(i,j) .EqualTo. Missing_Value_Real4 )) then
+         if (.not. (Ref_Ch1_Dark_Composite(i,j) .EQfp. Missing_Value_Real4 )) then
            Ref_Ch1_Dark_Composite(i,j) = Ref_Ch1_Dark_Composite(i,j) * Factor
          endif
        endif
@@ -1020,7 +1018,7 @@ end subroutine COMPUTE_TSFC
        endif
 
        !--- in terminator region, renormalize Channel 1 (maybe extend to all?)
-       if (Geo%Solzen(i,j) .GreaterThan. TERMINATOR_REFLECTANCE_SOL_ZEN_THRESH) then
+       if (Geo%Solzen(i,j) > TERMINATOR_REFLECTANCE_SOL_ZEN_THRESH) then
           if (Sensor%Chan_On_Flag_Default(1) == sym%YES)  &
               ch(1)%Ref_Toa(i,j) = TERM_REFL_NORM(Geo%Cossolzen(i,j),ch(1)%Ref_Toa(i,j))
        endif
@@ -1122,7 +1120,7 @@ subroutine CH20_PSEUDO_REFLECTANCE(Solar_Ch20_Nu,Cos_Solzen,Rad_Ch20,Ref_Chan_Id
         endif
 
         !--- constrain values
-        if (.not. (Ref_Ch20(Elem_Idx,Line_Idx) .EqualTo. Missing_Value_Real4)) then
+        if (.not. (Ref_Ch20(Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4)) then
               Ref_Ch20(Elem_Idx,Line_Idx) = max(-50.0,min(100.0,Ref_Ch20(Elem_Idx,Line_Idx)))
         endif
 
@@ -1676,7 +1674,7 @@ subroutine MERGE_NWP_HIRES_ZSFC(Line_Idx_Min,Num_Lines)
       endif
 
       !--- if hires value available use it, or try NWP
-      if (.not. (Sfc%Zsfc_Hires(Elem_Idx,Line_Idx) .EqualTo. Missing_Value_Real4)) then
+      if (.not. (Sfc%Zsfc_Hires(Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4)) then
 
            Sfc%Zsfc(Elem_Idx,Line_Idx) = Sfc%Zsfc_Hires(Elem_Idx,Line_Idx)
 
@@ -2190,13 +2188,13 @@ end function CITY_MASK_FOR_CLOUD_DETECTION
 
 
      !--- check if all needed data are non-missing
-     if (.not. (T375 .EqualTo. Missing_Value_Real4) .and. &
-         .not. (T375_Std .EqualTo. Missing_Value_Real4) .and. &
-         .not. ( T11 .EqualTo. Missing_Value_Real4) .and. &
-         .not. (T11_Std .EqualTo. Missing_Value_Real4)) then
+     if (.not. (T375 .EQfp. Missing_Value_Real4) .and. &
+         .not. (T375_Std .EQfp. Missing_Value_Real4) .and. &
+         .not. ( T11 .EQfp. Missing_Value_Real4) .and. &
+         .not. (T11_Std .EQfp. Missing_Value_Real4)) then
 
          !Day
-         if (Solzen .LessThan. EumetCAST_Fire_Day_Solzen_Thresh) then
+         if (Solzen < EumetCAST_Fire_Day_Solzen_Thresh) then
             Bt_375um_Eumet_Fire_Thresh = Bt_375um_Eumet_Fire_day_Thresh
             Bt_Diff_Eumet_Fire_Thresh = Bt_Diff_Eumet_Fire_day_Thresh
             Stddev_11um_Eumet_Fire_Thresh = Stddev_11um_Eumet_Fire_Day_Thresh

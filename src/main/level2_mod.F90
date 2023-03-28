@@ -31,7 +31,7 @@ module LEVEL2_MOD
  use PIXEL_COMMON_MOD
  use HDF
  use CX_STRING_TOOLS_MOD
- use CX_REAL_BOOLEAN_MOD
+ use univ_fp_comparison_mod, only: operator(.NEfp.)
  use CX_HDF4_MOD
  use NETCDF
  use CX_NETCDF4_MOD
@@ -4228,7 +4228,7 @@ subroutine STANDARD_SDS_INFO(Var_Idx)
     if (Sds_Info(Var_Idx)%Scaling_Type == 1) then   !SCALED VARIABLES
 
        !if (Sds_Info(Var_Idx)%Actual_Range(1) /= Sds_Info(Var_Idx)%Actual_Range(2)) then
-       if (Sds_Info(Var_Idx)%Actual_Range(1) .ner. Sds_Info(Var_Idx)%Actual_Range(2)) then
+       if (Sds_Info(Var_Idx)%Actual_Range(1) .NEfp. Sds_Info(Var_Idx)%Actual_Range(2)) then
           Sds_Info(Var_Idx)%Scale_Factor =  &
                          (Sds_Info(Var_Idx)%Actual_Range(2) - Sds_Info(Var_Idx)%Actual_Range(1)) / &
                          (Sds_Info(Var_Idx)%Valid_Range(2) - Sds_Info(Var_Idx)%Valid_Range(1))

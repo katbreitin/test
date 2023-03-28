@@ -153,6 +153,7 @@ module ACHA_SERVICES_MOD
  real, dimension(:,:), pointer:: Tropopause_Pressure
  real, dimension(:,:), pointer:: Surface_Pressure
  real, dimension(:,:), pointer:: Surface_Elevation
+ real, dimension(:,:), pointer:: LCL_Height
  real, dimension(:,:), pointer:: Latitude
  real, dimension(:,:), pointer:: Longitude
  real, dimension(:,:), pointer:: Rad_Clear_038um

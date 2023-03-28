@@ -72,7 +72,7 @@ module ABI_MOD
   , Ch1_Counts &
   , Line_Idx_Min_Segment
 
-  use CX_REAL_BOOLEAN_MOD
+  use univ_fp_comparison_mod, only: operator(.NEfp.)
 
   use CALIBRATION_CONSTANTS_MOD,only: &
   planck_a1, planck_a2, planck_nu &
@@ -376,7 +376,7 @@ CONTAINS
       !Image_Date = Image%Start_Year + (Image%Start_Doy - 1.0) / 365.25
       Image_Date = image % time_start % year + (image % time_start %  dayOfYear - 1)/365.25
       if (Image_Date < Band2_Correction_Start_Date) then
-        where (ch(1)%Ref_Toa .ner. Missing_Value_Real4)
+        where (ch(1)%Ref_Toa .NEfp. Missing_Value_Real4)
           ch(1)%Ref_Toa = Band2_Correction_Factor*ch(1)%Ref_Toa
         endwhere
       endif

@@ -589,7 +589,7 @@ function SENSOR_NAME_FOR_RTM ( wmo_id, sensorname, Chan_Idx ) result ( Sensor_Na
       end if
    end if
 
-   if ((trim (Sensorname) == 'VGAC') .and. Sensor%Fusion_Flag)  then
+   if (((trim (Sensorname) == 'VGAC') .or. trim(Sensorname)=='protoVGAC') .and. Sensor%Fusion_Flag)  then
       if ( any ( Chan_Idx ==  [27,28,33,34,35,36] ) ) then
            select case(WMO_Id)
              case(224) !VIIRS - SNPP

@@ -9,7 +9,7 @@ module SIMPLE_COD_065um_MOD
    use NUMERICAL_ROUTINES_MOD
    use FILE_UTILS, only: get_lun
    use SURFACE_PROPERTIES_MOD
-   use CX_REAL_BOOLEAN_MOD
+   use univ_fp_comparison_mod, only: operator(.NEfp.)
 
    implicit none
    private
@@ -86,7 +86,7 @@ module SIMPLE_COD_065um_MOD
             Ref_Vector = Ref_Lut(:,Solzen_Idx,Senzen_Idx,Relaz_Idx)
 
             !--- Account for surface reflection and atmospheric transmission
-            if (Static_Ref_065um_Dark_Composite(Elem_Idx,Line_Idx) .ner. MISSING_VALUE_REAL4) then
+            if (Static_Ref_065um_Dark_Composite(Elem_Idx,Line_Idx) .NEfp. MISSING_VALUE_REAL4) then
               Alb_Sfc = Static_Ref_065um_Dark_Composite(Elem_Idx,Line_Idx)
             else
               Alb_Sfc = ch(1)%Sfc_Ref_White_Sky(Elem_Idx,Line_Idx)
@@ -106,7 +106,7 @@ module SIMPLE_COD_065um_MOD
             !--------------------------------------------------------
             Ref_Toa_Temp = Ref_Toa
             Negative_Opd = .false.
-            if (Ref_Toa .ltr. Ref_Toa_Vector(1)) then
+            if (Ref_Toa < Ref_Toa_Vector(1)) then
                Ref_Toa_Temp = Ref_Toa_Vector(1) + (Ref_Toa_Vector(1)-Ref_Toa) 
                Negative_Opd = .true.
             endif 
