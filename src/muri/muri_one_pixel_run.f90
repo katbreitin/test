@@ -1,4 +1,6 @@
 ! $Id: muri_one_pixel_run.f90 2184 2017-04-12 20:47:02Z awalther $
+
+! Min started GIT today
 program one_pixel_run
 
    use muri_retrieval_mod
