@@ -297,7 +297,7 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
 
   !--- angles
   call READ_AND_UNSCALE_NETCDF_2D(Ncid_Vgac, Sds_Start, Sds_Stride, Sds_Count, "vza", Sds_Data_2d)
-  Geo%Satzen(1:Sds_Count(1),1:Sds_Count(2)) = Sds_Data_2d    !THIS IS NOT CORRECT FIXME
+  Geo%Satzen(1:Sds_Count(1),1:Sds_Count(2)) = Sds_Data_2d    !VGAC vza is actually the satzen now
 
   call READ_AND_UNSCALE_NETCDF_2D(Ncid_Vgac, Sds_Start, Sds_Stride, Sds_Count, "sza", Sds_Data_2d)
   Geo%Solzen(1:Sds_Count(1),1:Sds_Count(2)) = Sds_Data_2d
@@ -377,11 +377,6 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
      ch(31)%Bt_Toa_Std_Sub(1:Sds_Count(1),1:Sds_Count(2)) = Temp_Pix_Array_1(1:Sds_Count(1),1:Sds_Count(2)) - &
                                                             ch(31)%Bt_Toa(1:Sds_Count(1),1:Sds_Count(2))
   endif
-
-  !--- fix vza
-  !do Elem_Idx = 1, Sds_Count(1)
-  !  Geo%Satzen(Elem_Idx,:) =   70.0*abs(Elem_Idx - 401) / 800.0
-  !enddo
 
   !--- read scanline time
   call READ_NETCDF(Ncid_Vgac, [Sds_Start(2)], [Sds_Stride(2)], [Sds_Count(2)], "time", Sds_Data_1d)
