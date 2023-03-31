@@ -35,6 +35,8 @@ Solar_Rtm%Tau_O3( 1) =  5.1377e-06
 Solar_Rtm%Tau_CO2( 1) =  0.0000e+00
 Solar_Rtm%Tau_CH4( 1) =  0.0000e+00
 
+!--- channel 6?
+
 !SRF = tigr_tpw_trans_ch7_resp_npp.dat
 Solar_Rtm%Tau_H2O_Coef( 2,:) = (/  5.9361e-05,  2.1869e-03, -6.3343e-05/)
 Solar_Rtm%Tau_Ray( 2) =  1.7230e-02

@@ -985,6 +985,9 @@ subroutine SETUP_LEVEL2_SDS_INFO()
          case("emiss_tropo_6_7um_nom")
             Sds_Info(Var_Idx)%Units =  "none"
             if (allocated(ch(27)%Emiss_Tropo)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => ch(27)%Emiss_Tropo
+         case("emiss_tropo_7_3um_nom")
+            Sds_Info(Var_Idx)%Units =  "none"
+            if (allocated(ch(28)%Emiss_Tropo)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => ch(28)%Emiss_Tropo
          case("emiss_tropo_8_5um_nom")
             Sds_Info(Var_Idx)%Units =  "none"
             if (allocated(ch(29)%Emiss_Tropo)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => ch(29)%Emiss_Tropo

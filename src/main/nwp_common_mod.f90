@@ -1680,8 +1680,8 @@ subroutine FIND_NWP_LEVELS(Lon_Nwp_Idx,Lat_Nwp_Idx)
      endif
      e = es * NWP%Rhsfc(Lon_Nwp_Idx,Lat_Nwp_Idx) / 100.0  !vapor pressure in hPa
      Td_Sfc = 273.15 + 243.5 * alog(e / 6.112)  / (17.67 - alog(e/6.112))      !Dewpoint T in K
-     NWP%Lifting_Condensation_Level_Height(Lon_Nwp_Idx,Lat_Nwp_Idx) = 1000. * 0.125*(T - Td_Sfc)  ! meters 
-     NWP%Convective_Condensation_Level_Height(Lon_Nwp_Idx,Lat_Nwp_Idx) = 1000.* (T - Td_Sfc)/4.4  ! meters (AW 2015/04/30)
+     NWP%Lifting_Condensation_Level_Height(Lon_Nwp_Idx,Lat_Nwp_Idx) = 1000.0 * 0.125*(T - Td_Sfc)  ! meters 
+     NWP%Convective_Condensation_Level_Height(Lon_Nwp_Idx,Lat_Nwp_Idx) = 1000.0 * (T - Td_Sfc)/4.4  ! meters (AW 2015/04/30)
    endif
 
    !---------------------------------------------------------------------------
