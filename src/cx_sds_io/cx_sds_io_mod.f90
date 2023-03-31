@@ -40,7 +40,7 @@ module cx_sds_io_mod
       h5_get_finfo &
       , h5_get_file_sds
 
-    use compare_float_numbers
+   use univ_fp_comparison_mod, only: operator(.EQfp.)
 
    implicit none
    private
@@ -418,11 +418,11 @@ contains
 
     out = temp_1d
 
-    if (scaled(1) .EqualTo. 1.) then
+    if (scaled(1) .EQfp. 1.) then
       out = out * slope(1) + add_offset(1)
     end if
 
-    where (temp_1d .EqualTo. missing(1))
+    where (temp_1d .EQfp. missing(1))
       out = -999.
     end where
 
@@ -481,9 +481,9 @@ contains
 
     if ( .not. att_exist) MISS_VALUE = ps%get_att('_FillValue',exist = att_exist)
 
-    if ( .not. ( add_offset(1) .EqualTo. -999.)) scaled(1) = 1
+    if ( .not. ( add_offset(1) .EQfp. -999.)) scaled(1) = 1
     ! for  ATMS files which have bad attribute setting
-    if (( add_offset(1) .EqualTo. -999.) .AND. (slope(1) .gt. 0)) then
+    if (( add_offset(1) .EQfp. -999.) .AND. (slope(1) .gt. 0)) then
       add_offset(:) = 0.
       scaled(1) = 1
     end if
@@ -504,12 +504,12 @@ contains
 
       out = reshape (temp_1d,(/dim1,dim2/))
 
-      if (scaled(1) .EqualTo. 1.) then
+      if (scaled(1) .EQfp. 1.) then
 
         out = out * slope(1) + add_offset(1)
       end if
 
-      where (reshape (temp_1d,(/dim1,dim2/)) .EqualTo. MISS_VALUE(1))
+      where (reshape (temp_1d,(/dim1,dim2/)) .EQfp. MISS_VALUE(1))
         out = -999.
       end where
 
@@ -583,7 +583,7 @@ contains
      end if
 
 
-     where (reshape (temp_1d,(/dim1,dim2,dim3/)) .EqualTo. missing(1))
+     where (reshape (temp_1d,(/dim1,dim2,dim3/)) .EQfp. missing(1))
         out = -999.
      end where
 
@@ -646,7 +646,7 @@ contains
      end if
 
 
-     where (reshape (temp_1d,(/dim1,dim2,dim3,dim4/)) .EqualTo. missing(1))
+     where (reshape (temp_1d,(/dim1,dim2,dim3,dim4/)) .EQfp. missing(1))
         out = -999.
      end where
 
@@ -717,7 +717,7 @@ contains
      end if
 
 
-     where (reshape (temp_1d,(/dim1,dim2,dim3,dim4,dim5/)) .EqualTo. missing(1))
+     where (reshape (temp_1d,(/dim1,dim2,dim3,dim4,dim5/)) .EQfp. missing(1))
         out = -999.
      end where
 
@@ -782,7 +782,7 @@ contains
      end if
 
 
-     where (reshape (temp_1d,(/dim1,dim2,dim3,dim4,dim5,dim6/)) .EqualTo. missing(1))
+     where (reshape (temp_1d,(/dim1,dim2,dim3,dim4,dim5,dim6/)) .EQfp. missing(1))
         out = -999.
      end where
 
@@ -850,7 +850,7 @@ contains
      end if
 
 
-     where (reshape (temp_1d,(/dim1,dim2,dim3,dim4,dim5,dim6,dim7/)) .EqualTo. missing(1))
+     where (reshape (temp_1d,(/dim1,dim2,dim3,dim4,dim5,dim6,dim7/)) .EQfp. missing(1))
         out = -999.
      end where
 

@@ -38,7 +38,8 @@ use CONSTANTS_MOD, only: MSEC_PER_DAY, Sym, MISSING_VALUE_REAL4, &
 use FILE_UTILS, only: FILE_SEARCH
 
 use CALIBRATION_CONSTANTS_MOD
-use CX_REAL_BOOLEAN_MOD
+use univ_fp_comparison_mod, only: operator(.NEfp.), operator(.GEfp.),  &
+     operator(.LEfp.)
 use CLASS_TIME_DATE
 use CLAVRX_MESSAGE_MOD
 
@@ -285,10 +286,10 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
   Nav%Lat = Nav%Lat_1b
 
   call READ_NETCDF(Ncid_Vgac, Sds_Start, Sds_Stride, Sds_Count, "lon", Sds_Data_2d)
-  where((Sds_Data_2d .ltr. -180.0) .and. (Sds_Data_2d .ner.  MISSING_VALUE_REAL4))  !need to flip
+  where((Sds_Data_2d < -180.0) .and. (Sds_Data_2d .NEfp.  MISSING_VALUE_REAL4))  !need to flip
     Sds_Data_2d = Sds_Data_2d + 360.0
   endwhere
-  where(Sds_Data_2d .gtr. 180.0)  !need to flip
+  where(Sds_Data_2d > 180.0)  !need to flip
     Sds_Data_2d = Sds_Data_2d - 360.0
   endwhere
   Nav%Lon_1b(1:Sds_Count(1),1:Sds_Count(2)) = Sds_Data_2d
@@ -296,7 +297,7 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
 
   !--- angles
   call READ_AND_UNSCALE_NETCDF_2D(Ncid_Vgac, Sds_Start, Sds_Stride, Sds_Count, "vza", Sds_Data_2d)
-  Geo%Satzen(1:Sds_Count(1),1:Sds_Count(2)) = Sds_Data_2d    !THIS IS NOT CORRECT FIXME
+  Geo%Satzen(1:Sds_Count(1),1:Sds_Count(2)) = Sds_Data_2d    !VGAC vza is actually the satzen now
 
   call READ_AND_UNSCALE_NETCDF_2D(Ncid_Vgac, Sds_Start, Sds_Stride, Sds_Count, "sza", Sds_Data_2d)
   Geo%Solzen(1:Sds_Count(1),1:Sds_Count(2)) = Sds_Data_2d
@@ -316,7 +317,7 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
 
      call READ_AND_UNSCALE_NETCDF_2D(Ncid_Vgac, Sds_Start, Sds_Stride, Sds_Count, &
                                      Obs_Name(Chan_Idx), Sds_Data_2d)
-     where((Sds_Data_2d .ler. 0.0))  !appears 0 is missing, there is no fill
+     where((Sds_Data_2d .LEfp. 0.0))  !appears 0 is missing, there is no fill
          Sds_Data_2d = MISSING_VALUE_REAL4
      endwhere
 
@@ -347,10 +348,10 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
   if (Sensor%Chan_On_Flag_Default(1) == sym%Yes) then
      call READ_AND_UNSCALE_NETCDF_2D(Ncid_Vgac, Sds_Start, Sds_Stride, Sds_Count,'i01_stdev', Sds_Data_2d)
      !print *,"range in m05_sd = ", minval(Sds_Data_2d),maxval(Sds_Data_2d)
-     where(Sds_Data_2d .ltr. 0.00)   !missing seems to be -1.00
+     where(Sds_Data_2d < 0.00)   !missing seems to be -1.00
          Sds_Data_2d = MISSING_VALUE_REAL4
      endwhere
-     !where(Sds_Data_2d .ger. 0.00)
+     !where(Sds_Data_2d .GEfp. 0.00)
      !    Sds_Data_2d = 100.0*Sds_Data_2d
      !endwhere
      ch(1)%Ref_Toa_Std_Sub(1:Sds_Count(1),1:Sds_Count(2)) = Sds_Data_2d
@@ -358,17 +359,17 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
 
   if (Sensor%Chan_On_Flag_Default(31) == sym%Yes) then  
      call READ_AND_UNSCALE_NETCDF_2D(Ncid_Vgac, Sds_Start, Sds_Stride, Sds_Count,'M15', Temp_Pix_Array_1(1:Sds_Count(1),1:Sds_Count(2)))
-     where(Temp_Pix_Array_1 .ler. 0.00)   !missing seems to be -1.00
+     where(Temp_Pix_Array_1 .LEfp. 0.00)   !missing seems to be -1.00
          Temp_Pix_Array_1 = MISSING_VALUE_REAL4
      endwhere
      call READ_AND_UNSCALE_NETCDF_2D(Ncid_Vgac, Sds_Start, Sds_Stride, Sds_Count,'i05_stdev', Sds_Data_2d)
-     where(Sds_Data_2d .ltr. 0.00)   !missing seems to be -1.00
+     where(Sds_Data_2d < 0.00)   !missing seems to be -1.00
          Sds_Data_2d = MISSING_VALUE_REAL4
      endwhere
-     where(Sds_Data_2d .ger. 0.00)
+     where(Sds_Data_2d .GEfp. 0.00)
         Sds_Data_2d = Sds_Data_2d + Temp_Pix_Array_1(1:Sds_Count(1),1:Sds_Count(2))
      endwhere
-     where(Sds_Data_2d .ltr. 0.00) 
+     where(Sds_Data_2d < 0.00)
          Sds_Data_2d = MISSING_VALUE_REAL4
      endwhere
      call CONVERT_RADIANCE (Sds_Data_2d, Planck_Nu(31),MISSING_VALUE_REAL4)
@@ -376,11 +377,6 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
      ch(31)%Bt_Toa_Std_Sub(1:Sds_Count(1),1:Sds_Count(2)) = Temp_Pix_Array_1(1:Sds_Count(1),1:Sds_Count(2)) - &
                                                             ch(31)%Bt_Toa(1:Sds_Count(1),1:Sds_Count(2))
   endif
-
-  !--- fix vza
-  !do Elem_Idx = 1, Sds_Count(1)
-  !  Geo%Satzen(Elem_Idx,:) =   70.0*abs(Elem_Idx - 401) / 800.0
-  !enddo
 
   !--- read scanline time
   call READ_NETCDF(Ncid_Vgac, [Sds_Start(2)], [Sds_Stride(2)], [Sds_Count(2)], "time", Sds_Data_1d)
@@ -473,7 +469,7 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
 
         call READ_AND_UNSCALE_NETCDF_2D(Ncid_Fusion, Sds_Start, Sds_Stride, Sds_Count, Sds_Name, Sds_Data_2d)
 
-        where((Sds_Data_2d .ltr. 0.0))
+        where((Sds_Data_2d < 0.0))
            Sds_Data_2d = MISSING_VALUE_REAL4
         endwhere
 
@@ -502,7 +498,8 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
               !--- convert radiance to noaa units
               call CONVERT_RADIANCE (Sds_Data_2d, Planck_Nu_11um_Sndr, MISSING_VALUE_REAL4)
               !--- convert radiance to brightness temperature
-              call COMPUTE_BT_ARRAY(Bt_11um_Sounder,Sds_Data_2d, &
+              !--- but we need to use the proper coefficients
+              call COMPUTE_BT_ARRAY_SOUNDER(Bt_11um_Sounder,Sds_Data_2d, &
                                     CLAVRX_Ch_List(I_Fusion),MISSING_VALUE_REAL4)
            endif
 
@@ -514,7 +511,7 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
               !--- convert radiance to noaa units
               call CONVERT_RADIANCE (Sds_Data_2d, Planck_Nu_12um_Sndr, MISSING_VALUE_REAL4)
               !--- convert radiance to brightness temperature
-              call COMPUTE_BT_ARRAY(Bt_12um_Sounder,Sds_Data_2d, &
+              call COMPUTE_BT_ARRAY_SOUNDER(Bt_12um_Sounder,Sds_Data_2d, &
                                     CLAVRX_Ch_List(I_Fusion),MISSING_VALUE_REAL4)
            endif
 
@@ -547,8 +544,8 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
 
   !--- fill space mask
   Geo%Space_Mask = .TRUE.
-  where((Nav%Lat .ger. -90.0) .and. (Nav%Lat .ler. 90.0) .and. &
-        (Nav%Lon .ger. -180.0) .and. (Nav%Lon .ler. 180.0))
+  where((Nav%Lat .GEfp. -90.0) .and. (Nav%Lat .LEfp. 90.0) .and. &
+        (Nav%Lon .GEfp. -180.0) .and. (Nav%Lon .LEfp. 180.0))
         Geo%Space_Mask = .FALSE.
   endwhere
 

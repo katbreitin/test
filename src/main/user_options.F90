@@ -45,7 +45,7 @@
 !--------------------------------------------------------------------------------------
 module USER_OPTIONS
 
-   use CX_REAL_BOOLEAN_MOD
+   use univ_fp_comparison_mod, only: operator(.EQfp.)
 
    use PIXEL_COMMON_MOD, only: &
         Sensor &
@@ -616,14 +616,14 @@ contains
            call getarg(i+1,junk)
            back = .true.
            int_temp = scan(junk,temp_string, back)
-           if(int_temp .gtr. 0.0) read(junk,'(f6.3)') Nav%Lat_South_Limit
-           if(int_temp .eqr. 0.0) read(junk,'(f6.0)') Nav%Lat_North_Limit
+           if(int_temp > 0.0) read(junk,'(f6.3)') Nav%Lat_South_Limit
+           if(int_temp .EQfp. 0.0) read(junk,'(f6.0)') Nav%Lat_North_Limit
         elseif(trim(fargv) == "-lat_north_limit") then
           call getarg(i+1,junk)
            back = .true.
           int_temp = scan(junk,temp_string, back)
-          if(int_temp .gtr. 0.0) read(junk,'(f6.3)') Nav%Lat_North_Limit
-          if(int_temp .eqr. 0.0) read(junk,'(f6.0)') Nav%Lat_North_Limit
+          if(int_temp > 0.0) read(junk,'(f6.3)') Nav%Lat_North_Limit
+          if(int_temp .EQfp. 0.0) read(junk,'(f6.0)') Nav%Lat_North_Limit
 
         !Change ancillary data directory
         elseif(trim(fargv) == "-ancil_data_dir") then
@@ -660,8 +660,8 @@ contains
           call getarg(i+1,junk)
           int_temp = scan(junk,temp_string, back)
           back = .true.
-          if(int_temp .gtr. 0.0) read(junk,'(f6.3)') Geo%Solzen_Min_Limit
-          if(int_temp .eqr. 0.0) read(junk,'(f6.0)') Geo%Solzen_Min_Limit
+          if(int_temp > 0.0) read(junk,'(f6.3)') Geo%Solzen_Min_Limit
+          if(int_temp .EQfp. 0.0) read(junk,'(f6.0)') Geo%Solzen_Min_Limit
 
         !Change dcomp mode
          elseif(trim(fargv) == "-DCOMP_Mode") then
@@ -672,8 +672,8 @@ contains
            call getarg(i+1,junk)
            back = .true.
            int_temp = scan(junk,temp_string, back)
-           if(int_temp .gtr. 0.0) read(junk,'(f6.3)') Geo%Solzen_Max_Limit
-           if(int_temp .eqr. 0.0) read(junk,'(f6.0)') Geo%Solzen_Max_Limit
+           if(int_temp > 0.0) read(junk,'(f6.3)') Geo%Solzen_Max_Limit
+           if(int_temp .EQfp. 0.0) read(junk,'(f6.0)') Geo%Solzen_Max_Limit
 
         elseif (trim(fargv) == "-file_list") then
            call getarg(i+1,File_List)
@@ -1035,7 +1035,7 @@ contains
          DEFAULT_ACHA_MODE  =  ACHA_Mode_Default_FY2
       case ('AGRI') ! - FY4A
          DEFAULT_ACHA_MODE  =  ACHA_Mode_Default_FY4A_AGRI
-      case ('VIIRS','VIIRS-NASA','VIIRS-IFF','VIIRS-NASA-HRES','VGAC')
+      case ('VIIRS','VIIRS-NASA','VIIRS-IFF','VIIRS-NASA-HRES','VGAC','protoVGAC')
          DEFAULT_ACHA_MODE  =  ACHA_Mode_Default_VIIRS
       case ('AQUA-IFF')
           DEFAULT_ACHA_MODE  = ACHA_Mode_Default_Modis
@@ -1117,7 +1117,7 @@ contains
          filename  = 'fy2_default_nb_cloud_mask_lut.nc'
       case ('AGRI') !FY4A
          filename  = 'ahi_default_nb_cloud_mask_lut.nc'
-      case ('VIIRS','VIIRS-NASA','VIIRS-NASA-HRES','VIIRS-IFF','VGAC')
+      case ('VIIRS','VIIRS-NASA','VIIRS-NASA-HRES','VIIRS-IFF','VGAC','protoVGAC')
          filename  = 'viirs_default_nb_cloud_mask_lut_fw_10312018.nc'
       case ('AQUA-IFF')
           filename  = 'modis_default_nb_cloud_mask_lut.nc'
@@ -1161,7 +1161,7 @@ contains
          filename  = 'ecm2_lut_abhi_default.nc'
       case ('MODIS','METIMAGE','MERSI-2')
          filename  = 'ecm2_lut_modis_default.nc'
-      case ('VIIRS','VIIRS-NASA','VIIRS-NASA-HRES','VIIRS-IFF','VGAC')
+      case ('VIIRS','VIIRS-NASA','VIIRS-NASA-HRES','VIIRS-IFF','VGAC','protoVGAC')
          filename  = 'ecm2_lut_viirs_default.nc'
       case ('AHI')
           filename  = 'ecm2_lut_abhi_default.nc'
@@ -1225,7 +1225,7 @@ contains
          Possible_DCOMP_Modes(1:4)  =  [1, 2, 3, 9]
       case ('VIIRS-IFF')
          Possible_DCOMP_Modes(1:4)  =  [1, 2, 3, 9]
-      case ('VGAC')
+      case ('VGAC', 'protoVGAC')
          Possible_DCOMP_Modes(1:4)  =  [1, 2, 3, 9]
       case ('AQUA-IFF')
          Possible_DCOMP_Modes(1:4)  =  [1, 2, 3, 9]
@@ -1442,7 +1442,7 @@ contains
          Valid_Channels (1:14) = [1,2,3,6,7,20,21,26,27,28,29,31,32,33]
       case ('VIIRS')
          Valid_Channels (1:22) = [1,2,3,4,5,6,7,8,9,15,20,22,26,29,31,32,39,40,41,42,43,44]
-      case ('VGAC')
+      case ('VGAC', 'protoVGAC')
          if (.not. Sensor%Fusion_Flag) then
            Valid_Channels (1:16) = [1,2,3,4,5,6,7,8,9,15,20,22,26,29,31,32]
          else
@@ -1542,7 +1542,7 @@ contains
       if ((Sensor%WMO_Id == 224 .or. Sensor%WMO_Id == 225 .or. Sensor%WMO_Id == 226)) then
 
         !--- VGAC has no I-bands but it does report subpixel stddev of vis and irwin
-        if (Sensor%Sensor_Name == "VGAC") then
+        if (Sensor%Sensor_Name == 'VGAC' .or. Sensor%Sensor_Name == 'protoVGAC') then
 
             if (Sensor%Chan_On_Flag_Default(1) == sym%YES) then
               Ch(1)%Sub_Pixel_On_Flag = .true.  !0.65

@@ -1,4 +1,6 @@
+%EXE+LIB(cx_rttov_test + RTTOV_Fortran)%:cx_rttov_test.f90
 %LIB(RTTOV_Fortran)%:cx_rttov_bridge_mod.F90
 %LIB(RTTOV_Fortran)%:cx_rttov_mapping_mod.F90
 %LIB(RTTOV_Fortran)%:cx_rttov_sfc_emiss.F90
 %LIB(RTTOV_Fortran)%:cx_rttov_sensor_mod.f90
+%LIB(RTTOV_Fortran)%:cx_rttov_constants_mod.f90

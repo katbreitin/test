@@ -2,7 +2,7 @@ module cx_nwp_rtm_mod
   use RTM_COMMON_MOD, only: &
     NLevels_Rtm
     
-  use CX_REAL_BOOLEAN_MOD
+  use univ_fp_comparison_mod, only: operator(.NEfp.)
   
   use CX_SCIENCE_TOOLS_MOD , only: &
        VAPOR  
@@ -236,7 +236,7 @@ contains
       dZ_dP_near_Sfc = 0.0
       dWvmr_dP_near_Sfc = 0.0
 
-      if (Surface_Pressure_Nwp .NER. Press_Profile_Nwp(Num_Levels_Nwp_Profile)) then
+      if (Surface_Pressure_Nwp .NEfp. Press_Profile_Nwp(Num_Levels_Nwp_Profile)) then
          dT_dP_near_Sfc =  &
              (T_Profile_Nwp(Surface_Level_Nwp) - Air_Temperature_Nwp)/ &
              (Press_Profile_Nwp(Surface_Level_Nwp) - Surface_Pressure_Nwp)
@@ -252,7 +252,7 @@ contains
              (Press_Profile_Nwp(Surface_Level_Nwp-1) - Surface_Pressure_Nwp)
       end if
    
-      if (Press_Profile_Nwp(Surface_Level_Nwp-1) .NER. Press_Profile_Nwp(Surface_Level_Nwp)) then
+      if (Press_Profile_Nwp(Surface_Level_Nwp-1) .NEfp. Press_Profile_Nwp(Surface_Level_Nwp)) then
          dZ_dP_near_Sfc =  &
              (Z_Profile_Nwp(Surface_Level_Nwp-1) - Z_Profile_Nwp(Surface_Level_Nwp))/ &
              (Press_Profile_Nwp(Surface_Level_Nwp-1) - Press_Profile_Nwp(Surface_Level_Nwp))

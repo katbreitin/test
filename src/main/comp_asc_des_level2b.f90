@@ -72,7 +72,8 @@ program COMPILE_ASC_DES_LEVEL2B
  use CONSTANTS_MOD
  use CX_DATE_TIME_TOOLS_MOD
  use HDF
- use CX_REAL_BOOLEAN_MOD
+ use univ_fp_comparison_mod, only: operator(.EQfp.), operator(.NEfp.),  &
+      operator(.GEfp.), operator(.LEfp.)
  use CX_HDF4_MOD
  use LEVEL2B_MOD
  use FILE_UTILS,only: get_lun
@@ -674,12 +675,12 @@ Sds_Output_Stride_XY = (/1,1/)
                       Sc_Id_Input, Sc_Id_Output
              cycle
           endif
-          if ((Node_String == "zen") .and. (Start_Date_Input .ltr. Start_Date_Window)) then
+          if ((Node_String == "zen") .and. (Start_Date_Input < Start_Date_Window)) then
              print *, "for zen node, level-2 start date outside bounds for level-2b, skipping file ", &
                       Start_Date_Input, Start_Date_Window
              cycle
           endif
-          if ((Node_String == "zen") .and. (End_Date_Input .gtr. End_Date_Window)) then
+          if ((Node_String == "zen") .and. (End_Date_Input > End_Date_Window)) then
              print *, "for zen node, level-2 end date outside bounds for level-2b, skipping file ",  &
                       End_Date_Input, End_Date_Window
              cycle
@@ -1009,33 +1010,33 @@ Sds_Output_Stride_XY = (/1,1/)
 
               if ((Ielem > 0) .and. (Iline > 0)) then  !valid Ielem, Iline check
 
-               if (Bad_Pixel_Mask_Input(Ielem,Iline) .eqr. real(sym%NO)) then
+               if (Bad_Pixel_Mask_Input(Ielem,Iline) .EQfp. real(sym%NO)) then
 
                 !--- check node
                 if ((Node_String == "zen") .or.  &
                     (Node_String == "geo") .or.  &
-                    (Asc_Des_Flag_Input(Iline) .eqr. real(Asc_Des_Node))) then
+                    (Asc_Des_Flag_Input(Iline) .EQfp. real(Asc_Des_Node))) then
 
                  !-- valid data check
-                 if (Senzen_Input(Ielem,Iline) .ner. Missing_Value_Real4) then
+                 if (Senzen_Input(Ielem,Iline) .NEfp. Missing_Value_Real4) then
 
-                  if (Senzen_Output(Ilon,Ilat) .eqr. Missing_Value_Real4)  then
+                  if (Senzen_Output(Ilon,Ilat) .EQfp. Missing_Value_Real4)  then
                      Temp_Update_Flag = sym%YES
                   endif
         
                   !--- nadir check
                   if ((Overlap_Flag == 0) .and.  &
-                      (Senzen_Output(Ilon,Ilat) .ner. Missing_Value_Real4) .and. &
-                      (Senzen_Output(Ilon,Ilat) - Senzen_Input(Ielem,Iline) .gtr. Senzen_Thresh) .and. &
-                      (Senzen_Input(Ielem,Iline) .ltr. Senzen_Output(Ilon,Ilat))) then
+                      (Senzen_Output(Ilon,Ilat) .NEfp. Missing_Value_Real4) .and. &
+                      (Senzen_Output(Ilon,Ilat) - Senzen_Input(Ielem,Iline) > Senzen_Thresh) .and. &
+                      (Senzen_Input(Ielem,Iline) < Senzen_Output(Ilon,Ilat))) then
                       Temp_Update_Flag = sym%YES
                   endif
 
                   !--- random check
                   if (Overlap_Flag == 1) then
                      call random_number(xrand)
-                     if ((Overlap_Random_Output(Ilon,Ilat) .eqr. Missing_Value_Real4) .or. &
-                         (xrand .ltr. Overlap_Random_Output(Ilon,Ilat))) then
+                     if ((Overlap_Random_Output(Ilon,Ilat) .EQfp. Missing_Value_Real4) .or. &
+                         (xrand < Overlap_Random_Output(Ilon,Ilat))) then
                         Temp_Update_Flag = sym%YES  
                         Overlap_Random_Output(Ilon,Ilat) = xrand
                      endif
@@ -1043,8 +1044,8 @@ Sds_Output_Stride_XY = (/1,1/)
 
                   !--- check time to exclude data from wrong days for orbits that span midnight
                   if (Temp_Update_Flag == sym%YES) then
-                      if ((Date_Input(Ielem,Iline) .ger. Start_Date_Window) .and.  &
-                          (Date_Input(Ielem,Iline) .ler. End_Date_Window)) then
+                      if ((Date_Input(Ielem,Iline) .GEfp. Start_Date_Window) .and.  &
+                          (Date_Input(Ielem,Iline) .LEfp. End_Date_Window)) then
                         Update_Output_Mask(Ilon,Ilat) = sym%YES
                       endif
                   endif
@@ -1274,9 +1275,9 @@ Sds_Output_Stride_XY = (/1,1/)
     if ( Sds_Temp%Data_Type_HDF >= 0 ) then
        call UNSCALE_SDS(Sds_Temp,Scaled_Sds_Data_Output, Unscaled_Sds_Data_Output)
        Temp_Mask_Output = 0
-       where ((Solzen_Output .ner. Missing_Value_Real4) .and. &
-              (Solzen_Output .ltr. 80.0) .and. &
-              (Unscaled_Sds_Data_Output .ner. Missing_Value_Real4))
+       where ((Solzen_Output .NEfp. Missing_Value_Real4) .and. &
+              (Solzen_Output < 80.0) .and. &
+              (Unscaled_Sds_Data_Output .NEfp. Missing_Value_Real4))
          Temp_Mask_Output = 1
        end where
        Count_Valid = sum(Temp_Mask_Output)
@@ -1293,9 +1294,9 @@ Sds_Output_Stride_XY = (/1,1/)
     if ( Sds_Temp%Data_Type_HDF >= 0 ) then
        call UNSCALE_SDS(Sds_Temp,Scaled_Sds_Data_Output, Unscaled_Sds_Data_Output)
        Temp_Mask_Output = 0
-       where ((Solzen_Output .ner. Missing_Value_Real4) .and. &
-              (Solzen_Output .ltr. 80.0) .and. &
-              (Unscaled_Sds_Data_Output .ner. Missing_Value_Real4))
+       where ((Solzen_Output .NEfp. Missing_Value_Real4) .and. &
+              (Solzen_Output < 80.0) .and. &
+              (Unscaled_Sds_Data_Output .NEfp. Missing_Value_Real4))
            Temp_Mask_Output = 1
        end where
        Count_Valid = sum(Temp_Mask_Output)
@@ -1312,9 +1313,9 @@ Sds_Output_Stride_XY = (/1,1/)
     if ( Sds_Temp%Data_Type_HDF >= 0 ) then
        call UNSCALE_SDS(Sds_Temp,Scaled_Sds_Data_Output, Unscaled_Sds_Data_Output)
        Temp_Mask_Output = 0
-       where ((Solzen_Output .ner. Missing_Value_Real4) .and. &
-              (Solzen_Output .ltr. 80.0) .and. &
-              (Unscaled_Sds_Data_Output .ner. Missing_Value_Real4))
+       where ((Solzen_Output .NEfp. Missing_Value_Real4) .and. &
+              (Solzen_Output < 80.0) .and. &
+              (Unscaled_Sds_Data_Output .NEfp. Missing_Value_Real4))
        Temp_Mask_Output = 1
        end where
        Count_Valid = sum(Temp_Mask_Output)
@@ -1330,7 +1331,7 @@ Sds_Output_Stride_XY = (/1,1/)
     call READ_SDS(Sd_Id_Output,Scaled_Sds_Data_Output,Sds_Temp)
     call UNSCALE_SDS(Sds_Temp,Scaled_Sds_Data_Output, Unscaled_Sds_Data_Output)
     Temp_Mask_Output = 0
-    where (Unscaled_Sds_Data_Output .ner. Missing_Value_Real4)
+    where (Unscaled_Sds_Data_Output .NEfp. Missing_Value_Real4)
         Temp_Mask_Output = 1
     end where
     Count_Valid = sum(Temp_Mask_Output)
@@ -1345,7 +1346,7 @@ Sds_Output_Stride_XY = (/1,1/)
     call READ_SDS(Sd_Id_Output,Scaled_Sds_Data_Output,Sds_Temp)
     call UNSCALE_SDS(Sds_Temp,Scaled_Sds_Data_Output, Unscaled_Sds_Data_Output)
     Temp_Mask_Output = 0
-    where (Unscaled_Sds_Data_Output .ner. Missing_Value_Real4)
+    where (Unscaled_Sds_Data_Output .NEfp. Missing_Value_Real4)
         Temp_Mask_Output = 1
     end where
     Count_Valid = sum(Temp_Mask_Output)
@@ -1360,7 +1361,7 @@ Sds_Output_Stride_XY = (/1,1/)
     call READ_SDS(Sd_Id_Output,Scaled_Sds_Data_Output,Sds_Temp)
     call UNSCALE_SDS(Sds_Temp,Scaled_Sds_Data_Output, Unscaled_Sds_Data_Output)
     Temp_Mask_Output = 0
-    where (Unscaled_Sds_Data_Output .ner. Missing_Value_Real4)
+    where (Unscaled_Sds_Data_Output .NEfp. Missing_Value_Real4)
         Temp_Mask_Output = 1
     end where
     Count_Valid = sum(Temp_Mask_Output)
@@ -1375,7 +1376,7 @@ Sds_Output_Stride_XY = (/1,1/)
     call READ_SDS(Sd_Id_Output,Scaled_Sds_Data_Output,Sds_Temp)
     call UNSCALE_SDS(Sds_Temp,Scaled_Sds_Data_Output, Unscaled_Sds_Data_Output)
     Temp_Mask_Output = 0
-    where (Unscaled_Sds_Data_Output .ner. Missing_Value_Real4)
+    where (Unscaled_Sds_Data_Output .NEfp. Missing_Value_Real4)
         Temp_Mask_Output = 1
     end where
     Count_Valid = sum(Temp_Mask_Output)
@@ -1390,7 +1391,7 @@ Sds_Output_Stride_XY = (/1,1/)
     call READ_SDS(Sd_Id_Output,Scaled_Sds_Data_Output,Sds_Temp)
     call UNSCALE_SDS(Sds_Temp,Scaled_Sds_Data_Output, Unscaled_Sds_Data_Output)
     Temp_Mask_Output = 0
-    where (Unscaled_Sds_Data_Output .ner. real(Missing_Value_Int1))
+    where (Unscaled_Sds_Data_Output .NEfp. real(Missing_Value_Int1))
         Temp_Mask_Output = 1
     end where
     Count_Valid = sum(Temp_Mask_Output)
@@ -1442,18 +1443,18 @@ Sds_Output_Stride_XY = (/1,1/)
     !--- compute some metrics to include as attributes
     Start_Time_point_Hours = COMPUTE_TIME_HOURS()
 
-    Count_Total = count(Bad_Pixel_Mask_Output .ner. Missing_Value_Real4)
+    Count_Total = count(Bad_Pixel_Mask_Output .NEfp. Missing_Value_Real4)
 
     Domain_Data_Fraction = real(Count_Total) /  &
                            real(Nlon_Output * Nlat_Output)
 
-    Count_Valid = count(Bad_Pixel_Mask_Output .eqr. real(sym%NO))
+    Count_Valid = count(Bad_Pixel_Mask_Output .EQfp. real(sym%NO))
 
     Domain_Valid_Data_Fraction = real(Count_Valid) /  &
                            real(Nlon_Output * Nlat_Output)
 
-    Count_Day = count((Solzen_Output .ner. Missing_Value_Real4) .and. &
-                      (Solzen_Output .ltr. 90.0))
+    Count_Day = count((Solzen_Output .NEfp. Missing_Value_Real4) .and. &
+                      (Solzen_Output < 90.0))
 
     Domain_Day_Fraction = real(Count_Day) / real(Nlon_Output * Nlat_Output)
 

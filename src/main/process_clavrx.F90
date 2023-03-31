@@ -161,7 +161,7 @@
       , COMPUTE_SPATIAL_CORRELATION_ARRAYS &
       , COMPUTE_RADIATIVE_CENTER_ARRAYS
 
-   use CX_REAL_BOOLEAN_MOD
+   use univ_fp_comparison_mod, only: operator(.EQfp.), operator(.NEfp.)
 
    use CONSTANTS_MOD
 
@@ -1028,7 +1028,8 @@
          !--- planck for 11 and 12um sounder ch
          if (trim(Sensor%Sensor_Name) == 'AVHRR-IFF' .or. &
              trim(Sensor%Sensor_Name) == 'AVHRR-FUSION' .or. &
-             trim(Sensor%Sensor_Name) == 'VIIRS-IFF') then
+             trim(Sensor%Sensor_Name) == 'VIIRS-IFF' .or. &
+             Sensor%Fusion_Flag) then
             call POPULATE_PLANCK_TABLES_SOUNDER()
          endif
 
@@ -1197,8 +1198,8 @@
 
                if (Nav_Opt == 2) then
 
-                  if ((Nav%Timerr_Seconds .ner. Missing_Value_Real4) .and. &
-                   (Nav%Timerr_Seconds .ner. 0.0)) then
+                  if ((Nav%Timerr_Seconds .NEfp. Missing_Value_Real4) .and. &
+                   (Nav%Timerr_Seconds .NEfp. 0.0)) then
 
                      call REPOSITION_FOR_CLOCK_ERROR(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment, &
                                                   Nav%Timerr_Seconds,Err_Reposnx_Flag)
@@ -2269,7 +2270,7 @@ subroutine OPEN_MODIS_WHITE_SKY_SFC_REFLECTANCE_FILES()
                !---  convert to a real number
                Sfc%Zsfc_Hires = real(two_byte_temp,kind=real4)
                !--- values over water are missing, set to zero
-               where(Sfc%Zsfc_Hires .eqr. Missing_Value_Real4)
+               where(Sfc%Zsfc_Hires .EQfp. Missing_Value_Real4)
                   Sfc%Zsfc_Hires = 0.0
                end where
 

@@ -1,0 +1,119 @@
+!------------------------------------------------------------------------------
+! CLAVR-x (CLouds from AVHRR - eXtended) PROCESSING SOFTWARE
+!
+! COPYRIGHT
+! THIS SOFTWARE AND ITS DOCUMENTATION ARE CONSIDERED TO BE IN THE PUBLIC
+! DOMAIN AND THUS ARE AVAILABLE FOR UNRESTRICTED PUBLIC USE. THEY ARE
+! FURNISHED "AS IS." THE AUTHORS, THE UNITED STATES GOVERNMENT, ITS
+! INSTRUMENTALITIES, OFFICERS, EMPLOYEES, AND AGENTS MAKE NO WARRANTY,
+! EXPRESS OR IMPLIED, AS TO THE USEFULNESS OF THE SOFTWARE AND
+! DOCUMENTATION FOR ANY PURPOSE. THEY ASSUME NO RESPONSIBILITY (1) FOR
+! THE USE OF THE SOFTWARE AND DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL
+! SUPPORT TO USERS.
+!------------------------------------------------------------------------------
+
+
+!```````````````````````````````````````````````````````````````````
+pure function eq_fp_${kind_idx_n}_0d(A, B)  result(is_equal_to)
+
+!+ Tests for equality between two given scalar ${kind_desc}
+!   values.
+
+use univ_kind_defs_mod, only: ${kind_idx_use}
+
+implicit none
+
+!=== Argument declarations:
+
+real(${kind_idx_dec}), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical :: is_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_equal_to = ( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function eq_fp_${kind_idx_n}_0d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ne_fp_${kind_idx_n}_0d(A, B)  result(is_notequal_to)
+
+!+ Tests for inequality between two given scalar ${kind_desc}
+!   values.
+
+use univ_kind_defs_mod, only: ${kind_idx_use}
+
+implicit none
+
+!=== Argument declarations:
+
+real(${kind_idx_dec}), intent(IN) :: A, B
+
+!== Local declarations:
+
+logical :: is_notequal_to  ! Procedure result
+
+!=== Executable statements:
+
+is_notequal_to = .not.( abs(A-B) < spacing(max(abs(A), abs(B))) )
+
+end function ne_fp_${kind_idx_n}_0d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function ge_fp_${kind_idx_n}_0d(A, B)  result(is_greater_than_or_equal_to)
+
+!+ Tests whether the first of two given scalar ${kind_desc}
+!   values is greater than or equal to the other.
+
+use univ_kind_defs_mod, only: ${kind_idx_use}
+
+implicit none
+
+!=== Argument declarations:
+
+real(${kind_idx_dec}), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(${kind_idx_dec}) :: sp
+
+logical :: is_greater_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_greater_than_or_equal_to = ( (A-B >= sp) .or. (abs(A-B) < sp) )
+
+end function ge_fp_${kind_idx_n}_0d
+
+
+!```````````````````````````````````````````````````````````````````
+pure function le_fp_${kind_idx_n}_0d(A, B)  result(is_less_than_or_equal_to)
+
+!+ Tests whether the first of two given scalar ${kind_desc}
+!   values is less than or equal to the other.
+
+use univ_kind_defs_mod, only: ${kind_idx_use}
+
+implicit none
+
+!=== Argument declarations:
+
+real(${kind_idx_dec}), intent(IN) :: A, B
+
+!== Local declarations:
+
+real(${kind_idx_dec}) :: sp
+
+logical :: is_less_than_or_equal_to  ! Procedure result
+
+!=== Executable statements:
+
+sp = spacing(max(abs(A), abs(B)))
+is_less_than_or_equal_to = ( (B-A >= sp) .or. (abs(A-B) < sp) )
+
+end function le_fp_${kind_idx_n}_0d

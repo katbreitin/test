@@ -145,7 +145,7 @@ module RT_UTILITIES_MOD
       cx_rtm_input &
       , cx_calculate_rtm
 
-   use CX_REAL_BOOLEAN_MOD
+   use univ_fp_comparison_mod, only: operator(.NEfp.)
 
    use cx_nwp_rtm_mod,only: &
       convert_atmos_prof_nwp_rtm &
@@ -629,7 +629,7 @@ contains
             ! - now for sensor grid using the rtm structure
             ! - find best surface level
             Sfc_Level_Idx = Rtm(x_nwp,y_nwp)%Sfc_Level
-            if ((Sfc%Land(Elem_Idx,Line_Idx) == sym%LAND) .and. ((Sfc%Zsfc(Elem_Idx,Line_Idx) .NER. Missing_Value_Real4))) then
+            if ((Sfc%Land(Elem_Idx,Line_Idx) == sym%LAND) .and. ((Sfc%Zsfc(Elem_Idx,Line_Idx) .NEfp. Missing_Value_Real4))) then
                call LOCATE(Rtm(x_nwp,y_nwp)%Z_Prof,NLevels_Rtm,Sfc%Zsfc(Elem_Idx,Line_Idx),Sfc_Level_Idx)
                ! output here is dummy
             end if
@@ -1451,7 +1451,7 @@ contains
 
       Emiss = Missing_Value_Real4
 
-      if (Radiance_Cloud_BB_Toa .NER. Radiance_Clear_Toa) then
+      if (Radiance_Cloud_BB_Toa .NEfp. Radiance_Clear_Toa) then
           Emiss = (Radiance_Toa - Radiance_Clear_Toa) / &
             (Radiance_Cloud_BB_Toa - Radiance_Clear_Toa)
        end if

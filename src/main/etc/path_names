@@ -1,4 +1,6 @@
 %EXE(clavrxorb)%:process_clavrx.F90
+%EXE(comp_asc_des_level2b)%:comp_asc_des_level2b.f90
+%EXE(drive_subset_level2b)%:drive_subset_level2b.f90
 %LIB(libHim_Fortran)%:ahi_hsd_reader.f90
 abi_mod.f90
 ahi_clavrx_bridge.f90
@@ -19,7 +21,6 @@ clavrx_static_nav_module.F90
 cleanup.f90
 clone.c
 cloud_height_routines.f90
-Compare_Float_Numbers.f90
 coms_mod.f90
 constants_mod.f90
 %AUXFLAGS(1)%:conver.f90
@@ -37,7 +38,6 @@ cx_nucaps_mod.f90
 cx_nwp_rtm_mod.f90
 cx_read_ahi_mod.f90
 cx_readh5dataset.f90
-cx_real_boolean_mod.f90
 cx_rtm_mod.F90
 cx_science_tools_mod.f90
 cx_sea_ir_emiss_mod.f90
@@ -108,6 +108,7 @@ timer_mod.F90
 tracer.F90
 user_options.F90
 univ_sys_interface.c
+univ_fp_comparison.f90
 viewing_geometry_mod.f90
 viirs_clavrx_bridge.f90
 viirs_nasa_hres_read_mod.f90

@@ -99,6 +99,41 @@ def parse_via_configparser(cfg, section, entry, boolean=False):
 
 
 #------------------------------------------------------------------------------
+def init_configparser(cfg_fpath):
+    """Instantiate and initialize configparser object (+ Python-2 kludges)."""
+    cfg = cp.RawConfigParser()
+
+    if sys.version_info[0] < 3:
+        # Workaround for Python-2 inflexibility:
+        with open(cfg_fpath, "rt") as text_f:
+            ucm_cfg_str_l = []
+            for line in text_f:
+                ls_line = line.lstrip()
+                if len(line)-len(ls_line) < 10:
+                    lineA = ls_line
+                else:
+                    lineA = line
+                if len(lineA) >= 1:
+                    if not (lineA[0] == '#' or lineA[0] == ';'):
+                        parts = lineA.split(':')
+                        if parts[-1].strip():
+                            if len(parts) > 1:
+                                rhs = parts[-1].split("#;")[0]
+                                lineB = parts[0]+': '+rhs
+                            else:
+                                lineB = parts[0]
+                        else:
+                            lineB = lineA.strip()+' ____\n'
+                        ucm_cfg_str_l.append(lineB)
+            ucm_cfg_flike = StringIO('\n'.join(ucm_cfg_str_l).encode())
+            cfg.readfp(ucm_cfg_flike)
+    else:
+        cfg.read(cfg_fpath)
+
+    return cfg
+
+
+#------------------------------------------------------------------------------
 def parse_custom_srcdir(root_path, cfg, section, entry, default_evalue):
     """Return a tuple of absolute default and custom paths for an entry."""
     if cfg.has_option(section, entry):
@@ -173,7 +208,25 @@ def extend_composite_pnf(anchor_path, pnf_fpath, sdwe_fpath, pnf_pfx,
                                   # Read a list of source code files:
                                 sub_pnf_f_line_list = sub_pnf_f.readlines()
                             for pnf_line in sub_pnf_f_line_list:
-                                if "%EXE" in pnf_line: # Executable source code
+                                if "%EXE+LIB" in pnf_line: # Exe code, needs lib
+                                    exe_part, src_part = \
+                                                pnf_line.partition("%:")[::2]
+                                    tmp_str = re.split("[\(\)]", exe_part)[1]
+                                    tmp_str_l = tmp_str.split('+')
+                                    exe_name = tmp_str_l[0].strip()
+                                    lib_name = tmp_str_l[1].strip()
+                                    if lib_name in available_ext_libs:
+                                        # Write to a separate file, with the
+                                        #  executable name as the filename's
+                                        #  suffix:
+                                        exe_pnf_fpath = pnf_fpath+'.'+exe_name
+                                        line_to_write = os.path.join(
+                                                                  sub_pnf_path,
+                                                         src_part.strip())+'\n'
+                                        with open(exe_pnf_fpath,
+                                                            "wt") as exe_pnf_f:
+                                            exe_pnf_f.write(line_to_write)
+                                elif "%EXE" in pnf_line: # Executable src code
                                     exe_part, src_part = \
                                                 pnf_line.partition("%:")[::2]
                                     exe_name = re.split("[\(\)]", exe_part)[1]
@@ -397,35 +450,8 @@ def build(abs_paths, abs_fpaths, *action_args):
             ucm_cfg_fpath_parts = [absl_paths["anchor"], "env_settings",
                                    "user_change_me.cfg"]
             absl_fpaths["ucm_cfg"] = os.path.join(*ucm_cfg_fpath_parts)
-    
-            cfg = cp.RawConfigParser()
 
-            if sys.version_info[0] < 3:
-                # Workaround for Python-2 inflexibility:
-                with open(absl_fpaths["ucm_cfg"], "rt") as text_f:
-                    ucm_cfg_str_l = []
-                    for line in text_f:
-                        ls_line = line.lstrip()
-                        if len(line)-len(ls_line) < 10:
-                            lineA = ls_line
-                        else:
-                            lineA = line
-                        if len(lineA) >= 1:
-                            if not (lineA[0] == '#' or lineA[0] == ';'):
-                                parts = lineA.split(':')
-                                if parts[-1].strip():
-                                    if len(parts) > 1:
-                                        rhs = parts[-1].split("#;")[0]
-                                        lineB = parts[0]+': '+rhs
-                                    else:
-                                        lineB = parts[0]
-                                else:
-                                    lineB = lineA.strip()+' ____\n'
-                                ucm_cfg_str_l.append(lineB)
-                    ucm_cfg_flike = StringIO('\n'.join(ucm_cfg_str_l).encode())
-                    cfg.readfp(ucm_cfg_flike)
-            else:
-                cfg.read(absl_fpaths["ucm_cfg"])
+            cfg = init_configparser(absl_fpaths["ucm_cfg"])
 
             # Read in some configuration parameters:
 
@@ -1083,9 +1109,36 @@ def main(action):
         with open(abs_fpaths["build_info"], "wt") as text_f:
             text_f.write(text_to_write)
 
+        # Read in a single relevant section from the build configuration file:
+        ucm_cfg_fpath_parts = [abs_paths["anchor"], "env_settings",
+                               "user_change_me.cfg"]
+        cfg = init_configparser(os.path.join(*ucm_cfg_fpath_parts))
+
+        this_section = "Other Executables to Build"
+        other_exe_cfg = cfg.has_section(this_section)
+        if other_exe_cfg:  # Build config file has this section
+            cfg_build_other_exe = parse_via_configparser(cfg, this_section,
+                                      "Should any other executables be built?",
+                                                             boolean=True)
+            other_exe_to_build = []
+            if cfg_build_other_exe:
+                try:
+                    entries = parse_via_configparser(cfg, this_section,
+                                               "Other executables to be built")
+                    other_exe_to_build = ([x.strip() for x in
+                                                              entries.split()])
+                except:
+                    pass
+        else:
+            other_exe_to_build = []
+
           # List of libraries and/or executables to build:
         libexe_fn_list = ["lib"+app_label+".a",
                           os.path.join(abs_paths["built_exe"], "clavrxorb")]
+        if other_exe_to_build:  # Add any other executables to be built, per cfg
+            for exe_name in other_exe_to_build:
+                libexe_fn_list.append(os.path.join(abs_paths["built_exe"],
+                                                   exe_name))
 
           # Ensure that needed paths exist; if not, create them:
         tmp_l = [abs_paths["run_etc"]]

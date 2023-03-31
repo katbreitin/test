@@ -36,8 +36,6 @@ module MODIS_MOD
                 , sym &
                 , missing_value_int1
 
-        use CX_REAL_BOOLEAN_MOD
-
         use HDF, only: &
                 DFACC_read
  
