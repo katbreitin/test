@@ -42,6 +42,7 @@ module CX_NETCDF4_MOD
 
  use LEVEL2_STRUCTURES_MOD, only: Sds_Struct, L2_Glob_Attr_Definition, Clavrx_Global_Attr
 
+ use univ_kind_defs_mod, only: f8
  use CONSTANTS_MOD
 
  implicit none
@@ -86,6 +87,7 @@ module CX_NETCDF4_MOD
           read_netcdf_1d_real, &
           read_netcdf_1d_int,  &
           read_netcdf_2d_real, &
+          read_netcdf_2d_double, &
           read_netcdf_2d_int1,  &
           read_netcdf_2d_int2,  &
           read_netcdf_2d_int4,  &
@@ -1035,7 +1037,7 @@ module CX_NETCDF4_MOD
    end subroutine read_netcdf_1d_int
 
    ! ----------------------------------------------------------
-   ! Read in 2D arrays
+   ! Read in 2D arrays (4-byte reals)
    ! ----------------------------------------------------------
    subroutine read_netcdf_2d_real (nc_file_id, var_start, var_stride, &
                                    var_dim, var_name, var_output)
@@ -1065,7 +1067,43 @@ module CX_NETCDF4_MOD
             return
       endif
 
-   end subroutine read_netcdf_2d_real
+    end subroutine read_netcdf_2d_real
+
+
+   ! ----------------------------------------------------------
+   ! Read in 2D arrays (8-byte reals)
+   ! ----------------------------------------------------------
+   subroutine read_netcdf_2d_double(nc_file_id, var_start, var_stride,  &
+                                    var_dim, var_name, var_output)
+      integer, intent(in) :: nc_file_id
+      integer, dimension(:), intent(in) :: var_start
+      integer, dimension(:), intent(in) :: var_stride
+      integer, dimension(:), intent(in) :: var_dim
+
+      character(len=*), intent(in) :: var_name
+      real(f8), intent(out), dimension(:,:) :: var_output
+
+      integer :: nc_var_id
+      integer :: status
+
+      status = nf90_inq_varid(nc_file_id, trim(var_name), nc_var_id)
+
+      if (status /= nf90_noerr) then
+         print *, "Error: Unable to get variable id for ", trim(var_name)
+         return
+      end if
+
+      !get Variable
+      status = nf90_get_var(nc_file_id, nc_var_id, var_output,  &
+                            start=var_start, count=var_dim, stride=var_stride)
+      if ((status /= nf90_noerr)) then
+         print *, 'Error: ',  trim(nf90_strerror(status)), '   ',  &
+              trim(var_name)
+         return
+      end if
+
+    end subroutine read_netcdf_2d_double
+
 
    ! ----------------------------------------------------------
    ! Read in 2D arrays Integers
