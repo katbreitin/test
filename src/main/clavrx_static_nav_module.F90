@@ -553,7 +553,8 @@ module CLAVRX_STATIC_NAV_MODULE
        !--- store DQF in clavrx global data structure
        ch(Chan_Clavrx_Idx)%DQF = DQF_Seg_2km
 
-       !--- ahi radiances for all channels have to be converted from nasa units (W m-2 sr-1 um-1) to noaa units (mW m-2 sr-1 (cm-1)-1)
+       !--- ahi radiances for all channels have to be converted from nasa units (W m-2 sr-1 um-1) 
+       !--- to noaa units (mW m-2 sr-1 (cm-1)-1)
        if (Sensor%WMO_Id == 173 .or. Sensor%WMO_Id == 174) then
           if (ch(Chan_Clavrx_Idx)%Obs_Type == THERMAL_OBS_TYPE .or. &
                ch(Chan_Clavrx_Idx)%Obs_Type == MIXED_OBS_TYPE) then

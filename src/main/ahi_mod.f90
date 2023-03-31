@@ -61,7 +61,7 @@ module AHI_MOD
                 , planck_a1 &
                 , planck_a2 &
                 , planck_nu  &
-                , RAD_TO_REF_FAC_0_47UM &
+                , Rad_to_Ref_Fac_0_47UM &
                 , Rad_to_Ref_Fac_0_55um &
                 , Rad_to_Ref_Fac_0_65um &
                 , Rad_to_Ref_Fac_0_86um &
@@ -90,6 +90,7 @@ contains
     character(len=*), intent(in):: Instr_Const_file
     integer:: ios0, erstat
     integer:: Instr_Const_lun
+    real,parameter :: Missing_Local = -999.0
 
     Instr_Const_lun = GET_LUN()
 
@@ -118,13 +119,24 @@ contains
     read(unit=Instr_Const_lun,fmt=*) planck_a1(33), planck_a2(33),planck_nu(33) !Band 16
     read(unit=Instr_Const_lun,fmt=*) planck_a1(37), planck_a2(37),planck_nu(37) !Band 8
     read(unit=Instr_Const_lun,fmt=*) planck_a1(38), planck_a2(38),planck_nu(38) !Band 13
+
+    !--- these are not used, the values in the L1b values are used
     read(unit=Instr_Const_lun,fmt=*) Rad_to_Ref_Fac_0_47um !AHI Band 1
     read(unit=Instr_Const_lun,fmt=*) Rad_to_Ref_Fac_0_55um !AHI Band 2
     read(unit=Instr_Const_lun,fmt=*) Rad_to_Ref_Fac_0_65um !AHI Band 3
     read(unit=Instr_Const_lun,fmt=*) Rad_to_Ref_Fac_0_86um !AHI Band 4
     read(unit=Instr_Const_lun,fmt=*) Rad_to_Ref_Fac_1_60um !AHI Band 5
     read(unit=Instr_Const_lun,fmt=*) Rad_to_Ref_Fac_2_10um !AHI Band 6
+
     close(unit=Instr_Const_lun)
+
+    !--- set Rad_to_Ref as missing since we use the information in the L1b
+    !Rad_to_Ref_Fac_0_47um = Missing_Local
+    !Rad_to_Ref_Fac_0_55um = Missing_Local
+    !Rad_to_Ref_Fac_0_65um = Missing_Local
+    !Rad_to_Ref_Fac_0_86um = Missing_Local
+    !Rad_to_Ref_Fac_1_60um = Missing_Local
+    !Rad_to_Ref_Fac_2_10um = Missing_Local
 
     !-- convert solar flux in channel 20 to mean with units mW/m^2/cm^-1
     Solar_Ch20_Nu = 1000.0 * Solar_Ch20 / Ew_Ch20
