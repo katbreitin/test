@@ -1534,7 +1534,7 @@ module SENSOR_MOD
                Sensor%Instr_Const_File = 'coms1_instr.dat'
                exit test_loop
 
-            case (70,72,74,76,78,180,182,184,186)
+            case (70,72,74,76,78,180,182,184,186,187,188) !ynoh test for G17 and G18 area files
 
                if (AREAstr%Sat_Id_Num == 70) then
                   Sensor%Sensor_Name = 'GOES-IL-IMAGER'
@@ -1606,6 +1606,22 @@ module SENSOR_MOD
                   Sensor%Platform_Name = 'GOES-16'
                   Sensor%WMO_Id = 270
                   Sensor%Instr_Const_File = 'goes_16_instr.dat'
+                  exit test_loop
+               endif
+               if (AREAstr%Sat_Id_Num == 187) then
+                  Sensor%Sensor_Name = 'GOES-RU-IMAGER'
+                  Sensor%Spatial_Resolution_Meters = 2000
+                  Sensor%Platform_Name = 'GOES-17'
+                  Sensor%WMO_Id = 271
+                  Sensor%Instr_Const_File = 'goes_17_instr.dat'
+                  exit test_loop
+               endif
+               if (AREAstr%Sat_Id_Num == 188) then
+                  Sensor%Sensor_Name = 'GOES-RU-IMAGER'
+                  Sensor%Spatial_Resolution_Meters = 2000
+                  Sensor%Platform_Name = 'GOES-18'
+                  Sensor%WMO_Id = 272
+                  Sensor%Instr_Const_File = 'goes_18_instr.dat'
                   exit test_loop
                endif
 
@@ -2143,7 +2159,7 @@ module SENSOR_MOD
                ! Longitude of actual Sub-Satellite Point for Met-8 when it was operational.  For Met-8 Indian
                ! Ocean service, the subpoint from the AREA file is used.
                if (AREAstr%Sat_Id_Num == 51 .AND. Year_temp < 2016 ) Sensor%Geo_Sub_Satellite_Longitude = -3.477996
-               !--- Met-9 is at IODC
+               !--- Met-9 is at IODC 45.5E from June 1, 2022
                !--- if (AREAstr%Sat_Id_Num == 52 ) Sensor%Geo_Sub_Satellite_Longitude = -0.159799     ! Longitude of actual Sub-Satellite Point for Met-9
                if (AREAstr%Sat_Id_Num == 53 ) Sensor%Geo_Sub_Satellite_Longitude = 0.06          ! Longitude of actual Sub-Satellite Point for Met-10
                !--- Just use McIDAS AREA file Nav info.
@@ -2210,6 +2226,12 @@ module SENSOR_MOD
                  Sensor%Geo_Sub_Satellite_Latitude = NAVstr%sublat
                  Sensor%Geo_Sub_Satellite_Longitude = NAVstr%sublon
                endif
+            !ynoh test for GOES-18 area (GOES-17)
+            case (187:188)
+                call READ_NAVIGATION_BLOCK_ABI(trim(Level1b_Full_Name),AREAstr,NAVstr)
+                Sensor%Geo_Sub_Satellite_Latitude = NAVstr%sublat
+!               Sensor%Geo_Sub_Satellite_Longitude = NAVstr%sublon
+                Sensor%Geo_Sub_Satellite_Longitude = -137.2
 
             !test for GOES Imagers or Sounders
             case (70:79,180:185)
@@ -2565,7 +2587,7 @@ module SENSOR_MOD
                      AREAstr,NAVstr)
 
          case('GOES-RU-IMAGER')
-            if (Image%Static_Nav_Flag) then
+!            if (Image%Static_Nav_Flag) then  ! caused an error for area files so moved below by ynoh
                if (Image%Area_Format_Flag) then
                   call READ_ABI(Segment_Number,Image%Level1b_Name, &
                            Image%Start_Doy, Image%Start_Time, &
@@ -2575,6 +2597,7 @@ module SENSOR_MOD
                end if
 
                !--- read auxillary cloud mask and cloud type
+            if (Image%Static_Nav_Flag) then  
                if (Use_Aux_Flag /= sym%NO_AUX) then
 
                   if (Use_Aux_Flag == sym%USE_AUX_MODAWG ) then
@@ -2592,7 +2615,7 @@ module SENSOR_MOD
 
             else
                print*,'read abi is to installed stopping'
-               stop
+               stop  
             end if
 
             case('FCI')
