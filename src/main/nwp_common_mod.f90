@@ -73,6 +73,8 @@ module NWP_COMMON_MOD
             COMPUTE_NWP_CLOUD_PARAMETERS, &
             CONVERT_NWP_ARRAY_TO_PIXEL_ARRAY, &
             COMPUTE_Rh300, &
+            COMPUTE_Rh150, &
+            COMPUTE_Rhmax, &
             COMPUTE_UTH, &
             COMPUTE_DIVERGENCE
 
@@ -191,6 +193,8 @@ module NWP_COMMON_MOD
     real (kind=real4), dimension(:,:), allocatable :: Tmpair
     real (kind=real4), dimension(:,:), allocatable :: Rhsfc
     real (kind=real4), dimension(:,:), allocatable :: Rh300
+    real (kind=real4), dimension(:,:), allocatable :: Rh150
+    real (kind=real4), dimension(:,:), allocatable :: Rhmax
     real (kind=real4), dimension(:,:), allocatable :: Uth
     real (kind=real4), dimension(:,:), allocatable :: K_Index
     real (kind=real4), dimension(:,:), allocatable :: U_Wnd_10m
@@ -209,6 +213,8 @@ module NWP_COMMON_MOD
     integer (kind=int1), dimension(:,:), allocatable :: Level300
     integer (kind=int1), dimension(:,:), allocatable :: Level200
     integer (kind=int1), dimension(:,:), allocatable :: Level100
+    integer (kind=int1), dimension(:,:), allocatable :: Level650
+    integer (kind=int1), dimension(:,:), allocatable :: Level150
     integer (kind=int1), dimension(:,:), allocatable :: Sfc_Level
     integer (kind=int1), dimension(:,:), allocatable :: Inversion_Level
     real (kind=real4), dimension(:,:), allocatable :: Lifting_Condensation_Level_Height
@@ -223,6 +229,10 @@ module NWP_COMMON_MOD
     real (kind=real4), dimension(:,:), allocatable :: Homogenous_Freezing_Level_Pressure
     real (kind=real4), dimension(:,:), allocatable :: Homogenous_Freezing_Level_Height !km
     real (kind=real4), dimension(:,:), allocatable :: Upper_Limit_Water_Height !km
+    real (kind=real4), dimension(:,:), allocatable :: Freezing_Level_Pressure_253
+    real (kind=real4), dimension(:,:), allocatable :: Freezing_Level_Height_253 !km
+    real (kind=real4), dimension(:,:), allocatable :: Freezing_Level_Pressure_268
+    real (kind=real4), dimension(:,:), allocatable :: Freezing_Level_Height_268 !km
 
     !--- 2d nwp cloud properties
     integer (kind=int1), dimension(:,:), allocatable :: Cld_Type
@@ -448,6 +458,12 @@ subroutine COMPUTE_PIXEL_NWP_PARAMETERS(Smooth_Nwp_Opt)
   call CONVERT_NWP_ARRAY_TO_PIXEL_ARRAY(NWP%Inversion_Top,NWP_PIX%Inversion_Top,Smooth_Nwp_Opt)
   call CONVERT_NWP_ARRAY_TO_PIXEL_ARRAY(NWP%CAPE,NWP_PIX%CAPE,Smooth_Nwp_Opt)
 
+  call CONVERT_NWP_ARRAY_TO_PIXEL_ARRAY(NWP%Freezing_Level_Pressure_253,NWP_PIX%FrzPre_253,Smooth_Nwp_Opt)
+  call CONVERT_NWP_ARRAY_TO_PIXEL_ARRAY(NWP%Freezing_Level_Pressure_268,NWP_PIX%FrzPre_268,Smooth_Nwp_Opt)
+  call CONVERT_NWP_ARRAY_TO_PIXEL_ARRAY(NWP%Rh150,NWP_PIX%Rh150,Smooth_Nwp_Opt)
+  call CONVERT_NWP_ARRAY_TO_PIXEL_ARRAY(NWP%Rhmax,NWP_PIX%Rhmax,Smooth_Nwp_Opt)
+
+
 end subroutine COMPUTE_PIXEL_NWP_PARAMETERS
 
 !-------------------------------------------------------------
@@ -521,6 +537,8 @@ end subroutine COMPUTE_PIXEL_NWP_PARAMETERS
   NWP%Level300 = Missing_Value_Int1
   NWP%Level200 = Missing_Value_Int1
   NWP%Level100 = Missing_Value_Int1
+  NWP%Level650 = Missing_Value_Int1
+  NWP%Level150 = Missing_Value_Int1
 
   !--- loop through each pixel and if the
   do Line_Idx = 1, Number_of_Lines
@@ -867,6 +885,8 @@ end subroutine COMPUTE_PIXEL_NWP_PARAMETERS
     allocate(NWP%P_Trop(NWP%Nlon, NWP%Nlat))
     allocate(NWP%Rhsfc(NWP%Nlon, NWP%Nlat))
     allocate(NWP%Rh300(NWP%Nlon, NWP%Nlat))
+    allocate(NWP%Rh150(NWP%Nlon, NWP%Nlat))
+    allocate(NWP%Rhmax(NWP%Nlon, NWP%Nlat))
     allocate(NWP%Uth(NWP%Nlon, NWP%Nlat))
     allocate(NWP%Tpw(NWP%Nlon, NWP%Nlat))
     allocate(NWP%Ozone(NWP%Nlon, NWP%Nlat))
@@ -897,6 +917,10 @@ end subroutine COMPUTE_PIXEL_NWP_PARAMETERS
     allocate(NWP%Equilibrium_Level_Height(NWP%Nlon, NWP%Nlat))
     allocate(NWP%Freezing_Level_Height(NWP%Nlon, NWP%Nlat))
     allocate(NWP%Freezing_Level_Pressure(NWP%Nlon, NWP%Nlat))
+    allocate(NWP%Freezing_Level_Height_253(NWP%Nlon, NWP%Nlat))
+    allocate(NWP%Freezing_Level_Pressure_253(NWP%Nlon, NWP%Nlat))
+    allocate(NWP%Freezing_Level_Height_268(NWP%Nlon, NWP%Nlat))
+    allocate(NWP%Freezing_Level_Pressure_268(NWP%Nlon, NWP%Nlat))
     allocate(NWP%Homogenous_Freezing_Level_Height(NWP%Nlon, NWP%Nlat))
     allocate(NWP%Homogenous_Freezing_Level_Pressure(NWP%Nlon, NWP%Nlat))
     allocate(NWP%Upper_Limit_Water_Height(NWP%Nlon, NWP%Nlat))
@@ -907,6 +931,8 @@ end subroutine COMPUTE_PIXEL_NWP_PARAMETERS
     allocate(NWP%Level300(NWP%Nlon, NWP%Nlat))
     allocate(NWP%Level200(NWP%Nlon, NWP%Nlat))
     allocate(NWP%Level100(NWP%Nlon, NWP%Nlat))
+    allocate(NWP%Level650(NWP%Nlon, NWP%Nlat))
+    allocate(NWP%Level150(NWP%Nlon, NWP%Nlat))
     allocate(NWP%Pc(NWP%Nlon, NWP%Nlat))
     allocate(NWP%Tc(NWP%Nlon, NWP%Nlat))
     allocate(NWP%Sc_Lwp(NWP%Nlon, NWP%Nlat))
@@ -954,6 +980,8 @@ subroutine INITIALIZE_NWP_ARRAYS
     NWP%P_Trop = Missing_Value_Real4
     NWP%Rhsfc = Missing_Value_Real4
     NWP%Rh300 = Missing_Value_Real4
+    NWP%Rh150 = Missing_Value_Real4
+    NWP%Rhmax = Missing_Value_Real4
     NWP%Uth = Missing_Value_Real4
     NWP%Tpw = Missing_Value_Real4
     NWP%Ozone = Missing_Value_Real4
@@ -991,6 +1019,8 @@ subroutine INITIALIZE_NWP_ARRAYS
     NWP%Level300 = Missing_Value_Int1
     NWP%Level200 = Missing_Value_Int1
     NWP%Level100 = Missing_Value_Int1
+    NWP%Level650 = Missing_Value_Int1
+    NWP%Level150 = Missing_Value_Int1
     NWP%Inversion_Top = Missing_Value_Real4
     NWP%Inversion_Base = Missing_Value_Real4
     NWP%Inversion_Strength = Missing_Value_Real4
@@ -1005,6 +1035,10 @@ subroutine INITIALIZE_NWP_ARRAYS
     NWP%Homogenous_Freezing_Level_Height = Missing_Value_Real4
     NWP%Homogenous_Freezing_Level_Pressure = Missing_Value_Real4
     NWP%Upper_Limit_Water_Height = Missing_Value_Real4
+    NWP%Freezing_Level_Height_253 = Missing_Value_Real4
+    NWP%Freezing_Level_Pressure_253 = Missing_Value_Real4
+    NWP%Freezing_Level_Height_268 = Missing_Value_Real4
+    NWP%Freezing_Level_Pressure_268 = Missing_Value_Real4
     NWP%K_Index = Missing_Value_Real4
     NWP%Pc = Missing_Value_Real4
     NWP%Tc = Missing_Value_Real4
@@ -1134,6 +1168,15 @@ subroutine DESTROY_NWP_ARRAYS
     if (allocated(Z_Prof))            deallocate(Z_Prof)
     if (allocated(Tmpsfc_Nwp_Before)) deallocate(Tmpsfc_Nwp_Before)
     if (allocated(Tmpsfc_Nwp_After))  deallocate(Tmpsfc_Nwp_After)
+
+    if (allocated(NWP%Level650))       deallocate(NWP%Level650)
+    if (allocated(NWP%Level150))       deallocate(NWP%Level150)
+    if (allocated(NWP%Freezing_Level_Height_253))    deallocate(NWP%Freezing_Level_Height_253)
+    if (allocated(NWP%Freezing_Level_Pressure_253))  deallocate(NWP%Freezing_Level_Pressure_253)
+    if (allocated(NWP%Freezing_Level_Height_268))    deallocate(NWP%Freezing_Level_Height_268)
+    if (allocated(NWP%Freezing_Level_Pressure_268))  deallocate(NWP%Freezing_Level_Pressure_268)
+    if (allocated(NWP%Rh150))         deallocate(NWP%Rh150)
+    if (allocated(NWP%Rhmax))         deallocate(NWP%Rhmax)
 
   end subroutine DESTROY_NWP_ARRAYS
 
@@ -1439,6 +1482,9 @@ subroutine FIND_NWP_LEVELS(Lon_Nwp_Idx,Lat_Nwp_Idx)
    NWP%Level300(Lon_Nwp_Idx,Lat_Nwp_Idx) = 0
    NWP%Level200(Lon_Nwp_Idx,Lat_Nwp_Idx) = 0
    NWP%Level100(Lon_Nwp_Idx,Lat_Nwp_Idx) = 0
+   NWP%Level650(Lon_Nwp_Idx,Lat_Nwp_Idx) = 0
+   NWP%Level150(Lon_Nwp_Idx,Lat_Nwp_Idx) = 0
+
    do k = 1, NWP%Sfc_Level(Lon_Nwp_Idx,Lat_Nwp_Idx)-1
       if ((NWP%P_Std(k) <= 850.0) .and. (NWP%P_Std(k+1) > 850.0)) then
         NWP%Level850(Lon_Nwp_Idx,Lat_Nwp_Idx) = k
@@ -1458,6 +1504,13 @@ subroutine FIND_NWP_LEVELS(Lon_Nwp_Idx,Lat_Nwp_Idx)
       if ((NWP%P_Std(k) <= 100.0) .and. (NWP%P_Std(k+1) > 100.0)) then
         NWP%Level100(Lon_Nwp_Idx,Lat_Nwp_Idx) = k
       endif
+      if ((NWP%P_Std(k) <= 650.0) .and. (NWP%P_Std(k+1) > 650.0)) then
+        NWP%Level650(Lon_Nwp_Idx,Lat_Nwp_Idx) = k
+      endif
+      if ((NWP%P_Std(k) <= 150.0) .and. (NWP%P_Std(k+1) > 150.0)) then
+        NWP%Level150(Lon_Nwp_Idx,Lat_Nwp_Idx) = k
+      endif
+
    enddo
 
    !--------------------------------------------------------------------
@@ -1624,12 +1677,18 @@ subroutine FIND_NWP_LEVELS(Lon_Nwp_Idx,Lat_Nwp_Idx)
 
    !-------------------------------------------------------------------
    ! Find the Height of the Homogenous Freezing Level in the NWP Profiles
-   ! Start at the surface and work up
+   ! Start at the surface and work up  (Add 253 and 268K levels by ynoh)
    !-------------------------------------------------------------------
 
    NWP%Homogenous_Freezing_Level_Height(Lon_Nwp_Idx,Lat_Nwp_Idx) = NWP%Z_Prof(NWP%Sfc_Level(Lon_Nwp_Idx,Lat_Nwp_Idx),Lon_Nwp_Idx,Lat_Nwp_Idx)
 
    NWP%Homogenous_Freezing_Level_Pressure(Lon_Nwp_Idx,Lat_Nwp_Idx) = NWP%P_Std(NWP%Sfc_Level(Lon_Nwp_Idx,Lat_Nwp_Idx))
+
+   NWP%Freezing_Level_Height_253(Lon_Nwp_Idx,Lat_Nwp_Idx) = NWP%Z_Prof(NWP%Sfc_Level(Lon_Nwp_Idx,Lat_Nwp_Idx),Lon_Nwp_Idx,Lat_Nwp_Idx)
+   NWP%Freezing_Level_Pressure_253(Lon_Nwp_Idx,Lat_Nwp_Idx) = NWP%P_Std(NWP%Sfc_Level(Lon_Nwp_Idx,Lat_Nwp_Idx))
+   NWP%Freezing_Level_Height_268(Lon_Nwp_Idx,Lat_Nwp_Idx) = NWP%Z_Prof(NWP%Sfc_Level(Lon_Nwp_Idx,Lat_Nwp_Idx),Lon_Nwp_Idx,Lat_Nwp_Idx)
+   NWP%Freezing_Level_Pressure_268(Lon_Nwp_Idx,Lat_Nwp_Idx) = NWP%P_Std(NWP%Sfc_Level(Lon_Nwp_Idx,Lat_Nwp_Idx))
+
 
    do k = NWP%Sfc_Level(Lon_Nwp_Idx,Lat_Nwp_Idx),NWP%Tropo_Level(Lon_Nwp_Idx,Lat_Nwp_Idx),-1
 
@@ -1660,6 +1719,61 @@ subroutine FIND_NWP_LEVELS(Lon_Nwp_Idx,Lat_Nwp_Idx)
 
        exit
 
+      endif
+   enddo
+!ynoh
+   do k = NWP%Sfc_Level(Lon_Nwp_Idx,Lat_Nwp_Idx),NWP%Tropo_Level(Lon_Nwp_Idx,Lat_Nwp_Idx),-1
+      if (NWP%T_Prof(k,Lon_Nwp_Idx,Lat_Nwp_Idx) <= 253.00) then
+
+       if (k < NWP%Sfc_Level(Lon_Nwp_Idx,Lat_Nwp_Idx)) then
+          if (NWP%Z_Prof(k,Lon_Nwp_Idx,Lat_Nwp_Idx) < NWP%Z_Prof(k+1,Lon_Nwp_Idx,Lat_Nwp_Idx)) then
+
+             dT_dZ = (NWP%T_Prof(k+1,Lon_Nwp_Idx,Lat_Nwp_Idx) - NWP%T_Prof(k,Lon_Nwp_Idx,Lat_Nwp_Idx)) /  &
+                     (NWP%Z_Prof(k+1,Lon_Nwp_Idx,Lat_Nwp_Idx) - NWP%Z_Prof(k,Lon_Nwp_Idx,Lat_Nwp_Idx))
+
+             NWP%Freezing_Level_Height_253(Lon_Nwp_Idx,Lat_Nwp_Idx) = (NWP%T_Prof(k+1,Lon_Nwp_Idx,Lat_Nwp_Idx) - 253.00) /  &
+                                                                             dT_dZ + NWP%Z_Prof(k+1,Lon_Nwp_Idx,Lat_Nwp_Idx)
+
+             dT_dP = (NWP%T_Prof(k+1,Lon_Nwp_Idx,Lat_Nwp_Idx) - NWP%T_Prof(k,Lon_Nwp_Idx,Lat_Nwp_Idx)) /  &
+                     (NWP%P_Std(k+1) - NWP%P_Std(k))
+
+             NWP%Freezing_Level_Pressure_253(Lon_Nwp_Idx,Lat_Nwp_Idx) = (NWP%T_Prof(k+1,Lon_Nwp_Idx,Lat_Nwp_Idx) - 253.00) /  &
+                                                                               dT_dP + NWP%P_Std(k+1)
+          else
+
+             NWP%Freezing_Level_Height_253(Lon_Nwp_Idx,Lat_Nwp_Idx) = NWP%Z_Prof(k,Lon_Nwp_Idx,Lat_Nwp_Idx)
+             NWP%Freezing_Level_Pressure_253(Lon_Nwp_Idx,Lat_Nwp_Idx) = NWP%P_Std(k)
+          endif
+       endif
+
+       exit
+      endif
+   enddo
+   do k = NWP%Sfc_Level(Lon_Nwp_Idx,Lat_Nwp_Idx),NWP%Tropo_Level(Lon_Nwp_Idx,Lat_Nwp_Idx),-1
+      if (NWP%T_Prof(k,Lon_Nwp_Idx,Lat_Nwp_Idx) <= 268.00) then
+
+       if (k < NWP%Sfc_Level(Lon_Nwp_Idx,Lat_Nwp_Idx)) then
+          if (NWP%Z_Prof(k,Lon_Nwp_Idx,Lat_Nwp_Idx) < NWP%Z_Prof(k+1,Lon_Nwp_Idx,Lat_Nwp_Idx)) then
+
+             dT_dZ = (NWP%T_Prof(k+1,Lon_Nwp_Idx,Lat_Nwp_Idx) - NWP%T_Prof(k,Lon_Nwp_Idx,Lat_Nwp_Idx)) /  &
+                     (NWP%Z_Prof(k+1,Lon_Nwp_Idx,Lat_Nwp_Idx) - NWP%Z_Prof(k,Lon_Nwp_Idx,Lat_Nwp_Idx))
+
+             NWP%Freezing_Level_Height_268(Lon_Nwp_Idx,Lat_Nwp_Idx) = (NWP%T_Prof(k+1,Lon_Nwp_Idx,Lat_Nwp_Idx) - 268.00) /  &
+                                                                             dT_dZ + NWP%Z_Prof(k+1,Lon_Nwp_Idx,Lat_Nwp_Idx)
+
+             dT_dP = (NWP%T_Prof(k+1,Lon_Nwp_Idx,Lat_Nwp_Idx) - NWP%T_Prof(k,Lon_Nwp_Idx,Lat_Nwp_Idx)) /  &
+                     (NWP%P_Std(k+1) - NWP%P_Std(k))
+
+             NWP%Freezing_Level_Pressure_268(Lon_Nwp_Idx,Lat_Nwp_Idx) = (NWP%T_Prof(k+1,Lon_Nwp_Idx,Lat_Nwp_Idx) - 268.00) /  &
+                                                                               dT_dP + NWP%P_Std(k+1)
+          else
+
+             NWP%Freezing_Level_Height_268(Lon_Nwp_Idx,Lat_Nwp_Idx) = NWP%Z_Prof(k,Lon_Nwp_Idx,Lat_Nwp_Idx)
+             NWP%Freezing_Level_Pressure_268(Lon_Nwp_Idx,Lat_Nwp_Idx) = NWP%P_Std(k)
+          endif
+       endif
+
+       exit
       endif
    enddo
 
@@ -1817,6 +1931,30 @@ function COMPUTE_Rh300(Lon_Idx,Lat_Idx,Pressure_Profile,Rel_Humid_Profile) resul
  endif
 
 end function COMPUTE_Rh300
+
+!ynoh start
+function COMPUTE_Rh150(Lon_Idx,Lat_Idx,Pressure_Profile,Rel_Humid_Profile) result(Rh150)
+ integer, intent(in):: Lon_Idx, Lat_Idx
+ real, dimension(:), intent(in):: Pressure_Profile
+ real, dimension(:), intent(in):: Rel_Humid_Profile
+ real:: Rh150
+ Rh150 = MISSING_VALUE_REAL4
+ if (NWP%Level150(Lon_Idx,Lat_Idx) /= MISSING_VALUE_INT1) then
+    Rh150 = Rel_Humid_Profile(NWP%Level150(Lon_Idx,Lat_Idx))
+ endif
+end function COMPUTE_Rh150
+function COMPUTE_Rhmax(Lon_Idx,Lat_Idx,Pressure_Profile,Rel_Humid_Profile) result(Rhmax)
+ integer, intent(in):: Lon_Idx, Lat_Idx
+ real, dimension(:), intent(in):: Pressure_Profile
+ real, dimension(:), intent(in):: Rel_Humid_Profile
+ real:: Rhmax, Rhsfc
+ Rhmax = Rhsfc
+ if (NWP%Sfc_Level(Lon_Idx,Lat_Idx) /= MISSING_VALUE_INT1 .AND. &
+     NWP%Level650(Lon_Idx,Lat_Idx) /= MISSING_VALUE_INT1) then
+    Rhmax = MAXVAL(Rel_Humid_Profile(NWP%Level650(Lon_Idx,Lat_Idx):NWP%Sfc_Level(Lon_Idx,Lat_Idx)))
+ endif
+end function COMPUTE_Rhmax
+!ynoh end
 
 function COMPUTE_UTH(Lon_Idx,Lat_Idx,Pressure_Profile,Rel_Humid_Profile) result(Uth)
  integer, intent(in):: Lon_Idx, Lat_Idx
@@ -2231,6 +2369,8 @@ subroutine COMPUTE_SEGMENT_NWP_CLOUD_PARAMETERS()
        !--- compute some RH metrics
        NWP%Uth(Lon_Idx,Lat_Idx) = COMPUTE_UTH(Lon_Idx,Lat_Idx,NWP%P_Std,NWP%Rh_Prof(:,Lon_Idx,Lat_Idx))
        NWP%Rh300(Lon_Idx,Lat_Idx) = COMPUTE_RH300(Lon_Idx,Lat_Idx,NWP%P_Std,NWP%Rh_Prof(:,Lon_Idx,Lat_Idx))
+       NWP%Rh150(Lon_Idx,Lat_Idx) = COMPUTE_RH150(Lon_Idx,Lat_Idx,NWP%P_Std,NWP%Rh_Prof(:,Lon_Idx,Lat_Idx))
+       NWP%Rhmax(Lon_Idx,Lat_Idx) = COMPUTE_Rhmax(Lon_Idx,Lat_Idx,NWP%P_Std,NWP%Rh_Prof(:,Lon_Idx,Lat_Idx))
        NWP%Div_Sfc(Lon_Idx,Lat_Idx) = COMPUTE_DIVERGENCE(Lon_Idx,Lat_Idx,NWP%Sfc_Level(Lon_Idx,Lat_Idx))
        NWP%Div_200(Lon_Idx,Lat_Idx) = COMPUTE_DIVERGENCE(Lon_Idx,Lat_Idx,NWP%Level200(Lon_Idx,Lat_Idx))
 
