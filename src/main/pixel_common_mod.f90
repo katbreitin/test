@@ -599,6 +599,12 @@ module PIXEL_COMMON_MOD
     real (kind=real4), dimension(:,:), allocatable:: HomoFrzAlt
     real (kind=real4), dimension(:,:), allocatable:: Div_Sfc
     real (kind=real4), dimension(:,:), allocatable:: Div_200
+    real (kind=real4), dimension(:,:), allocatable:: Rh150
+    real (kind=real4), dimension(:,:), allocatable:: Rhmax
+    real (kind=real4), dimension(:,:), allocatable:: FrzPre_253
+    real (kind=real4), dimension(:,:), allocatable:: FrzAlt_253
+    real (kind=real4), dimension(:,:), allocatable:: FrzPre_268
+    real (kind=real4), dimension(:,:), allocatable:: FrzAlt_268
 
     !-- nwp parameters computed if NWP_Mode > 0
     real (kind=real4), dimension(:,:), allocatable:: K_Index
@@ -1918,6 +1924,12 @@ subroutine CREATE_NWP_PIX_ARRAYS(dim1,dim2)
    allocate(NWP_PIX%J_Nwp_x(dim1,dim2))
    allocate(NWP_PIX%Lon_Nwp_Fac(dim1,dim2))
    allocate(NWP_PIX%Lat_Nwp_Fac(dim1,dim2))
+   allocate(NWP_PIX%Rh150(dim1,dim2))
+   allocate(NWP_PIX%Rhmax(dim1,dim2))
+   allocate(NWP_PIX%FrzPre_253(dim1,dim2))
+   allocate(NWP_PIX%FrzAlt_253(dim1,dim2))
+   allocate(NWP_PIX%FrzPre_268(dim1,dim2))
+   allocate(NWP_PIX%FrzAlt_268(dim1,dim2))
 end subroutine CREATE_NWP_PIX_ARRAYS
 subroutine RESET_NWP_PIX_ARRAYS()
    NWP_PIX%Tair = Missing_Value_Real4
@@ -1970,6 +1982,12 @@ subroutine RESET_NWP_PIX_ARRAYS()
    NWP_PIX%J_Nwp_x = Missing_Value_Int4
    NWP_PIX%Lon_Nwp_Fac = Missing_Value_Real4
    NWP_PIX%Lat_Nwp_Fac = Missing_Value_Real4
+   NWP_PIX%Rh150 = Missing_Value_Real4
+   NWP_PIX%Rhmax = Missing_Value_Real4
+   NWP_PIX%FrzPre_253 = Missing_Value_Real4
+   NWP_PIX%FrzAlt_253 = Missing_Value_Real4
+   NWP_PIX%FrzPre_268 = Missing_Value_Real4
+   NWP_PIX%FrzAlt_268 = Missing_Value_Real4
 end subroutine RESET_NWP_PIX_ARRAYS
 subroutine DESTROY_NWP_PIX_ARRAYS()
    deallocate(NWP_PIX%Tair)
@@ -2021,6 +2039,12 @@ subroutine DESTROY_NWP_PIX_ARRAYS()
    deallocate(NWP_PIX%J_Nwp_x)
    deallocate(NWP_PIX%Lon_Nwp_Fac)
    deallocate(NWP_PIX%Lat_Nwp_Fac)
+   deallocate(NWP_PIX%Rh150)
+   deallocate(NWP_PIX%Rhmax)
+   deallocate(NWP_PIX%FrzPre_253)
+   deallocate(NWP_PIX%FrzAlt_253)
+   deallocate(NWP_PIX%FrzPre_268)
+   deallocate(NWP_PIX%FrzAlt_268)
 end subroutine DESTROY_NWP_PIX_ARRAYS
 !------------------------------------------------------------------------------
 !

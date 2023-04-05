@@ -1723,7 +1723,12 @@
                   call COMPUTE_ALTITUDE_FROM_PRESSURE(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment, &
                                                       NWP_PIX%HomoFrzPre,NWP_PIX%HomoFrzAlt)
 
-                  !--accumulate performance metrics
+                  !--- Add 253K and 268K temperature levels to flight level altitude (ynoh)
+                  call COMPUTE_ALTITUDE_FROM_PRESSURE(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment, &
+                                                      NWP_PIX%FrzPre_253,NWP_PIX%FrzAlt_253)
+                  call COMPUTE_ALTITUDE_FROM_PRESSURE(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment, &
+                                                      NWP_PIX%FrzPre_268,NWP_PIX%FrzAlt_268)
+
                   call COMPUTE_ACHA_PERFORMANCE_METRICS(ACHA%Processed_Count,ACHA%Valid_Count,ACHA%Success_Fraction)
 
                   !-- make CSBT masks (Clear Sky Brightness Temperature)
