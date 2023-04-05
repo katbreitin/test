@@ -1770,7 +1770,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Long_Name = "Cloud Top Height Uncertainty from ACHA"
             Sds_Info(Var_Idx)%Units = "m"
             if (allocated(ACHA%Zc_Uncertainty)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => ACHA%Zc_Uncertainty
-         case("cld_height_base_acha")
+         case("cld_height_base_acha_new") ! ynoh (until CIMSS has a new name for their extinction based ACHA base)
             Sds_Info(Var_Idx)%Standard_Name = "base_height_of_cloud"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,20000.0]
             Sds_Info(Var_Idx)%Long_Name = "Cloud Base Height from ACHA"
@@ -2065,6 +2065,18 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Long_Name = "Convective Available Potential Energy from NWP"
             Sds_Info(Var_Idx)%Units = "Jules/kg"
             if (allocated(NWP_PIX%CAPE)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => NWP_PIX%CAPE
+         case("freezing_altitude_253")
+            Sds_Info(Var_Idx)%Standard_Name = "freezing_altitude_253"
+            Sds_Info(Var_Idx)%Actual_Range = [0.0,100000.0]
+            Sds_Info(Var_Idx)%Long_Name = "altitude of 253K level"
+            Sds_Info(Var_Idx)%Units = "feet"
+            if (allocated(NWP_PIX%FrzAlt)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => NWP_PIX%FrzAlt_253
+         case("freezing_altitude_268")
+            Sds_Info(Var_Idx)%Standard_Name = "freezing_altitude_268"
+            Sds_Info(Var_Idx)%Actual_Range = [0.0,100000.0]
+            Sds_Info(Var_Idx)%Long_Name = "altitude of 268K level"
+            Sds_Info(Var_Idx)%Units = "feet"
+            if (allocated(NWP_PIX%FrzAlt)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => NWP_PIX%FrzAlt_268
          !----------------------------------------------------------------------------------------------------
          ! Base Members
          !----------------------------------------------------------------------------------------------------
@@ -2098,6 +2110,23 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Long_Name = "Cloud Base Temperature from BASE"
             Sds_Info(Var_Idx)%Units = "K"
             if (allocated(BASE%Tc_Base)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => BASE%Tc_Base
+         case("cld_base_hgt_qf")
+            Sds_Info(Var_Idx)%Standard_Name = "cld_base_hgt_qf"
+            Sds_Info(Var_Idx)%Scaling_Type =  0_int1
+            Sds_Info(Var_Idx)%Input_Data_Type_HDF =  DFNT_INT8
+            Sds_Info(Var_Idx)%Level2_Data_Type_HDF =  DFNT_INT8
+            Sds_Info(Var_Idx)%Level2_Data_Type_NETCDF = NF90_BYTE
+            Sds_Info(Var_Idx)%Long_Name = "cld_base_hgt_quality flag"
+            Sds_Info(Var_Idx)%Number_Of_Flags = 7
+            Sds_Info(Var_Idx)%Flags_String = "0.Valid CBH from the statistical method by CIRA"// &
+                      "1.Invalid due to invalid upstream input or clear"// &
+                      "2.Out of range, CBH lower than terrain"// &
+                      "3.Out of range,  CBH < 0 km or CBH > 20 km "// &
+                      "4.Invalid CBH > CTH"// &
+                      "5.Valid CBH from the extinction method"// &
+                      "6.Valid CBH from CWP_NWP for deep convection"
+            Sds_Info(Var_Idx)%Units = "none"
+            if (allocated(BASE%base_Quality_Flag)) Sds_Info(Var_Idx)%Sds_Data_2d_I1 => BASE%base_Quality_Flag
 
          !----------------------------------------------------------------------------------------------------
          ! CCL Members
@@ -2747,6 +2776,30 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Long_Name = "300hpa Relative Humidity from NWP Ancillary Data"
             Sds_Info(Var_Idx)%Units = "%"
             if (allocated(NWP_PIX%Rh300)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => NWP_PIX%Rh300
+         case("rh150_nwp")
+            Sds_Info(Var_Idx)%Standard_Name = "150hpa_relative_humidity_nwp"
+            Sds_Info(Var_Idx)%Actual_Range = [0.0,110.0]
+            Sds_Info(Var_Idx)%Long_Name = "150 hpa Relative Humidity from NWP Ancillary Data"
+            Sds_Info(Var_Idx)%Units = "%"
+            if (allocated(NWP_PIX%Rh150)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => NWP_PIX%Rh150
+         case("rhmax_nwp")
+            Sds_Info(Var_Idx)%Standard_Name = "max_relative_humidity_nwp"
+            Sds_Info(Var_Idx)%Actual_Range = [0.0,110.0]
+            Sds_Info(Var_Idx)%Long_Name = "Low level below 650hpa Relative Humidity from NWP Ancillary Data"
+            Sds_Info(Var_Idx)%Units = "%"
+            if (allocated(NWP_PIX%Rhmax)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => NWP_PIX%Rhmax
+         case("ice_fraction_nwp")
+            Sds_Info(Var_Idx)%Standard_Name = "sea_ice_fraction_nwp"
+            Sds_Info(Var_Idx)%Actual_Range = [0.0,1.0]
+            Sds_Info(Var_Idx)%Long_Name = "Sea Ice Fraction from NWP Ancillary Data"
+            Sds_Info(Var_Idx)%Units = "none"
+            if (allocated(NWP_PIX%Sea_Ice_Frac)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => NWP_PIX%Sea_Ice_Frac
+         case("water_equi_snow_depth_nwp")
+            Sds_Info(Var_Idx)%Standard_Name = "water_equivalent_snow_depth_nwp"
+            Sds_Info(Var_Idx)%Actual_Range = [0.0,500.0]
+            Sds_Info(Var_Idx)%Long_Name = "Water Equvalent Snow Depth from NWP Ancillary Data"
+            Sds_Info(Var_Idx)%Units = "cm"
+            if (allocated(NWP_PIX%Weasd)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => NWP_PIX%Weasd
          case("uth_nwp")
             Sds_Info(Var_Idx)%Standard_Name = "upper_tropospheric_humidity_nwp"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,110.0]
@@ -3299,7 +3352,8 @@ subroutine DEFINE_HDF_FILE_STRUCTURES(Num_Scans, &
     !--- special processing for viirs - remove hdf suffix - this hard coded for
     if (trim(Sensor%Sensor_Name) == 'VIIRS') then
       StrLen = len_trim(File_1b_Root)-34 -7
-      File_1b_Root(1:Strlen) = File_1b_Root(7:len_trim(File_1b_Root)-34)
+!      File_1b_Root(1:Strlen) = File_1b_Root(7:len_trim(File_1b_Root)-34)
+      File_1b_Root = File_1b_Root(7:len_trim(File_1b_Root)-34) ! error in cira's output so back to the old (ynoh)
       exit
     endif
 
