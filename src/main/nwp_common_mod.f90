@@ -735,6 +735,9 @@ end subroutine COMPUTE_PIXEL_NWP_PARAMETERS
   !--- linear inteprpolation scheme
   if (minval((/z1,z2,z3,z4/)) == Missing_Value_Real4) then
     z = z1
+!ynoh test (20210211) adding one line below to use z1 and z2
+    if (minval((/z1,z2/)) /= Missing_Value_Real4) z = (1.0-lonx)*z1 + (lonx)*z2
+
   else
     z =  (1.0-lonx) * ((1.0-latx) * z1 + (latx)* z3) + &
          (lonx) * ((1.0-latx) * z2 + (latx)* z4)
@@ -1486,9 +1489,9 @@ subroutine FIND_NWP_LEVELS(Lon_Nwp_Idx,Lat_Nwp_Idx)
    NWP%Level150(Lon_Nwp_Idx,Lat_Nwp_Idx) = 0
 
    do k = 1, NWP%Sfc_Level(Lon_Nwp_Idx,Lat_Nwp_Idx)-1
-      if ((NWP%P_Std(k) <= 850.0) .and. (NWP%P_Std(k+1) > 850.0)) then
-        NWP%Level850(Lon_Nwp_Idx,Lat_Nwp_Idx) = k
-      endif
+!      if ((NWP%P_Std(k) <= 850.0) .and. (NWP%P_Std(k+1) > 850.0)) then
+!        NWP%Level850(Lon_Nwp_Idx,Lat_Nwp_Idx) = k
+!      endif
       if ((NWP%P_Std(k) <= 700.0) .and. (NWP%P_Std(k+1) > 700.0)) then
         NWP%Level700(Lon_Nwp_Idx,Lat_Nwp_Idx) = k
       endif
@@ -1512,6 +1515,16 @@ subroutine FIND_NWP_LEVELS(Lon_Nwp_Idx,Lat_Nwp_Idx)
       endif
 
    enddo
+
+!ynoh test (20210208) bug corrected (lowest P_Std = 1000 in GFS but CLAVR-x
+!finds down to Sfc_Level. So let it find down to the whole k only for 950 and 1000mb)
+   do k = NWP%Nlevels,1,-1
+      if (NWP%P_Std(k) == 850.0) then
+        NWP%Level850(Lon_Nwp_Idx,Lat_Nwp_Idx) = k
+        exit
+      endif
+   enddo
+
 
    !--------------------------------------------------------------------
    !--- find tropopause level  based on tropopause pressure
@@ -2481,10 +2494,18 @@ subroutine CONVERT_NWP_ARRAY_TO_PIXEL_ARRAY_R4(xNwp,xPix,interp_method_in,diag_f
          if ((NWP_PIX%I_Nwp_x(Elem_Idx,Line_Idx) > 0) .and. (NWP_PIX%J_Nwp_x(Elem_Idx,Line_Idx) > 0)) then
 
             !--- if any are missing, skip interp
+!            if (xNwp(NWP_PIX%I_Nwp(Elem_Idx,Line_Idx),NWP_PIX%J_Nwp(Elem_Idx,Line_Idx)) == Missing_Value_Real4 .or. &
+!                xNwp(NWP_PIX%I_Nwp_x(Elem_Idx,Line_Idx),NWP_PIX%J_Nwp(Elem_Idx,Line_Idx)) == Missing_Value_Real4 .or. &
+!                xNwp(NWP_PIX%I_Nwp(Elem_Idx,Line_Idx),NWP_PIX%J_Nwp_x(Elem_Idx,Line_Idx)) == Missing_Value_Real4 .or. &
+!                xNwp(NWP_PIX%I_Nwp_x(Elem_Idx,Line_Idx),NWP_PIX%J_Nwp_x(Elem_Idx,Line_Idx)) == Missing_Value_Real4) then
+!ynoh test(20210211)  - only the nearest NWP value assigned near each scanline
+!segment edge because of values at NWP_PIX%J_Nwp_x (3rd & 4th components) are
+!not yet computed.
+! Added one line to average z1 and z2 then in "INTERPOLATE_NWP" as well.
+! Modified here to do "cycle" only when either z1 or z2 is missing. So the first
+! two conditions only can be used.
             if (xNwp(NWP_PIX%I_Nwp(Elem_Idx,Line_Idx),NWP_PIX%J_Nwp(Elem_Idx,Line_Idx)) == Missing_Value_Real4 .or. &
-                xNwp(NWP_PIX%I_Nwp_x(Elem_Idx,Line_Idx),NWP_PIX%J_Nwp(Elem_Idx,Line_Idx)) == Missing_Value_Real4 .or. &
-                xNwp(NWP_PIX%I_Nwp(Elem_Idx,Line_Idx),NWP_PIX%J_Nwp_x(Elem_Idx,Line_Idx)) == Missing_Value_Real4 .or. &
-                xNwp(NWP_PIX%I_Nwp_x(Elem_Idx,Line_Idx),NWP_PIX%J_Nwp_x(Elem_Idx,Line_Idx)) == Missing_Value_Real4) then
+                xNwp(NWP_PIX%I_Nwp_x(Elem_Idx,Line_Idx),NWP_PIX%J_Nwp(Elem_Idx,Line_Idx)) == Missing_Value_Real4) then
 
                 cycle   
 
