@@ -1479,14 +1479,14 @@ subroutine FIND_NWP_LEVELS(Lon_Nwp_Idx,Lat_Nwp_Idx)
    !--------------------------------------------------------------------
    !--- find some standard levels 
    !--------------------------------------------------------------------
-   NWP%Level850(Lon_Nwp_Idx,Lat_Nwp_Idx) = 0
-   NWP%Level700(Lon_Nwp_Idx,Lat_Nwp_Idx) = 0
-   NWP%Level500(Lon_Nwp_Idx,Lat_Nwp_Idx) = 0
-   NWP%Level300(Lon_Nwp_Idx,Lat_Nwp_Idx) = 0
-   NWP%Level200(Lon_Nwp_Idx,Lat_Nwp_Idx) = 0
-   NWP%Level100(Lon_Nwp_Idx,Lat_Nwp_Idx) = 0
-   NWP%Level650(Lon_Nwp_Idx,Lat_Nwp_Idx) = 0
-   NWP%Level150(Lon_Nwp_Idx,Lat_Nwp_Idx) = 0
+   NWP%Level850(Lon_Nwp_Idx,Lat_Nwp_Idx) = Missing_Value_Int1
+   NWP%Level700(Lon_Nwp_Idx,Lat_Nwp_Idx) = Missing_Value_Int1
+   NWP%Level500(Lon_Nwp_Idx,Lat_Nwp_Idx) = Missing_Value_Int1
+   NWP%Level300(Lon_Nwp_Idx,Lat_Nwp_Idx) = Missing_Value_Int1
+   NWP%Level200(Lon_Nwp_Idx,Lat_Nwp_Idx) = Missing_Value_Int1
+   NWP%Level100(Lon_Nwp_Idx,Lat_Nwp_Idx) = Missing_Value_Int1
+   NWP%Level650(Lon_Nwp_Idx,Lat_Nwp_Idx) = Missing_Value_Int1
+   NWP%Level150(Lon_Nwp_Idx,Lat_Nwp_Idx) = Missing_Value_Int1
 
    do k = 1, NWP%Sfc_Level(Lon_Nwp_Idx,Lat_Nwp_Idx)-1
 !      if ((NWP%P_Std(k) <= 850.0) .and. (NWP%P_Std(k+1) > 850.0)) then
