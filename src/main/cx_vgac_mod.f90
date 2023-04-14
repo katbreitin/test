@@ -329,6 +329,12 @@ subroutine READ_VGAC_DATA(Segment_Number, Error_Status)
        where(ch(CLAVRx_Chan_Idx)%Ref_Toa /= MISSING_VALUE_REAL4)
          ch(CLAVRx_Chan_Idx)%Ref_Toa = 100.0*ch(CLAVRx_Chan_Idx)%Ref_Toa
        endwhere
+       !--- apply correction for 0.65um, used to correct SNPP reflectance
+       if(CLAVRx_Chan_Idx .eq. 1) then
+         where(ch(1)%Ref_Toa /= MISSING_VALUE_REAL4)
+            ch(1)%Ref_Toa = VIIRS_Correction_Factor(1) * ch(1)%Ref_Toa
+         endwhere
+       endif
      endif
 
      !--- thermal and mixed channels

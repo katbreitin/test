@@ -1477,6 +1477,7 @@ end subroutine CONVERT_RAD_2_SOL_REF_DNB
       endif
 
       read(unit=Instr_Const_Lun,fmt="(a3)") sat_name
+      read(unit=Instr_Const_Lun,fmt=*) VIIRS_Correction_Factor(1)
       read(unit=Instr_Const_Lun,fmt=*) Solar_Ch20
       read(unit=Instr_Const_Lun,fmt=*) Ew_Ch20
       !read(unit=Instr_Const_lun,fmt=*) header
