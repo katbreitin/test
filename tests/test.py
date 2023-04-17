@@ -268,7 +268,8 @@ def test_avhrr_get_goes_header_bug():
 
 @save
 def test_vgac(out_dir=None):
-    VGAC = Path('/ships19/cloud/scratch/VGAC/sample_2018/2018_04/VGAC_VJ102MOD_A2018091_0000_n001898_K005.nc')
+    # this granule is a good test because 'time' has missing values
+    VGAC = Path('/ships19/cloud/scratch/VGAC/STAR/VGAC/2012/2012-05/VGAC_VNPP02MOD_A2012134_0642_n02808_K005.nc')
     override = {'lut':'ecm2_vgac_v1_lut.nc'}
     return _run_it(VGAC, [], config_override=override, out_dir=out_dir, only_1seg=True)
 

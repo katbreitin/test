@@ -1,5 +1,3 @@
-!$Id:$
-!----------------------------------------------------------------------
 !CLAVR-x VIIRS Global Area Coverage (VGAC)
 !
 ! HISTORY:   
@@ -20,7 +18,7 @@ use PIXEL_COMMON_MOD, only: Ch, &
                             Bt_12um_Sounder
 
 use NETCDF,only: nf90_inquire_dimension, nf90_inq_dimid, &
-    nf90_noerr,nf90_inq_varid,nf90_get_var
+    nf90_noerr,nf90_inq_varid,nf90_get_var, nf90_get_att
 
 Use CX_NETCDF4_MOD,only: OPEN_NETCDF, &
                          CLOSE_NETCDF, &
@@ -126,12 +124,12 @@ subroutine READ_VGAC_DATE_TIME(Start_Year,Start_Doy,Start_Time,&
    character(len=100) :: var_name
    real, dimension(1) :: var_output
    real, dimension(:), allocatable:: Time
-   real:: Proj_Time0, End_Time0
+   real:: Proj_Time0, End_Time0, fill_value
    character(len=4):: Year_String
    character(len=3):: Doy_String
    character(len=2):: Hour_String
    character(len=2):: Minute_String
-   integer:: Hour_Temp, Minute_Temp
+   integer:: Hour_Temp, Minute_Temp, nc_var_id, status, i
 
    !--- read dates and time from level1b
    var_start = 1
@@ -147,7 +145,24 @@ subroutine READ_VGAC_DATE_TIME(Start_Year,Start_Doy,Start_Time,&
    var_stride = 1
    var_dim = Image%Number_Of_Lines
    call READ_NETCDF(Ncid_Vgac, var_start, var_stride, var_dim, "time", Time)
-   End_Time0 = maxval(Time)
+   status = nf90_inq_varid(Ncid_Vgac, "time", nc_var_id)
+   if (status /= nf90_noerr) then
+        print *, "Error: Unable to get variable id for 'time'"
+        stop 404
+   endif
+   status = nf90_get_att(Ncid_Vgac, nc_var_id, "_FillValue", fill_value)
+   if (status /= nf90_noerr) fill_value = -999.0
+   where (Time .eq. fill_value)
+       Time = MISSING_VALUE_REAL4
+   end where
+
+   End_Time0 = MISSING_VALUE_REAL4
+   do i = 1,size(Time)
+       if(Time(i) /= MISSING_VALUE_REAL4 .and. Time(i) > End_Time0) then
+            End_Time0 = Time(i)
+       endif
+   enddo
+
    deallocate(Time)
 
    !--- convert to start time  
@@ -156,10 +171,12 @@ subroutine READ_VGAC_DATE_TIME(Start_Year,Start_Doy,Start_Time,&
 
    !--- convert to end time  
    Vgac_End_Time = Vgac_Start_Time
-   Hour_Temp = int(End_Time0)
-   Minute_Temp = int(60.0*(End_Time0 - Hour_Temp))
+   if(End_Time0 /= MISSING_VALUE_REAL4) then
+       Hour_Temp = int(End_Time0)
+       Minute_Temp = int(60.0*(End_Time0 - Hour_Temp))
 
-   call Vgac_End_Time % ADD_TIME(hour = Hour_Temp,minute = Minute_Temp) 
+       call Vgac_End_Time % ADD_TIME(hour = Hour_Temp,minute = Minute_Temp) 
+   endif
 
    !--- store in output variables
    Start_Year = vgac_start_time % year  
