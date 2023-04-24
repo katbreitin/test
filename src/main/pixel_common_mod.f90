@@ -148,6 +148,8 @@ module PIXEL_COMMON_MOD
   use CLASS_TIME_DATE, only: &
       date_type
 
+  use DCOMP_COMMON_MOD
+
   implicit none
   private
   public:: CREATE_PIXEL_ARRAYS, &
@@ -193,6 +195,9 @@ module PIXEL_COMMON_MOD
   integer, public :: Use_Land_IR_Emiss
   integer, public :: WMO_Id_ISCCPNG
   character(len=20), public :: Sensor_Name_ISCCPNG
+
+  type(dcomp_definition), public, target :: dcomp_1, dcomp_2, dcomp_3
+  type(dcomp_definition), public, pointer :: DCOMP
 
   !---------------------------------------------------------------------------------
   ! CLAVR-x file list variables
@@ -945,7 +950,7 @@ module PIXEL_COMMON_MOD
      real (kind=real4), dimension(:,:), allocatable, public, save, target:: Ec_SplitWin
 
      !-- DCOMP cloud algorithm results
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Tau_DCOMP
+    ! real (kind=real4), dimension(:,:), allocatable, public,target, save:: Tau_DCOMP
      real (kind=real4), dimension(:,:), allocatable, public,target, save:: Tau_DCOMP_Ap
      real (kind=real4), dimension(:,:), allocatable, public,target, save:: vis_Ref_fm
      real (kind=real4), dimension(:,:), allocatable, public,target, save:: Reff_DCOMP
@@ -1011,22 +1016,6 @@ module PIXEL_COMMON_MOD
      real (kind=real4), dimension(:,:), allocatable, public, save:: Insolation_Cld_Opd
      real (kind=real4), dimension(:,:), allocatable, public, save:: Insolation_Aer_Opd
 
-     !---- DCOMP params
-     real (kind=real4), dimension(:,:), allocatable, public, save:: Cost_DCOMP
-     real (kind=real4), dimension(:,:), allocatable, public, save:: Error_Cov_Matrix_Cod
-     real (kind=real4), dimension(:,:), allocatable, public, save:: Error_Cov_Matrix_Ref
-     real (kind=real4), dimension(:,:), allocatable, public, save:: DCOMP_Diag_1
-     real (kind=real4), dimension(:,:), allocatable, public, save:: DCOMP_Diag_2
-     real (kind=real4), dimension(:,:), allocatable, public, save:: DCOMP_Diag_3
-     real (kind=real4), dimension(:,:), allocatable, public, save:: DCOMP_Diag_4
-     real (kind=real4), dimension(:,:), allocatable, public, save:: DCOMP_Diag_Wv1
-     real (kind=real4), dimension(:,:), allocatable, public, save:: DCOMP_Diag_Wv2
-     real (kind=real4), dimension(:,:), allocatable, public, save:: DCOMP_Diag_Toc_Rfl1
-     real (kind=real4), dimension(:,:), allocatable, public, save:: DCOMP_Diag_Toc_Rfl2
-     real (kind=real4), dimension(:,:), allocatable, public, save:: DCOMP_Diag_Virt_Alb1
-     real (kind=real4), dimension(:,:), allocatable, public, save:: DCOMP_Diag_Virt_Alb2
-     real (kind=real4), dimension(:,:), allocatable, public, save:: DCOMP_Diag_Toc_Rfl_Unc1
-     real (kind=real4), dimension(:,:), allocatable, public, save:: DCOMP_Diag_Toc_Rfl_Unc2
 
      INTEGER, public, save::DCOMP_VIS_CHN
      INTEGER, public, save::DCOMP_IR_CHN
@@ -1139,7 +1128,7 @@ allocate(Temporary_File_Name(MAX_N_TEMP_FILE_NAMES))
 
 end subroutine INITIAL_PIXEL_COMMON_ALLOC
 
-   
+
 !----------------------------------------------------------------------------
 ! This routine allocates the memory for the pixel arrays
 !----------------------------------------------------------------------------
@@ -2909,176 +2898,34 @@ end subroutine DESTROY_ASOS_ARRAYS
 subroutine CREATE_DCOMP_ARRAYS(dim1,dim2)
    integer, intent(in):: dim1, dim2
    if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
-      allocate(Tau_DCOMP_1(dim1,dim2))
-      allocate(Tau_DCOMP_2(dim1,dim2))
-      allocate(Tau_DCOMP_3(dim1,dim2))
-      allocate(Tau_DCOMP(dim1,dim2))
-      allocate(Tau_Aux(dim1,dim2))
-      allocate(Reff_Aux(dim1,dim2))
-      allocate(Tau_DCOMP_Ap(dim1,dim2))
-      allocate(Vis_Ref_Fm(dim1,dim2))
-      allocate(Reff_DCOMP(dim1,dim2))
-      allocate(Reff_DCOMP_1(dim1,dim2))
-      allocate(Reff_DCOMP_2(dim1,dim2))
-      allocate(Reff_DCOMP_3(dim1,dim2))
-      allocate(Lwp_DCOMP(dim1,dim2))
-      allocate (refl_asym_dcomp(dim1,dim2))
-      allocate(Iwp_DCOMP(dim1,dim2))
-      allocate(Iwp_Tau_DCOMP(dim1,dim2))
-      allocate(Cwp_DCOMP(dim1,dim2))
-      allocate(Cwp_Fit(dim1,dim2))
-      allocate(Reff_DCOMP_Fit(dim1,dim2))
-      allocate(Cwp_Ice_Layer_DCOMP(dim1,dim2))
-      allocate(Cwp_Water_Layer_DCOMP(dim1,dim2))
-      allocate(Cwp_Scwater_Layer_DCOMP(dim1,dim2))
-      allocate(Iwc_DCOMP(dim1,dim2))
-      allocate(Lwc_DCOMP(dim1,dim2))
-      allocate(Rain_Rate_DCOMP(dim1,dim2))
-      allocate(Hcld_DCOMP(dim1,dim2))
-      allocate(Cdnc_DCOMP(dim1,dim2))
-      allocate(Tau_DCOMP_Cost(dim1,dim2))
-      allocate(Reff_DCOMP_Cost(dim1,dim2))
-      allocate(Tau_DCOMP_Qf(dim1,dim2))
-      allocate(Reff_DCOMP_Qf(dim1,dim2))
-      allocate(DCOMP_Quality_Flag(dim1,dim2))
-      allocate(DCOMP_Info_Flag(dim1,dim2))
-      allocate(Cloud_063um_Albedo(dim1,dim2))
-      allocate(Cloud_063um_Spherical_Albedo(dim1,dim2))
-      allocate(Cloud_063um_Transmission_View(dim1,dim2))
-      allocate(Cloud_063um_Transmission_Solar(dim1,dim2))
-      allocate(Insolation_DCOMP(dim1,dim2))
-      allocate(Insolation_Diffuse_DCOMP(dim1,dim2))
-      allocate(Cost_DCOMP(dim1,dim2))
-      allocate(Error_Cov_Matrix_Cod(dim1,dim2))
-      allocate(Error_Cov_Matrix_Ref(dim1,dim2))
-      allocate(DCOMP_Diag_1(dim1,dim2))
-      allocate(DCOMP_Diag_2(dim1,dim2))
-      allocate(DCOMP_Diag_3(dim1,dim2))
-      allocate(DCOMP_Diag_4(dim1,dim2))
-      allocate(DCOMP_Diag_Wv1(dim1,dim2))
-      allocate(DCOMP_Diag_Wv2(dim1,dim2))
-      allocate(DCOMP_Diag_Toc_Rfl1(dim1,dim2))
-      allocate(DCOMP_Diag_Toc_Rfl2(dim1,dim2))
-      allocate(DCOMP_Diag_Virt_Alb1(dim1,dim2))
-      allocate(DCOMP_Diag_Virt_Alb2(dim1,dim2))
-      allocate(DCOMP_Diag_Toc_Rfl_Unc1(dim1,dim2))
-      allocate(DCOMP_Diag_Toc_Rfl_Unc2(dim1,dim2))
+     if (dcomp_mode .eq. 1 ) dcomp => dcomp_1
+     if (dcomp_mode .eq. 2 ) dcomp => dcomp_2
+     if (dcomp_mode .eq. 3 ) dcomp => dcomp_3
+
+     if (dcomp_mode .eq. 9 ) then
+       dcomp => dcomp_2
+        call dcomp_1 % allocate(dim1,dim2)
+        call dcomp_3 % allocate(dim1,dim2)
+    end if
+     call dcomp % allocate(dim1,dim2)
+
+
    endif
 end subroutine CREATE_DCOMP_ARRAYS
 subroutine RESET_DCOMP_ARRAYS()
    if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
-      Tau_DCOMP = Missing_Value_Real4
-      Tau_DCOMP_1 = Missing_Value_Real4
-      Tau_DCOMP_2 = Missing_Value_Real4
-      Tau_DCOMP_3 = Missing_Value_Real4
-      Tau_Aux = Missing_Value_Real4
-      Reff_Aux = Missing_Value_Real4
-      Tau_DCOMP_Ap = Missing_Value_Real4
-      Vis_Ref_Fm = Missing_Value_Real4
-      Reff_DCOMP = Missing_Value_Real4
-      Reff_DCOMP_1 = Missing_Value_Real4
-      Reff_DCOMP_2 = Missing_Value_Real4
-      Reff_DCOMP_3 = Missing_Value_Real4
-      Lwp_DCOMP = Missing_Value_Real4
-      refl_asym_dcomp = Missing_Value_Real4
-      Iwp_DCOMP = Missing_Value_Real4
-      Iwp_Tau_DCOMP = Missing_Value_Real4
-      Cwp_DCOMP = Missing_Value_Real4
-      Cwp_Fit = Missing_Value_Real4
-      Reff_DCOMP_Fit = Missing_Value_Real4
-      Cwp_Ice_Layer_DCOMP = Missing_Value_Real4
-      Cwp_Water_Layer_DCOMP = Missing_Value_Real4
-      Cwp_Scwater_Layer_DCOMP = Missing_Value_Real4
-      Iwc_DCOMP = Missing_Value_Real4
-      Lwc_DCOMP = Missing_Value_Real4
-      Rain_Rate_DCOMP = Missing_Value_Real4
-      Hcld_DCOMP = Missing_Value_Real4
-      Cdnc_DCOMP = Missing_Value_Real4
-      Tau_DCOMP_Cost = Missing_Value_Real4
-      Reff_DCOMP_Cost = Missing_Value_Real4
-      Tau_DCOMP_Qf = Missing_Value_Int1
-      Reff_DCOMP_Qf = Missing_Value_Int1
-      DCOMP_Quality_Flag = 0
-      DCOMP_Info_Flag = 0
-      Cloud_063um_Albedo = Missing_Value_Real4
-      Cloud_063um_Spherical_Albedo = Missing_Value_Real4
-      Cloud_063um_Transmission_View = Missing_Value_Real4
-      Cloud_063um_Transmission_Solar = Missing_Value_Real4
-      Insolation_DCOMP = Missing_Value_Real4
-      Insolation_Diffuse_DCOMP = Missing_Value_Real4
-      Cost_DCOMP = Missing_Value_Real4
-      Error_Cov_Matrix_Cod = Missing_Value_Real4
-      Error_Cov_Matrix_Ref = Missing_Value_Real4
-      DCOMP_Diag_1 = Missing_Value_Real4
-      DCOMP_Diag_2 = Missing_Value_Real4
-      DCOMP_Diag_3 = Missing_Value_Real4
-      DCOMP_Diag_4 = Missing_Value_Real4
-      DCOMP_Diag_Wv1 = Missing_Value_Real4
-      DCOMP_Diag_Wv2 = Missing_Value_Real4
-      DCOMP_Diag_Toc_Rfl1 = Missing_Value_Real4
-      DCOMP_Diag_Toc_Rfl2 = Missing_Value_Real4
-      DCOMP_Diag_Virt_Alb1 = Missing_Value_Real4
-      DCOMP_Diag_Virt_Alb2 = Missing_Value_Real4
-      DCOMP_Diag_Toc_Rfl_Unc1 = Missing_Value_Real4
-      DCOMP_Diag_Toc_Rfl_Unc2 = Missing_Value_Real4
+    if (dcomp_1 % is_set ) call dcomp_1 % reset()
+    if (dcomp_2 % is_set ) call dcomp_2 % reset()
+    if (dcomp_3 % is_set ) call dcomp_3 % reset()
+
    endif
 end subroutine RESET_DCOMP_ARRAYS
 subroutine DESTROY_DCOMP_ARRAYS()
    if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
-      deallocate(Tau_DCOMP)
-      deallocate(Tau_DCOMP_1)
-      deallocate(Tau_DCOMP_2)
-      deallocate(Tau_DCOMP_3)
-      deallocate(Tau_Aux)
-      deallocate(Reff_Aux)
-      deallocate(Tau_DCOMP_Ap)
-      deallocate(Vis_Ref_Fm)
-      deallocate(Reff_DCOMP)
-      deallocate(Reff_DCOMP_1)
-      deallocate(Reff_DCOMP_2)
-      deallocate(Reff_DCOMP_3)
-      deallocate(Lwp_DCOMP)
-      deallocate ( refl_asym_dcomp)
-      deallocate(Iwp_DCOMP)
-      deallocate(Iwp_Tau_DCOMP)
-      deallocate(Cwp_DCOMP)
-      deallocate(Cwp_Fit)
-      deallocate(Reff_DCOMP_Fit)
-      deallocate(Cwp_Ice_Layer_DCOMP)
-      deallocate(Cwp_Water_Layer_DCOMP)
-      deallocate(Cwp_Scwater_Layer_DCOMP)
-      deallocate(Iwc_DCOMP)
-      deallocate(Lwc_DCOMP)
-      deallocate(Rain_Rate_DCOMP)
-      deallocate(Hcld_DCOMP)
-      deallocate(Cdnc_DCOMP)
-      deallocate(Tau_DCOMP_Cost)
-      deallocate(Reff_DCOMP_Cost)
-      deallocate(Tau_DCOMP_Qf)
-      deallocate(Reff_DCOMP_Qf)
-      deallocate(DCOMP_Quality_Flag)
-      deallocate(DCOMP_Info_Flag)
-      deallocate(Cloud_063um_Albedo)
-      deallocate(Cloud_063um_Spherical_Albedo)
-      deallocate(Cloud_063um_Transmission_View)
-      deallocate(Cloud_063um_Transmission_Solar)
-      deallocate(Insolation_DCOMP)
-      deallocate(Insolation_Diffuse_DCOMP)
-      deallocate(Cost_DCOMP)
-      deallocate(Error_Cov_Matrix_Cod)
-      deallocate(Error_Cov_Matrix_Ref)
-      deallocate(DCOMP_Diag_1)
-      deallocate(DCOMP_Diag_2)
-      deallocate(DCOMP_Diag_3)
-      deallocate(DCOMP_Diag_4)
-      deallocate(DCOMP_Diag_Wv1)
-      deallocate(DCOMP_Diag_Wv2)
-      deallocate(DCOMP_Diag_Toc_Rfl1)
-      deallocate(DCOMP_Diag_Toc_Rfl2)
-      deallocate(DCOMP_Diag_Virt_Alb1)
-      deallocate(DCOMP_Diag_Virt_Alb2)
-      deallocate(DCOMP_Diag_Toc_Rfl_Unc1)
-      deallocate(DCOMP_Diag_Toc_Rfl_Unc2)
+     if (dcomp_1 % is_set)  call dcomp_1 % deallocate()
+     if (dcomp_2 % is_set)  call dcomp_2 % deallocate()
+     if (dcomp_3 % is_set)  call dcomp_3 % deallocate()
+
    endif
 end subroutine DESTROY_DCOMP_ARRAYS
 !------------------------------------------------------------------------------

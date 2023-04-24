@@ -27,14 +27,13 @@
 
         use univ_kind_defs_mod, only: i1, i4, i8, f4
         use pixel_common_mod, only: Sfc,Nav,Geo,Ch,CLDMASK,Tracer_Flag,Skip_Output,CCL, ACHA, &
-            Zen_Idx_RTM, NWP_PIX, Tau_DCOMP, Tau_DCOMP_1, Tau_DCOMP_2, Tau_DCOMP_3, &
-            Reff_DCOMP, Reff_DCOMP_1, Reff_DCOMP_2, REFF_DCOMP_3, &
-            Cld_Type, Cld_Phase, DCOMP_Quality_Flag, Sst_Anal_Uni, &
+            Zen_Idx_RTM, NWP_PIX, DCOMP , dcomp_1, dcomp_2, dcomp_3,  &
+            Cld_Type, Cld_Phase, Sst_Anal_Uni, &
             Insolation_DCOMP, Insolation_Diffuse_DCOMP, &
             Image, Temporary_Data_Dir, Tc_Opaque_Cloud, Zc_Opaque_Cloud, &
             Bad_Pixel_Mask, Sensor, &
             mask_lrc, i_lrc, j_lrc, &
-            Cwp_Dcomp, Lwp_Dcomp, Iwp_Dcomp, Solar_Contamination_Mask, &
+             Solar_Contamination_Mask, &
             Covar_Ch37_Ch31_5x5, Covar_Ch27_Ch38_5x5, Covar_Ch27_Ch31_5x5, &
             Bt_375um_Sounder,Bt_11um_Sounder,Bt_12um_Sounder, Ems_Ch20_Median_3x3
         use calibration_constants_mod, only: Planck_A1, Planck_A2, Planck_Nu, Sun_Earth_Distance
@@ -157,7 +156,7 @@
              symbol_ptrs_f4_0d_ptr, symbol_shapes_f4_0d_ptr
 
         logical :: dyn_arrays_allocated = .FALSE.
-        
+
         integer(i4), volatile :: number_of_lines
         integer(i4), volatile :: wait_number
         integer(i4), volatile :: skip_processing = -1
@@ -249,17 +248,17 @@
       subroutine rtm_realloc(num_channels)
         integer(i8), intent(in) :: num_channels
 
-        if(allocated(rtm_t_prof)) deallocate(rtm_t_prof) 
-        if(allocated(rtm_z_prof)) deallocate(rtm_z_prof) 
-        if(allocated(rtm_q_prof)) deallocate(rtm_q_prof) 
-        if(allocated(rtm_tpw_prof)) deallocate(rtm_tpw_prof) 
-        if(allocated(rtm_o3_prof)) deallocate(rtm_o3_prof) 
-        if(allocated(rtm_index_0)) deallocate(rtm_index_0) 
-        if(allocated(rtm_index_1)) deallocate(rtm_index_1) 
-        if(allocated(rtm_zen_index)) deallocate(rtm_zen_index) 
-        if(allocated(rtm_sfc_index)) deallocate(rtm_sfc_index) 
-        if(allocated(rtm_atran_prof)) deallocate(rtm_atran_prof) 
-        if(allocated(rtm_arad_prof)) deallocate(rtm_arad_prof) 
+        if(allocated(rtm_t_prof)) deallocate(rtm_t_prof)
+        if(allocated(rtm_z_prof)) deallocate(rtm_z_prof)
+        if(allocated(rtm_q_prof)) deallocate(rtm_q_prof)
+        if(allocated(rtm_tpw_prof)) deallocate(rtm_tpw_prof)
+        if(allocated(rtm_o3_prof)) deallocate(rtm_o3_prof)
+        if(allocated(rtm_index_0)) deallocate(rtm_index_0)
+        if(allocated(rtm_index_1)) deallocate(rtm_index_1)
+        if(allocated(rtm_zen_index)) deallocate(rtm_zen_index)
+        if(allocated(rtm_sfc_index)) deallocate(rtm_sfc_index)
+        if(allocated(rtm_atran_prof)) deallocate(rtm_atran_prof)
+        if(allocated(rtm_arad_prof)) deallocate(rtm_arad_prof)
 
         allocate(rtm_t_prof(rtm_shape_3d(1), rtm_numel))
         allocate(rtm_z_prof(rtm_shape_3d(1), rtm_numel))
@@ -507,7 +506,7 @@
 
 
       subroutine allocate_dyn_arrays()
-      
+
         implicit none
 
         integer :: n
@@ -524,7 +523,7 @@
         dyn_arrays_allocated = .TRUE.
       end subroutine allocate_dyn_arrays
 
-      
+
       subroutine load_symbols()
           integer i;
           integer j;
@@ -532,7 +531,7 @@
           character(LEN=symbol_length_max) varname
 
           if (.not. dyn_arrays_allocated) call allocate_dyn_arrays
-          
+
           num_symbols_f4_3d = 0
           symbol_shapes_f4_3d_ptr = loc(symbol_shapes_f4_3d)
           symbol_ptrs_f4_3d_ptr = loc(symbol_ptrs_f4_3d)
@@ -595,7 +594,7 @@
 
           ! RTM data structure needs special treatment
           call load_rtm_symbols()
-          
+
 
         ! Non-allocatable must be added manually
         ! Planck_A1
@@ -812,18 +811,18 @@
         call add_sym_f4_2d(NWP_PIX%Tpw, 'total_precipitable_water_nwp')
         call add_sym_f4_2d(NWP_PIX%Ozone, 'total_column_ozone_nwp')
         ! DCOMP
-        call add_sym_f4_2d(Tau_DCOMP, 'cld_opd_dcomp')
-        call add_sym_f4_2d(Tau_DCOMP_1, 'cld_opd_dcomp_1')
-        call add_sym_f4_2d(Tau_DCOMP_2, 'cld_opd_dcomp_2')
-        call add_sym_f4_2d(Tau_DCOMP_3, 'cld_opd_dcomp_3')
-        call add_sym_f4_2d(Reff_DCOMP, 'cld_reff_dcomp')
-        call add_sym_f4_2d(Reff_DCOMP_1, 'cld_reff_dcomp_1')
-        call add_sym_f4_2d(Reff_DCOMP_2, 'cld_reff_dcomp_2')
-        call add_sym_f4_2d(Reff_DCOMP_3, 'cld_reff_dcomp_3')
-        call add_sym_f4_2d(Cwp_Dcomp, 'cld_cwp_dcomp')
-        call add_sym_f4_2d(Lwp_Dcomp, 'cld_lwp_dcomp')
-        call add_sym_f4_2d(Iwp_Dcomp, 'cld_iwp_dcomp')
-        call add_sym_i1_2d(DCOMP_Quality_Flag, 'dcomp_quality')
+        call add_sym_f4_2d(DCOMP % tau, 'cld_opd_dcomp')
+        call add_sym_f4_2d(DCOMP_1 % tau, 'cld_opd_dcomp_1')
+        call add_sym_f4_2d(DCOMP_2 % Tau, 'cld_opd_dcomp_2')
+        call add_sym_f4_2d(DCOMP_3 % Tau, 'cld_opd_dcomp_3')
+        call add_sym_f4_2d(DCOMP % Reff, 'cld_reff_dcomp')
+        call add_sym_f4_2d(DCOMP_1 % Reff, 'cld_reff_dcomp_1')
+        call add_sym_f4_2d(DCOMP_2 % Reff, 'cld_reff_dcomp_2')
+        call add_sym_f4_2d(DCOMP_3 % Reff, 'cld_reff_dcomp_3')
+        call add_sym_f4_2d(DCOMP % Cwp, 'cld_cwp_dcomp')
+        call add_sym_f4_2d(DCOMP % Lwp, 'cld_lwp_dcomp')
+        call add_sym_f4_2d(DCOMP % Iwp, 'cld_iwp_dcomp')
+        call add_sym_i1_2d(DCOMP % Quality_Flag, 'dcomp_quality')
         call add_sym_f4_2d(Insolation_DCOMP, 'insolation_dcomp')
         call add_sym_f4_2d(Insolation_Diffuse_DCOMP, 'insolation_diffuse_dcomp')
 
