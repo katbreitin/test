@@ -63,12 +63,7 @@ module dncomp_clavrx_bridge_mod
   , acha &
   , cld_type &
   , bad_pixel_mask &
-  , lwp_dcomp, reff_dcomp, tau_dcomp, iwp_dcomp &
-  , tau_dcomp_1, tau_dcomp_2, tau_dcomp_3 &
-  , reff_dcomp_1, reff_dcomp_2, reff_dcomp_3 &
-  , tau_dcomp_qf, reff_dcomp_qf &
-  , tau_dcomp_cost , reff_dcomp_cost &
-  , dcomp_info_flag, dcomp_quality_flag &
+  , DCOMP, DCOMP_1, DCOMP_2, DCOMP_3 &
   , cloud_063um_transmission_solar &
   , cloud_063um_transmission_view &
   , cloud_063um_spherical_albedo &
@@ -172,7 +167,7 @@ contains
       end subroutine
 
     end interface
-    
+
     ! ----- executable  --------------------------------------------------- !
     run_nlcomp = .false.
     if (present(nlcomp_mode)) run_nlcomp = nlcomp_mode
@@ -347,34 +342,42 @@ contains
 
         call mesg ('DCOMP ends in Bridge',level = 9)
 
-        tau_dcomp (1:dim_1,1:dim_2)   = dncomp_output % cod % d(1:dim_1,1:dim_2)
-        reff_dcomp  (1:dim_1,1:dim_2) = dncomp_output % cps % d(1:dim_1,1:dim_2)
+         DCOMP % tau (1:dim_1,1:dim_2)   = dncomp_output % cod % d(1:dim_1,1:dim_2)
+         DCOMP % reff  (1:dim_1,1:dim_2) = dncomp_output % cps % d(1:dim_1,1:dim_2)
 
 
         select case (dcomp_mode_local)
         case (1)
-          tau_dcomp_1 (1:dim_1,1:dim_2)   = dncomp_output % cod % d(1:dim_1,1:dim_2)
-          reff_dcomp_1  (1:dim_1,1:dim_2) = dncomp_output % cps % d(1:dim_1,1:dim_2)
-
+          dcomp_1 % tau  (1:dim_1,1:dim_2)   = dncomp_output % cod % d(1:dim_1,1:dim_2)
+          dcomp_1 % reff  (1:dim_1,1:dim_2) = dncomp_output % cps % d(1:dim_1,1:dim_2)
+          DCOMP_1 % lwp (1:dim_1,1:dim_2)   = dncomp_output % lwp % d(1:dim_1,1:dim_2)
+          DCOMP_1 % iwp (1:dim_1,1:dim_2)   = dncomp_output % iwp % d(1:dim_1,1:dim_2)
+          DCOMP_1 % tau_cost(1:dim_1,1:dim_2)     = dncomp_output % cod_unc % d(1:dim_1,1:dim_2)
+          DCOMP_1 % reff_cost(1:dim_1,1:dim_2)    = dncomp_output % ref_unc % d(1:dim_1,1:dim_2)
+          DCOMP_1 % quality_flag(1:dim_1,1:dim_2) = dncomp_output % quality % d(1:dim_1,1:dim_2)
+          DCOMP_1 % info_flag(1:dim_1,1:dim_2)    = dncomp_output % info % d(1:dim_1,1:dim_2)
         case(2)
 
-          tau_dcomp_2 (1:dim_1,1:dim_2)   = dncomp_output % cod % d(1:dim_1,1:dim_2)
-          reff_dcomp_2  (1:dim_1,1:dim_2) = dncomp_output % cps % d(1:dim_1,1:dim_2)
-
+          dcomp_2 % tau  (1:dim_1,1:dim_2)   = dncomp_output % cod % d(1:dim_1,1:dim_2)
+          dcomp_2 % reff  (1:dim_1,1:dim_2) = dncomp_output % cps % d(1:dim_1,1:dim_2)
+          DCOMP_2 % lwp (1:dim_1,1:dim_2)   = dncomp_output % lwp % d(1:dim_1,1:dim_2)
+          DCOMP_2 % iwp (1:dim_1,1:dim_2)   = dncomp_output % iwp % d(1:dim_1,1:dim_2)
+          DCOMP_2 % tau_cost(1:dim_1,1:dim_2)     = dncomp_output % cod_unc % d(1:dim_1,1:dim_2)
+          DCOMP_2 % reff_cost(1:dim_1,1:dim_2)    = dncomp_output % ref_unc % d(1:dim_1,1:dim_2)
+          DCOMP_2 % quality_flag(1:dim_1,1:dim_2) = dncomp_output % quality % d(1:dim_1,1:dim_2)
+          DCOMP_2 % info_flag(1:dim_1,1:dim_2)    = dncomp_output % info % d(1:dim_1,1:dim_2)
         case(3)
-          tau_dcomp_3 (1:dim_1,1:dim_2)   = dncomp_output % cod % d(1:dim_1,1:dim_2)
-          reff_dcomp_3  (1:dim_1,1:dim_2) = dncomp_output % cps % d(1:dim_1,1:dim_2)
-
+          dcomp_3 % tau  (1:dim_1,1:dim_2)   = dncomp_output % cod % d(1:dim_1,1:dim_2)
+          dcomp_3 % reff  (1:dim_1,1:dim_2) = dncomp_output % cps % d(1:dim_1,1:dim_2)
+          DCOMP_3 % lwp (1:dim_1,1:dim_2)   = dncomp_output % lwp % d(1:dim_1,1:dim_2)
+          DCOMP_3 % iwp (1:dim_1,1:dim_2)   = dncomp_output % iwp % d(1:dim_1,1:dim_2)
+          DCOMP_3 % tau_cost(1:dim_1,1:dim_2)     = dncomp_output % cod_unc % d(1:dim_1,1:dim_2)
+          DCOMP_3 % reff_cost(1:dim_1,1:dim_2)    = dncomp_output % ref_unc % d(1:dim_1,1:dim_2)
+          DCOMP_3 % quality_flag(1:dim_1,1:dim_2) = dncomp_output % quality % d(1:dim_1,1:dim_2)
+          DCOMP_3 % info_flag(1:dim_1,1:dim_2)    = dncomp_output % info % d(1:dim_1,1:dim_2)
         end select
 
-        lwp_dcomp (1:dim_1,1:dim_2)   = dncomp_output % lwp % d(1:dim_1,1:dim_2)
-        iwp_dcomp (1:dim_1,1:dim_2)   = dncomp_output % iwp % d(1:dim_1,1:dim_2)
-
-        tau_dcomp_cost(1:dim_1,1:dim_2)     = dncomp_output % cod_unc % d(1:dim_1,1:dim_2)
-        reff_dcomp_cost(1:dim_1,1:dim_2)    = dncomp_output % ref_unc % d(1:dim_1,1:dim_2)
-        dcomp_quality_flag(1:dim_1,1:dim_2) = dncomp_output % quality % d(1:dim_1,1:dim_2)
-        dcomp_info_flag(1:dim_1,1:dim_2)    = dncomp_output % info % d(1:dim_1,1:dim_2)
-
+  
         cloud_063um_transmission_solar(1:dim_1,1:dim_2) = dncomp_output % cld_trn_sol % d(1:dim_1,1:dim_2)
         cloud_063um_transmission_view(1:dim_1,1:dim_2)  = dncomp_output % cld_trn_obs % d(1:dim_1,1:dim_2)
         cloud_063um_albedo(1:dim_1,1:dim_2)             = dncomp_output % cld_alb % d(1:dim_1,1:dim_2)
@@ -397,12 +400,12 @@ contains
 
       call nlcomp_array_loop_sub (dcomp_input, dncomp_output, debug_mode_user = 9) !debug_mode_user )
 
-      tau_nlcomp (1:dim_1,1:dim_2)   = dncomp_output % cod % d
-      reff_nlcomp  (1:dim_1,1:dim_2) = dncomp_output % cps % d
-      tau_nlcomp_cost(1:dim_1,1:dim_2) = dncomp_output % cod_unc % d
-      reff_nlcomp_cost(1:dim_1,1:dim_2) = dncomp_output % ref_unc % d
-      nlcomp_quality_flag(1:dim_1,1:dim_2) = dncomp_output %  quality % d
-      nlcomp_info_flag(1:dim_1,1:dim_2) = dncomp_output % info % d
+      NLCOMP % tau (1:dim_1,1:dim_2)   = dncomp_output % cod % d
+      NLCOMP % reff (1:dim_1,1:dim_2) = dncomp_output % cps % d
+      NLCOMP % cost(1:dim_1,1:dim_2) = dncomp_output % cod_unc % d
+      NLCOMP % reff_cost(1:dim_1,1:dim_2) = dncomp_output % ref_unc % d
+      NLCOMP % quality_flag(1:dim_1,1:dim_2) = dncomp_output %  quality % d
+      NLCOMP % info_flag(1:dim_1,1:dim_2) = dncomp_output % info % d
 
     end if
 

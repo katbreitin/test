@@ -2297,28 +2297,28 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Long_Name = "cloud optical depth at the nominal wavelength of 0.65 microns, "//&
                                           "determined from DCOMP"
             Sds_Info(Var_Idx)%Units = "none"
-            if (allocated(Tau_DCOMP)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Tau_DCOMP
+            if (allocated(DCOMP % tau)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => DCOMP % tau
          case("cld_opd_dcomp_1")
             Sds_Info(Var_Idx)%Standard_Name = "atmosphere_optical_thickness_due_to_cloud"
             Sds_Info(Var_Idx)%Actual_Range = [-0.2,160.0]
             Sds_Info(Var_Idx)%Long_Name = "cloud optical depth at the nominal wavelength of 0.65 microns, "//&
                                           "determined from DCOMP Mode 1"
             Sds_Info(Var_Idx)%Units = "none"
-            if (allocated(Tau_DCOMP_1)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Tau_DCOMP_1
+            if (allocated(DCOMP_1 % tau)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => DCOMP_1 % tau
          case("cld_opd_dcomp_2")
             Sds_Info(Var_Idx)%Standard_Name = "atmosphere_optical_thickness_due_to_cloud"
             Sds_Info(Var_Idx)%Actual_Range = [-0.2,160.0]
             Sds_Info(Var_Idx)%Long_Name = "cloud optical depth at the nominal wavelength of 0.65 microns, "//&
                                           "determined from DCOMP Mode 2"
             Sds_Info(Var_Idx)%Units = "none"
-            if (allocated(Tau_DCOMP_2)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Tau_DCOMP_2
+            if (allocated(DCOMP_2 % tau)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => DCOMP_2 % tau
          case("cld_opd_dcomp_3")
             Sds_Info(Var_Idx)%Standard_Name = "atmosphere_optical_thickness_due_to_cloud"
             Sds_Info(Var_Idx)%Actual_Range = [-0.2,160.0]
             Sds_Info(Var_Idx)%Long_Name = "cloud optical depth at the nominal wavelength of 0.65 microns, "//&
                                           "determined from DCOMP Mode 3"
             Sds_Info(Var_Idx)%Units = "none"
-            if (allocated(Tau_DCOMP_3)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Tau_DCOMP_3
+            if (allocated(DCOMP_3 % tau)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => DCOMP_3 % tau
          case("cld_opd_aux")
             Sds_Info(Var_Idx)%Standard_Name = "atmosphere_optical_thickness_due_to_cloud_aux"
             Sds_Info(Var_Idx)%Actual_Range = [-0.2,160.0]
@@ -2331,7 +2331,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Actual_Range = [0.0,1200.0]
             Sds_Info(Var_Idx)%Long_Name = "cloud top water path from DCOMP"
             Sds_Info(Var_Idx)%Units = "g m-2"
-            if (allocated(Cwp_Dcomp)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Cwp_Dcomp
+            if (allocated(Dcomp % cwp)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Dcomp % cwp
          case("cld_reff_dcomp")
             Sds_Info(Var_Idx)%Standard_Name = "effective_radius_of_cloud_condensed_water_particles_at_cloud_top"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,160.0]
@@ -2345,28 +2345,28 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Long_Name = "effective radius of cloud particles determined from DCOMP Mode 1; "//&
                               "see attributes for channels used"
             Sds_Info(Var_Idx)%Units = "micron"
-            if (allocated(Reff_DCOMP_1)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Reff_DCOMP_1
+            if (allocated(DCOMP_1 % Reff)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => DCOMP_1 % Reff
          case("cld_reff_dcomp_2")
             Sds_Info(Var_Idx)%Standard_Name = "effective_radius_of_cloud_condensed_water_particles_at_cloud_top"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,160.0]
             Sds_Info(Var_Idx)%Long_Name = "effective radius of cloud particles determined from DCOMP Mode 2; "//&
                               "see attributes for channels used"
             Sds_Info(Var_Idx)%Units = "micron"
-            if (allocated(Reff_DCOMP_2)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Reff_DCOMP_2
+            if (allocated(DCOMP_2 % Reff)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => DCOMP_2 % Reff
          case("cld_reff_dcomp_3")
             Sds_Info(Var_Idx)%Standard_Name = "effective_radius_of_cloud_condensed_water_particles_at_cloud_top"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,160.0]
             Sds_Info(Var_Idx)%Long_Name = "effective radius of cloud particles determined from DCOMP Mode 3; "//&
                               "see attributes for channels used"
             Sds_Info(Var_Idx)%Units = "micron"
-            if (allocated(Reff_DCOMP_3)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Reff_DCOMP_3
+            if (allocated(DCOMP_3 % Reff)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => DCOMP_3 % Reff
          case("cld_reff_dcomp_fit")
             Sds_Info(Var_Idx)%Standard_Name = "effective_radius_of_cloud_condensed_water_particles_at_cloud_top"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,160.0]
             Sds_Info(Var_Idx)%Long_Name = "effective radius of cloud particles determined from DCOMP after an amr2-derived"//&
                               " fit ; see attributes for channels used - NOAA CDR"
             Sds_Info(Var_Idx)%Units = "micron"
-            if (allocated(Reff_Dcomp_Fit)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Reff_Dcomp_Fit
+            if (allocated(DCOMP % Reff_fit)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => DCOMP % Reff_fit
          case("cld_reff_aux")
             Sds_Info(Var_Idx)%Standard_Name = "effective_radius_of_cloud_condensed_water_particles_at_cloud_top"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,160.0]
@@ -2379,14 +2379,14 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Long_Name = "uncertainty in the log10 cloud optical depth at the nominal wavelength "// &
                               "of 0.65 microns, determined from DCOMP; see attributes for channels used"
             Sds_Info(Var_Idx)%Units = "none"
-            if (allocated(Tau_Dcomp_Cost)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Tau_Dcomp_Cost
+            if (allocated(Dcomp % tau_Cost)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Dcomp % tau_Cost
          case("cld_reff_dcomp_unc")
             Sds_Info(Var_Idx)%Standard_Name = "cld_reff_dcomp_unc"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,160.0]
             Sds_Info(Var_Idx)%Long_Name = "uncertainty in the log10 effective radius of cloud particle determined from DCOMP; "// &
                                "see attributes for channels used"
             Sds_Info(Var_Idx)%Units = "micron"
-            if (allocated(Reff_Dcomp_Cost)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Reff_Dcomp_Cost
+            if (allocated(Dcomp % Reff_Cost)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Dcomp % Reff_Cost
          case("cld_opd_dcomp_qf")
             Sds_Info(Var_Idx)%Standard_Name = "cld_opd_dcomp_qf"
             Sds_Info(Var_Idx)%Input_Data_Type_HDF =  DFNT_INT8
@@ -2396,7 +2396,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Long_Name = "quality flag for cloud optical depth from DCOMP "// &
                                "not attempted=0, failed=1, low quality=2, high quality=3"
             Sds_Info(Var_Idx)%Units = "none"
-            if (allocated(Tau_Dcomp_Qf)) Sds_Info(Var_Idx)%Sds_Data_2d_I1 => Tau_Dcomp_Qf
+            if (allocated(DCOMP % tau_Qf)) Sds_Info(Var_Idx)%Sds_Data_2d_I1 => DCOMP % tau_Qf
          case("cld_reff_dcomp_qf")
             Sds_Info(Var_Idx)%Standard_Name = "cld_reff_dcomp_qf"
             Sds_Info(Var_Idx)%Input_Data_Type_HDF =  DFNT_INT8
@@ -2405,7 +2405,7 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Long_Name = "quality flag for cloud effective radius from DCOMP "// &
                                "not attempted=0, failed=1, low quality=2, high quality=3"
             Sds_Info(Var_Idx)%Units = "micron"
-            if (allocated(Reff_Dcomp_Qf)) Sds_Info(Var_Idx)%Sds_Data_2d_I1 => Reff_Dcomp_Qf
+            if (allocated(DCOMP % reff_Qf)) Sds_Info(Var_Idx)%Sds_Data_2d_I1 => DCOMP % reff_Qf
          case("insolation_dcomp")
             Sds_Info(Var_Idx)%Standard_Name = "surface_downwelling_shortwave_flux_dcomp"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,1500.0]

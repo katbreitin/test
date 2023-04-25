@@ -38,18 +38,14 @@ MODULE DCOMP_DERIVED_PRODUCTS_MOD
    , missing_value_real4
 
  use PIXEL_COMMON_MOD,only: &
-     tau_nlcomp &
-   , acha &
+     acha &
    , base &
    , NWP_PIX &
-
    , Cld_Type &
-   , reff_nlcomp &
    , DCOMP &
    , DCOMP_1 &
    , DCOMP_2 &
    , DCOMP_3 &
-   , tau_nlcomp &
    , insolation_Dcomp &
    , insolation_diffuse_Dcomp &
    , Cwp_Scwater_Layer_Dcomp &

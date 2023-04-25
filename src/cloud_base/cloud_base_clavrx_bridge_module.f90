@@ -15,7 +15,7 @@
 ! solar_zenith_angle
 ! latitude
 ! Fill_Value = -999.0
-! QF_Fill = 1 
+! QF_Fill = 1
 !
 !------------------------------------------------------------------------------
 module CLOUD_BASE_CLAVRX_BRIDGE
@@ -23,7 +23,7 @@ module CLOUD_BASE_CLAVRX_BRIDGE
  use CLOUD_BASE
  use CLOUD_BASE_SERVICES
  use PIXEL_COMMON_MOD
-   
+
  implicit none
 
  public :: CLOUD_BASE_BRIDGE
@@ -31,7 +31,7 @@ module CLOUD_BASE_CLAVRX_BRIDGE
  private:: SET_DIAG, NULL_DIAG
 
  !--------------------------------------------------------------------
- ! define structures that will be arguments 
+ ! define structures that will be arguments
  !--------------------------------------------------------------------
  type(Symbol_acha), private :: Symbol
  type(acha_input_struct), private :: Input
@@ -42,9 +42,9 @@ module CLOUD_BASE_CLAVRX_BRIDGE
 
 !----------------------------------------------------------------------
 ! BRIDGE SUBROUTINE
-!---------------------------------------------------------------------- 
+!----------------------------------------------------------------------
  subroutine CLOUD_BASE_BRIDGE()
- 
+
    implicit none
 
    !---null pointers before filling them
@@ -61,7 +61,7 @@ module CLOUD_BASE_CLAVRX_BRIDGE
 
    !---- initalize Output structure
    call SET_OUTPUT()
-  
+
    !----set Symbols to local values
    call SET_SYMBOL()
 
@@ -282,20 +282,20 @@ module CLOUD_BASE_CLAVRX_BRIDGE
    Input%Lower_Cloud_Pressure => ACHA%Lower_Pc
    Input%Lower_Cloud_Temperature => ACHA%Lower_Tc
    Input%Lower_Cloud_Height => ACHA%Lower_Zc
-   Input%Cdnc => Cdnc_DCOMP
-   Input%Hcld => Hcld_DCOMP
+   Input%Cdnc => DCOMP % Cdnc
+   Input%Hcld => DCOMP % Hcld
    Input%LCL => NWP_PIX%LCL_Height
    Input%CCL => NWP_PIX%CCL_Height
-   Input%CWP => Cwp_Dcomp
+   Input%CWP => DCOMP % Cwp
    Input%CWP_nwp => NWP_PIX%Cwp
  end subroutine SET_INPUT
 !----------------------------------------------------------------------
 !
 !----------------------------------------------------------------------
  subroutine SET_DIAG
-     Diag%Array_1 => Diag_Pix_Array_1 
-     Diag%Array_2 => Diag_Pix_Array_2 
-     Diag%Array_3 => Diag_Pix_Array_3 
+     Diag%Array_1 => Diag_Pix_Array_1
+     Diag%Array_2 => Diag_Pix_Array_2
+     Diag%Array_3 => Diag_Pix_Array_3
  end subroutine SET_DIAG
 
 end module CLOUD_BASE_CLAVRX_BRIDGE

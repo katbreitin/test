@@ -198,6 +198,7 @@ module PIXEL_COMMON_MOD
 
   type(dcomp_definition), public, target :: dcomp_1, dcomp_2, dcomp_3
   type(dcomp_definition), public, pointer :: DCOMP
+  type(dcomp_definition), public :: NLCOMP
 
   !---------------------------------------------------------------------------------
   ! CLAVR-x file list variables
@@ -949,46 +950,6 @@ module PIXEL_COMMON_MOD
      real (kind=real4), dimension(:,:), allocatable, public, save, target:: Tc_SplitWin
      real (kind=real4), dimension(:,:), allocatable, public, save, target:: Ec_SplitWin
 
-     !-- DCOMP cloud algorithm results
-    ! real (kind=real4), dimension(:,:), allocatable, public,target, save:: Tau_DCOMP
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Tau_DCOMP_Ap
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: vis_Ref_fm
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Reff_DCOMP
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Iwp_DCOMP
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Iwp_Tau_DCOMP
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Lwp_DCOMP
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Refl_Asym_DCOMP
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Cwp_DCOMP
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Cwp_Ice_Layer_DCOMP
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Cwp_Water_Layer_DCOMP
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Cwp_Scwater_Layer_DCOMP
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Iwc_DCOMP
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Lwc_DCOMP
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Rain_Rate_DCOMP
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Hcld_DCOMP
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Cdnc_DCOMP
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Tau_DCOMP_Cost
-     real (kind=real4), dimension(:,:), allocatable, public, target, save:: Reff_DCOMP_Cost
-     integer (kind=int1), dimension(:,:), allocatable, public,target, save:: Tau_DCOMP_Qf
-     integer (kind=int1), dimension(:,:), allocatable, public,target, save:: Reff_DCOMP_Qf
-     integer (kind=int1), dimension(:,:), allocatable, public,target, save:: DCOMP_Quality_Flag
-     integer (kind=int2), dimension(:,:), allocatable, public,target, save:: DCOMP_Info_Flag
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Cwp_Fit
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Reff_DCOMP_Fit
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Tau_DCOMP_1
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Tau_DCOMP_2
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Tau_DCOMP_3
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Reff_DCOMP_1
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Reff_DCOMP_2
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Reff_DCOMP_3
-
-     !-- Nlcomp cloud algorithm results
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Tau_Nlcomp
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Reff_Nlcomp
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Tau_Nlcomp_Cost
-     real (kind=real4), dimension(:,:), allocatable, public,target, save:: Reff_Nlcomp_Cost
-     integer (kind=int1), dimension(:,:), allocatable, public,target, save:: Nlcomp_Quality_Flag
-     integer (kind=int2), dimension(:,:), allocatable, public,target, save:: Nlcomp_Info_Flag
 
      !--- pixel level aerosol props
      real (kind=real4), dimension(:,:), allocatable, public, target, save:: Aot1
@@ -3347,33 +3308,21 @@ end subroutine DESTROY_CALIOP_ARRAYS
 !-----------------------------------------------------------
 subroutine CREATE_NLCOMP_ARRAYS(dim1,dim2)
   integer, intent(in):: dim1, dim2
+
   if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
-     allocate(Tau_Nlcomp(dim1,dim2))
-     allocate(Reff_Nlcomp(dim1,dim2))
-     allocate(Nlcomp_Info_Flag(dim1,dim2))
-     allocate(Nlcomp_Quality_Flag(dim1,dim2))
-     allocate(Tau_Nlcomp_Cost(dim1,dim2))
-     allocate(Reff_Nlcomp_Cost(dim1,dim2))
+      call NLCOMP % allocate(dim1,dim2)
   endif
 end subroutine CREATE_NLCOMP_ARRAYS
+
 subroutine RESET_NLCOMP_ARRAYS()
   if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
-      Tau_Nlcomp = Missing_Value_Real4
-      Reff_Nlcomp = Missing_Value_Real4
-      Tau_Nlcomp_Cost = Missing_Value_Real4
-      Reff_Nlcomp_Cost = Missing_Value_Real4
-      Nlcomp_Quality_Flag = 0
-      Nlcomp_Info_Flag = 0
+      if (NLCOMP % is_set) call NLCOMP % reset()
   endif
 end subroutine RESET_NLCOMP_ARRAYS
+
 subroutine DESTROY_NLCOMP_ARRAYS()
   if (Cld_Flag == sym%YES .OR. Tracer_Flag == 1) then
-     deallocate(Tau_Nlcomp)
-     deallocate(Reff_Nlcomp)
-     deallocate(Nlcomp_Info_Flag)
-     deallocate(Nlcomp_Quality_Flag)
-     deallocate(Tau_Nlcomp_Cost)
-     deallocate(Reff_Nlcomp_Cost)
+     if (NLCOMP % is_set) call NLCOMP % deallocate()
   endif
 end subroutine DESTROY_NLCOMP_ARRAYS
 !-----------------------------------------------------------
