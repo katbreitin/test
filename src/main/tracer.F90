@@ -29,7 +29,6 @@
         use pixel_common_mod, only: Sfc,Nav,Geo,Ch,CLDMASK,Tracer_Flag,Skip_Output,CCL, ACHA, &
             Zen_Idx_RTM, NWP_PIX, DCOMP , dcomp_1, dcomp_2, dcomp_3,  &
             Cld_Type, Cld_Phase, Sst_Anal_Uni, &
-            Insolation_DCOMP, Insolation_Diffuse_DCOMP, &
             Image, Temporary_Data_Dir, Tc_Opaque_Cloud, Zc_Opaque_Cloud, &
             Bad_Pixel_Mask, Sensor, &
             mask_lrc, i_lrc, j_lrc, &
@@ -823,8 +822,8 @@
         call add_sym_f4_2d(DCOMP % Lwp, 'cld_lwp_dcomp')
         call add_sym_f4_2d(DCOMP % Iwp, 'cld_iwp_dcomp')
         call add_sym_i1_2d(DCOMP % Quality_Flag, 'dcomp_quality')
-        call add_sym_f4_2d(Insolation_DCOMP, 'insolation_dcomp')
-        call add_sym_f4_2d(Insolation_Diffuse_DCOMP, 'insolation_diffuse_dcomp')
+        call add_sym_f4_2d(DCOMP % Insolation, 'insolation_dcomp')
+        call add_sym_f4_2d(DCOMP % Insolation_Diffuse, 'insolation_diffuse_dcomp')
 
         ! May alias the human-readable symbols, but converting between channels
         ! and names outside clavrx is very annoying

@@ -2411,14 +2411,14 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Actual_Range = [0.0,1500.0]
             Sds_Info(Var_Idx)%Long_Name = "surface downwelling shortwave flux computed from the DCOMP cloud properties"
             Sds_Info(Var_Idx)%Units = "W m-2"
-            if (allocated(Insolation_Dcomp)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Insolation_Dcomp
+            if (allocated(DCOMP % Insolation)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => DCOMP % Insolation
          case("insolation_diffuse_dcomp")
             Sds_Info(Var_Idx)%Standard_Name = "surface_downwelling_shortwave_flux_diffuse_dcomp"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,1500.0]
             Sds_Info(Var_Idx)%Long_Name = "diffuse component of the surface downwelling shortwave flux "// &
                               "computed from the DCOMP cloud properties"
             Sds_Info(Var_Idx)%Units = "W m-2"
-            if (allocated(Insolation_Diffuse_Dcomp)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Insolation_Diffuse_Dcomp
+            if (allocated(DCOMP % Insolation_Diffuse)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => DCOMP % Insolation_Diffuse
          case("cdnc_dcomp")
             Sds_Info(Var_Idx)%Standard_Name = "cloud_droplet_number_concentration"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,1000.0]
@@ -2470,14 +2470,14 @@ subroutine SETUP_LEVEL2_SDS_INFO()
             Sds_Info(Var_Idx)%Actual_Range = [0.0,1.0]
             Sds_Info(Var_Idx)%Long_Name = "cloud transmission at 0.65 microns nominal from DCOMP"
             Sds_Info(Var_Idx)%Units = "none"
-            if (allocated(Cloud_063um_Transmission_Solar)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Cloud_063um_Transmission_Solar
+            if (allocated(DCOMP % Cloud_063um_Transmission_Solar)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => DCOMP % Cloud_063um_Transmission_Solar
 
          case("cloud_albedo_0_65um_nom")
             Sds_Info(Var_Idx)%Standard_Name = "cloud_albedo_0_65um_nom"
             Sds_Info(Var_Idx)%Actual_Range = [0.0,1.0]
             Sds_Info(Var_Idx)%Long_Name = "cloud albedo at 0.65 microns nominal from DCOMP"
             Sds_Info(Var_Idx)%Units = "none"
-            if (allocated(Cloud_063um_Albedo)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => Cloud_063um_Albedo
+            if (allocated(DCOMP % Cloud_063um_Albedo)) Sds_Info(Var_Idx)%Sds_Data_2d_R4 => DCOMP % Cloud_063um_Albedo
 
          case("rain_rate")
             Sds_Info(Var_Idx)%Standard_Name = "rain_rate"

@@ -961,14 +961,9 @@ module PIXEL_COMMON_MOD
      integer (kind=int1), dimension(:,:), allocatable, public, save:: Ndvi_Qf
      integer (kind=int1), dimension(:,:), allocatable, public, save:: Tsfc_Qf
 
-     !--- pixel level radiative flux props from DCOMP
+     !--- pixel level radiative flux props 
      real (kind=real4), dimension(:,:), allocatable, public, save,target:: Olr
-     real (kind=real4), dimension(:,:), allocatable, public, save,target:: Cloud_063um_Albedo
-     real (kind=real4), dimension(:,:), allocatable, public, save,target:: Cloud_063um_Spherical_Albedo
-     real (kind=real4), dimension(:,:), allocatable, public, save,target:: Cloud_063um_Transmission_View
-     real (kind=real4), dimension(:,:), allocatable, public, save,target:: Cloud_063um_Transmission_Solar
-     real (kind=real4), dimension(:,:), allocatable, public, save,target:: Insolation_DCOMP
-     real (kind=real4), dimension(:,:), allocatable, public, save,target:: Insolation_Diffuse_DCOMP
+
 
      !--- SASRAB output
      real (kind=real4), dimension(:,:), allocatable, public, save:: Insolation_All_Sky

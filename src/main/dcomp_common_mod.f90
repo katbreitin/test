@@ -34,9 +34,14 @@ module dcomp_common_mod
     integer (kind=i2), dimension(:,:), allocatable, public:: Info_Flag
     real (kind=f4), dimension(:,:), allocatable, public:: Cwp_Fit
     real (kind=f4), dimension(:,:), allocatable, public:: Reff_Fit
+real (kind=f4), dimension(:,:), allocatable, public::  olr
+    real (kind=f4), dimension(:,:), allocatable, public:: Cloud_063um_Albedo
+  real (kind=f4), dimension(:,:), allocatable, public:: Cloud_063um_Spherical_Albedo
+    real (kind=f4), dimension(:,:), allocatable, public:: Cloud_063um_Transmission_View
+    real (kind=f4), dimension(:,:), allocatable, public:: Cloud_063um_Transmission_Solar
+    real (kind=f4), dimension(:,:), allocatable, public:: Insolation
+    real (kind=f4), dimension(:,:), allocatable, public:: Insolation_Diffuse
 
-
-  
 
 
   contains
@@ -78,6 +83,14 @@ module dcomp_common_mod
       allocate (self%Info_Flag(n1,n2))
       allocate (self%cwp_fit(n1,n2))
       allocate (self%reff_fit(n1,n2))
+     allocate (self%olr(n1,n2))
+     allocate (self%Cloud_063um_Albedo(n1,n2))
+     allocate (self%Cloud_063um_Spherical_Albedo(n1,n2))
+     allocate (self%Cloud_063um_Transmission_View(n1,n2))
+     allocate (self%Cloud_063um_Transmission_Solar(n1,n2))
+     allocate (self%Insolation(n1,n2))
+     allocate (self%Insolation_Diffuse(n1,n2))
+
       self % is_set = .true.
 
 
@@ -111,6 +124,13 @@ module dcomp_common_mod
     deallocate (self%Info_Flag)
     deallocate (self%cwp_fit)
     deallocate (self%reff_fit)
+deallocate (self%olr)
+    deallocate (self%Cloud_063um_Albedo)
+deallocate (self%Cloud_063um_Spherical_Albedo)
+deallocate (self%Cloud_063um_Transmission_View)
+deallocate (self%Cloud_063um_Transmission_Solar)
+deallocate (self%Insolation)
+deallocate (self%Insolation_Diffuse)
 
     self % is_set = .false.
   end subroutine dcomp_deallocate
@@ -143,6 +163,15 @@ module dcomp_common_mod
     self%Info_Flag = MISSING_F4
     self%cwp_fit = MISSING_F4
     self%reff_fit = MISSING_F4
+    self%olr = MISSING_F4
+        self%Cloud_063um_Albedo = MISSING_F4
+    self%Cloud_063um_Spherical_Albedo = MISSING_F4
+    self%Cloud_063um_Transmission_View = MISSING_F4
+    self%Cloud_063um_Transmission_Solar = MISSING_F4
+    self%Insolation = MISSING_F4
+    self%Insolation_Diffuse = MISSING_F4
+
+
   end subroutine dcomp_reset
 
 end module dcomp_common_mod

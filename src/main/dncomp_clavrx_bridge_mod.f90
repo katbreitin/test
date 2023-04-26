@@ -65,10 +65,6 @@ module dncomp_clavrx_bridge_mod
   , bad_pixel_mask &
   , DCOMP, DCOMP_1, DCOMP_2, DCOMP_3 &
   , NLCOMP &
-  , cloud_063um_transmission_solar &
-  , cloud_063um_transmission_view &
-  , cloud_063um_spherical_albedo &
-  , cloud_063um_albedo &
   , ancil_data_dir &
   , ch &
   , dcomp_mode &
@@ -350,6 +346,11 @@ contains
           DCOMP_1 % reff_cost(1:dim_1,1:dim_2)    = dncomp_output % ref_unc % d(1:dim_1,1:dim_2)
           DCOMP_1 % quality_flag(1:dim_1,1:dim_2) = dncomp_output % quality % d(1:dim_1,1:dim_2)
           DCOMP_1 % info_flag(1:dim_1,1:dim_2)    = dncomp_output % info % d(1:dim_1,1:dim_2)
+          DCOMP_1 % cloud_063um_transmission_solar(1:dim_1,1:dim_2) = dncomp_output % cld_trn_sol % d(1:dim_1,1:dim_2)
+          DCOMP_1 % cloud_063um_transmission_view(1:dim_1,1:dim_2)  = dncomp_output % cld_trn_obs % d(1:dim_1,1:dim_2)
+          DCOMP_1 % cloud_063um_albedo(1:dim_1,1:dim_2)             = dncomp_output % cld_alb % d(1:dim_1,1:dim_2)
+          DCOMP_1 % cloud_063um_spherical_albedo(1:dim_1,1:dim_2)   = dncomp_output % cld_sph_alb % d(1:dim_1,1:dim_2)
+          DCOMP_1 % refl_asym  (1:dim_1,1:dim_2)   =   dncomp_output % refl_vis_max  % d(1:dim_1,1:dim_2)
         case(2)
 
           dcomp_2 % tau  (1:dim_1,1:dim_2)   = dncomp_output % cod % d(1:dim_1,1:dim_2)
@@ -360,6 +361,11 @@ contains
           DCOMP_2 % reff_cost(1:dim_1,1:dim_2)    = dncomp_output % ref_unc % d(1:dim_1,1:dim_2)
           DCOMP_2 % quality_flag(1:dim_1,1:dim_2) = dncomp_output % quality % d(1:dim_1,1:dim_2)
           DCOMP_2 % info_flag(1:dim_1,1:dim_2)    = dncomp_output % info % d(1:dim_1,1:dim_2)
+          DCOMP_2 % cloud_063um_transmission_solar(1:dim_1,1:dim_2) = dncomp_output % cld_trn_sol % d(1:dim_1,1:dim_2)
+          DCOMP_2 % cloud_063um_transmission_view(1:dim_1,1:dim_2)  = dncomp_output % cld_trn_obs % d(1:dim_1,1:dim_2)
+          DCOMP_2 % cloud_063um_albedo(1:dim_1,1:dim_2)             = dncomp_output % cld_alb % d(1:dim_1,1:dim_2)
+          DCOMP_2 % cloud_063um_spherical_albedo(1:dim_1,1:dim_2)   = dncomp_output % cld_sph_alb % d(1:dim_1,1:dim_2)
+          DCOMP_2 % refl_asym  (1:dim_1,1:dim_2)   =   dncomp_output % refl_vis_max  % d(1:dim_1,1:dim_2)
         case(3)
           dcomp_3 % tau  (1:dim_1,1:dim_2)   = dncomp_output % cod % d(1:dim_1,1:dim_2)
           dcomp_3 % reff  (1:dim_1,1:dim_2) = dncomp_output % cps % d(1:dim_1,1:dim_2)
@@ -369,15 +375,17 @@ contains
           DCOMP_3 % reff_cost(1:dim_1,1:dim_2)    = dncomp_output % ref_unc % d(1:dim_1,1:dim_2)
           DCOMP_3 % quality_flag(1:dim_1,1:dim_2) = dncomp_output % quality % d(1:dim_1,1:dim_2)
           DCOMP_3 % info_flag(1:dim_1,1:dim_2)    = dncomp_output % info % d(1:dim_1,1:dim_2)
+          DCOMP_3 % cloud_063um_transmission_solar(1:dim_1,1:dim_2) = dncomp_output % cld_trn_sol % d(1:dim_1,1:dim_2)
+          DCOMP_3 % cloud_063um_transmission_view(1:dim_1,1:dim_2)  = dncomp_output % cld_trn_obs % d(1:dim_1,1:dim_2)
+          DCOMP_3 % cloud_063um_albedo(1:dim_1,1:dim_2)             = dncomp_output % cld_alb % d(1:dim_1,1:dim_2)
+          DCOMP_3 % cloud_063um_spherical_albedo(1:dim_1,1:dim_2)   = dncomp_output % cld_sph_alb % d(1:dim_1,1:dim_2)
+          DCOMP_3 % refl_asym  (1:dim_1,1:dim_2)   =   dncomp_output % refl_vis_max  % d(1:dim_1,1:dim_2)
         end select
 
 
-        cloud_063um_transmission_solar(1:dim_1,1:dim_2) = dncomp_output % cld_trn_sol % d(1:dim_1,1:dim_2)
-        cloud_063um_transmission_view(1:dim_1,1:dim_2)  = dncomp_output % cld_trn_obs % d(1:dim_1,1:dim_2)
-        cloud_063um_albedo(1:dim_1,1:dim_2)             = dncomp_output % cld_alb % d(1:dim_1,1:dim_2)
-        cloud_063um_spherical_albedo(1:dim_1,1:dim_2)   = dncomp_output % cld_sph_alb % d(1:dim_1,1:dim_2)
 
-        DCOMP % refl_asym  (1:dim_1,1:dim_2)   =   dncomp_output % refl_vis_max  % d(1:dim_1,1:dim_2)
+
+
 
         DCOMP_RELEASE_VERSION = dncomp_output % version
 

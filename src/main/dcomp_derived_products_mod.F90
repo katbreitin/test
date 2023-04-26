@@ -47,10 +47,6 @@ MODULE DCOMP_DERIVED_PRODUCTS_MOD
    , DCOMP_1 &
    , DCOMP_2 &
    , DCOMP_3 &
-   , insolation_Dcomp &
-   , insolation_diffuse_Dcomp &
-   , Cloud_063um_Transmission_Solar &
-   , Cloud_063um_Spherical_Albedo &
    , bad_pixel_mask &
    , image &
    , sfc &
@@ -864,8 +860,8 @@ subroutine COMPUTE_DCOMP_INSOLATION(Line_Idx_Min,Num_Lines,Sun_Earth_Distance)
   Elem_Idx_Max = Elem_Idx_Min + Num_Elements - 1
   Line_Idx_Max = Line_Idx_Min + Num_Lines - 1
 
-  Insolation_Dcomp = Missing_Value_Real4
-  Insolation_Diffuse_Dcomp = Missing_Value_Real4
+  DCOMP % Insolation = Missing_Value_Real4
+  DCOMP % Insolation_Diffuse = Missing_Value_Real4
 
   Fo_Toa = SOLAR_CONSTANT / (Sun_Earth_Distance**2)
 
@@ -923,15 +919,15 @@ subroutine COMPUTE_DCOMP_INSOLATION(Line_Idx_Min,Num_Lines,Sun_Earth_Distance)
       !-- set cloud trans and albedo, if clear, set to transparent values
       if (Cloud_Optical_Depth > 0.0) then
 
-        Cloud_Spherical_Albedo = Cloud_063um_Spherical_Albedo(Elem_Idx,Line_Idx)
+        Cloud_Spherical_Albedo = DCOMP % Cloud_063um_Spherical_Albedo(Elem_Idx,Line_Idx)
         Cloud_Transmission_Direct = exp( -1.0 * Cloud_Optical_Depth / Cosine_Solar_Zenith_Angle)
-        Cloud_Transmission_Diffuse = Cloud_063um_Transmission_Solar(Elem_Idx,Line_Idx)  - Cloud_Transmission_Direct
+        Cloud_Transmission_Diffuse = DCOMP % Cloud_063um_Transmission_Solar(Elem_Idx,Line_Idx)  - Cloud_Transmission_Direct
 
         Insolation_Direct_Dcomp = Fo * Cloud_Transmission_Direct * Cosine_Solar_Zenith_Angle
 
         Insolation_Dcomp_Diffuse_Black_Surface = Fo * Cloud_Transmission_Diffuse * Cosine_Solar_Zenith_Angle
 
-        Insolation_Diffuse_Dcomp(Elem_Idx,Line_Idx) = &
+        DCOMP % Insolation_Diffuse(Elem_Idx,Line_Idx) = &
                                    Insolation_Direct_Dcomp * Surface_Albedo_Direct * Cloud_Spherical_Albedo / &
                                    (1.0 - Surface_Albedo_Diffuse*Cloud_Spherical_Albedo) + &
                                    Insolation_Dcomp_Diffuse_Black_Surface / &
@@ -940,12 +936,12 @@ subroutine COMPUTE_DCOMP_INSOLATION(Line_Idx_Min,Num_Lines,Sun_Earth_Distance)
       else
 
         Insolation_Direct_Dcomp = Idir_Clear
-        Insolation_Diffuse_Dcomp(Elem_Idx,Line_Idx) = Idif_Clear
+        DCOMP % Insolation_Diffuse(Elem_Idx,Line_Idx) = Idif_Clear
 
       endif
 
       !--- combine
-      Insolation_Dcomp(Elem_Idx,Line_Idx) = Insolation_Direct_Dcomp + Insolation_Diffuse_Dcomp(Elem_Idx,Line_Idx)
+      DCOMP % Insolation(Elem_Idx,Line_Idx) = Insolation_Direct_Dcomp + DCOMP % Insolation_Diffuse(Elem_Idx,Line_Idx)
 
     enddo element_loop
   enddo line_loop
