@@ -198,7 +198,7 @@ module PIXEL_COMMON_MOD
 
   type(dcomp_definition), public, target :: dcomp_1, dcomp_2, dcomp_3
   type(dcomp_definition), public, pointer :: DCOMP
-  type(dcomp_definition), public :: NLCOMP
+  type(dcomp_definition), public, target :: NLCOMP
 
   !---------------------------------------------------------------------------------
   ! CLAVR-x file list variables

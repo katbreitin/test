@@ -42,15 +42,13 @@ MODULE DCOMP_DERIVED_PRODUCTS_MOD
    , base &
    , NWP_PIX &
    , Cld_Type &
+   , NLCOMP &
    , DCOMP &
    , DCOMP_1 &
    , DCOMP_2 &
    , DCOMP_3 &
    , insolation_Dcomp &
    , insolation_diffuse_Dcomp &
-   , Cwp_Scwater_Layer_Dcomp &
-   , Cwp_Ice_Layer_Dcomp &
-   , Cwp_Water_Layer_Dcomp &
    , Cloud_063um_Transmission_Solar &
    , Cloud_063um_Spherical_Albedo &
    , bad_pixel_mask &
@@ -59,9 +57,7 @@ MODULE DCOMP_DERIVED_PRODUCTS_MOD
    , ch  &
    , sensor &
    , geo &
-   , Cwp_Fit &
    , Dcomp_Mode &
-   , Refl_Asym_Dcomp &
    , Temp_Pix_Array_1 &
    , Diag_Pix_Array_1 &
    , Diag_Pix_Array_2 &
@@ -160,10 +156,10 @@ MODULE DCOMP_DERIVED_PRODUCTS_MOD
         !-- check dcomp input
         if (dcomp % Tau (Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4) cycle
         if (ch(1)%Ref_Toa(Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4) cycle
-        if (Refl_Asym_Dcomp(Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4) cycle
+        if (DCOMP % Refl_Asym(Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4) cycle
 
         !-- convert refl_asym to % like all other reflectances
-        ch1_Refl_Toa_Asym = 100.0*Refl_Asym_Dcomp(Elem_Idx,Line_Idx)
+        ch1_Refl_Toa_Asym = 100.0 * DCOMP % Refl_Asym(Elem_Idx,Line_Idx)
 
         !-- compute minimum cloud optical depth
         if (ch(1)%Ref_Toa_Min_3x3(Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4) cycle
@@ -221,9 +217,9 @@ subroutine COMPUTE_CLOUD_WATER_PATH(jmin,jmax)
   DCOMP % cwp = Missing_Value_Real4
   DCOMP % iwp = Missing_Value_Real4
   DCOMP % lwp = Missing_Value_Real4
-  Cwp_Ice_Layer_Dcomp = Missing_Value_Real4
-  Cwp_Water_Layer_Dcomp = Missing_Value_Real4
-  Cwp_Scwater_Layer_Dcomp = Missing_Value_Real4
+  DCOMP % Cwp_Ice_Layer = Missing_Value_Real4
+  DCOMP % Cwp_Water_Layer = Missing_Value_Real4
+  DCOMP % Cwp_Scwater_Layer = Missing_Value_Real4
   Tau = Missing_Value_Real4
   Reff = Missing_Value_Real4
 
@@ -232,11 +228,11 @@ subroutine COMPUTE_CLOUD_WATER_PATH(jmin,jmax)
 
      !--- assign optical depth and particle size
      if (Geo%Solzen(Elem_Idx,Line_Idx) < 90.0) then
-       Tau =  dcomp %Tau (Elem_Idx,Line_Idx)
-       Reff = dcomp % Reff(Elem_Idx,Line_Idx)
+       Tau =  DCOMP % Tau (Elem_Idx,Line_Idx)
+       Reff = DCOMP % Reff(Elem_Idx,Line_Idx)
      else
-       Tau = Tau_Nlcomp(Elem_Idx,Line_Idx)
-       Reff = Reff_Nlcomp(Elem_Idx,Line_Idx)
+       Tau = NLCOMP % Tau(Elem_Idx,Line_Idx)
+       Reff = NLCOMP % Reff(Elem_Idx,Line_Idx)
      endif
 
      if (Tau .EQfp. Missing_Value_Real4) cycle
@@ -366,9 +362,9 @@ subroutine COMPUTE_CLOUD_WATER_PATH(jmin,jmax)
      Water_Layer_Fraction = max(0.0,Water_Layer_Fraction)
      Scwater_Layer_Fraction = max(0.0,Scwater_Layer_Fraction)
 
-     Cwp_Ice_Layer_Dcomp(Elem_Idx,Line_Idx) = Ice_Layer_Fraction * DCOMP % cwp(Elem_Idx,Line_Idx)
-     Cwp_Water_Layer_Dcomp(Elem_Idx,Line_Idx) = Water_Layer_Fraction * DCOMP % cwp(Elem_Idx,Line_Idx)
-     Cwp_Scwater_Layer_Dcomp(Elem_Idx,Line_Idx) = Scwater_Layer_Fraction * DCOMP % cwp(Elem_Idx,Line_Idx)
+     DCOMP % Cwp_Ice_Layer(Elem_Idx,Line_Idx) = Ice_Layer_Fraction * DCOMP % cwp(Elem_Idx,Line_Idx)
+     DCOMP % Cwp_Water_Layer(Elem_Idx,Line_Idx) = Water_Layer_Fraction * DCOMP % cwp(Elem_Idx,Line_Idx)
+     DCOMP % Cwp_Scwater_Layer(Elem_Idx,Line_Idx) = Scwater_Layer_Fraction * DCOMP % cwp(Elem_Idx,Line_Idx)
 
     enddo element_loop
   enddo line_loop
@@ -602,7 +598,7 @@ subroutine COMPUTE_PRECIPITATION(Line_Idx_Min,Num_Lines)
       Reff_Pix = DCOMP % reff(Elem_Idx,Line_Idx)
 
       if (Geo%Solzen(Elem_Idx,Line_Idx) > 90.0) then
-        Reff_Pix = Reff_Nlcomp(Elem_Idx,Line_Idx)
+        Reff_Pix = Nlcomp % Reff(Elem_Idx,Line_Idx)
       endif
 
       !--- skip bad pixels
@@ -725,7 +721,7 @@ subroutine COMPUTE_PRECIPITATION_AHI(Line_Idx_Min,Num_Lines)
       Reff_Pix = DCOMP % reff(Elem_Idx,Line_Idx)
 
       if (Geo%Solzen(Elem_Idx,Line_Idx) > 90.0) then
-        Reff_Pix = Reff_Nlcomp(Elem_Idx,Line_Idx)
+        Reff_Pix = NLCOMP % Reff(Elem_Idx,Line_Idx)
       endif
 
       !--- skip bad pixels
@@ -988,7 +984,7 @@ subroutine ADJUST_DCOMP_LWP()
 !  real, dimension(:,:), pointer:: Reff_Fit
 
    DCOMP % reff_Fit = DCOMP % reff
-   Cwp_Fit = DCOMP % cwp
+   DCOMP % Cwp_Fit = DCOMP % cwp
 
    if (Dcomp_Mode > 0 .and. Dcomp_Mode /= 9) then
 
@@ -1047,7 +1043,7 @@ subroutine ADJUST_DCOMP_LWP()
 
    where(DCOMP % reff_Fit .NEfp. MISSING_VALUE_REAL4)
 
-         Cwp_Fit = 0.666 * DCOMP % tau * DCOMP % reff_Fit
+         DCOMP % Cwp_Fit = 0.666 * DCOMP % tau * DCOMP % reff_Fit
 
    end where
 
