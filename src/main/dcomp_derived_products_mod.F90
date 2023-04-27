@@ -122,64 +122,8 @@ MODULE DCOMP_DERIVED_PRODUCTS_MOD
 
 
 ! end function
- !-----------------------------------------------------------
- ! compute min and max subpixel cloudy optical depths using
- ! an approximation based on the dcomp retrievals
- !
- ! Input (based via global memory)
- !       ch(1)%Ref_Toa = top of atmosphere reflectance in ch1
- !       DCOMP % tau = optical depth from DCOMP (mode=?)
- !       Refl_Asym_Dcomp = toa ref asymptotic value from DCOMP (mode=?)
- !       ch(1)%Ref_Toa_Min = subpixel min toa reflectance in ch1
- !       ch(1)%Ref_Toa_Max = subpixel max toa reflectance in ch1
- !
- ! Output: DCOMP % tau_Min = subpixel min approx dcomp optical depth
- !         DCOMP % tau_Max = subpixel max approx dcomp optical depth
- !
- !-----------------------------------------------------------
- subroutine COMPUTE_SUBPIXEL_MAX_MIN_COD()
-
-   real:: ch1_Refl_Toa_Asym
-   integer:: Elem_Idx, Line_Idx
-
-   if (Sensor%Chan_On_Flag_Default(1) == sym%NO) return
-   if (.not. allocated(ch(1)%Ref_Toa_Min_3x3)) return
-   if (.not. allocated(ch(1)%Ref_Toa_Max_3x3)) return
-
-   do Elem_Idx = 1, Image%Number_of_Elements
-      do Line_Idx = 1, Image%Number_of_Lines_Per_Segment
-
-        !-- check dcomp input
-        if (dcomp % Tau (Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4) cycle
-        if (ch(1)%Ref_Toa(Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4) cycle
-        if (DCOMP % Refl_Asym(Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4) cycle
-
-        !-- convert refl_asym to % like all other reflectances
-        ch1_Refl_Toa_Asym = 100.0 * DCOMP % Refl_Asym(Elem_Idx,Line_Idx)
-
-        !-- compute minimum cloud optical depth
-        if (ch(1)%Ref_Toa_Min_3x3(Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4) cycle
-        !Diag_Pix_Array_1(Elem_Idx,Line_Idx) = &
-        !                COD_APPROX(ch(1)%Ref_Toa_Clear(Elem_Idx,Line_Idx), &
-        !                           ch(1)%Ref_Toa(Elem_Idx,Line_Idx), &
-        !                           ch1_Refl_Toa_Asym, &
-        !                           ch(1)%Ref_Toa_Min_3x3(Elem_Idx,Line_Idx), &
-        !                           DCOMP % tau(Elem_Idx,Line_Idx))
 
 
-        !-- compute maximum cloud optical depth
-        if (ch(1)%Ref_Toa_Max_3x3(Elem_Idx,Line_Idx) .EQfp. Missing_Value_Real4) cycle
-        !Diag_Pix_Array_2(Elem_Idx,Line_Idx) = &
-        !                COD_APPROX(ch(1)%Ref_Toa_Clear(Elem_Idx,Line_Idx), &
-        !                           ch(1)%Ref_Toa(Elem_Idx,Line_Idx), &
-        !                           ch1_Refl_Toa_Asym, &
-        !                           ch(1)%Ref_Toa_Max_3x3(Elem_Idx,Line_Idx), &
-        !                           DCOMP % tau(Elem_Idx,Line_Idx))
-
-      enddo
-   end do
-
- end subroutine COMPUTE_SUBPIXEL_MAX_MIN_COD
 !-----------------------------------------------------------
 ! compute cloud water path from the optical depth
 ! and particle size from the dcomp algorithm
