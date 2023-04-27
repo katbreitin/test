@@ -843,6 +843,28 @@ cfg_NetCDF_txt+ \
             shutil.copy(absl_fpaths["supp_defs"], absl_paths["makedir"])
             rm_f(absl_fpaths["supp_defs"])
 
+            # Determine some code provenance info and write it to a Fortran
+            #  "include" file:
+            cabp_fpath = os.path.join(absl_paths["anchor"], "..", "src", "main",
+                                      "code_and_build_provenance_p2.inc")
+            text_to_write = (
+                 "!+ F95+ include file containing provenance info about the\n"
+                 "!   CLAVR-x codebase and build (part 2).\n\n"
+                 "!~ (re)generated\n")
+            tmp_str = ''
+            if customize_src_dirs:
+                for default, custom in csd_to_proc:
+                    if custom is not None:
+                        tmp_str += "({} replaced by {}), ".format(default,
+                                                                  custom)
+            if not tmp_str:
+                tmp_str = 'none'
+            text_to_write += ("\ncharacter(len={:d}), public :: "
+                              "CLAVRx_build_custom_srcdirs = "
+                              "'{}'\n".format(len(tmp_str), tmp_str))
+            with open(cabp_fpath, 'w') as out_f:
+                out_f.write(text_to_write)
+
             # Create customized source directory configuration file:
             if customize_src_dirs:
                 with open(absl_fpaths["src_dirs_w_etc"], "rt") as f:
@@ -960,6 +982,42 @@ F_compiler_opts_lines+'\n'+ \
 "\n"
         with open(absl_fpaths["crmf_include"], "wt") as text_f:
             text_f.write(text_to_write)
+
+        # Determine provenance info about the codebase and build (where/when
+        #  possible), and write it to a Fortran "include" file:
+        cabp_fpath = os.path.join(absl_paths["anchor"], "..", "src", "main",
+                                  "code_and_build_provenance_p1.inc")
+        text_to_write = (
+             "!+ F95+ include file containing provenance info about the\n"
+             "!   CLAVR-x codebase and build (part 1).\n\n"
+             "!~ (re)generated\n")
+
+        try:  # Since codebase might not be a git repository
+            git_cmds = (["git", "rev-parse", "--short=8", "--verify", "HEAD"],
+                        ["git", "branch", "--show-current"])
+            ans = []
+            clen = 0
+            for cmd in git_cmds:
+                cproc = subprocess.run(cmd, stdout=subprocess.PIPE, check=True)
+                token = cproc.stdout.decode().strip()
+                clen += len(token)
+                ans.append(token)
+            text_to_write += (
+                  "\ncharacter(len={}), public :: CLAVRx_git_commit = '{} "
+                  "(branch: {})'\n".format(clen+11, ans[0], ans[1]))
+        except:
+            text_to_write += (
+                          "\ncharacter(len=25), public :: CLAVRx_git_commit = "
+                          "'unknown (branch: unknown)'\n")
+
+        tmp_str = "{}, {}".format(
+                    abd["Fortran_compiler"].strip(), abd["C_compiler"].strip())
+        text_to_write += ("\ncharacter(len={:d}), public :: "
+                          "CLAVRx_build_compilers = "
+                          "'{}'\n".format(len(tmp_str), tmp_str))
+
+        with open(cabp_fpath, 'w') as out_f:
+            out_f.write(text_to_write)
 
         # Generate a Makefile, then execute its instructions:
 

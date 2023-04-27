@@ -55,7 +55,8 @@ use CONSTANTS_MOD, only: &
    , ONE_BYTE_MIN &
    , ONE_BYTE_MAX &
    , TWO_BYTE_MIN &
-   , TWO_BYTE_MAX
+   , TWO_BYTE_MAX,  &
+   CLAVRx_git_commit, CLAVRx_build_compilers, CLAVRx_build_custom_srcdirs
 
 use univ_fp_comparison_mod, only: operator(.EQfp.)
    
@@ -273,6 +274,13 @@ Istatus = sfscatt(hdf_file_id,"cdr_variable", DFNT_CHAR8,len_trim(Variable_Strin
 Istatus = sfscatt(hdf_file_id,"institution", DFNT_CHAR8,len_trim(Institution_String),trim(Institution_String)) + Istatus
 Istatus = sfscatt(hdf_file_id,"cdr_program", DFNT_CHAR8, len_trim(Program_String),trim(Program_String)) + Istatus
 Istatus = sfscatt(hdf_file_id,"title", DFNT_CHAR8,len_trim(Title_String),trim(Title_String)) + Istatus
+Istatus = sfscatt(hdf_file_id, "CLAVRx_git_commit", DFNT_CHAR8,  &
+     len_trim(CLAVRx_git_commit), trim(CLAVRx_git_commit)) + Istatus
+Istatus = sfscatt(hdf_file_id, "CLAVRx_build_compilers", DFNT_CHAR8,  &
+     len_trim(CLAVRx_build_compilers), trim(CLAVRx_build_compilers)) + Istatus
+Istatus = sfscatt(hdf_file_id, "CLAVRx_build_custom_srcdirs", DFNT_CHAR8,  &
+     len_trim(CLAVRx_build_custom_srcdirs),  &
+     trim(CLAVRx_build_custom_srcdirs)) + Istatus
 Istatus = sfscatt(hdf_file_id,"calibration_version", DFNT_CHAR8,len_trim(Calibration_String),trim(Calibration_String)) + Istatus
 Istatus = sfscatt(hdf_file_id,"keywords", DFNT_CHAR8,len_trim(Keywords_String),trim(Keywords_String)) + Istatus
 Istatus = sfscatt(hdf_file_id,"keywords_vocabulary", DFNT_CHAR8,len_trim(Keywords_Vocabulary_String),trim(Keywords_Vocabulary_String)) + Istatus

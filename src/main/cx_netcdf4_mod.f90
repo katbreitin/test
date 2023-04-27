@@ -1626,6 +1626,12 @@ Istatus = nf90_put_att(netcdf_file_id,nf90_global,"institution",trim(Institution
 Istatus = nf90_put_att(netcdf_file_id,nf90_global,"cdr_program",trim(Program_String)) + Istatus
 Istatus = nf90_put_att(netcdf_file_id,nf90_global,"title",trim(Title_String)) + Istatus
 Istatus = nf90_put_att(netcdf_file_id,nf90_global,"calibration_version",trim(Calibration_String)) + Istatus
+Istatus = nf90_put_att(netcdf_file_id, nf90_global, "CLAVRx_git_commit",  &
+     trim(CLAVRx_git_commit)) + Istatus
+Istatus = nf90_put_att(netcdf_file_id, nf90_global, "CLAVRx_build_compilers",  &
+     trim(CLAVRx_build_compilers)) + Istatus
+Istatus = nf90_put_att(netcdf_file_id, nf90_global,  &
+     "CLAVRx_build_custom_srcdirs", trim(CLAVRx_build_custom_srcdirs)) + Istatus
 Istatus = nf90_put_att(netcdf_file_id,nf90_global,"keywords",trim(Keywords_String)) + Istatus
 Istatus = nf90_put_att(netcdf_file_id,nf90_global,"keywords_vocabulary",trim(Keywords_Vocabulary_String)) + Istatus
 Istatus = nf90_put_att(netcdf_file_id,nf90_global,"time_coverage_resolution",trim(Time_Coverage_Resolution_String)) + Istatus

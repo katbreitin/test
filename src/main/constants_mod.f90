@@ -94,6 +94,10 @@ module CONSTANTS_MOD
   character(120), public :: Cloud_Mask_Lut_Version
   character(120), public :: Cloud_Type_Version
   character(120), public :: Cloud_Type_IR_Version
+
+  !--- Codebase and build provenance info:
+  include 'code_and_build_provenance_p1.inc'
+  include 'code_and_build_provenance_p2.inc'
   
   !--- define sds names in hdf files of relevant static ancillary data
   character(*), parameter, public :: SFC_TYPE_SDS_NAME = "surface_type"
