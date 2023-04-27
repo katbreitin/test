@@ -723,7 +723,15 @@ Sds_Output_Stride_XY = (/1,1/)
                            len_trim(Date_Created_String), trim(Date_Created_String)) + Istatus_Sum
              Istatus_Sum = sfscatt(Sd_Id_Output,"id", DFNT_CHAR8, &
                            len_trim(Id_String),trim(Id_String)) + Istatus_Sum
-
+             Istatus_Sum = sfscatt(Sd_Id_Output, "CLAVRx_git_commit",  &
+                  DFNT_CHAR8, len_trim(CLAVRx_git_commit),  &
+                  trim(CLAVRx_git_commit)) + Istatus_Sum
+             Istatus_Sum = sfscatt(Sd_Id_Output, "CLAVRx_build_compilers",  &
+                  DFNT_CHAR8, len_trim(CLAVRx_build_compilers),  &
+                  trim(CLAVRx_build_compilers)) + Istatus_Sum
+             Istatus_Sum = sfscatt(Sd_Id_Output, "CLAVRx_build_custom_srcdirs", &
+                  DFNT_CHAR8, len_trim(CLAVRx_build_custom_srcdirs),  &
+                  trim(CLAVRx_build_custom_srcdirs)) + Istatus_Sum
              
              Istatus_Sum = sfscatt(Sd_Id_Output,"DATA_NODE",DFNT_CHAR8, &
                            len_trim(Node_String),trim(Node_String)) + Istatus_Sum
