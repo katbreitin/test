@@ -194,8 +194,7 @@
       , COMPUTE_DCOMP_INSOLATION &
       , COMPUTE_PRECIPITATION &
       , COMPUTE_PRECIPITATION_AHI &
-      , COMPUTE_MASS_CONCENTRATION &
-      , COMPUTE_SUBPIXEL_MAX_MIN_COD
+      , COMPUTE_MASS_CONCENTRATION 
 
    use DNB_RETRIEVALS_MOD, only: &
         COMPUTE_LUNAR_REFLECTANCE &
@@ -678,7 +677,7 @@
    call univ_reg_sigint_handler(cleanup_tempdir__exit)
 
    call initial_pixel_common_alloc
-   
+
    !*************************************************************************
    ! Marker: Open high spatial resolution ancillary data files
    !*************************************************************************

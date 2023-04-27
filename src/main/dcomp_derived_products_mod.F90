@@ -72,7 +72,6 @@ MODULE DCOMP_DERIVED_PRODUCTS_MOD
           COMPUTE_ADIABATIC_CLOUD_PROPS, &
           COMPUTE_DCOMP_INSOLATION, &
           ADJUST_DCOMP_LWP, &
-          COMPUTE_SUBPIXEL_MAX_MIN_COD, &
           COMPUTE_MASS_CONCENTRATION
 ! private:: COD_APPROX
  private:: BIRD_NREL_CLEAR_SKY_INSOL
@@ -141,18 +140,18 @@ subroutine COMPUTE_CLOUD_WATER_PATH(jmin,jmax)
 
   integer:: Elem_Idx
   integer:: Line_Idx
+
+  integer :: i,j
   integer:: Iphase
 
   real(kind=real4), parameter:: Rho_Water = 1.0    !g/m^3
   real(kind=real4), parameter:: Rho_Ice = 0.917    !g/m^3
-  integer:: Lat_NWP_Idx
-  integer:: Lon_NWP_Idx
-  real:: Cloud_Geometrical_Thickness
-  real:: Ice_Layer_Fraction
-  real:: Water_Layer_Fraction
-  real:: Scwater_Layer_Fraction
-  real:: Tau
-  real:: Reff
+
+      integer, dimension(:,:), allocatable:: Lat_NWP_Idx
+    integer, dimension(:,:), allocatable:: Lon_NWP_Idx
+    real, dimension(:,:), allocatable:: Upper_Limit_Water_Height
+     real, dimension(:,:), allocatable:: Freezing_Level_Height
+
 
   DCOMP % cwp = Missing_Value_Real4
   DCOMP % iwp = Missing_Value_Real4
@@ -160,154 +159,30 @@ subroutine COMPUTE_CLOUD_WATER_PATH(jmin,jmax)
   DCOMP % Cwp_Ice_Layer = Missing_Value_Real4
   DCOMP % Cwp_Water_Layer = Missing_Value_Real4
   DCOMP % Cwp_Scwater_Layer = Missing_Value_Real4
-  Tau = Missing_Value_Real4
-  Reff = Missing_Value_Real4
 
-  line_loop: DO Line_Idx = jmin, jmax - jmin + 1
-    element_loop: DO Elem_Idx = 1, Image%Number_Of_Elements
 
-     !--- assign optical depth and particle size
-     if (Geo%Solzen(Elem_Idx,Line_Idx) < 90.0) then
-       Tau =  DCOMP % Tau (Elem_Idx,Line_Idx)
-       Reff = DCOMP % Reff(Elem_Idx,Line_Idx)
-     else
-       Tau = NLCOMP % Tau(Elem_Idx,Line_Idx)
-       Reff = NLCOMP % Reff(Elem_Idx,Line_Idx)
-     endif
 
-     if (Tau .EQfp. Missing_Value_Real4) cycle
-     if (Reff .EQfp. Missing_Value_Real4) cycle
 
-     if (Tau .EQfp. 0.0) then
-        DCOMP % cwp(Elem_Idx,Line_Idx) = 0.0
-        DCOMP % iwp(Elem_Idx,Line_Idx) = 0.0
-        DCOMP % lwp(Elem_Idx,Line_Idx) = 0.0
-        cycle
-     endif
-     !------------------------------------------------
-     ! determine phase from cloud type
-     ! -1 = undetermined, 0 = water, 1 = ice
-     !------------------------------------------------
-      Iphase = -1
-      if (Cld_Type(Elem_Idx,Line_Idx) == sym%CLEAR_TYPE) then
-              Iphase = -1
-      elseif (Cld_Type(Elem_Idx,Line_Idx) == sym%PROB_CLEAR_TYPE)  then
-              Iphase = -1
-      elseif (Cld_Type(Elem_Idx,Line_Idx) == sym%FOG_TYPE)  then
-              Iphase = 0
-      elseif (Cld_Type(Elem_Idx,Line_Idx) == sym%WATER_TYPE)  then
-              Iphase = 0
-      elseif (Cld_Type(Elem_Idx,Line_Idx) == sym%SUPERCOOLED_TYPE)  then
-              Iphase = 0
-      elseif (Cld_Type(Elem_Idx,Line_Idx) == sym%MIXED_TYPE)  then
-              Iphase = 0
-      elseif (Cld_Type(Elem_Idx,Line_Idx) == sym%OPAQUE_ICE_TYPE)  then
-              Iphase = 1
-      elseif (Cld_Type(Elem_Idx,Line_Idx) == sym%TICE_TYPE)  then
-              Iphase = 1
-      elseif (Cld_Type(Elem_Idx,Line_Idx) == sym%CIRRUS_TYPE)  then
-              Iphase = 1
-      elseif (Cld_Type(Elem_Idx,Line_Idx) == sym%OVERLAP_TYPE)  then
-              Iphase = 1
-      elseif (Cld_Type(Elem_Idx,Line_Idx) == sym%OVERSHOOTING_TYPE)  then
-              Iphase = 1
-      elseif (Cld_Type(Elem_Idx,Line_Idx) == sym%UNKNOWN_TYPE)  then
-              Iphase = -1
-      elseif (Cld_Type(Elem_Idx,Line_Idx) == sym%DUST_TYPE)  then
-              Iphase = -1
-      elseif (Cld_Type(Elem_Idx,Line_Idx) == sym%SMOKE_TYPE)  then
-              Iphase = -1
-     endif
+  allocate (Upper_Limit_Water_Height(dcomp % dim1, dcomp % dim2 ))
+  allocate (Freezing_Level_Height(dcomp % dim1, dcomp % dim2 ))
+  allocate (Lat_NWP_Idx(dcomp % dim1, dcomp % dim2 ))
+  allocate (Lon_NWP_Idx(dcomp % dim1, dcomp % dim2 ))
 
-#ifdef NOMISSINGCWP
-#else
-     !--- check conditions where this calc should be skipped
-     if (Iphase == -1) cycle
-#endif
+  Lon_NWP_Idx = NWP_PIX%I_Nwp
+  Lat_NWP_Idx = NWP_PIX%J_Nwp
 
-     DCOMP % lwp(Elem_Idx,Line_Idx) = 0.55*Tau*Reff*Rho_Water
-     DCOMP % iwp(Elem_Idx,Line_Idx) = 0.667*Tau*Reff*Rho_Ice
+  do i = 1, dcomp % dim1
+    do j = 1, dcomp % dim2
+      Upper_Limit_Water_Height(i,j) = NWP%Upper_Limit_Water_Height(Lon_Nwp_Idx(i,j),Lat_Nwp_Idx(i,j))
+      Freezing_Level_Height(i,j)= NWP%Freezing_Level_Height(Lon_Nwp_Idx(i,j),Lat_Nwp_Idx(i,j))
+    end do
+  end do
 
-     !--- compute cloud water path
-     if (Iphase == 0) then
-      DCOMP % cwp(Elem_Idx,Line_Idx) = DCOMP % lwp(Elem_Idx,Line_Idx)
-     else if(Iphase == 1) then
-      DCOMP % cwp(Elem_Idx,Line_Idx) = DCOMP % iwp(Elem_Idx,Line_Idx)
-     endif
 
-     !--- Partition into Ice, Water and Scwater Layers
-     Lon_NWP_Idx = NWP_PIX%I_Nwp(Elem_Idx,Line_Idx)
-     Lat_NWP_Idx = NWP_PIX%J_Nwp(Elem_Idx,Line_Idx)
-
-     !--- skip if invalid nwp indices
-     if (Lat_Nwp_Idx <= 0 .or. Lon_Nwp_Idx <= 0) cycle
-
-     Cloud_Geometrical_Thickness = ACHA%Zc(Elem_Idx,Line_Idx) - BASE%Zc_Base(Elem_Idx,Line_Idx)
-     !--- skip if failed cloud boundares
-     if ((Cloud_Geometrical_Thickness .LEfp. 0.00) .or. (ACHA%Zc(Elem_Idx,Line_Idx) .LEfp. 0.00)) cycle
-
-     Ice_Layer_Fraction = 0.0
-     Water_Layer_Fraction = 0.0
-     Scwater_Layer_Fraction = 0.0
-
-     if (BASE%Zc_Base(Elem_Idx,Line_Idx) .GEfp. NWP%Upper_Limit_Water_Height(Lon_Nwp_Idx,Lat_Nwp_Idx)) then
-
-         Ice_Layer_Fraction  = 1.0
-         Water_Layer_Fraction  = 0.0
-         Scwater_Layer_Fraction  = 0.0
-
-     else
-
-         Ice_Layer_Fraction = (ACHA%Zc(Elem_Idx,Line_Idx) - NWP%Upper_Limit_Water_Height(Lon_Nwp_Idx,Lat_Nwp_Idx)) / &
-                               Cloud_Geometrical_Thickness
-
-     endif
-
-     if (Ice_Layer_Fraction .NEfp. 1.0) then
-
-         if (ACHA%Zc(Elem_Idx,Line_Idx) < NWP%Upper_Limit_Water_Height(Lon_Nwp_Idx,Lat_Nwp_Idx)) then
-
-           Water_Layer_Fraction = 1.0
-
-         else
-           Water_Layer_Fraction = (NWP%Upper_Limit_Water_Height(Lon_Nwp_Idx,Lat_Nwp_Idx)-BASE%Zc_Base(Elem_Idx,Line_Idx)) / &
-                                  Cloud_Geometrical_Thickness
-         endif
-
-         if ((ACHA%Zc(Elem_Idx,Line_Idx) > NWP%Upper_Limit_Water_Height(Lon_Nwp_Idx,Lat_Nwp_Idx)) .and. &
-             (BASE%Zc_Base(Elem_Idx,Line_Idx) < NWP%Freezing_Level_Height(Lon_Nwp_Idx,Lat_Nwp_Idx))) then
-
-            Scwater_Layer_Fraction = (NWP%Upper_Limit_Water_Height(Lon_Nwp_Idx,Lat_Nwp_Idx) - &
-                                     NWP%Freezing_Level_Height(Lon_Nwp_Idx,Lat_Nwp_Idx)) / &
-                                     Cloud_Geometrical_Thickness
-
-         elseif ((ACHA%Zc(Elem_Idx,Line_Idx) > NWP%Upper_Limit_Water_Height(Lon_Nwp_Idx,Lat_Nwp_Idx)) .and. &
-                   (BASE%Zc_Base(Elem_Idx,Line_Idx) < NWP%Upper_Limit_Water_Height(Lon_Nwp_Idx,Lat_Nwp_Idx))) then
-
-              Scwater_Layer_Fraction = (NWP%Upper_Limit_Water_Height(Lon_Nwp_Idx,Lat_Nwp_Idx) - &
-                                       BASE%Zc_Base(Elem_Idx,Line_Idx)) / &
-                                       Cloud_Geometrical_Thickness
-
-         elseif ((ACHA%Zc(Elem_Idx,Line_Idx) > NWP%Freezing_Level_Height(Lon_Nwp_Idx,Lat_Nwp_Idx)) .and. &
-                   (BASE%Zc_Base(Elem_Idx,Line_Idx) < NWP%Freezing_Level_Height(Lon_Nwp_Idx,Lat_Nwp_Idx))) then
-
-              Scwater_Layer_Fraction = (ACHA%Zc(Elem_Idx,Line_Idx) - NWP%Freezing_Level_Height(Lon_Nwp_Idx,Lat_Nwp_Idx)) / &
-                                        Cloud_Geometrical_Thickness
-
-          endif
-
-     endif
-
-     Ice_Layer_Fraction = max(0.0,Ice_Layer_Fraction)
-     Water_Layer_Fraction = max(0.0,Water_Layer_Fraction)
-     Scwater_Layer_Fraction = max(0.0,Scwater_Layer_Fraction)
-
-     DCOMP % Cwp_Ice_Layer(Elem_Idx,Line_Idx) = Ice_Layer_Fraction * DCOMP % cwp(Elem_Idx,Line_Idx)
-     DCOMP % Cwp_Water_Layer(Elem_Idx,Line_Idx) = Water_Layer_Fraction * DCOMP % cwp(Elem_Idx,Line_Idx)
-     DCOMP % Cwp_Scwater_Layer(Elem_Idx,Line_Idx) = Scwater_Layer_Fraction * DCOMP % cwp(Elem_Idx,Line_Idx)
-
-    enddo element_loop
-  enddo line_loop
+  call dcomp % COMPUTE_CWP_PHASE( &
+    Acha % Zc, BASE % Zc_base &
+  , Upper_Limit_Water_Height &
+  , Freezing_Level_Height)
 
 
 end subroutine COMPUTE_CLOUD_WATER_PATH
