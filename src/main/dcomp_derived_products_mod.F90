@@ -141,7 +141,7 @@ subroutine COMPUTE_CLOUD_WATER_PATH(jmin,jmax)
   integer:: Elem_Idx
   integer:: Line_Idx
 
-  integer :: i,j
+  integer :: i,j, ii,jj
   integer:: Iphase
 
   real(kind=real4), parameter:: Rho_Water = 1.0    !g/m^3
@@ -173,8 +173,16 @@ subroutine COMPUTE_CLOUD_WATER_PATH(jmin,jmax)
 
   do i = 1, dcomp % dim1
     do j = 1, dcomp % dim2
-      Upper_Limit_Water_Height(i,j) = NWP%Upper_Limit_Water_Height(Lon_Nwp_Idx(i,j),Lat_Nwp_Idx(i,j))
-      Freezing_Level_Height(i,j)= NWP%Freezing_Level_Height(Lon_Nwp_Idx(i,j),Lat_Nwp_Idx(i,j))
+
+      ii = Lon_Nwp_Idx(i,j)
+      jj = Lat_Nwp_Idx(i,j)
+
+      if ( ii .lt. 1) cycle
+      if ( jj .lt. 1) cycle
+      if ( ii .gt. dcomp % dim1) cycle
+      if ( jj .lt. dcomp % dim2) cycle
+      Upper_Limit_Water_Height(i,j) = NWP%Upper_Limit_Water_Height(ii,jj)
+      Freezing_Level_Height(i,j)= NWP%Freezing_Level_Height(ii,jj)
     end do
   end do
 
