@@ -83,7 +83,7 @@ module LEVEL2_STRUCTURES_MOD
     character(len=36):: creator
     character(len=36):: plang
     character(len=36):: timestamp
-    character(len=80) :: hdf_ver
+    character(len=80) :: hdf_ver, HDF5_ver, NetCDF_ver
     character(len=36) :: machine
     real(kind=real4)::  LWIR_Focal_Plane_Temperature
   end type L2_Glob_Attr_Definition

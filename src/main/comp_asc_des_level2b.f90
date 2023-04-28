@@ -75,9 +75,12 @@ program COMPILE_ASC_DES_LEVEL2B
  use univ_fp_comparison_mod, only: operator(.EQfp.), operator(.NEfp.),  &
       operator(.GEfp.), operator(.LEfp.)
  use CX_HDF4_MOD
+ use LEVEL2_STRUCTURES_MOD, only: Clavrx_Global_Attr
  use LEVEL2B_MOD
  use FILE_UTILS,only: get_lun
  use CLASS_TIME_DATE, only: DATE_TYPE
+ use netcdf, only: nf90_inq_libvers
+ use hdf5, only: h5get_libversion_f
 
  implicit none
 
@@ -88,6 +91,10 @@ program COMPILE_ASC_DES_LEVEL2B
  integer(kind=int4):: First_Valid_Input
  integer(kind=int4):: Sd_Id_Input
  integer(kind=int4):: Sd_Id_Output
+
+ integer :: hglibver
+ integer :: major_v, minor_v, release, istat
+ character(len=3) :: stmp1, stmp2, stmp3
 
  integer(kind=int4), dimension(2):: Sds_Dims_Output_XY
  integer(kind=int4), dimension(1):: Sds_Dims_Output_X
@@ -732,6 +739,36 @@ Sds_Output_Stride_XY = (/1,1/)
              Istatus_Sum = sfscatt(Sd_Id_Output, "CLAVRx_build_custom_srcdirs", &
                   DFNT_CHAR8, len_trim(CLAVRx_build_custom_srcdirs),  &
                   trim(CLAVRx_build_custom_srcdirs)) + Istatus_Sum
+
+             !--- determine HDF(4) library version:
+             if (hglibver(major_v, minor_v, release,  &
+                  Clavrx_Global_Attr%hdf_ver) /= SUCCEED) then
+                print *, "ERROR: could not determine HDF(4) library version"
+                stop 965
+             end if
+             !--- determine HDF5 library version:
+             call h5get_libversion_f(major_v, minor_v, release, istat)
+             if (istat == 0) then
+                write(stmp1, '(i2)') major_v; write(stmp2, '(i2)') minor_v
+                write(stmp3, '(i2)') release
+                Clavrx_Global_Attr%HDF5_ver = trim(adjustl(stmp1))//'.'//  &
+                     trim(adjustl(stmp2))//'.'//trim(adjustl(stmp3))
+             else
+                print *, "ERROR: could not determine HDF5 library version"
+                stop 966
+             end if
+             !--- determine NetCDF library version:
+             Clavrx_Global_Attr%NetCDF_ver = nf90_inq_libvers()
+
+             Istatus_Sum = sfscatt(Sd_Id_Output, "HDF_LIB_VERSION", &
+                  DFNT_CHAR8, len_trim(Clavrx_Global_Attr%hdf_ver),  &
+                  trim(Clavrx_Global_Attr%hdf_ver)) + Istatus_Sum
+             Istatus_Sum = sfscatt(Sd_Id_Output, "HDF5_lib_version", &
+                  DFNT_CHAR8, len_trim(Clavrx_Global_Attr%HDF5_ver),  &
+                  trim(Clavrx_Global_Attr%HDF5_ver)) + Istatus_Sum
+             Istatus_Sum = sfscatt(Sd_Id_Output, "netCDF_lib_version", &
+                  DFNT_CHAR8, len_trim(Clavrx_Global_Attr%NetCDF_ver),  &
+                  trim(Clavrx_Global_Attr%NetCDF_ver)) + Istatus_Sum       
              
              Istatus_Sum = sfscatt(Sd_Id_Output,"DATA_NODE",DFNT_CHAR8, &
                            len_trim(Node_String),trim(Node_String)) + Istatus_Sum

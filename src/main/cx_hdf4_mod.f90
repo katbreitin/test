@@ -193,15 +193,18 @@ contains
 !-------------------------------------------------------------------------
  subroutine WRITE_CLAVRX_HDF_GLOBAL_ATTRIBUTES(hdf_file_id)
 
+ use netcdf, only: nf90_inq_libvers
+ use hdf5, only: h5get_libversion_f
+   
  integer(kind=int4), intent(in):: hdf_file_id
 
  integer:: sfscatt, sfsnatt, hglibver
- integer:: major_v, minor_v, release
+ integer:: major_v, minor_v, release, istat
  !integer(kind=int2):: Istatus = 0
  integer(kind=int4):: Istatus = 0
  !character(len=80) :: hdf_ver
  !character(len=36) :: machine
-
+ character(len=3) :: stmp1, stmp2, stmp3
 
  character(len=6), parameter:: Conventions_String = "CF-1.6"
  character(len=38), parameter:: Metadata_Conventions_String = "CF-1.6, Unidata Dataset Discovery v1.0"
@@ -254,14 +257,36 @@ contains
  Clavrx_Global_Attr%plang = "F90"
  Clavrx_Global_Attr%timestamp = trim(hdf_timestamp())
 
-!--- determine HDF library version
-if (hglibver(major_v, minor_v, release, Clavrx_Global_Attr%hdf_ver) /= SUCCEED) then
-   print *, "could not determine HDF library version"
+!--- determine HDF(4) library version:
+if (hglibver(major_v, minor_v, release,  &
+      Clavrx_Global_Attr%hdf_ver) /= SUCCEED) then
+   print *, "ERROR: could not determine HDF(4) library version"
    stop 961
 end if
+!--- determine HDF5 library version:
+call h5get_libversion_f(major_v, minor_v, release, istat)
+if (istat == 0) then
+   write(stmp1, '(i2)') major_v; write(stmp2, '(i2)') minor_v
+   write(stmp3, '(i2)') release
+   Clavrx_Global_Attr%HDF5_ver = trim(adjustl(stmp1))//'.'//  &
+        trim(adjustl(stmp2))//'.'//trim(adjustl(stmp3))
+else
+   print *, "ERROR: could not determine HDF5 library version"
+   stop 962
+end if
+!--- determine NetCDF library version:
+Clavrx_Global_Attr%NetCDF_ver = nf90_inq_libvers()
 
 !---- describe CLAVR-x
-Istatus = sfscatt(hdf_file_id, "HDF_LIB_VERSION", DFNT_CHAR8, len_trim(Clavrx_Global_Attr%hdf_ver), trim(Clavrx_Global_Attr%hdf_ver))+Istatus
+Istatus = sfscatt(hdf_file_id, "HDF_LIB_VERSION", DFNT_CHAR8,  &
+     len_trim(Clavrx_Global_Attr%hdf_ver),  &
+     trim(Clavrx_Global_Attr%hdf_ver))+Istatus
+Istatus = sfscatt(hdf_file_id, "HDF5_lib_version", DFNT_CHAR8,  &
+     len_trim(Clavrx_Global_Attr%HDF5_ver),  &
+     trim(Clavrx_Global_Attr%HDF5_ver))+Istatus
+Istatus = sfscatt(hdf_file_id, "netCDF_lib_version", DFNT_CHAR8,  &
+     len_trim(Clavrx_Global_Attr%NetCDF_ver),  &
+     trim(Clavrx_Global_Attr%NetCDF_ver))+Istatus
 Istatus = sfscatt(hdf_file_id, "MACHINE", DFNT_CHAR8, len_trim(Clavrx_Global_Attr%machine), trim(Clavrx_Global_Attr%machine))+Istatus
 Istatus = sfscatt(hdf_file_id, "PROGLANG", DFNT_CHAR8, len_trim(Clavrx_Global_Attr%plang), trim(Clavrx_Global_Attr%plang))+Istatus
 

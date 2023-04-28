@@ -1543,13 +1543,18 @@ module CX_NETCDF4_MOD
 !-------------------------------------------------------------------------
  subroutine WRITE_CLAVRX_NETCDF_GLOBAL_ATTRIBUTES(netcdf_file_id)
 
+ use netcdf, only: nf90_inq_libvers
+ use HDF, only: SUCCEED
+ use hdf5, only: h5get_libversion_f
+   
  integer(kind=int4), intent(in):: netcdf_file_id
 
- integer:: libver
- integer:: major_v, minor_v, release
+ integer :: hglibver
+ integer:: major_v, minor_v, release, istat
  integer(kind=int2):: Istatus = 0
  character(len=80) :: hdf_ver
  character(len=36) :: machine
+ character(len=3) :: stmp1, stmp2, stmp3
 
 
  character(len=6), parameter:: Conventions_String = "CF-1.6"
@@ -1603,17 +1608,35 @@ module CX_NETCDF4_MOD
  Clavrx_Global_Attr%plang = "F90"
  Clavrx_Global_Attr%timestamp = trim(netcdf_timestamp())
 
-!--- determine HDF library version
-!if (hglibver(major_v, minor_v, release, Clavrx_Global_Attr%hdf_ver) /= SUCCEED) then
-!   print *, "could not determine HDF library version"
-!   stop 961
-!end if
+!--- determine HDF(4) library version:
+if (hglibver(major_v, minor_v, release,  &
+      Clavrx_Global_Attr%hdf_ver) /= SUCCEED) then
+   print *, "ERROR: could not determine HDF(4) library version"
+   stop 963
+end if
+!--- determine HDF5 library version:
+call h5get_libversion_f(major_v, minor_v, release, istat)
+if (istat == 0) then
+   write(stmp1, '(i2)') major_v; write(stmp2, '(i2)') minor_v
+   write(stmp3, '(i2)') release
+   Clavrx_Global_Attr%HDF5_ver = trim(adjustl(stmp1))//'.'//  &
+        trim(adjustl(stmp2))//'.'//trim(adjustl(stmp3))
+else
+   print *, "ERROR: could not determine HDF5 library version"
+   stop 964
+end if
+!--- determine NetCDF library version:
+Clavrx_Global_Attr%NetCDF_ver = nf90_inq_libvers()
 
 Istatus = 0
 
 !---- describe CLAVR-x
-Clavrx_Global_Attr%hdf_ver = "unknown"
-Istatus = nf90_put_att(netcdf_file_id,nf90_global, "HDF_LIB_VERSION", trim(Clavrx_Global_Attr%hdf_ver))+Istatus
+Istatus = nf90_put_att(netcdf_file_id, nf90_global, 'HDF_LIB_VERSION',  &
+     trim(Clavrx_Global_Attr%hdf_ver))+Istatus
+Istatus = nf90_put_att(netcdf_file_id, nf90_global, 'HDF5_lib_version',  &
+     trim(Clavrx_Global_Attr%HDF5_ver))+Istatus
+Istatus = nf90_put_att(netcdf_file_id, nf90_global, 'netCDF_lib_version',  &
+     trim(Clavrx_Global_Attr%NetCDF_ver))+Istatus
 Istatus = nf90_put_att(netcdf_file_id,nf90_global, "MACHINE", trim(Clavrx_Global_Attr%machine))+Istatus
 Istatus = nf90_put_att(netcdf_file_id,nf90_global, "PROGLANG", trim(Clavrx_Global_Attr%plang))+Istatus
 
