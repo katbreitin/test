@@ -210,7 +210,13 @@ contains
     allocate (Scwater_Layer_Fraction(self % dim1, self % dim2 ))
 
 
-    Cloud_Geometrical_Thickness = zc_top -Zc_base
+     ! make cwp
+
+     where ( self % lwp .ge. 0 .and. self % iwp .ge. 0  )
+        self % cwp = self % lwp + self % iwp
+    end where   
+
+     Cloud_Geometrical_Thickness = zc_top - Zc_base
 
      Water_Layer_Fraction = 0.0
      Scwater_Layer_Fraction = 0.0
@@ -252,8 +258,6 @@ contains
         Scwater_Layer_Fraction = 0.0
       end where
 
-      ! get sure nothing is below for unknown read_instr_constants
-
       where ( Ice_Layer_Fraction .lt. 0. ) Ice_Layer_Fraction = 0.
       where ( Water_Layer_Fraction .lt. 0. ) Water_Layer_Fraction = 0.
       where ( Scwater_Layer_Fraction .lt. 0. ) Scwater_Layer_Fraction = 0.
@@ -261,6 +265,10 @@ contains
       self % Cwp_Ice_Layer = Ice_Layer_Fraction * self % cwp
       self % Cwp_Water_Layer= Water_Layer_Fraction * self % cwp
       self % Cwp_Scwater_Layer = Scwater_Layer_Fraction * self % cwp
+
+     ! mass concentration
+      self % iwc = self % iwp / Cloud_Geometrical_Thickness
+      self % lwc = self % lwp / Cloud_Geometrical_Thickness
 
   end subroutine COMPUTE_CWP_PHASE
 

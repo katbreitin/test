@@ -547,7 +547,7 @@ subroutine dcomp_array_loop ( input, output , debug_mode_user)
 
   deallocate ( air_mass_array )
 
-  output % version = '$Id: dcomp_array_loop_sub.f90 189 2018-03-09 18:49:39Z awalther $'
+  output % version = 'V2'
 
 
 
