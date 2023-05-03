@@ -69,7 +69,6 @@ MODULE DCOMP_DERIVED_PRODUCTS_MOD
  public:: COMPUTE_CLOUD_WATER_PATH, &
           COMPUTE_PRECIPITATION, &
           COMPUTE_PRECIPITATION_AHI, &
-          COMPUTE_ADIABATIC_CLOUD_PROPS, &
           COMPUTE_DCOMP_INSOLATION, &
           ADJUST_DCOMP_LWP
 ! private:: COD_APPROX
@@ -132,13 +131,7 @@ MODULE DCOMP_DERIVED_PRODUCTS_MOD
 !      CWP_Scwater is a component of the Water_Layer
 !
 !-----------------------------------------------------------
-subroutine COMPUTE_CLOUD_WATER_PATH(jmin,jmax)
-
-  integer, intent(in):: jmin
-  integer, intent(in):: jmax
-
-  integer:: Elem_Idx
-  integer:: Line_Idx
+subroutine COMPUTE_CLOUD_WATER_PATH()
 
   integer :: i,j, ii,jj
   integer:: Iphase
@@ -146,10 +139,10 @@ subroutine COMPUTE_CLOUD_WATER_PATH(jmin,jmax)
   real(kind=real4), parameter:: Rho_Water = 1.0    !g/m^3
   real(kind=real4), parameter:: Rho_Ice = 0.917    !g/m^3
 
-      integer, dimension(:,:), allocatable:: Lat_NWP_Idx
-    integer, dimension(:,:), allocatable:: Lon_NWP_Idx
-    real, dimension(:,:), allocatable:: Upper_Limit_Water_Height
-     real, dimension(:,:), allocatable:: Freezing_Level_Height
+  integer, dimension(:,:), allocatable:: Lat_NWP_Idx
+  integer, dimension(:,:), allocatable:: Lon_NWP_Idx
+  real, dimension(:,:), allocatable:: Upper_Limit_Water_Height
+  real, dimension(:,:), allocatable:: Freezing_Level_Height
 
 
   DCOMP % cwp = Missing_Value_Real4
@@ -158,9 +151,6 @@ subroutine COMPUTE_CLOUD_WATER_PATH(jmin,jmax)
   DCOMP % Cwp_Ice_Layer = Missing_Value_Real4
   DCOMP % Cwp_Water_Layer = Missing_Value_Real4
   DCOMP % Cwp_Scwater_Layer = Missing_Value_Real4
-
-
-
 
   allocate (Upper_Limit_Water_Height(dcomp % dim1, dcomp % dim2 ))
   allocate (Freezing_Level_Height(dcomp % dim1, dcomp % dim2 ))
@@ -198,7 +188,7 @@ subroutine COMPUTE_CLOUD_WATER_PATH(jmin,jmax)
     Acha % Zc, BASE % Zc_base &
     , Upper_Limit_Water_Height &
     , Freezing_Level_Height)
-      call dcomp_2 % COMPUTE_ADIABATIC_PROPS (Acha % tc)
+    call dcomp_2 % COMPUTE_ADIABATIC_PROPS (Acha % tc)
   end if
 
   if (dcomp_3 % is_set) then
@@ -206,92 +196,12 @@ subroutine COMPUTE_CLOUD_WATER_PATH(jmin,jmax)
     Acha % Zc, BASE % Zc_base &
     , Upper_Limit_Water_Height &
     , Freezing_Level_Height)
-      call dcomp_3 % COMPUTE_ADIABATIC_PROPS (Acha % tc)
+    call dcomp_3 % COMPUTE_ADIABATIC_PROPS (Acha % tc)
   end if
 
 end subroutine COMPUTE_CLOUD_WATER_PATH
 
 
-!-----------------------------------------------------------------------------
-!--- compute Number concentration and Geometrical Height
-!-----------------------------------------------------------------------------
-subroutine COMPUTE_ADIABATIC_CLOUD_PROPS(Line_Idx_Min,Num_Lines)
-  integer, intent(in):: Line_Idx_Min
-  integer, intent(in):: Num_Lines
-
-  !--- local parameters used in lwp, iwp, N and H computation
-  real(kind=real4), parameter:: Rho_Water = 1000.0    !kg/m^3
-  real(kind=real4), parameter:: Q_Eff_Sca  = 2.0
-  real(kind=real4), parameter:: Drop_Dis_Width  = 0.8
-  real(kind=real4):: Condensation_Rate
-  real(kind=real4):: Water_Path_Cloud
-  integer:: Elem_Idx, Line_Idx, Elem_Idx_Min, Elem_Idx_Max, Line_Idx_Max, Num_Elements
-
-  real(kind=real4)::  T_Cloud, Reff_Cloud, Tau_Cloud
-
-  Elem_Idx_Min = 1
-  Num_Elements = Image%Number_Of_Elements
-  Elem_Idx_Max = Elem_Idx_Min + Num_Elements - 1
-  Line_Idx_Max = Line_Idx_Min + Num_Lines - 1
-
-  DCOMP % hcld = Missing_Value_Real4
-  DCOMP % cdnc = Missing_Value_Real4
-
-  line_loop: do Line_Idx = Line_Idx_Min, Line_Idx_Max
-
-    element_loop: do Elem_Idx = Elem_Idx_Min, Elem_Idx_Max
-
-      !--- skip bad pixels
-      if (Bad_Pixel_Mask(Elem_Idx,Line_Idx) == sym%YES) cycle
-
-      !--- skip non cloud pixels
-      if (Cld_Type(Elem_Idx,Line_Idx) == sym%CLEAR_TYPE .or. &
-          Cld_Type(Elem_Idx,Line_Idx) == sym%PROB_CLEAR_TYPE) then
-          DCOMP % hcld(Elem_Idx,Line_Idx) = 0.0
-          DCOMP % cdnc(Elem_Idx,Line_Idx) = 0.0
-          cycle
-      endif
-
-      !--- skip ice
-      if (Cld_Type(Elem_Idx,Line_Idx) /= sym%FOG_TYPE .and. &
-          Cld_Type(Elem_Idx,Line_Idx) /= sym%WATER_TYPE .and. &
-          Cld_Type(Elem_Idx,Line_Idx) /= sym%SUPERCOOLED_TYPE) then
-          cycle
-      endif
-
-      !--- make local aliases of global variables
-      Water_Path_Cloud = DCOMP % cwp(Elem_Idx,Line_Idx) / 1000.0   !kg/m^2
-      T_Cloud = ACHA%Tc(Elem_Idx,Line_Idx)
-      Reff_Cloud = DCOMP % reff(Elem_Idx,Line_Idx)
-      Tau_Cloud = DCOMP % Tau(Elem_Idx,Line_Idx)
-
-     !--- compute Number concentration and Geometrical Height
-     !--- filter for the clouds where this is applicable
-     !if (T_cloud > 268.0 .and. T_cloud < 300.0 .and. &
-     !   Reff_Cloud > 5.0 .and. Reff_Cloud < 35.0 .and. &
-     !   Tau_Cloud > 5 .and. Tau_Cloud < 50.0) then
-      if (Reff_Cloud > 5.0 .and. Reff_Cloud < 35.0 .and. &
-         Tau_Cloud > 5 .and. Tau_Cloud < 50.0) then
-
-         !-- condensation rate (kg/m^3/m)
-         Condensation_Rate = exp(-21.0553+T_cloud*0.0536887) / 1000.0
-
-         !geometrical height (meters)
-         DCOMP % hcld(Elem_Idx,Line_Idx)  =  &
-                    ( 2.0 / Condensation_Rate * Water_Path_Cloud )**0.5
-
-         !Number concentration (cm-3)
-         DCOMP % cdnc(Elem_Idx,Line_Idx) = 2.0**(-5.0/2.0)/Drop_Dis_Width *   &
-                             Tau_Cloud**3.0 * Water_Path_Cloud**(-5.0/2.0) *  &
-                            (3.0/5.0*Q_eff_sca*pi)**(-3.0) *  &
-                            (3.0*Condensation_Rate/4.0/pi/rho_water)**(-2.0) * &
-                             Condensation_Rate**(5.0/2.0)/ 1.0E6
-     endif
-
-    end do element_loop
-  end do line_loop
-
-end subroutine COMPUTE_ADIABATIC_CLOUD_PROPS
 
 !---------------------------------------------------------------------------------------
 ! compute precipitation from the KNMI approach

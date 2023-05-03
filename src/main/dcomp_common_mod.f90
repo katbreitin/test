@@ -318,7 +318,10 @@ contains
     Condensation_Rate**(5.0/2.0)/ 1.0E6
     deallocate (condensation_rate)
 
-    where (self % lwp < 0)
+
+    where (self % lwp < 0 .and. &
+        ( self % reff < 5 .or. self % reff > 35.  ) .and. &
+        ( self % tau < 5 .or. self % tau > 50.  ))
       self % hcld  = Missing_Value_Real4
       self% cdnc = Missing_Value_Real4
     end where
