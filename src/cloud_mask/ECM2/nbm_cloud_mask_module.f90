@@ -658,7 +658,7 @@ MODULE ECM2_CLOUD_MASK_MODULE
        Prior_Prob_Water = 0.5 * Prior_Yes_Temp
        Prior_Prob_Ice = 0.5 * Prior_Yes_Temp
    ELSE
-       Prior_Prob_Clear = Lut(Class_Idx)%Cloud_fraction(Output%Sfc_Idx)
+       Prior_Prob_Clear = 1.0-Lut(Class_Idx)%Cloud_fraction(Output%Sfc_Idx)
        Prior_Prob_Water = Lut(Class_Idx)%Water_Fraction(Output%Sfc_Idx)
        Prior_Prob_Ice = Lut(Class_Idx)%Ice_Fraction(Output%Sfc_Idx)
    ENDIF
