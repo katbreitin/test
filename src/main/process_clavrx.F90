@@ -193,8 +193,7 @@
       , COMPUTE_CLOUD_WATER_PATH &
       , COMPUTE_DCOMP_INSOLATION &
       , COMPUTE_PRECIPITATION &
-      , COMPUTE_PRECIPITATION_AHI &
-      , COMPUTE_MASS_CONCENTRATION 
+      , COMPUTE_PRECIPITATION_AHI
 
    use DNB_RETRIEVALS_MOD, only: &
         COMPUTE_LUNAR_REFLECTANCE &
@@ -1813,9 +1812,7 @@
 
                  call CCL_BRIDGE()
 
-                 !--- compute ice and liquid water contents
-                 call COMPUTE_MASS_CONCENTRATION()
-
+                
                endif
 
                call chrono % tac(12)

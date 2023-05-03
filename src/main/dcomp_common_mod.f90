@@ -53,6 +53,7 @@ module dcomp_common_mod
     procedure :: deallocate => dcomp_deallocate
     procedure :: reset => dcomp_reset
     procedure :: COMPUTE_CWP_PHASE
+    procedure :: COMPUTE_ADIABATIC_PROPS
   end type dcomp_definition
 
 
@@ -199,6 +200,8 @@ contains
     real, dimension(:,:), allocatable:: Water_Layer_Fraction
     real, dimension(:,:), allocatable:: Scwater_Layer_Fraction
 
+    logical, dimension(:,:), allocatable :: valid_cloud
+
     ! init
     self % Cwp_Ice_Layer = Missing_Value_Real4
     self % Cwp_Water_Layer = Missing_Value_Real4
@@ -208,69 +211,119 @@ contains
     allocate (Ice_Layer_Fraction(self % dim1, self % dim2 ))
     allocate (Water_Layer_Fraction(self % dim1, self % dim2 ))
     allocate (Scwater_Layer_Fraction(self % dim1, self % dim2 ))
+    allocate (valid_cloud(self % dim1, self % dim2 ))
 
-
+    ! init
+    Cloud_Geometrical_Thickness = -999.
+    Ice_Layer_Fraction = -999.
+    Water_Layer_Fraction = -999.
+    Scwater_Layer_Fraction = -999.
+    valid_cloud = .false.
      ! make cwp
 
-     where ( self % lwp .ge. 0 .and. self % iwp .ge. 0  )
+     valid_cloud = self % lwp .ge. 0 .and. self % iwp .ge. 0  &
+            .and. zc_top .ge. 0 .and. zc_base .ge. 0
+
+     where ( valid_cloud  )
         self % cwp = self % lwp + self % iwp
-    end where   
+         Cloud_Geometrical_Thickness = zc_top - Zc_base
+         Water_Layer_Fraction = 0.0
+         Scwater_Layer_Fraction = 0.0
+         ! start with ice layer fraction
+         Ice_Layer_Fraction = 1.0
+    end where
 
-     Cloud_Geometrical_Thickness = zc_top - Zc_base
-
-     Water_Layer_Fraction = 0.0
-     Scwater_Layer_Fraction = 0.0
-
-     ! start with ice layer fraction
-     Ice_Layer_Fraction = 1.0
-
-     where ( Zc_Base .LEfp. Upper_Limit_Water_Height )
+     where ( (Zc_Base .LEfp. Upper_Limit_Water_Height) .and. valid_cloud)
        Ice_Layer_Fraction = (Zc_top - Upper_Limit_Water_Height) / Cloud_Geometrical_Thickness
      end where
 
       Water_Layer_Fraction = 1.0
-      where ( Zc_top > Upper_Limit_Water_Height)
+      where ( (Zc_top > Upper_Limit_Water_Height) .and. valid_cloud)
          Water_Layer_Fraction = ( Upper_Limit_Water_Height - Zc_Base) / &
           Cloud_Geometrical_Thickness
        end where
 
        Scwater_Layer_Fraction  = 0.0
-       where ( Zc_top > Freezing_Level_Height .and. Zc_Base < Freezing_Level_Height)
+       where ( (Zc_top > Freezing_Level_Height .and. Zc_Base < Freezing_Level_Height)  .and. valid_cloud)
          Scwater_Layer_Fraction = ( Zc_top - Freezing_Level_Height ) / &
                               Cloud_Geometrical_Thickness
 
       end where
 
-      where (Zc_top  >  Upper_Limit_Water_Height  .and. Zc_Base < Upper_Limit_Water_Height)
+      where ((Zc_top  >  Upper_Limit_Water_Height  .and. Zc_Base < Upper_Limit_Water_Height)  .and. valid_cloud)
         Scwater_Layer_Fraction = ( Upper_Limit_Water_Height - &
                              Zc_Base ) / &
                          Cloud_Geometrical_Thickness
      end where
 
-      where ( Zc_top > Upper_Limit_Water_Height .and. Zc_Base < Freezing_Level_Height)
+      where ( (Zc_top > Upper_Limit_Water_Height .and. Zc_Base < Freezing_Level_Height)  .and. valid_cloud)
         Scwater_Layer_Fraction = (Upper_Limit_Water_Height - &
                                 Freezing_Level_Height) / &
                       Cloud_Geometrical_Thickness
        end where
 
-      where (Ice_Layer_Fraction .eq. 1.0 )
+      where ((Ice_Layer_Fraction .EQfp. 1.0)  .and. valid_cloud)
         Water_Layer_Fraction = 0.0
         Scwater_Layer_Fraction = 0.0
       end where
 
-      where ( Ice_Layer_Fraction .lt. 0. ) Ice_Layer_Fraction = 0.
-      where ( Water_Layer_Fraction .lt. 0. ) Water_Layer_Fraction = 0.
-      where ( Scwater_Layer_Fraction .lt. 0. ) Scwater_Layer_Fraction = 0.
+      where ( (Ice_Layer_Fraction .lefp. 0.)  .and. valid_cloud) Ice_Layer_Fraction = 0.
+      where ( (Water_Layer_Fraction .lefp. 0.)  .and. valid_cloud) Water_Layer_Fraction = 0.
+      where ( (Scwater_Layer_Fraction .lefp. 0.)  .and. valid_cloud) Scwater_Layer_Fraction = 0.
 
-      self % Cwp_Ice_Layer = Ice_Layer_Fraction * self % cwp
-      self % Cwp_Water_Layer= Water_Layer_Fraction * self % cwp
-      self % Cwp_Scwater_Layer = Scwater_Layer_Fraction * self % cwp
+      where ( valid_cloud  )
+        self % Cwp_Ice_Layer = Ice_Layer_Fraction * self % cwp
+        self % Cwp_Water_Layer= Water_Layer_Fraction * self % cwp
+        self % Cwp_Scwater_Layer = Scwater_Layer_Fraction * self % cwp
 
-     ! mass concentration
-      self % iwc = self % iwp / Cloud_Geometrical_Thickness
-      self % lwc = self % lwp / Cloud_Geometrical_Thickness
+     ! mass concentration g/m3
+        self % iwc = self % iwp / Cloud_Geometrical_Thickness
+        self % lwc = self % lwp / Cloud_Geometrical_Thickness
+      end where
+
+      ! deallocate
+      deallocate(valid_cloud)
+      deallocate (Cloud_Geometrical_Thickness)
+      deallocate (Ice_Layer_Fraction)
+      deallocate (Water_Layer_Fraction)
+      deallocate (Scwater_Layer_Fraction)
 
   end subroutine COMPUTE_CWP_PHASE
+
+  subroutine COMPUTE_ADIABATIC_PROPS (self, ctt)
+    !-----------------------------------------------------------------------------
+    !--- compute Number concentration and Geometrical Height
+    !-----------------------------------------------------------------------------
+    class(dcomp_definition) :: self
+    real, dimension(:,:), intent(in) :: ctt
+    real, dimension(:,:), allocatable :: condensation_rate
+    real, parameter :: Drop_Dis_Width = 0.8
+    real, parameter:: Rho_Water = 1000.0    !kg/m^3
+    real, parameter:: Q_Eff_Sca  = 2.0
+    real, parameter:: PI=4.D0*DATAN(1.D0)
+
+    allocate (condensation_rate(self % dim1, self % dim2 ))
+
+    !-- condensation rate (kg/m^3/m)
+
+    condensation_rate = exp(-21.0553+ctt*0.0536887) / 1000.0
+
+    self % hcld  =  &
+    ( 2.0 / Condensation_Rate * (self % cwp/1000.) )**0.5
+
+    self%cdnc = 2.0**(-5.0/2.0)/Drop_Dis_Width *   &
+    self % tau **3.0 * (self % cwp/1000.)**(-5.0/2.0) *  &
+    (3.0/5.0*Q_eff_sca*pi)**(-3.0) *  &
+    (3.0*Condensation_Rate/4.0/pi/rho_water)**(-2.0) * &
+    Condensation_Rate**(5.0/2.0)/ 1.0E6
+    deallocate (condensation_rate)
+
+    where (self % lwp < 0)
+      self % hcld  = Missing_Value_Real4
+      self% cdnc = Missing_Value_Real4
+    end where
+
+  end  subroutine COMPUTE_ADIABATIC_PROPS
 
 
 end module dcomp_common_mod

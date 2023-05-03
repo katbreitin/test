@@ -71,8 +71,7 @@ MODULE DCOMP_DERIVED_PRODUCTS_MOD
           COMPUTE_PRECIPITATION_AHI, &
           COMPUTE_ADIABATIC_CLOUD_PROPS, &
           COMPUTE_DCOMP_INSOLATION, &
-          ADJUST_DCOMP_LWP, &
-          COMPUTE_MASS_CONCENTRATION
+          ADJUST_DCOMP_LWP
 ! private:: COD_APPROX
  private:: BIRD_NREL_CLEAR_SKY_INSOL
 
@@ -186,52 +185,33 @@ subroutine COMPUTE_CLOUD_WATER_PATH(jmin,jmax)
     end do
   end do
 
-
-  call dcomp % COMPUTE_CWP_PHASE( &
+  if (dcomp_1 % is_set) then
+    call dcomp_1 % COMPUTE_CWP_PHASE( &
     Acha % Zc, BASE % Zc_base &
-  , Upper_Limit_Water_Height &
-  , Freezing_Level_Height)
+    , Upper_Limit_Water_Height &
+    , Freezing_Level_Height)
+    call dcomp_1 % COMPUTE_ADIABATIC_PROPS (Acha % tc)
+  end if
 
+  if (dcomp_2 % is_set) then
+    call dcomp_2 % COMPUTE_CWP_PHASE( &
+    Acha % Zc, BASE % Zc_base &
+    , Upper_Limit_Water_Height &
+    , Freezing_Level_Height)
+      call dcomp_2 % COMPUTE_ADIABATIC_PROPS (Acha % tc)
+  end if
+
+  if (dcomp_3 % is_set) then
+    call dcomp_3 % COMPUTE_CWP_PHASE( &
+    Acha % Zc, BASE % Zc_base &
+    , Upper_Limit_Water_Height &
+    , Freezing_Level_Height)
+      call dcomp_3 % COMPUTE_ADIABATIC_PROPS (Acha % tc)
+  end if
 
 end subroutine COMPUTE_CLOUD_WATER_PATH
 
-!-----------------------------------------------------------------------------
-! compute ice and water mass concentratio
-! needed for boeing project
-!-----------------------------------------------------------------------------
-subroutine COMPUTE_MASS_CONCENTRATION()
 
-  integer:: Line_Idx, Elem_Idx
-
-  DCOMP % iwc = Missing_Value_Real4
-  DCOMP % lwc  = Missing_Value_Real4
-
-  line_loop: DO Line_Idx = 1, Image%Number_Of_Lines_Read_This_Segment
-    element_loop: DO Elem_Idx = 1, Image%Number_Of_Elements
-
-     if (Cld_Type(Elem_Idx,Line_Idx) == sym%FOG_TYPE .or. &
-         Cld_Type(Elem_Idx,Line_Idx) == sym%WATER_TYPE .or. &
-         Cld_Type(Elem_Idx,Line_Idx) == sym%SUPERCOOLED_TYPE) then
-
-         DCOMP % lwc(Elem_Idx,Line_Idx) = DCOMP % cwp(Elem_Idx,Line_Idx) / & !g/m^3
-                                  BASE%Geo_Thickness(Elem_Idx,Line_Idx)
-
-     endif
-
-     if (Cld_Type(Elem_Idx,Line_Idx) == sym%OPAQUE_ICE_TYPE .or. &
-         Cld_Type(Elem_Idx,Line_Idx) == sym%CIRRUS_TYPE .or. &
-         Cld_Type(Elem_Idx,Line_Idx) == sym%OVERLAP_TYPE .or. &
-         Cld_Type(Elem_Idx,Line_Idx) == sym%OVERSHOOTING_TYPE) then
-
-         DCOMP % iwc(Elem_Idx,Line_Idx) = DCOMP % cwp(Elem_Idx,Line_Idx) / &
-                                  BASE%Geo_Thickness(Elem_Idx,Line_Idx)
-
-     endif
-
-    enddo element_loop
-  enddo line_loop
-
-end subroutine COMPUTE_MASS_CONCENTRATION
 !-----------------------------------------------------------------------------
 !--- compute Number concentration and Geometrical Height
 !-----------------------------------------------------------------------------
