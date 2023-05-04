@@ -332,7 +332,7 @@ contains
 
         call mesg ('DCOMP ends in Bridge',level = 9)
 
-    
+
         select case (dcomp_mode_local)
         case (1)
           dcomp_1 % tau  (1:dim_1,1:dim_2)   = dncomp_output % cod % d(1:dim_1,1:dim_2)

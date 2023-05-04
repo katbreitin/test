@@ -145,12 +145,6 @@ subroutine COMPUTE_CLOUD_WATER_PATH()
   real, dimension(:,:), allocatable:: Freezing_Level_Height
 
 
-  DCOMP % cwp = Missing_Value_Real4
-  DCOMP % iwp = Missing_Value_Real4
-  DCOMP % lwp = Missing_Value_Real4
-  DCOMP % Cwp_Ice_Layer = Missing_Value_Real4
-  DCOMP % Cwp_Water_Layer = Missing_Value_Real4
-  DCOMP % Cwp_Scwater_Layer = Missing_Value_Real4
 
   allocate (Upper_Limit_Water_Height(dcomp % dim1, dcomp % dim2 ))
   allocate (Freezing_Level_Height(dcomp % dim1, dcomp % dim2 ))
@@ -198,6 +192,20 @@ subroutine COMPUTE_CLOUD_WATER_PATH()
     , Freezing_Level_Height)
     call dcomp_3 % COMPUTE_ADIABATIC_PROPS (Acha % tc)
   end if
+
+  if (nlcomp % is_set) then
+    call nlcomp % COMPUTE_CWP_PHASE( &
+    Acha % Zc, BASE % Zc_base &
+    , Upper_Limit_Water_Height &
+    , Freezing_Level_Height)
+    call nlcomp % COMPUTE_ADIABATIC_PROPS (Acha % tc)
+  end if
+
+  deallocate (Upper_Limit_Water_Height)
+  deallocate (Freezing_Level_Height)
+  deallocate (Lat_NWP_Idx)
+  deallocate (Lon_NWP_Idx)
+
 
 end subroutine COMPUTE_CLOUD_WATER_PATH
 

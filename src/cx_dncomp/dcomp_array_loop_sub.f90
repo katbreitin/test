@@ -493,19 +493,22 @@ subroutine dcomp_array_loop ( input, output , debug_mode_user)
   end where
 
   ! - compute lwp
-  where ( water_phase_array(1:dim_1_w,1:dim_2_w) &
-    .and. .not. btest ( quality_flag(1:dim_1_w,1:dim_2_w) , 1 )  &
-    .and. .not. btest ( quality_flag(1:dim_1_w,1:dim_2_w) , 2 ) )
+  output % lwp % d = 0.
+  where ( water_phase_array(1:dim_1_w,1:dim_2_w)  &
+    .and. output % cod % d(1:dim_1_w,1:dim_2_w) .gt. 0.  &
+    .and. output % cps % d(1:dim_1_w,1:dim_2_w).gt. 0 )
     output % lwp % d(1:dim_1_w,1:dim_2_w) =  output % cod % d(1:dim_1_w,1:dim_2_w) &
     & * output % cps % d(1:dim_1_w,1:dim_2_w) * 5.0 / 9.0
   end where
 
-  ! - compute lwp
+  ! - compute iwp
+  output % iwp % d = 0.
   where ( .not. water_phase_array(1:dim_1_w,1:dim_2_w) &
-    .and. .not. btest ( quality_flag(1:dim_1_w,1:dim_2_w) , 1 )  &
-    .and. .not. btest ( quality_flag(1:dim_1_w,1:dim_2_w) , 2 ) )
+    .and. output % cod % d(1:dim_1_w,1:dim_2_w) .gt. 0. )
     output % iwp % d(1:dim_1_w,1:dim_2_w) =  (output % cod % d(1:dim_1_w,1:dim_2_w)  ** (1/0.84) ) / 0.065
   end where
+
+
 
   where ( obs_array .and. .not. cloud_array )
     output % cld_trn_sol % d   =  1.0
@@ -548,8 +551,6 @@ subroutine dcomp_array_loop ( input, output , debug_mode_user)
   deallocate ( air_mass_array )
 
   output % version = 'V2'
-
-
 
 
 end subroutine dcomp_array_loop

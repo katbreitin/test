@@ -98,6 +98,8 @@ contains
     allocate (self%Insolation_Diffuse(n1,n2))
     allocate (self%phase_used(n1,n2))
 
+    call self % reset()
+
     self % is_set = .true.
 
 
@@ -221,11 +223,16 @@ contains
     valid_cloud = .false.
      ! make cwp
 
-     valid_cloud = self % lwp .ge. 0 .and. self % iwp .ge. 0  &
+
+     valid_cloud = (self % lwp .ge. 0 .or. self % iwp .ge. 0)  &
             .and. zc_top .ge. 0 .and. zc_base .ge. 0
 
+    where (self % lwp .ge. 0 .or. self % iwp .ge. 0)
+      self % cwp = self % lwp + self % iwp
+    end where
+
      where ( valid_cloud  )
-        self % cwp = self % lwp + self % iwp
+
          Cloud_Geometrical_Thickness = zc_top - Zc_base
          Water_Layer_Fraction = 0.0
          Scwater_Layer_Fraction = 0.0
