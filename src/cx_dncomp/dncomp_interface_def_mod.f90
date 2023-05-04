@@ -6,7 +6,7 @@ module dncomp_interface_def_mod
    !
    implicit none
    ! - parameters
- 
+
    real ( f4), parameter :: MISSING_REAL4 = -999.
 
    ! - CLAVRX uses 44 MODIS/VIIRS channels
@@ -242,7 +242,7 @@ contains
       new_output % cld_alb % d       =  MISSING_REAL4
       new_output % cld_sph_alb % d   =  MISSING_REAL4
       new_output % lwp % d          =  MISSING_REAL4
-      new_output % lwp % d          =  MISSING_REAL4
+      new_output % iwp % d          =  MISSING_REAL4
       new_output % rain_probability % d       =  -999
       new_output % rain_rate % d   =  MISSING_REAL4
       new_output % refl_vis_max % d   =  MISSING_REAL4

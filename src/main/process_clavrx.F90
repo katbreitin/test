@@ -189,13 +189,10 @@
 
    use DCOMP_DERIVED_PRODUCTS_MOD,only: &
         ADJUST_DCOMP_LWP &
-      , COMPUTE_ADIABATIC_CLOUD_PROPS &
       , COMPUTE_CLOUD_WATER_PATH &
       , COMPUTE_DCOMP_INSOLATION &
       , COMPUTE_PRECIPITATION &
-      , COMPUTE_PRECIPITATION_AHI &
-      , COMPUTE_MASS_CONCENTRATION &
-      , COMPUTE_SUBPIXEL_MAX_MIN_COD
+      , COMPUTE_PRECIPITATION_AHI
 
    use DNB_RETRIEVALS_MOD, only: &
         COMPUTE_LUNAR_REFLECTANCE &
@@ -678,7 +675,7 @@
    call univ_reg_sigint_handler(cleanup_tempdir__exit)
 
    call initial_pixel_common_alloc
-   
+
    !*************************************************************************
    ! Marker: Open high spatial resolution ancillary data files
    !*************************************************************************
@@ -1783,9 +1780,8 @@
 
                if ( DCOMP_Run .or. NLCOMP_Run) then
                   call chrono % tic(11)
-                     call COMPUTE_CLOUD_WATER_PATH(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)
+                     call COMPUTE_CLOUD_WATER_PATH()
                      call COMPUTE_DCOMP_INSOLATION(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment,Sun_Earth_Distance)
-                     call COMPUTE_ADIABATIC_CLOUD_PROPS(Line_Idx_Min_segment,Image%Number_Of_Lines_Read_This_Segment)
                      call COMPUTE_DCOMP_PERFORMANCE_METRICS(DCOMP_Processed_Count,DCOMP_Valid_Count)
                      call ADJUST_DCOMP_LWP()
                      call COMPUTE_PRECIPITATION(Line_Idx_Min_Segment,Image%Number_Of_Lines_Read_This_Segment)
@@ -1814,8 +1810,6 @@
 
                  call CCL_BRIDGE()
 
-                 !--- compute ice and liquid water contents
-                 call COMPUTE_MASS_CONCENTRATION()
 
                endif
 

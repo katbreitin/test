@@ -73,7 +73,7 @@ module PIXEL_ROUTINES_MOD
     , cld_type_aux &
     , number_of_temporary_files &
     , temporary_file_name, temporary_data_dir &
-    , dcomp_success_fraction , dcomp_quality_flag &
+    , dcomp_success_fraction , DCOMP  &
     , Btd_Ch31_Ch32, Btd_Ch38_Ch32 &
     , ndsi_sfc, nddi_toa, ndsi_toa, Ndvi_Sfc, Ndvi_Sfc_White_Sky,Ndvi_Toa &
     , nonconfident_cloud_mask_fraction
@@ -1824,10 +1824,10 @@ subroutine COMPUTE_DCOMP_PERFORMANCE_METRICS(Dcomp_Processed_Count,Dcomp_Valid_C
   real, parameter:: Count_Min = 10.0
 
 
-  Processed_Count_Segment = count(btest(Dcomp_Quality_Flag,0))
-  Valid_Count_Segment = count((.not. btest(Dcomp_Quality_Flag,1)) .and. &
-                              (.not. btest(Dcomp_Quality_Flag,2)) .and. &
-                              btest(Dcomp_Quality_Flag,0) )
+  Processed_Count_Segment = count(btest(Dcomp % Quality_Flag,0))
+  Valid_Count_Segment = count((.not. btest(Dcomp % Quality_Flag,1)) .and. &
+                              (.not. btest(Dcomp % Quality_Flag,2)) .and. &
+                              btest(Dcomp % Quality_Flag,0) )
 
 
   Dcomp_Processed_Count = Dcomp_Processed_Count + Processed_Count_Segment
